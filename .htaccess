@@ -1,0 +1,10 @@
+ErrorDocument 404 /Views/errors/err404.php
+ErrorDocument 403 /Views/errors/err404.php
+ErrorDocument 410 /Views/errors/err404.php
+
+Options -Indexes
+RewriteEngine On 
+RewriteRule ^/.htaccess$ - [F]
+
+#
+Redirect /index.php /Views/

@@ -1,0 +1,123 @@
+.status123 input {
+	display: none;
+}
+.status123 label:before {
+	content: "";
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	top: 8px;
+	right: 23px;
+	display: inline-block;
+	border: 1.5px solid gray;
+	border-radius: 4px;
+	vertical-align: middle;
+}
+.status123 input:checked + label:after {
+	content: "";
+	position: absolute;
+	width: 22px;
+	height: 22px;
+	top: 5px;
+	right: 20px;
+	display: inline-block;
+	vertical-align: middle;
+	background: url('../../picts/check-01.png') no-repeat;
+	background-size: 100%;
+}
+
+.bodyimg0 {
+	background: url('../../picts/bg-dot.jpg') repeat scroll 0 0 rgba(0, 0, 0, 0);
+}
+.bodyimg1 {
+	 background: url('../../picts/bg/1.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	 background-size: 100% 100% !important;
+ }
+.bodyimg2 {
+	background: url('../../picts/bg/2.png') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg3 {
+	background: url('../../picts/bg/3.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg4 {
+	background: url('../../picts/bg/4.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg5 {
+	background: url('../../picts/bg/5.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg6 {
+	background: url('../../picts/bg/6.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg7 {
+	background: url('../../picts/bg/7.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg8 {
+	background: url('../../picts/bg/8.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg9 {
+	background: url('../../picts/bg/9.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg10 {
+	background: url('../../picts/bg/10.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimg11 {
+	background: url('../../picts/bg/11.jpg') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+
+.bodyimgPrev0 {
+	background: url('../../picts/about-bg.png') repeat scroll 0 0 rgba(0, 0, 0, 0);
+}
+.bodyimgPrev1 {
+	background: url('../../picts/bg/1.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev2 {
+	background: url('../../picts/bg/2.png') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev3 {
+	background: url('../../picts/bg/3.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev4 {
+	background: url('../../picts/bg/4.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev5 {
+	background: url('../../picts/bg/5.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev6 {
+	background: url('../../picts/bg/6.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev7 {
+	background: url('../../picts/bg/7.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev8 {
+	background: url('../../picts/bg/8.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev9 {
+	background: url('../../picts/bg/9.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev10 {
+	background: url('../../picts/bg/10.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
+.bodyimgPrev11 {
+	background: url('../../picts/bg/11.jpg') no-repeat center center rgba(0, 0, 0, 0) !important;
+	background-size: 100% 100% !important;
+}
