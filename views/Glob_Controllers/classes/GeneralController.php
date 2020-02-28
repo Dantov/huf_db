@@ -47,8 +47,8 @@ class GeneralController extends Controller
         $navBar['userFio'] = $_SESSION['user']['fio'];
         $navBar['userAccess'] = $_SESSION['user']['access'];
 
-        $navBar['glphsd'] = 'user-alt';
-        if ( $navBar['userFio'] == 'Участок ПДО' ) $navBar['glphsd'] = 'user-edit';
+        $navBar['glphsd'] = 'user';
+        if ( $navBar['userFio'] == 'Участок ПДО' ) $navBar['glphsd'] = 'paperclip';
 
         $searchIn = (int)$_SESSION['assist']['searchIn'];
         if ( $searchIn === 1 ) $navBar['searchInStr'] = "В Базе";
@@ -124,7 +124,6 @@ class GeneralController extends Controller
         $navBar['collectionList'] = getCollections($collections_arr);
 
         $this->navBar = $navBar;
-        //return $navBar;
     }
 
 

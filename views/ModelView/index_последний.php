@@ -12,6 +12,9 @@ require('controllers/ModelView_Controller.php');
 	<div id="content"> <!-- нужен что бы скрывать все для показа 3Д background: url('../picts/backgrounds/atmosphere.jpg') no-repeat no-scroll 0 0 rgba(0, 0, 0, 0); -->
 	<?php include('../NavigationBar/NavBar.php');?>
 	<div class="container" id="id_<?=$id;?>">
+
+
+
 		<div class="row topName" id="topRow">
 
 			<div class="col-xs-12 col-sm-4 noPaddingLR">

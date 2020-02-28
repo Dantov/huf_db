@@ -6,7 +6,7 @@ require _globDIR_ . "classes/GeneralController.php";
 class ModelViewController extends GeneralController
 {
 
-    public $title = 'ХЮФ 3Д Модель - ';
+    public $title = 'ХЮФ 3Д - Просмотр Модели ';
 
     public function __construct($controllerName='')
     {
@@ -22,10 +22,7 @@ class ModelViewController extends GeneralController
         } else {
             header("location: "._views_HTTP_."index.php");
         }
-
         if ( isset($_SESSION['id_progr']) ) unset($_SESSION['id_progr']); // сессия id пдф прогресс бара
-
-        //$this->varBlock['activeMenu'] = 'active';
 
         require(_viewsDIR_ . $this->controllerName.'/classes/ModelView.php');
 
@@ -51,13 +48,12 @@ class ModelViewController extends GeneralController
         $gemsTR = $modelView->getGems();
         $dopVCTr = $modelView->getDopVC();
 
-        $rep_Query = $modelView->rep_Query;
-
         $stts = $modelView->getStatus($row);
         $stat_name = $stts['stat_name'];
         $stat_date = $stts['stat_date'];
         $stat_class = $stts['class'];
         $stat_title = $stts['title'];
+        //$stat_glyphi = $stts['glyphi'];
 
         if ( $stts['glyphi'] == 'glyphicons-ring' ) {
             $stat_glyphi = $stts['glyphi'];
@@ -120,9 +116,13 @@ class ModelViewController extends GeneralController
         if ( $modelView->checklikePos() ) $btnlikes = 'btnlikesoff';
 
         $compacted = compact([
-            'row','coll_id','getStl','button3D','dopBottomScripts','complStr','images', 'labels', 'str_mat','str_Covering','gemsTR',
-            'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','statuses','stillNo','ai_file','thisPage','editBtn',
-            'btnlikes','rep_Query']);
+            'row',
+            'coll_id',
+            'getStl',
+            'button3D',
+            'dopBottomScripts',
+            'complStr',
+            'images','labels','str_mat','str_Covering','','','','','','','','']);
 
         return $this->render('modelView', $compacted);
     }

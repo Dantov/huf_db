@@ -49,7 +49,8 @@ JS;
                 <div class="navbar-collapse">
 
                     <ul class="nav nav-pills navbar-left inlblock" id="navnav">
-                        <li role="presentation" class="<?=$this->params['activeMenu']?>"><a href=<?= _views_HTTP_ ?>"Main/index.php">База</a></li>
+                        <li role="presentation" class="<?=$this->varBlock['activeMenu']?>"><a href="<?=_views_HTTP_?>Main/">База</a></li>
+                            <? if ( $_SESSION['user']['access'] < 3 ): ?>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-menu-hamburger"></span></button>
                                 <ul class="dropdown-menu">
@@ -59,6 +60,7 @@ JS;
                                     <li><a href="<?=_views_HTTP_?>Nomenclature/index.php"><span class="glyphicon glyphicon-list-alt"></span>&#160; Номенклатура</a></li>
                                 </ul>
                             </div>
+                            <?endif;?>
                         <li role="presentation">
                             <button id="collSelect" onclick="navbar.collectionSelect(this);" type="button" title="Выбрать Коллекцию" style="font-size: 18px; padding: 5px 8px 0 8px;" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-gem"></i>
@@ -89,7 +91,7 @@ JS;
                     <form class="navbar-form topuserform navbar-right">
                         <div class="btn-group">
                             <button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-<?=$navBar['glphsd'];?>"></i>&#160;<?=$navBar['userFio'];?>&#160;<span class="caret"></span>
+                                <span class="glyphicon glyphicon-<?=$navBar['glphsd']?>"></span>&#160;<?=$navBar['userFio'];?>&#160;<span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu">
                                 <li class="<?=$navBar['navbarStatsShow'];?>"><a href="<?=$navBar['navbarStatsUrl'];?>"><span class="glyphicon glyphicon-stats"></span>&#160; Статистика</a></li>
@@ -183,7 +185,7 @@ JS;
     <div class="container">
         <p class="footer"><i class="pull-right"><a href="<?= _glob_HTTP_ ?>versions.php" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i></p>
         <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziModal.min.js"></script>
-        <script src="<?=_views_HTTP_?>NavigationBar/js/NavBar.js"></script>
+        <script src="<?=_glob_HTTP_?>js/NavBar.js"></script>
         <script defer src="<?=_views_HTTP_?>Main/js/main.js?ver=<?=time()?>"></script>
     </div>
 </body>
