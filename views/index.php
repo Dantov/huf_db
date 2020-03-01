@@ -57,10 +57,10 @@ if ( $access === 2 ) {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>HUF 3d models base</title>
 	<link rel="icon" href="favicon.ico?ver=102">
-	<link rel="stylesheet" href="<?= _views_HTTP_ ?>css/style.css?ver=<?=time()?>">
-	<link rel="stylesheet" href="<?= _views_HTTP_ ?>css/style_adm.css?ver=<?=time()?>">
-	<link rel="stylesheet" href="<?= _views_HTTP_ ?>css/bootstrap.min.css">
-	<link rel="stylesheet" href="<?= _views_HTTP_ ?>css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="<?= _webDIR_HTTP_ ?>css/style.css?ver=<?=time()?>">
+	<link rel="stylesheet" href="<?= _webDIR_HTTP_ ?>css/style_adm.css?ver=<?=time()?>">
+	<link rel="stylesheet" href="<?= _webDIR_HTTP_ ?>css/bootstrap.min.css">
+	<link rel="stylesheet" href="<?= _webDIR_HTTP_ ?>css/bootstrap-theme.min.css">
 </head>
 <body>
 

@@ -302,7 +302,7 @@ p2 {
 	position: relative;
 	width: 25px;
 	height: 25px;
-	background: url('../../picts/3DPict.png') 0 0 no-repeat;
+	background: url('../picts/3DPict.png') 0 0 no-repeat;
 	background-size: 100%;
 	top:3px;
 }
@@ -311,7 +311,7 @@ p2 {
 	position: absolute;
 	width: 30px;
 	height: 30px;
-	background: url('../../picts/3DPict.png') 0 0 no-repeat;
+	background: url('../picts/3DPict.png') 0 0 no-repeat;
 	background-size: 100%;
 	bottom:0px;
 	right: 0px;

@@ -33,8 +33,8 @@ class ErrorHandler
         if ( is_string($err_level['logs']) && !empty($err_level['logs']) )
         {
             $this->logs = true;
-            $this->logsPath = _rootDIR_ . $err_level['logs'];
-            if ( !file_exists($this->logsPath) ) mkdir($this->logsPath,777);
+            $this->logsPath = _rootDIR_ . $err_level['logs'];            
+            if ( !file_exists($this->logsPath) ) mkdir($this->logsPath,0777,true);
         }
 
         $this->err_lvl = $err_level['mode'];

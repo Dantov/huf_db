@@ -12,6 +12,7 @@ ini_set('date.timezone', 'Europe/Kiev');
         define('_vendorDIR_', _rootDIR_.'vendor/');
 
         define('_rootDIR_HTTP_', 'http://'.$_SERVER['HTTP_HOST'].'/'); // для ссылок
+        define('_webDIR_HTTP_', _rootDIR_HTTP_ . 'web/'); // для ссылок
 
         define('_views_HTTP_', _rootDIR_HTTP_.'views/'); // для ссылок
         define('_glob_HTTP_', _rootDIR_HTTP_.'views/Glob_Controllers/'); // для ссылок

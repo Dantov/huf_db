@@ -316,12 +316,10 @@ class Main extends General {
 		$posIds = '(';
 		for ( $i = $from; $i < $to; $i++ ) $posIds .= $this->row[$i]['id'].',';
 		$posIds = trim($posIds,',') . ')';	
-		
-		$imagesQuery = mysqli_query($this->connection, " SELECT pos_id,img_name FROM images WHERE pos_id IN '$posIds' AND main=1 ");
-		$stlQuer = mysqli_query($this->connection, " SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN '$posIds' ");
+		$imagesQuery = mysqli_query($this->connection, " SELECT pos_id,img_name FROM images WHERE pos_id IN $posIds AND main=1 ");
+		$stlQuer = mysqli_query($this->connection, " SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN $posIds ");
 		while ( $image = mysqli_fetch_assoc($imagesQuery) ) $rowImages[$image['pos_id']] = $image;
 		while ( $stl = mysqli_fetch_assoc($stlQuer) ) $rowStls[$stl['pos_id']] = $stl;
-		
 		ob_start();
 		for ( $i = $from; $i < $to; $i++ )
 		{
@@ -772,12 +770,17 @@ class Main extends General {
 		{
 			$image = $rowImages[$rowId];
 			$showimg = $row['number_3d'].'/'.$row['id'].'/images/'.$image['img_name'];
+		} else {
+			$showimg = "default.jpg";
 		}
+		//debug(_stockDIR_.$showimg,'$showimg');
 		if ( !file_exists(_stockDIR_.$showimg) ) // file_exists работает только с настоящим путём!! не с HTTP
 		{
 		    $showimg = _stockDIR_HTTP_ . "default.jpg";
 		} else {
+			
             $showimg = _stockDIR_HTTP_ . $showimg;
+			
         }
 		
 		$btn3D = false;
