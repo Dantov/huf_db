@@ -1,14 +1,14 @@
 var butt3D = document.getElementById('butt3D');
 	butt3D.onclick = function() {
-		$$f({
-			formid:'extractform',
-			url: 'controllers/extractzip.php',
-			onstart:function () {
+		var extractform = document.getElementById('extractform');
+		let formData = new FormData(extractform);
+		$.ajax({
+			url: "controllers/extractzip.php",
+			type: "POST",
+			data: {
+				formData
 			},
-			onsend:function () {
-			},
-			error: function() {
-				alert ("Ошибка отправки! Попробуйте снова.");
-			}
-		});
+			dataType:"json",
+			success:function(data) {}
+		})
 	}

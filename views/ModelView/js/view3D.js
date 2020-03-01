@@ -322,18 +322,17 @@ var camera, scene, renderer, control;
 				// BUTTONS
 			
 				buttClose.onclick = function(){
-					$$f({
-						formid:'dellstlform',
-						url: 'controllers/dellstl.php',
-						onstart:function () {
+					let formData = new FormData(dellstlform);
+					$.ajax({
+						url: "controllers/dellstl.php",
+						type: "POST",
+						data: {
+							formData
 						},
-						onsend:function () {
+						success:function() {
 							location.reload(true);
-						},
-						error: function() {
-						
 						}
-					});
+					})
 				};
 				/*
 				var buttAnim = document.getElementById('anim');

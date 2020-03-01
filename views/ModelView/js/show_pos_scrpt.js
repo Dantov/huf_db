@@ -102,22 +102,6 @@ function close_status_window(rel){
 		document.location.reload(true); // true говорит что б загружал с сервера а не с кеша
 	}
 };
-function sendNewStatus(self){
-	$$f({
-        formid:'saveVC_mounting',
-        url: 'controllers/editVC.php',
-        onstart:function () {
-			var status_window = document.getElementById('status_window');
-			status_window.innerHTML = 'Сохраняем...';
-        },
-		onsend:function () { 
-			
-        },
-		error: function() {
-            alert ("Ошибка! Попробуйте снова.");
-        }
-	});
-};
 
 //--------- отображаем превью при наведении ----------//
 
@@ -294,122 +278,7 @@ function openPDF(filename){
 	window.open( '../../Pdfs/'+filename );
 }
 
-/*		ajax Для удаления модели		*/
-function askToDellModel(id, dellpos) {
-	var body = document.querySelector('body');
-	var url_str = 'delete.php?id='+id+'&dellpos='+dellpos;
-	
-	var blackCover2 = document.createElement('div');
-	var saved_form_result = document.createElement('div');
-	var loading_img = document.createElement('img');
-	
-	blackCover2.setAttribute('id','blackCover2');
-	blackCover2.setAttribute('class','blackCover');
-	saved_form_result.setAttribute('id','saved_form_result');
-	saved_form_result.setAttribute('class','alert alert-success hidethis');
-	
-	var num3d = document.querySelector('#num3d').innerHTML;
-	var modelType = document.querySelector('#modelType').innerHTML;
-	var center = document.createElement('center');
-	
-	var a = document.createElement('a');
-			a.setAttribute('class','btn btn-default');
-			a.setAttribute('type','button');
-			a.innerHTML = 'Отменить';
-			a.onclick = function () {
-				window.location.reload(true);
-			};
-	
-	var a2 = document.createElement('a');
-			a2.setAttribute('class','btn btn-danger');
-			a2.setAttribute('type','button');
-			a2.style.marginLeft = '20px';
-			a2.innerHTML = 'Удалить';
-			a2.onclick = function () {
-				var saved_form_result = document.querySelector('#saved_form_result');
-				var blackCover2 = document.querySelector('#blackCover2');
-				
-				$$f({
-					formid:'dellModel_form',
-					url: url_str,
-					onstart:function () {
-						saved_form_result.classList.remove('hidethis'); // скрываем окно
-						var a = $$('saved_form_result','');
-						loading_img.setAttribute('class','blackCover_loading');
-						loading_img.setAttribute('src','../picts/loading.gif');
-						blackCover2.appendChild(loading_img); // добавляем гифку
-					},
-					onsend:function () { 
-						$$('saved_form_result',$$('saved_form_result').innerHTML );
-						blackCover2.children[0].remove(); // удаляем гифку
-					},
-					error: function() {
-						alert ("Ошибка! Попробуйте снова.");
-					}
-				});
-	
-			};
-			
-	center.appendChild(a);
-	center.appendChild(a2);
-	
-	saved_form_result.innerHTML = '<center><h4>Удалить безвозвратно - <b>' + num3d + ' - ' + modelType + '?</b></h4></center>';
-	saved_form_result.appendChild(center);
-	
-	body.appendChild(blackCover2);
-	body.appendChild(saved_form_result);
-
-}
-		/*		ajax Для ПДО		*/				
-var vc_create_btn = document.getElementById('vc_create_btn');
-var articl = document.getElementById('articl');
-if (vc_create_btn) { 
-vc_create_btn.addEventListener('click', function(){
-	
-	var saveVC_form = document.getElementById('saveVC_form_proto').cloneNode(true);
-	saveVC_form.setAttribute('id','saveVC_form');
-	saveVC_form.removeAttribute('class');
-	saveVC_form.children[1].setAttribute('value', articl.innerHTML);
-	
-	var input_save = document.createElement('button');
-	input_save.setAttribute('type', 'button');
-	input_save.setAttribute('id', 'saveBtn');
-	input_save.setAttribute('name', 'saveVC_PDO');
-	input_save.setAttribute('value', 1);
-	input_save.setAttribute('class', 'btn btn-default');
-	input_save.setAttribute('title', 'Сохранить');
-	input_save.setAttribute('onclick', 'saveVC(this);');
-	input_save.innerHTML = '<span class="glyphicon glyphicon-floppy-disk"></span>';
-	
-	articl.innerHTML = '';
-	articl.appendChild(saveVC_form);
-	articl.appendChild(input_save);
-	
-	vc_create_btn.classList.toggle('hidden');
-	
-}, false);
-}
-function saveVC(self) {
-	
-	$$f({
-        formid:'saveVC_form',
-        url: 'controllers/editVC.php',
-        onstart:function () {
-			document.getElementById('saveVC_form').remove();
-			self.remove();
-			vc_create_btn.classList.toggle('hidden');
-        },
-		onsend:function () { 
-           
-        },
-		error: function() {
-            alert ("Ошибка! Попробуйте снова.");
-        }
-	});
-	
-}
 // ========== LIKES ========== //
-
 var btnlikes = document.querySelectorAll('.btnlikes');
 
 if ( btnlikes[0] ) {

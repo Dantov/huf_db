@@ -64,7 +64,7 @@
 								        <span><?=$labels[$i]['name'];?></span>
 							        </span>
                         <?php endfor; ?>
-                        <?=$button3D;?>
+                        <?=$button3D?>
                     </div>
                 </div>
                 <div class="row">

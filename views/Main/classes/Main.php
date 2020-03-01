@@ -301,21 +301,40 @@ class Main extends General {
 		return $result;
 	}
 
-	public function getModelsByTiles() {
+	public function getModelsByTiles()
+	{
 		$result = array();
 		$this->wholePos = $result['wholePos'] = count($this->row);
-		for ( $i = $this->assist['page']*$this->assist['maxPos']; $i < ($this->assist['page'] + 1)*$this->assist['maxPos']; $i++ ) {
+		
+		$from = $this->assist['page'] * $this->assist['maxPos'];
+		$to = ($this->assist['page'] + 1) * $this->assist['maxPos'];
+		
+		// SQL выборки
+		$rowImages = [];
+		$rowStls = [];
+		
+		$posIds = '(';
+		for ( $i = $from; $i < $to; $i++ ) $posIds .= $this->row[$i]['id'].',';
+		$posIds = trim($posIds,',') . ')';	
+		
+		$imagesQuery = mysqli_query($this->connection, " SELECT pos_id,img_name FROM images WHERE pos_id IN '$posIds' AND main=1 ");
+		$stlQuer = mysqli_query($this->connection, " SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN '$posIds' ");
+		while ( $image = mysqli_fetch_assoc($imagesQuery) ) $rowImages[$image['pos_id']] = $image;
+		while ( $stl = mysqli_fetch_assoc($stlQuer) ) $rowStls[$stl['pos_id']] = $stl;
+		
+		ob_start();
+		for ( $i = $from; $i < $to; $i++ )
+		{
 		// что б не выводил пустые позиции в конце, если кол-во отображаемых больше кол-ва найденных.
 			if ( !isset($this->row[$i]['id']) ) continue; 
-	
-			$result['showByTiles'] .= $this->drawModel( $this->row[$i], false );
-	
+			$this->drawModel( $this->row[$i], $rowImages, $rowStls);
 			$result['iter']++; // счетчик отрисованных позиций
 		}
+		$result['showByTiles'] = ob_get_contents();
+		ob_end_clean();
+		
 		return $result;
 	}
-
-
 
 	/*
 	 * Приложение №1
@@ -734,36 +753,26 @@ class Main extends General {
 
     /**
      * плиткой
-     * @param $row
+     * @param array $row - each model data
      * @param $comlectIdent
+	 * true - drawModel вызвана в отрисовке комплекта
      * @return string
      */
-	private function drawModel(&$row, $comlectIdent)
+	private function drawModel(&$row, $rowImages, $rowStls, $comlectIdent=false)
 	{
-
 		//по дефолту
 		$vc_show = "";
 		if ( !empty($row['vendor_code']) ) $vc_show = " | ".$row['vendor_code'];
-		$col_md = 2;
-		$showN3DandVC = "<span>{$row['number_3d']}$vc_show</span>";
-		$hr = "<hr class=\"hr-items\" />";
+		$col_md = $comlectIdent === true ? 3 : 2;
 		
-		// если смотрим по комплектам
-		if ( $comlectIdent === true ) {
-			$col_md = 3;
-			$showN3DandVC = "";
-			$hr = "";
-		}
 		
-		$rid = $row['id'];
-	    $img_res = mysqli_query($this->connection, " SELECT img_name,main FROM images WHERE pos_id='$rid' ");
-        $showimg = "";
-		while ($images = mysqli_fetch_assoc($img_res)) {
-			if ( empty($images['main']) ) continue;
-			$showimg = $row['number_3d'].'/'.$row['id'].'/images/'.$images['img_name'];
-			break;
+		$image = [];
+		$rowId = $row['id'];
+		if ( array_key_exists($rowId, $rowImages) )
+		{
+			$image = $rowImages[$rowId];
+			$showimg = $row['number_3d'].'/'.$row['id'].'/images/'.$image['img_name'];
 		}
-
 		if ( !file_exists(_stockDIR_.$showimg) ) // file_exists работает только с настоящим путём!! не с HTTP
 		{
 		    $showimg = _stockDIR_HTTP_ . "default.jpg";
@@ -771,122 +780,53 @@ class Main extends General {
             $showimg = _stockDIR_HTTP_ . $showimg;
         }
 		
-		$stlQuer = mysqli_query($this->connection, " SELECT stl_name FROM stl_files WHERE pos_id='$rid' ");
-		if ( $stlQuer -> num_rows > 0 ) {
-			$btn3D = "/<span class=\"button-3D-pict-main\" title=\"Доступен 3D просмотр\"><span>";
-		}
+		$btn3D = false;
+		if ( array_key_exists($rowId, $rowStls) ) $btn3D = true;
+
 
 		// смотрим отрисовывать ли нам кнопку едит
-		if ( $this->user['access'] > 0 ) {
-			
-			$editBtn  = "<a href=\"../AddEdit/index.php?id={$row['id']}&component=2\" class=\"btn btn-sm btn-default editbtnshow\">";
-			$editBtn .= "<span class=\"glyphicon glyphicon-pencil\"></span></a>";
-			
+		$editBtn = false;
+		if ( $this->user['access'] > 0 ) 
+		{
 			// весь доступ 3-для влада
 			if ( $this->user['access'] == 1
                 || $this->user['access'] == 3
                 || $this->user['access'] == 4
                 || $this->user['access'] == 5
-                || $this->user['id'] == 33 ) $drawEdit = $editBtn;
+				|| $this->user['id'] == 33 ) $editBtn = true;
 
 			// доступ только где юзер 3д моделлер или автор
-			if ( $this->user['access'] == 2 ) { 
-			
+			if ( $this->user['access'] == 2 ) 
+			{ 
 				$userRowFIO = $this->user['fio'];
 				$authorFIO = $row['author'];
 				$modellerFIO = $row['modeller3D'];
-				
 				if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE ) {
-					$drawEdit = $editBtn;
+					$editBtn = true;
 				} 
 			}
 		}
 		
 		$status = $this->getStatus($row);
-		$statusStr = '';
-
-		if ( $status['stat_name'] ) {
-
-            $iconSpan = '<span class="glyphicon glyphicon-'.$status['glyphi'].'"></span>';
-		    if ( $status['glyphi'] == 'glyphicons-ring' ) $iconSpan = '<span class="'.$status['glyphi'].'"></span>';
-
-            $statusStr = '
-				<div class="'.$status['classMain'].' main_status pull-right" title="'.$status['title'].'">
-					'. $iconSpan .'
-				</div>';
-
-//			$statusStr = '
-//				<div class="'.$status['classMain'].' main_status pull-right" title="'.$status['stat_name'].'">
-//					<span class="glyphicon glyphicon-'.$status['glyphi'].'"></span>
-//				</div>';
-		}
-		
-		$labels = $this->getLabels($row['labels']);
-		$labels_str = '';
-		for ( $i = 0; $i < count($labels); $i++ ) {
-			$labels_str .= " 
-				<span title=\"{$labels[$i]['info']}\" class=\"label {$labels[$i]['class']}\">
-					<span class=\"glyphicon glyphicon-tag\"></span>
-					{$labels[$i]['name']}
-				</span>
-				<br/>";
-		}	
-		
+		$labels = $this->getLabels($row['labels']);	
 		$checkedSM = self::selectionMode($row['id']);
 		
-                // Укорочение длинны типа модели
-                $modTypeCount = mb_strlen($row['model_type']);
-                if ( $modTypeCount > 14 )
-                {
-                    $modTypeStr = mb_substr($row['model_type'], 0, 11);
-                    $modTypeStr.= "...";
-                } else {
-                    $modTypeStr = $row['model_type'];
-                }
-                // энд
-                
-		$str = '';
-		$str .= "<div id=\"{$row['id']}\" class=\"col-xs-6 col-sm-4 col-md-$col_md prj-item\">";
-	    $str .= 	"<div class=\"ratio\">";
-        $str .= 		"<div class=\"ratio-inner ratio-4-3\">";
-        $str .= 			"<div class=\"ratio-content\">";
-		$str .=					$statusStr; 
-		$str .=					"<div class=\"main_hot\">";
-		$str .=						$labels_str;
-		$str .= 				"</div>";
-		$str .= 				"<a href=\"../ModelView/index.php?id={$row['id']}\">";
-		$str .= 					"<div class=\"text-primary txt-art\">";
-		$str .= 						$showN3DandVC;
-		$str .=						"</div>";
-		$str .= 					"<img src=\"../../picts/loading_circle_low2.gif\" class=\"imgLoadCircle_main\" />";
-        $str .= 					"<img src=\"$showimg\" class=\"img-responsive imgThumbs_main hidden\" onload=\"onImgLoad(this);\"/>";
-		$str .= 				"</a>";
-        $str .= 			"</div>";
-		$str .= 			$drawEdit;
-		$str .= 			$btn3D;
-        $str .= 		"</div>";
-		
-		$str .= 			"<div class=\"text-muted margtop\">";
-		$str .= 				"<span class=\"glyphicon glyphicon-calendar pull-left\" title=\"дата создания\">";
-		$str .=					date_create( $row['date'] )->Format('d.m.Y');
-		$str .=				"</span>";
-		
-		$str .=				'<div class="selectionCheck '.$checkedSM['active'].'">';
-		$str .=					'<label for="checkId_' . $row['id'] . '" class="pointer">';
-		$str .=						'<span class="glyphicon '.$checkedSM['class'].'"></span>';
-		$str .=					"</label>";
-		$str .=					'<input class="hidden checkIdBox" '.$checkedSM['inptAttr'].' checkBoxId modelId="'.$row['id'].'" modelName="'.$row['number_3d'].$vc_show.'" modelType="'.$row['model_type'].'" type="checkbox" id="checkId_'.$row['id'].'">';
-		$str .=				"</div>";
-		
-		$str .=				"<b class=\"pull-right\" title=\"{$row['model_type']}\"> $modTypeStr</b>";
-		$str .= 			"</div>";
-		$str .= 			"<div class=\"clearfix\"></div>";
-		$str .= 	"</div>";
-		$str .= "</div>";
-		return $str;
+        // Укорочение длинны типа модели
+        $modTypeCount = mb_strlen($row['model_type']);
+        if ( $modTypeCount > 14 )
+        {
+            $modTypeStr = mb_substr($row['model_type'], 0, 11);
+            $modTypeStr.= "...";
+        } else {
+            $modTypeStr = $row['model_type'];
+        }
+        
+		require _viewsDIR_. "Main/includes/drawModel.php";
 	}
-	private static function selectionMode($id) {
-		
+	
+	
+	private static function selectionMode($id) 
+	{
 		$defRes = ['inptAttr'=>'','class'=>'glyphicon-unchecked','active'=>'hidden'];
 		if ( $_SESSION['selectionMode']['activeClass'] == "btnDefActive" ) {
 			
@@ -905,6 +845,8 @@ class Main extends General {
 		}
 		return $defRes;
 	}
+	
+	
 	public static function selectedModelsByLi() {
 		$result = "";
 		$selectedModels = $_SESSION['selectionMode']['models'];

@@ -1,9 +1,5 @@
 "use strict";
 
-Node.prototype.remove = function() {  // - полифил для elem.remove(); document.getElementById('elem').remove();
-	this.parentElement.removeChild(this);
-	};
-
 // ----- Обработчик кликов на контейнер 25,02,18 ----- //
 document.querySelector('.container').addEventListener('click', function(event) {
 		let click = event.target;

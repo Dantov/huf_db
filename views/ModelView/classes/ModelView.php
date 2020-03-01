@@ -74,12 +74,12 @@ class ModelView extends General {
 				<form method="post" id="dellstlform" class="hidden"></form>
 			';
 			$result['dopBottomScripts'] = '
-				<script src="../js_lib/three.min.js"></script>
-				<script src="../js_lib/OrbitControls.js"></script>
-				<script src="../js_lib/TrackballControls.js"></script>
-				<script src="../js_lib/TransformControls.js"></script>
-				<script src="../js_lib/STLLoader.js"></script>
-				<script src="js/extractzip.js?ver=12"></script>
+				<script src="'._rootDIR_HTTP_.'web/js_lib/three.min.js"></script>
+				<script src="'._rootDIR_HTTP_.'web/OrbitControls.js"></script>
+				<script src="'._rootDIR_HTTP_.'web/TrackballControls.js"></script>
+				<script src="'._rootDIR_HTTP_.'web/TransformControls.js"></script>
+				<script src="'._rootDIR_HTTP_.'web/STLLoader.js"></script>
+				<script src="js/extractzip.js?ver=13"></script>
 			';
 		}
 		return $result;
