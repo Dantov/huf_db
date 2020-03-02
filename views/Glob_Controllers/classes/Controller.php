@@ -68,7 +68,6 @@ class Controller
 
     public function render($filename, $vars=[])
     {
-
         if ( !empty($vars) && is_array($vars) ) extract($vars);
 
         ob_start();
@@ -107,6 +106,16 @@ class Controller
         $name = array_shift($this->blockNames);
         if ( empty($name) ) return;
         $this->blocks[$name] = ob_get_clean();
+    }
+
+    public function beforeAction()
+    {
+
+    }
+
+    public function afterAction()
+    {
+
     }
 
 }

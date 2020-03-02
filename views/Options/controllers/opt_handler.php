@@ -36,29 +36,7 @@
 		
 		setcookie($strname, "", 1, '/', $_SERVER['HTTP_HOST'] );
 		setcookie($strname, $_POST['srcBgImg'], time()+(3600*24*30), '/', $_SERVER['HTTP_HOST'] );
-		
-		/*
-		$url = $_POST['srcBgImg'];
-		$class="
-		.bodyimg {
-			background: url('$url') no-repeat fixed center center rgba(0, 0, 0, 0) !important;
-			background-size: 100% 100% !important;
-		}";
-		$cssfile = $_SERVER['DOCUMENT_ROOT'].'/HUF_DB/css/bodyImg.css';
-		$handle = fopen($cssfile, "w"); // w - Открывает файл только для записи; помещает указатель в начало файла и обрезает файл до нулевой длины. Если файл не существует - пробует его создать.
-		
-		$bytes = fwrite($handle, $class);
-		
-		fclose($handle);
-		
-		if ( $bytes ) {
-			$arr['done'] = 1;
-		} else {
-			$arr['done'] = 0;
-		}
-		*/
+
 		echo json_encode($arr);
 		exit;
 	}
-	
-?>

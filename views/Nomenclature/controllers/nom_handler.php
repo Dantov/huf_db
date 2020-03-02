@@ -108,4 +108,3 @@ if( !isset($_POST['val']) && !isset($_POST['coll']) || empty($_POST['val']) ) ex
 		$arr['status'] = 0;
 		echo json_encode($arr);
 	}
-?>

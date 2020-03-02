@@ -43,12 +43,14 @@ class Application
         require_once $path;
         $controller = new $class($controllerName);
 
+        if ( method_exists($controller, 'beforeAction') ) $controller->beforeAction();
         if ( method_exists($controller, 'action') )
         {
             $controller->action();
         } else {
             throw new Exception("Метод action() не найден в контроллере ". $controllerName ."!", 503 );
         }
+        if ( method_exists($controller, 'afterAction') ) $controller->afterAction();
     }
 
     /**

@@ -1,52 +1,47 @@
 "use strict";
 
-Node.prototype.remove = function() {  // - полифил для elem.remove(); document.getElementById('elem').remove();
-	this.parentElement.removeChild(this);
-};
-
-document.getElementById('navnav').children[1].setAttribute('class','active');
-
-var container = document.getElementById('container');
+let container = document.querySelector('.content');
 
 function addRow(self){
-	var tbody = self.parentElement.parentElement.parentElement;
-	var trPlus = self.parentElement.parentElement;
-	var len = tbody.querySelectorAll('.collsRow').length;
-	var coll = tbody.getAttribute('data-coll');
+	let tbody = self.parentElement.parentElement.parentElement;
+	let trPlus = self.parentElement.parentElement;
+	let len = tbody.querySelectorAll('.collsRow').length;
+	let coll = tbody.getAttribute('data-coll');
 	
-	var newRow = document.querySelector('.protoRow').cloneNode(true);
+	let newRow = document.querySelector('.protoRow').cloneNode(true);
 		newRow.classList.remove('protoRow');
 		newRow.classList.add('collsRow');
 		newRow.children[1].children[0].setAttribute('data-coll',coll);
 		newRow.children[0].innerHTML = ++len;
 		
-	var elem = tbody.insertBefore(newRow, trPlus);
+	let elem = tbody.insertBefore(newRow, trPlus);
 		elem.children[1].children[0].addEventListener('change', changeInpt, false);
 }
 applyEvents();
 function applyEvents() {
-	var inputs = container.querySelectorAll('.collsRow input');
-	var a = container.querySelectorAll('.collsRow a');
+	let inputs = container.querySelectorAll('.collsRow input');
+	let a = container.querySelectorAll('.collsRow a');
 	
-	for( var i = 0; i < inputs.length; i++ ) {
+	for( let i = 0; i < inputs.length; i++ ) {
 		inputs[i].addEventListener('change', changeInpt, false);
 		a[i].addEventListener('click', dellRow, false);
 	}
 }
+
 function changeInpt() {
 	
-	var coll = this.getAttribute('data-coll');
-	var id = this.getAttribute('data-id');
-	var val = this.value;
-	var that = this;
+	let coll = this.getAttribute('data-coll');
+	let id = this.getAttribute('data-id');
+	let val = this.value;
+	let that = this;
 	
 	console.log('coll=',coll,' val=',val,' id=',id);
 	
-	var obj = {
+	let obj = {
 		coll : coll,
 		id : id,
 		val : val
-	}
+	};
 	
 	$.ajax({
 		url: "controllers/nom_handler.php", //путь к скрипту, который обрабатывает задачу
@@ -55,20 +50,20 @@ function changeInpt() {
 		dataType:"json",
 		success:function(data) {  //функция обратного вызова, выполняется в случае успешной отработки скрипта
 		
-			var target = that.parentElement.previousElementSibling;
+			let target = that.parentElement.previousElementSibling;
 			if (data.status === 1) {	
-				var span = document.createElement('span');
+				let span = document.createElement('span');
 					span.setAttribute('class','glyphicon glyphicon-ok pull-right');
 					span.setAttribute('title','Сохранено.');
-				var elem = target.appendChild(span);
+				let elem = target.appendChild(span);
 				setTimeout(function(){
 					elem.remove();
 				}, 2000);
 				if ( data.add === 1 ) {
-					var span = document.createElement('span');
+					let span = document.createElement('span');
 						span.setAttribute('class','glyphicon glyphicon-trash');
 						span.setAttribute('aria-hidden','true');
-					var a = document.createElement('a');
+					let a = document.createElement('a');
 						a.setAttribute('class','btn btn-sm btn-default');
 						a.setAttribute('type','button');
 						a.setAttribute('role','button');
@@ -81,7 +76,7 @@ function changeInpt() {
 				}
 			} else if (data.status === -1){
 				console.log('data.coll=',data.coll);
-				var objNames = {
+				let objNames = {
 					collections : 'Коллекция - "'+val+'" уже есть!',
 					gems_names : 'Сырьё - "'+val+'" уже есть!',
 					gems_cut : 'Огранка - "'+val+'" уже есть!',
@@ -92,8 +87,8 @@ function changeInpt() {
 					model_type : 'Тип модели - "'+val+'" уже есть!',
 					vc_names : 'Доп. Артикул - "'+val+'" уже есть!'
 				}
-				var strAlert = '';
-				for (var key in objNames) {
+				let strAlert = '';
+				for (let key in objNames) {
 					if ( coll == key ) {
 						strAlert = objNames[key];
 						break;
@@ -107,16 +102,16 @@ function changeInpt() {
 	})
 }
 function dellRow(){
-	//var table = this.parentElement.parentElement.getAtribute('data-coll');
-	var input = this.parentElement.previousElementSibling.previousElementSibling.children[0];
-	var coll = input.getAttribute('data-coll');
-	var id = input.getAttribute('data-id');
-	var val = input.value;
-	var that = this;
-	var str = '';
+	//let table = this.parentElement.parentElement.getAtribute('data-coll');
+	let input = this.parentElement.previousElementSibling.previousElementSibling.children[0];
+	let coll = input.getAttribute('data-coll');
+	let id = input.getAttribute('data-id');
+	let val = input.value;
+	let that = this;
+	let str = '';
 
 	console.log('coll=',coll,' val=',val,' id=',id);
-	var objNames = {
+	let objNames = {
 		collections : 'Коллекция "' + val + '" удалена!;Удалить коллекцию - "' + val + '" ? Все модели принадлежащие к ней будут помечены тирэ.',
 		gems_names : 'Сырьё "' +val+ '" удален!;Удалить сырьё - "' + val + '" ?',
 		gems_cut : 'Огранка "' +val+ '" удалена!;Удалить огранку - "' + val + '" ?',
@@ -126,26 +121,27 @@ function dellRow(){
 		modeller3d : 'Модельер "' +val+ '" удален!;Удалить модельера - "' + val + '" ?',
 		model_type : 'Тип модели "' +val+ '" удален!;Удалить тип модели - "' + val + '" ?',
 		vc_names : 'Доп. Артикул "' +val+ '" удален!;Удалить доп. Артикул - "' + val + '" ?'
-	}
+	};
 
-	var strAlert = '';
-	for (var key in objNames) {
+	let strAlert = '';
+	for (let key in objNames) {
 		if ( coll == key ) {
 			strAlert = objNames[key];
 			break;
 		}
 	}
-	var mass = strAlert.split(';');
-	var conf_str = mass[1];
+	let mass = strAlert.split(';');
+	let conf_str = mass[1];
 	strAlert = mass[0];
 
-	var objReqest = {
+	let objReqest = {
 		coll : coll,
 		id : id,
 		val : val,
 		dell : 1
-	}
-	var conf = confirm(conf_str);
+	};
+	
+	let conf = confirm(conf_str);
 	if ( conf ) {
 		$.ajax({
 			url: "controllers/nom_handler.php", //путь к скрипту, который обрабатывает задачу
@@ -154,7 +150,7 @@ function dellRow(){
 			dataType:"json",
 			success:function(data) {  //функция обратного вызова, выполняется в случае успешной отработки скрипта
 
-				var target = that.parentElement.parentElement;
+				let target = that.parentElement.parentElement;
 				if (data.dell === 1) {
 
 					if ( data.count ) str = data.count + ' моделей остались без коллекции';

@@ -45,7 +45,5 @@
 			
 		}
 		
-		// header("location:" ._rootDIR_HTTP_ . "Views/Main/index.php?".session_name().'='.session_id() );
-		header("location:" ._rootDIR_HTTP_ . "Views/ModelView/index.php?id=44" );
-		
+		header("location:" ._rootDIR_HTTP_ . "Views/Main/index.php?".session_name().'='.session_id() );
 	}

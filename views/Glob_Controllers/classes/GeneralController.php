@@ -8,10 +8,12 @@ class GeneralController extends Controller
 
     public $navBar;
 
-    public function __construct()
+    public function __construct($controllerName='')
     {
         $this->accessControl();
         $this->navBarController();
+
+        if ( !empty($controllerName) ) $this->controllerName = $controllerName;
     }
 
     protected function accessControl()

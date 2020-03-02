@@ -49,12 +49,6 @@
             while( $centerRow = mysqli_fetch_assoc($query) )
             {
                 $this->workingCenters[$centerRow['name']][$centerRow['id']] = $centerRow;
-                /*
-                 $this->workingCenters[$centerRow['name']][$centerRow['descr']] = [
-                    'id'=>$centerRow['id'],
-                    'user_id'=>$centerRow['user_id'],
-                ];
-                */
             }
             return $this->workingCenters;
         }
@@ -128,6 +122,7 @@
 
 		public function setPrevPage()
         {
+            $pp = '';
 			$thisPage = 'http://'.$this->server['HTTP_HOST'].$this->server['REQUEST_URI'];
 			if ( $thisPage !== $this->server["HTTP_REFERER"] ) {
 				$_SESSION['prevPage'] = $this->server["HTTP_REFERER"];
@@ -444,6 +439,8 @@
 			
 			return $respArr;
 		}
+
+
 		public function getMaterial($str_material) {
 			$material = array();
 			if ( !empty($str_material) ) {
@@ -480,10 +477,8 @@
 				}
 				$covering_part = explode("-",$str_covering);
 				if ( $covering_part[1] ) $covering['partsStr'] = $covering_part[1];
-			} else {
-				/*$covering['rhodium'] = "";
-				$covering['full'] = "";*/
 			}
+
 			return $covering;
 		}
 
@@ -537,8 +532,9 @@
 			return $permittedStatuses;
 		}
 
-		/*
-		 * отсортируем статусы по участкам, добавим описание, ответственных.
+		/**
+         * отсортируем статусы по участкам, добавим описание, ответственных.
+         * @param $statuses array
 		 */
 		private function sortStatusesByWorkingCenters($statuses)
         {

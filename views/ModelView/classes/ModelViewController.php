@@ -8,13 +8,6 @@ class ModelViewController extends GeneralController
 
     public $title = 'ХЮФ 3Д Модель - ';
 
-    public function __construct($controllerName='')
-    {
-        parent::__construct();
-
-        if ( !empty($controllerName) ) $this->controllerName = $controllerName;
-    }
-
     public function action()
     {
         if ( filter_has_var(INPUT_GET, 'id') ) {

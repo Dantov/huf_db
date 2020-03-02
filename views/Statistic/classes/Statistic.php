@@ -2,33 +2,30 @@
 
 include(_viewsDIR_.'Main/classes/Main.php');
 
-class Statistic extends Main {
+class Statistic extends Main 
+{
 	function __construct( $server=false ) {
 		parent::__construct($server);
 	}
 	
-	public $allmodels;
-	public $allcomplects;
-	
+	public $allModels;
+	public $allComplects;
 	
 	public function getUsers() {
 		$result = array();
 		$query = mysqli_query($this->connection, " SELECT * FROM sessions " );
-		$i = 0;
-		while( $row = mysqli_fetch_assoc($query) ) {
-			$result[$i]['fio'] = $row['user'];
-			$result[$i]['ip'] = $row['ip'];
-			$result[$i]['date'] = $row['putdate'];
-			$i++;
-		}
+
+		while( $row = mysqli_fetch_assoc($query) ) $result[] = $row;
 		
 		return $result;
 	}
+
 	public function getModels() {
 		$result = array();
 		$query_coll = mysqli_query($this->connection, " SELECT id,name FROM collections ORDER BY name");
 		$i = 0;
-		while( $collRow = mysqli_fetch_assoc($query_coll) ){
+		while( $collRow = mysqli_fetch_assoc($query_coll) )
+        {
 			$coll = $collRow['name'];
 			
 			$result[$i]['name'] = $collRow['name'];
@@ -48,6 +45,7 @@ class Statistic extends Main {
 		}
 		return $result;
 	}
+
 	public function getLikedModels() {
 		$result = array();
 		$query_stock = mysqli_query($this->connection, " SELECT id,number_3d,vendor_code,model_type,likes,dislikes FROM stock ");
@@ -167,5 +165,3 @@ class Statistic extends Main {
 	  return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
 	}
 }
-
-?>
