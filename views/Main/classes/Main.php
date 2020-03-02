@@ -265,39 +265,45 @@ class Main extends General {
 		$result['posIter'] = count($this->row); // кол-во всех моделей
 
 		$complArray = $this->countComplects();
-		// echo "<pre>";
-		// print_r($complArray);
-		// echo "</pre>";
 		$this->wholePos = $result['wholePos'] = count($complArray); // кол-во комплектов
-		
-		for ( $i = $this->assist['page']*$this->assist['maxPos']; $i < ($this->assist['page'] + 1)*$this->assist['maxPos']; $i++ ) {
-			
+
+        $from = $this->assist['page'] * $this->assist['maxPos'];
+        $to = ($this->assist['page'] + 1) * $this->assist['maxPos'];
+
+        $rowImages = [];
+        $rowStls = [];
+
+        $posIds = '(';
+        for ( $i = $from; $i < $to; $i++ ) $posIds .= $this->row[$i]['id'].',';
+        $posIds = trim($posIds,',') . ')';
+        $imagesQuery = mysqli_query($this->connection, " SELECT pos_id,img_name FROM images WHERE pos_id IN $posIds AND main=1 ");
+        $stlQuer = mysqli_query($this->connection, " SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN $posIds ");
+        while ( $image = mysqli_fetch_assoc($imagesQuery) ) $rowImages[$image['pos_id']] = $image;
+        while ( $stl = mysqli_fetch_assoc($stlQuer) ) $rowStls[$stl['pos_id']] = $stl;
+
+        ob_start();
+        for ( $i = $from; $i < $to; $i++ )
+		{
 			if ( !isset($complArray[$i]['id']) || empty($complArray[$i]['id']) ) continue;
-			
 			$complIterShow = $i+1;
 			$thisVC = !empty($complArray[$i]['vendor_code']) ? "&#8212; Артикул: <b>{$complArray[$i]['vendor_code']}</b>" : "";
-			$result['showByRows'] .= "<div class=\"col-xs-12\">";
-			$result['showByRows'] .= "<div class=\"row complectRow\">";
-			$result['showByRows'] .= "
-				<center>
-					<h4 class=\"margMinus\">
-						<span class=\"pull-left\">$complIterShow. &nbsp;&nbsp;&nbsp;Коллекция: <b>&laquo;{$complArray[$i]['collection']}&raquo;</b></span>
-						<span>№3D: <b>{$complArray[$i]['number_3d']}</b> $thisVC</span>
-						<span class=\"pull-right\">{$complArray[$i]['modeller3D']}</span>
-					</h4>
-					<div class=\"clearfix\"></div>
-				</center>
-			";
-			
+
+			require _viewsDIR_ . "Main/includes/byRows.php";
+
 			// вывод моделей в строке
-			foreach( $complArray[$i]['id'] as &$value ){
-				$result['showByRows'] .= $this->drawModel( $value, true );
+			foreach( $complArray[$i]['id'] as &$value )
+			{
+				$result['showByRows'] .= $this->drawModel( $value, $rowImages, $rowStls, true );
 				$result['iter']++; // счетчик отрисованных моделей в комплекте
 			}
-			$result['showByRows'] .= 	"</div>";
-			$result['showByRows'] .= "</div>";
+
+			echo    "</div>";
+			echo "</div>";
 			$result['ComplShown']++; // счетчик отрисованных комплектов
 		}
+
+        $result['showByRows'] = ob_get_contents();
+        ob_end_clean();
 		return $result;
 	}
 
@@ -320,6 +326,7 @@ class Main extends General {
 		$stlQuer = mysqli_query($this->connection, " SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN $posIds ");
 		while ( $image = mysqli_fetch_assoc($imagesQuery) ) $rowImages[$image['pos_id']] = $image;
 		while ( $stl = mysqli_fetch_assoc($stlQuer) ) $rowStls[$stl['pos_id']] = $stl;
+
 		ob_start();
 		for ( $i = $from; $i < $to; $i++ )
 		{

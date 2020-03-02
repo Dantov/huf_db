@@ -1,7 +1,6 @@
 <?php
 session_start();
-//if( isset($_SESSION['access']) && $_SESSION['access'] === true ) header("location: /Main/index.php" );
-if( isset($_SESSION['access']) && $_SESSION['access'] === true ) header("location: /modelView/index.php?id=44" );
+if( isset($_SESSION['access']) && $_SESSION['access'] === true ) header("location: /Main/index.php" );
 
 $access = 0;
 
@@ -46,8 +45,7 @@ if ( $access === 2 ) {
 	
 } else {
 	//переходим на главную если есть куки
-	//if ( isset($_COOKIE['meme_sessA']) ) header("location: /Main/index.php" );
-	if ( isset($_COOKIE['meme_sessA']) ) header("location: /modelView/index.php?id=44" );
+	if ( isset($_COOKIE['meme_sessA']) ) header("location: /Main/index.php" );
 ?>
 
 <!DOCTYPE HTML>
@@ -56,7 +54,7 @@ if ( $access === 2 ) {
   <meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>HUF 3d models base</title>
-	<link rel="icon" href="favicon.ico?ver=102">
+	<link rel="icon" href="../web/favicon.ico?ver=<?=time()?>">
 	<link rel="stylesheet" href="<?= _webDIR_HTTP_ ?>css/style.css?ver=<?=time()?>">
 	<link rel="stylesheet" href="<?= _webDIR_HTTP_ ?>css/style_adm.css?ver=<?=time()?>">
 	<link rel="stylesheet" href="<?= _webDIR_HTTP_ ?>css/bootstrap.min.css">

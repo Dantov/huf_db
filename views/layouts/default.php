@@ -20,24 +20,25 @@ JS;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $this->title ?></title>
-    <link rel="icon" href="<?= _rootDIR_HTTP_ ?>favicon.ico?ver=105">
-    <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/style_adm.css?ver=<?=time();?>">
+    <link rel="icon" href="<?= _rootDIR_HTTP_ ?>web/favicon.ico?ver=106">
+
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/style.css?ver=<?=time();?>">
+    <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/style_adm.css?ver=<?=time();?>">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/bodyImg.css?ver=<?=time();?>">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/iziModal.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/fontawesome-free-5.0.6/on-server/css/fontawesome-all.css">
-    <script src="<?=_views_HTTP_?>js_lib/jquery-3.2.1.min.js"></script>
-    <script src="<?=_views_HTTP_?>js_lib/bootstrap.min.js"></script>
+    <script src="<?=_webDIR_HTTP_?>js_lib/jquery-3.2.1.min.js"></script>
+    <script src="<?=_webDIR_HTTP_?>js_lib/bootstrap.min.js"></script>
     <script src="<?= _glob_HTTP_ ?>js/const.js?ver=<?=time();?>"></script>
     <script src="<?= _glob_HTTP_ ?>js/pushNotice.js?ver=<?=time();?>"></script>
     <script><?=$wsUserDataJS?></script>
-    <script src="<?= _rootDIR_HTTP_ ?>web/js_lib/webSocketConnect.js?ver=<?=time();?>"></script>
+    <script src="<?= _webDIR_HTTP_ ?>js_lib/webSocketConnect.js?ver=<?=time();?>"></script>
 </head>
 <body id="body" class="<?=$_SESSION['assist']['bodyImg']?>">
-	<div id="content"> <!-- нужен что бы скрывать все для показа 3Д -->
+	<div class="wrapper" id="content"> <!-- нужен что бы скрывать все для показа 3Д -->
 
         <nav class="navbar navbar-default nav-bar-marg">
             <div class="container-fluid">
@@ -68,7 +69,7 @@ JS;
                         </li>
                     </ul>
 
-                    <form action="<?=_globDIR_?>search.php" method="post" <?=$searchStyle;?> class="navbar-form navbar-left topSearchForm">
+                    <form action="<?=_glob_HTTP_?>search.php" method="post" <?=$searchStyle;?> class="navbar-form navbar-left topSearchForm">
                         <div class="input-group">
                         <span class="input-group-btn">
                             <button class="btn btn-link" type="submit" name="search" title="Нажать для поиска">
@@ -178,15 +179,26 @@ JS;
         </div>
         <!-- END Блок коллекций -->
 
-        <div class="container">
+        <div class="container content">
             <?=$content;?>
         </div><!--container-->
+        <footer class="footer" style="box-shadow: 0 -1px 5px rgba(0,0,0,.075)">
+            <div class="container">
+                <? if ( $_SESSION['user']['access'] == 1 || $_SESSION['user']['access'] == 2 ):?>
+                    <a href="<?=_views_HTTP_ ?>AddEdit/index.php?id=0&component=1" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-file"></span>
+                        <strong> Добавить модель</strong>
+                    </a>
+                <? endif; ?>
+                <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="<?= _glob_HTTP_ ?>versions.php" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i>
+            </div>
+            <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziModal.min.js"></script>
+            <script src="<?=_glob_HTTP_?>js/NavBar.js"></script>
+            <script defer src="<?=_views_HTTP_?>Main/js/main.js?ver=<?=time()?>"></script>
+        </footer>
+
+
     </div><!--content-->
-    <div class="container">
-        <p class="footer"><i class="pull-right"><a href="<?= _glob_HTTP_ ?>versions.php" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i></p>
-        <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziModal.min.js"></script>
-        <script src="<?=_glob_HTTP_?>js/NavBar.js"></script>
-        <script defer src="<?=_views_HTTP_?>Main/js/main.js?ver=<?=time()?>"></script>
-    </div>
+    <? if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
 </body>
 </html>

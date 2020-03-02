@@ -75,7 +75,3 @@
 		$_SESSION['re_search'] = true; // флаг для репоиска
 		exit;
 	}
-	
-	
-	
-?>

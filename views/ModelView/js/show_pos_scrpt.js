@@ -278,6 +278,47 @@ function openPDF(filename){
 	window.open( '../../Pdfs/'+filename );
 }
 
+let butt3D = document.getElementById('butt3D');
+if ( butt3D )
+{
+    butt3D.onclick = function() {
+        let extractform = document.getElementById('extractform');
+        let formData = new FormData(extractform);
+        $.ajax({
+            url: "controllers/extractzip.php",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success:function(resp) {
+                resp = JSON.parse(resp);
+
+                if ( resp['Error'] != false ) return debug(resp['Error']);
+
+                let result = document.getElementById("content");
+                let formtodell = document.getElementById("dellstlform");
+
+                let names = resp['names'];
+
+                for ( let i = 0; i < names.length; i++ )
+                {
+                    let input = document.createElement('input');
+                    input.setAttribute( 'type', 'hidden' );
+                    input.setAttribute( 'name', 'dell_name[]' );
+                    input.setAttribute('value', '../../Stock/'+resp['zip_path'] + names[i]);
+
+                    formtodell.appendChild(input);
+                }
+
+                let script = document.createElement('script');
+                script.setAttribute('src','js/view3D.js?ver=014');
+                result.appendChild(script);
+            }
+        })
+    };
+}
+
+
 // ========== LIKES ========== //
 var btnlikes = document.querySelectorAll('.btnlikes');
 

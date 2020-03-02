@@ -55,32 +55,13 @@ class ModelView extends General {
 	public function getStl() {
 		
 		$result = array();
-		$result['dopBottomScripts'] = '';
+		$result['dopBottomScripts'] = false;
 		$result['button3D'] = '';
-		
-		//$stlrow = mysqli_num_rows($this->stl_quer);
-		
-		if ( $this->stl_Query -> num_rows > 0 ) {
-			
+
+		if ( $this->stl_Query->num_rows > 0 ) {
 			$stl_file = mysqli_fetch_assoc($this->stl_Query);
-			$result['button3D'] = '
-				<a type="button" id="butt3D" class="btn btn-default button-3D pull-left" title="Доступен 3D просмотр">
-					<span class="button-3D-pict"></span>
-				</a>
-				<form method="post" id="extractform" class="hidden">
-					<input type="hidden" name="zip_name" value="'.$this->number_3d.'/'.$this->id.'/stl/'.$stl_file['stl_name'].'" />
-					<input type="hidden" name="zip_path" value="'.$this->number_3d.'/'.$this->id.'/stl/'.'" />
-				</form>
-				<form method="post" id="dellstlform" class="hidden"></form>
-			';
-			$result['dopBottomScripts'] = '
-				<script src="'._rootDIR_HTTP_.'web/js_lib/three.min.js"></script>
-				<script src="'._rootDIR_HTTP_.'web/OrbitControls.js"></script>
-				<script src="'._rootDIR_HTTP_.'web/TrackballControls.js"></script>
-				<script src="'._rootDIR_HTTP_.'web/TransformControls.js"></script>
-				<script src="'._rootDIR_HTTP_.'web/STLLoader.js"></script>
-				<script src="js/extractzip.js?ver=13"></script>
-			';
+            $result['button3D'] = $stl_file['stl_name'];
+			$result['dopBottomScripts'] = true;
 		}
 		return $result;
 	}
@@ -208,6 +189,7 @@ class ModelView extends General {
 		if ( !$matCoveringR && !$matCoveringB && !$matCoveringB ) $str_Covering = 'Нет';
 		return $str_Covering;
 	}
+
 	public function getGems() {
 		$result = array();
 		$c = 0;

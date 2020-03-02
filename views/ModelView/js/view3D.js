@@ -326,9 +326,9 @@ var camera, scene, renderer, control;
 					$.ajax({
 						url: "controllers/dellstl.php",
 						type: "POST",
-						data: {
-							formData
-						},
+						data: formData,
+                        processData: false,
+                        contentType: false,
 						success:function() {
 							location.reload(true);
 						}

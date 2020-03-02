@@ -1,7 +1,7 @@
 <?php
 
 ?>
-<script src="js/trytoload.js?ver=004"> </script>
+<script src="<?=_views_HTTP_?>Main/js/trytoload.js?ver=004"> </script>
 
 <div class="row">
 	<div class="col-xs-12">
@@ -188,20 +188,10 @@
 	<span class="statsbuttom"><?=$statsbottom?></span>
 	<?=$pagination?>
 </center>
-<? if ( $_SESSION['user']['access'] == 1 || $_SESSION['user']['access'] == 2 ):?>
-	<h4>
-		<p>
-		<a href="<?=_viewsDIR_ ?>AddEdit/index.php?id=0&component=1" class="btn btn-primary">
-				<span class="glyphicon glyphicon-file"></span>
-				<strong> Добавить модель</strong>
-			</a>
-		</p>
-	</h4>
-<? endif; ?>
+
 <?php include('includes/modal.php'); ?>
 <?php include('includes/progressModal.php'); ?>
-<script src="js/main.js?ver=<?=time(); ?>"></script>
-<script src="js/Selects.js?ver=<?=time(); ?>"></script>
+<script src="<?=_views_HTTP_?>Main/js/Selects.js?ver=<?=time(); ?>"></script>
 <? if ($_SESSION['assist']['PushNotice'] == 1): ?>
 	<? include_once _globDIR_.'includes/pushNotice.php' ?>
  	<script src="<?=_glob_HTTP_ ?>js/PushNotice.js?ver='.time().'"></script>

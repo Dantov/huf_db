@@ -64,7 +64,16 @@
 								        <span><?=$labels[$i]['name'];?></span>
 							        </span>
                         <?php endfor; ?>
-                        <?=$button3D?>
+                        <? if ($button3D): ?>
+                            <a type="button" id="butt3D" class="btn btn-default button-3D pull-left" title="Доступен 3D просмотр">
+                                <span class="button-3D-pict"></span>
+                            </a>
+                            <form method="post" id="extractform" class="hidden">
+                                <input type="hidden" name="zip_name" value="<?= $row['number_3d'].'/'.$row['id'].'/stl/'.$button3D ?>" />
+                                <input type="hidden" name="zip_path" value="<?= $row['number_3d'].'/'.$row['id'].'/stl/' ?>" />
+                            </form>
+                            <form method="post" id="dellstlform" class="hidden"></form>
+                        <? endif; ?>
                     </div>
                 </div>
                 <div class="row">
@@ -290,7 +299,19 @@
 
 <script defer src="<?=_views_HTTP_.$this->controllerName?>/js/imageViewer.js?ver=114"></script>
 <script defer src="<?=_views_HTTP_.$this->controllerName?>/js/show_pos_scrpt.js?ver=<?=time()?>"></script>
-<?=$dopBottomScripts;?>
+
+<? if($dopBottomScripts): ?>
+    <script src="<?= _webDIR_HTTP_ ?>js_lib/three.min.js"></script>
+    <script src="<?= _webDIR_HTTP_ ?>js_lib/OrbitControls.js"></script>
+    <script src="<?= _webDIR_HTTP_ ?>js_lib/TrackballControls.js"></script>
+    <script src="<?= _webDIR_HTTP_ ?>js_lib/TransformControls.js"></script>
+    <script src="<?= _webDIR_HTTP_ ?>js_lib/STLLoader.js"></script>
+    <?php
+        $this->startBlock('3DPanels');
+        include_once _viewsDIR_.$this->controllerName."/includes/3DWievPanels.php";
+        $this->endBlock();
+    ?>
+<? endif; ?>
 
 <!-- lond cut div -->
 <div id="longTD" class="longTD hidden"></div>
@@ -300,9 +321,9 @@
 <?php include_once _viewsDIR_.$this->controllerName."/includes/mounting.php"; ?>
 <?php include_once _viewsDIR_.$this->controllerName."/includes/forms.php"; ?>
 <?php include_once _globDIR_ . "includes/pushNotice.php"?>
+
 <? if ( $_SESSION['assist']['PushNotice'] == 1 ): ?>
     <script src="<?=_glob_HTTP_?>js/PushNotice.js?ver='.time().'"></script>
 <? endif; ?>
 
-<?php include_once _viewsDIR_.$this->controllerName."/includes/3DWievPanels.php"; ?>
 <?php include_once _viewsDIR_.$this->controllerName."/includes/progressBar.php"; ?>

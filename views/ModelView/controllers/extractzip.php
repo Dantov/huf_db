@@ -1,62 +1,28 @@
 <?php
-	
 	$zip_name = $_POST['zip_name'];
 	$zip_path = $_POST['zip_path'];
-	$file_folder = "../../../Stock/";
-	
-	/*
-	echo "zip_name = ".$zip_name."<br>";
-	echo "file_folder = ".$file_folder."<br>";
-	*/
+	$file_folder = _stockDIR_;
 	
 	$zip = new ZipArchive();
 	$res = $zip->open($file_folder.$zip_name);
-	
-	$numFiles = $zip->numFiles;
-	
-	$filename = $zip->getNameIndex(0);
-	
-	/*echo "res = ".$res."<br>";*/
-	
-	if ( $res ) {
+
+    $resp_arr = [];
+    $resp_arr['Error'] = false;
+
+	if ( $res )
+	{
+        $numFiles = $zip->numFiles;
 		$zip->extractTo($file_folder.$zip_path);
-		echo"
-		<script>
-			var result = parent.window.document.getElementById(\"content\");	
 
-			var formtodell = parent.window.document.getElementById(\"dellstlform\");
-			var names = [];
-		";
-		
-		
-		for ($i = 0; $i < $zip->numFiles; $i++) {
-			//$filename = ;
-			echo"
-				names[$i] = '".$zip->getNameIndex($i)."';
-			";
+        $names = [];
+        for ($i = 0; $i < $zip->numFiles; $i++) $names[$i] = $zip->getNameIndex($i);
 
-		}
-		
-		
-		echo"
-		
-			for ( var i=0; i<names.length; i++ ) {
-				
-				var input = document.createElement('input');
-				input.setAttribute( 'type', 'hidden' );
-				input.setAttribute( 'name', 'dell_name[]' );
-				input.setAttribute('value','../../Stock/$zip_path' + names[i]);
-				
-				formtodell.appendChild(input);
-			}
-				var script = document.createElement('script');
-				script.setAttribute('src','js/view3D.js?ver=013');
-				result.appendChild(script);
-				
-				</script>
-			";
+        $resp_arr['names'] = $names;
+        $resp_arr['zip_path'] = $zip_path;
+
 	} else {
-		echo "Error";
+        $resp_arr['Error'] = 'Can\'t open Zip archive';
 	}
-	
-?>
+
+    echo json_encode($resp_arr);
+    exit;

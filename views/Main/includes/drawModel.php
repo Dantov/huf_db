@@ -29,7 +29,7 @@
 					<img src="<?=$showimg ?>" class="img-responsive imgThumbs_main hidden" onload="onImgLoad(this);" />
 				</a>
 			</div>
-			<? if ($drawEdit): ?>
+			<? if ($editBtn): ?>
 				<a href="<?=_views_HTTP_ ?>AddEdit/index.php?id=<?=$row['id'] ?>&component=2" class="btn btn-sm btn-default editbtnshow">
 					<span class="glyphicon glyphicon-pencil"></span>
 				</a>
