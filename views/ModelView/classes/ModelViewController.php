@@ -113,7 +113,7 @@ class ModelViewController extends GeneralController
         if ( $modelView->checklikePos() ) $btnlikes = 'btnlikesoff';
 
         $compacted = compact([
-            'row','coll_id','getStl','button3D','dopBottomScripts','complStr','images', 'labels', 'str_mat','str_Covering','gemsTR',
+            'id','row','coll_id','getStl','button3D','dopBottomScripts','complStr','images', 'labels', 'str_mat','str_Covering','gemsTR',
             'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','statuses','stillNo','ai_file','thisPage','editBtn',
             'btnlikes','rep_Query']);
 

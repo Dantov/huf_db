@@ -56,6 +56,7 @@
         public function permittedFields()
         {
             $permittedFields = [
+                'addComplect' => false,
                 'number_3d' => false,
                 'vendor_code' => false,
                 'collections' => false,
@@ -72,12 +73,14 @@
                 'stl' => false,
                 'ai' => false,
                 'images' => false,
+                'dellImage' => false,
                 'gems' => false,
                 'vc_links' => false,
                 'description' => false,
                 'repairs' => false,
                 'labels' => false,
                 'statuses' => false,
+                'dellModel' => false,
             ];
 
             switch ($this->user['access'])
@@ -131,7 +134,8 @@
 			return $pp;
 		}
 		
-		function printHeaderEditAddForm($component) {
+		function printHeaderEditAddForm($component)
+        {
 			$header = '';
 			if ( $component === 2 || $component === 3 ) {
 				$thisNum = $_SESSION['general_data']['number_3d'];
@@ -150,6 +154,7 @@
 				$header .= " (<i>В Комплекте: </i>";
 				$complect = mysqli_query($this->connection, " SELECT id,model_type FROM stock WHERE number_3d='$thisNum' ");
 
+                $mass = 0;
 				while( $complects = mysqli_fetch_assoc($complect) )
                 {
 					if ( ( $component === 2 ) && ( $complects['id'] == $this->id ) ) continue;
@@ -159,7 +164,6 @@
 					$compl_quer = mysqli_query($this->connection, " SELECT img_name FROM images WHERE pos_id='$compl_id' AND main='1' ");
 					$compl_row = mysqli_fetch_assoc($compl_quer);
 
-
                     $file = "$thisNum/{$complects['id']}/images/{$compl_row['img_name']}";
                     $fileImg = _stockDIR_HTTP_.$file;
                     if ( !file_exists(_stockDIR_.$file) ) $fileImg = _stockDIR_HTTP_."default.jpg";
@@ -168,18 +172,8 @@
 				}
 				if ( empty($mass) ) $header .= "Нет"; // если нет комплекта
 				$header .= ")";
-			} else if ( $component === 1 ) {
-				$header = '
-					<strong>
-						<span class="stlSelect" id="docxFile" title="Взять данные из Word файла"><span class="glyphicon glyphicon-open-file"></span></span>
-						<span>&#160;Добавить новую модель</span>
-					</strong>
-					<form id="docxFileForm" class="hidden" method="post" enctype="multipart/form-data" >
-						<input id="docxFileInpt" name="docxFileInpt" class="hidden" type="file" accept=".docx" />
-						<input id="submitDocxFile" name="submitDocxFile" class="hidden" type="submit" />
-					</form>
-				';
 			}
+
 			return $header;
 		}
 		
@@ -209,7 +203,8 @@
 			return $data_Li;
 		}
 
-		public function getGemsLi(){
+		public function getGemsLi()
+        {
 			
 			$querArr = array('gems_sizes', 'gems_cut', 'gems_names', 'gems_color');
 			$gems_Li = array();

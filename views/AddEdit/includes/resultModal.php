@@ -1,5 +1,5 @@
 <div id="blackCover">
-	<img src="../../picts/loading.gif" class="blackCover_loading hidden"/>
+	<img src="<?=_webDIR_HTTP_?>picts/loading.gif" class="blackCover_loading hidden"/>
 </div>
 <div id="saved_form_result" class="alert alert-success">
 	<div id="progressStatus" style="font-weight:600;"></div>

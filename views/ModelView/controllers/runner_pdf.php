@@ -170,7 +170,9 @@
 		}
 	}
 	// ---- //
-	
+
+    $pictsDir = _webDIR_HTTP_ . 'picts';
+
 	//============= counter point ==============//
 	$complectCounter++;
 	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
@@ -182,15 +184,15 @@
 	$arr_labels = explode(";",$row['labels']);
 	foreach( $arr_labels as &$value )
 	{
-		if ( $value == "Срочное!" ) $labelImg[] = '<img height="20" src="../../../picts/label_hot.png"/>&nbsp;';
-		if ( $value == "Бриллианты" ) $labelImg[] = '<img height="20" src="../../../picts/label_Brill.png"/>&nbsp;';
-		if ( $value == "Литьё с камнями" ) $labelImg[] = '<img height="20" src="../../../picts/label_Swst.png"/>&nbsp;';
-		if ( $value == "Эксклюзив" ) $labelImg[] = '<img height="20" src="../../../picts/label_exec.png"/>&nbsp;';
-        if ( $value == "Эксперимент" ) $labelImg[] = '<img height="20" src="../../../picts/label_exper.png"/>&nbsp;';
-        if ( $value == "Ремонт" ) $labelImg[] = '<img height="20" src="../../../picts/label_repair.png"/>&nbsp;';
-        if ( $value == "Размеры в воске" ) $labelImg[] = '<img height="20" src="../../../picts/label_waxSize.png"/>&nbsp;';
-        if ( $value == "Прямое литьё из Воска" ) $labelImg[] = '<img height="20" src="../../../picts/label_FrontSmelt.png"/>&nbsp;';
-        if ( $value == "Прямое литьё из Полимера" ) $labelImg[] = '<img height="20" src="../../../picts/label_FrontSmeltPoly.png"/>&nbsp;';
+		if ( $value == "Срочное!" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_hot.png"/>&nbsp;';
+		if ( $value == "Бриллианты" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_Brill.png"/>&nbsp;';
+		if ( $value == "Литьё с камнями" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_Swst.png"/>&nbsp;';
+		if ( $value == "Эксклюзив" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_exec.png"/>&nbsp;';
+        if ( $value == "Эксперимент" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_exper.png"/>&nbsp;';
+        if ( $value == "Ремонт" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_repair.png"/>&nbsp;';
+        if ( $value == "Размеры в воске" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_waxSize.png"/>&nbsp;';
+        if ( $value == "Прямое литьё из Воска" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_FrontSmelt.png"/>&nbsp;';
+        if ( $value == "Прямое литьё из Полимера" ) $labelImg[] = '<img height="20" src="'.$pictsDir.'/label_FrontSmeltPoly.png"/>&nbsp;';
 	}
 	
 	if ( count($labelImg?:[]) )
@@ -323,7 +325,7 @@
 					<td width="18%" style="text-align:left;">Автор:</td>
 					<td width="52%" style="text-align:right;"><b>'.$row['author'].'</b></td>
 					<td width="30%" rowspan="'.$rowspans.'" style="text-align:center;">
-						'.$labelImgDIV.'<img height="'.$realImgHeight.'" src="../../../picts/10x10.png"/>
+						'.$labelImgDIV.'<img height="'.$realImgHeight.'" src="'.$pictsDir.'/10x10.png"/>
 					</td>
 				</tr>
 				<tr>

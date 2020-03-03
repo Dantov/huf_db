@@ -4,7 +4,6 @@ require_once _globDIR_ . "classes/GeneralController.php";
 class AddEditController extends GeneralController
 {
 
-    public $title = 'Добавить Модель';
 
     public function action()
     {
@@ -61,6 +60,7 @@ class AddEditController extends GeneralController
             // удаляем инфу из ворд сесии, если нажали добавить модель, с этой сессией
             if ( $dellWD ) $addEdit->unsetSessions();
             $collections_len = [];
+
             $wordData = $addEdit -> getWordData();
             $imgFromWord = $wordData['imgFromWord'];
             $stonesFromWord = $wordData['stonesFromWord'];
@@ -73,9 +73,11 @@ class AddEditController extends GeneralController
         if ( $component === 2 )  // значит что мы в форме редактирования
         {
             unset($_SESSION['general_data']);
-            $this->title = 'Редактировать ';
 
             $row = $addEdit->getGeneralData();
+
+            $this->title = 'Редактировать ' . $row['number_3d'] . '-' . $row['model_type'];
+
             $stl_file = $addEdit->getStl();
             $haveStl = $stl_file['haveStl'];
             $noStl = $stl_file['noStl'];
@@ -122,14 +124,6 @@ class AddEditController extends GeneralController
             $row_dop_vc = $dopVC['row_dop_vc'];
 
             $num3DVC_LI = $addEdit -> getNum3dVCLi( $vc_Len, $row_dop_vc );
-
-            if ( $_SESSION['user']['access'] == 3 || $_SESSION['user']['access'] == 4 ) {
-                $PDO_hide = 'hidden';
-                $PDO_disabled = 'disabled';
-            }
-            if ( $_SESSION['user']['access'] == 4 ) {
-                $PDO_hide_only = 'hidden';
-            }
 
             // это здесь для внесения первого статуса в таблицу статусов
             $status = $addEdit -> getStatus($_SESSION['general_data']);
@@ -206,7 +200,11 @@ class AddEditController extends GeneralController
 
 
         $compact = compact([
-
+            'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi',
+            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','ai_hide','status','haveAi','noAi','vc_Len','collections_len',
+            'imgFromWord','stonesFromWord','vcDopFromWord','stonesScript','row','stl_file','haveStl','noStl','ai_file','showRepairsBlock',
+            'repRow_Num','repRow_date','repRow_descr','imgLen','imgPath','imgStat','gs_len','row_gems','row_dop_vc','num3DVC_LI',
+            'rowStatus','material','covering','labels','header',
         ]);
         return $this->render('addEdit',$compact);
     }

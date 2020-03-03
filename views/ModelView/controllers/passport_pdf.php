@@ -13,7 +13,7 @@
 	$_SESSION['id_progr'] = $id_progr;
 	session_write_close();
 	
-	include_once('../../Glob_Controllers/db.php');
+	include_once _globDIR_ .'db.php';
 	
 	$complects_lenght = 11;
 	$complectCounter = 0;  
@@ -159,33 +159,35 @@
 	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
 	//============= counter point ==============//
 	
+    $pictsDir = _webDIR_HTTP_ . 'picts/'; 
+
 	$labelImg = '';
 	$arr_labels = explode(";",$row['labels']);
 	$executive = false;
 	$materialMM = 'Бронза';
 	foreach( $arr_labels as &$value ) {
-		if ( $value == "Срочное!" ) $labelImg .= '<img height="20" src="../../../picts/label_hot.png"/>&nbsp;';
-		if ( $value == "Бриллианты" ) $labelImg .= '<img height="20" src="../../../picts/label_Brill.png"/>&nbsp;';
-		if ( $value == "Литьё с камнями" ) $labelImg .= '<img height="20" src="../../../picts/label_Swst.png"/>&nbsp;';
-        if ( $value == "Размеры в воске" ) $labelImg .= '<img height="20" src="../../../picts/label_waxSize.png"/>&nbsp;';
+		if ( $value == "Срочное!" ) $labelImg .= '<img height="20" src="'.$pictsDir.'label_hot.png"/>&nbsp;';
+		if ( $value == "Бриллианты" ) $labelImg .= '<img height="20" src="'.$pictsDir.'label_Brill.png"/>&nbsp;';
+		if ( $value == "Литьё с камнями" ) $labelImg .= '<img height="20" src="'.$pictsDir.'label_Swst.png"/>&nbsp;';
+        if ( $value == "Размеры в воске" ) $labelImg .= '<img height="20" src="'.$pictsDir.'label_waxSize.png"/>&nbsp;';
         if ( $value == "Прямое литьё из Воска" )
         {
-            $labelImg .= '<img height="20" src="../../../picts/label_FrontSmelt.png"/>&nbsp;';
+            $labelImg .= '<img height="20" src="'.$pictsDir.'label_FrontSmelt.png"/>&nbsp;';
             $materialMM = '';
         }
         if ( $value == "Прямое литьё из Полимера" )
         {
-            $labelImg .= '<img height="20" src="../../../picts/label_FrontSmeltPoly.png"/>&nbsp;';
+            $labelImg .= '<img height="20" src="'.$pictsDir.'label_FrontSmeltPoly.png"/>&nbsp;';
             $materialMM = '';
         }
 
 		if ( $value == "Эксклюзив" )
 		{
 			$executive = true;
-			$labelImg .= '<img height="20" src="../../../picts/label_exec.png"/>&nbsp;';
+			$labelImg .= '<img height="20" src="'.$pictsDir.'label_exec.png"/>&nbsp;';
 		}
-        if ( $value == "Эксперимент" ) $labelImg .= '<img height="20" src="../../../picts/label_exper.png"/>&nbsp;';
-        if ( $value == "Ремонт" ) $labelImg .= '<img height="20" src="../../../picts/label_repair.png"/>&nbsp;';
+        if ( $value == "Эксперимент" ) $labelImg .= '<img height="20" src="'.$pictsDir.'label_exper.png"/>&nbsp;';
+        if ( $value == "Ремонт" ) $labelImg .= '<img height="20" src="'.$pictsDir.'label_repair.png"/>&nbsp;';
 	}
 	$labelImgDIV = '';
 	if ( $labelImg ) {
@@ -295,7 +297,7 @@
 					<td width="70%" colspan="3" style="text-align:center;">Коллекция <b>&laquo;'.$row['collections'].'&raquo;</b></td>
 				</tr>
 				<tr>
-					<td rowspan="'.$rowspans.'" style="text-align:center;"><img height="'.$realImgHeight.'" src="../../../picts/10x10.png"></td>
+					<td rowspan="'.$rowspans.'" style="text-align:center;"><img height="'.$realImgHeight.'" src="'.$pictsDir.'10x10.png"></td>
 					<td colspan="2" width="35%" style="text-align:center;">Вставки</td>
 					<td width="35%" style="text-align:center;">Цвет</td>
 				</tr>
@@ -380,7 +382,7 @@
 		$afterImgY = $pdf->getImageRBY();
 		$realImgHeight = ($afterImgY - $befImgY)*3.5;
 		
-		$imagesTD .='<td style="text-align:center;"><img height="'.$realImgHeight.'" src="../../../picts/10x10.png"></td>';
+		$imagesTD .='<td style="text-align:center;"><img height="'.$realImgHeight.'" src="'.$pictsDir.'10x10.png"></td>';
 		$imgcolspan++;
 	}
 	if ( !empty($mainimg) ) {
@@ -390,7 +392,7 @@
 		$afterImgY = $pdf->getImageRBY();
 		$realImgHeight = ($afterImgY - $befImgY)*3;
 		
-		$imagesTD .='<td style="text-align:center;" ><img height="'.$realImgHeight.'" src="../../../picts/10x10.png"></td>';
+		$imagesTD .='<td style="text-align:center;" ><img height="'.$realImgHeight.'" src="'.$pictsDir.'10x10.png"></td>';
 		$imgcolspan++;
 	}
 	// ---- //

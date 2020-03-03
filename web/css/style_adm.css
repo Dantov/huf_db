@@ -458,7 +458,7 @@ p2 {
 	left: 0px;
 	display: inline-block;
 	vertical-align: middle;
-	background: url('../../picts/check-01.png') no-repeat;
+	background: url('../picts/check-01.png') no-repeat;
 	background-size: 100%; 
 }
 
@@ -488,7 +488,7 @@ p2 {
 	left: 1.5px;
 	display: inline-block;
 	vertical-align: middle;
-	background: url('../../picts/check-01.png') no-repeat;
+	background: url('../picts/check-01.png') no-repeat;
 	background-size: 100%; 
 }
 

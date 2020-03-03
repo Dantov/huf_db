@@ -290,7 +290,7 @@
             Назад
         </a>
         <? if ( $editBtn ): ?>
-            <a href="<?=_viewsDIR_?>AddEdit/index.php?id=<?=$id?>&component=2" class="btn btn-default">
+            <a href="<?=_views_HTTP_?>AddEdit/index.php?id=<?=$id?>&component=2" class="btn btn-default">
                 <span class="glyphicon glyphicon-pencil"></span>
                 Редактировать</a>
         <?endif;?>

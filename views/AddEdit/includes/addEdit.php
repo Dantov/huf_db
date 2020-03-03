@@ -4,27 +4,41 @@
             <span class="glyphicon glyphicon-triangle-left"></span>
             Назад
         </a>
-        <a style="margin: 0 0 0 7px;" class="btn btn-sm btn-info pull-left <?=$shownEdit;?>" href="../ModelView/index.php?id=<?=$id;?>" role="button">
-            Просмотр
-        </a>
+        <? if ( $component === 2 ): ?>
+            <a style="margin: 0 0 0 7px;" class="btn btn-sm btn-info pull-left" href="<?=_views_HTTP_?>ModelView/index.php?id=<?=$id;?>" role="button">
+                Просмотр
+            </a>
+        <? endif; ?>
     </div><!--end col -->
     <div class="col-xs-12 col-sm-8">
-        <center>
-            <h4 class="text-warning" id="topName" style="margin: 5px 0 0 0;"><?=$header;?></h4>
-        </center>
+        <h4 class="text-warning text-center" id="topName" style="margin: 5px 0 0 0;">
+            <? if ( $component === 1 ): ?>
+                <strong>
+                    <span>&#160;Добавить новую модель</span>
+                </strong>
+            <? else: ?>
+                <?=$header;?>
+            <?endif;?>
+        </h4>
     </div><!--end col -->
     <div class="col-xs-12 col-sm-2">
-        <a class="btn btn-sm btn-info pull-right <?=$shownEdit;?> <?=$PDO_hide;?>" href="index.php?id=<?=$id;?>&component=3" role="button">
-            Добавить комплект
-        </a>
+        <? if ( $component === 2 ): ?>
+            <? if ( $permittedFields['addComplect'] === true ): ?>
+                <a class="btn btn-sm btn-info pull-right" href="<?=_views_HTTP_?>AddEdit/index.php?id=<?=$id;?>&component=3" role="button">
+                    Добавить комплект
+                </a>
+            <? endif; ?>
+        <? endif; ?>
     </div><!--end col -->
 </div><!--end row-->
 <!-- конец заголовка -->
 
+
 <hr />
 
+
 <!--MAIN FORM-->
-<form method="post" id="addform" enctype = "multipart/form-data">
+<form method="POST" id="addform" enctype="multipart/form-data">
 
     <div class="row">
         <?php if ( $permittedFields['number_3d'] ): ?>
@@ -166,8 +180,8 @@
 
         <?php if ( $permittedFields['size_range'] ): ?>
             <div class="col-xs-3">
-                <label for="model_weight" class="<?=$PDO_hide;?>"><i class="fab fa-quinscape"></i> Размерный Ряд:</label>
-                <input type="text" class="form-control <?=$PDO_hide;?>" name="size_range" value="<?=$row['size_range'];?>" />
+                <label for="model_weight"><i class="fab fa-quinscape"></i> Размерный Ряд:</label>
+                <input type="text" class="form-control" name="size_range" value="<?=$row['size_range'];?>" />
             </div>
         <?php endif; ?>
 
@@ -329,23 +343,22 @@
                 </div>
             </div>
         </div><!-- /.row -->
-        <hr class="<?=$PDO_hide;?> AIBlockHR <?=$ai_hide;?>"/>
+        <hr class=" AIBlockHR <?=$ai_hide;?>"/>
         <!-- Ai Block END -->
     <?php endif; ?>
 
 
     <?php if ( $permittedFields['images'] ): ?>
-        <div class="row <?=$PDO_hide;?>" id="picts">
+        <div class="row" id="picts">
             <div id="imgFromWord" class="hidden">
                 <?=$imgFromWord;?>
                 <input id="pathToimg" class="hidden" value="<?=$_SESSION['fromWord_data']['pathToimg'];?>">
             </div>
             <?php for ( $i = 0; $i < $imgLen; $i++ ): ?>
                 <div class="col-xs-6 col-sm-3 col-md-2 image_row">
-
-                    <input class="hidden" type="file" name="upload_images[]" accept="image/jpeg,image/png,image/gif">
-                    <input name="upload_images_word[]" type="hidden" value="<?=$_SESSION['general_data']['number_3d'].'/'.$_SESSION['general_data']['id'].'/images/'.$imgPath[0]?>">
-
+                    <? if ( $component === 3 ):?>
+                        <input class="hidden" type="file" name="upload_images[]" accept="image/jpeg,image/png,image/gif">
+                    <? endif;?>
                     <div class="ratio img-thumbnail">
                         <div class="ratio-inner ratio-4-3">
                             <div class="ratio-content">
@@ -358,7 +371,7 @@
                                     </button>
                                 </div>
                             <? else: ?>
-                                <a class="btn btn-sm btn-default img_dell" role="button" onclick="dell_fromServ(<?=$id?>, <?=$imgPath[$i]?>);">
+                                <a class="btn btn-sm btn-default img_dell" role="button" onclick="dell_fromServ(<?=$id?>, '<?=$imgPath[$i]?>')">
                                     <span class="glyphicon glyphicon-remove"></span>
                                 </a>
                             <? endif;?>
