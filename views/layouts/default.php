@@ -33,9 +33,13 @@ JS;
     <script src="<?=_webDIR_HTTP_?>js_lib/jquery-3.2.1.min.js"></script>
     <script src="<?=_webDIR_HTTP_?>js_lib/bootstrap.min.js"></script>
     <script src="<?= _glob_HTTP_ ?>js/const.js?ver=<?=time();?>"></script>
-    <script src="<?= _glob_HTTP_ ?>js/pushNotice.js?ver=<?=time();?>"></script>
+
+    <? if ($_SESSION['assist']['PushNotice'] == 1): ?>
+        <script src="<?=_glob_HTTP_ ?>js/PushNotice.js?ver=<?=time()?>"></script>
+    <? endif; ?>
+
     <script><?=$wsUserDataJS?></script>
-    <script src="<?= _webDIR_HTTP_ ?>js_lib/webSocketConnect.js?ver=<?=time();?>"></script>
+    <script src="<?= _glob_HTTP_ ?>js/webSocketConnect.js?ver=<?=time();?>"></script>
 </head>
 <body id="body" class="<?=$_SESSION['assist']['bodyImg']?>">
 	<div class="wrapper" id="content"> <!-- нужен что бы скрывать все для показа 3Д -->
@@ -199,6 +203,8 @@ JS;
 
 
     </div><!--content-->
+    <? include_once _globDIR_. 'includes/progressModal.php' ?>
+    <? include_once _globDIR_.'includes/pushNotice.php' ?>
     <? if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
 </body>
 </html>

@@ -184,18 +184,16 @@
 	<?php endif; ?>
 	<?=$showModels ?>
 </div>
-<center><!-- paggination -->
+
+<!-- paggination -->
+<center>
 	<span class="statsbuttom"><?=$statsbottom?></span>
 	<?=$pagination?>
 </center>
 
-<?php include('includes/modal.php'); ?>
-<?php include('includes/progressModal.php'); ?>
+<?php include _viewsDIR_.'Main/includes/modal.php' ?>
 <script src="<?=_views_HTTP_?>Main/js/Selects.js?ver=<?=time(); ?>"></script>
-<? if ($_SESSION['assist']['PushNotice'] == 1): ?>
-	<? include_once _globDIR_.'includes/pushNotice.php' ?>
- 	<script src="<?=_glob_HTTP_ ?>js/PushNotice.js?ver='.time().'"></script>
-<? endif; ?>
+
 <div id="blackCover"></div>
 <!-- progress bar -->
 <div id="pdf_result" class="alert alert-success">

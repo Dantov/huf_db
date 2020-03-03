@@ -129,9 +129,9 @@ class ErrorHandler
 
         if ( $this->err_lvl === 0 && $code == 404 )
         {
-            require _rootDIR_ . '/vendor/assets/errors/404.php';
+            require _viewsDIR_ . 'errors/404.php';
         } else {
-            require _rootDIR_ . '/vendor/assets/errors/errorDisplay.php';
+            require _viewsDIR_ . 'errors/errorDisplay.php';
         }
 
         die;

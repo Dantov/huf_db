@@ -48,7 +48,7 @@ function wsEventHandlers()
 
             if ( dataObj.message === 'progressBarPDF' )
             {
-                main.ProgressBarPDF(+dataObj.progressBarPercent);
+                main.ProgressBar(+dataObj.progressBarPercent);
                 debug(+dataObj.progressBarPercent);
             }
 

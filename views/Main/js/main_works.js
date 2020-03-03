@@ -3,13 +3,7 @@ function Main() {
 
     this.searchValue = '';
     this.collectionName = '';
-
-    $('#modalProgress').iziModal({
-
-        afterRender: function () {
-            document.getElementById('modalProgressContent').classList.remove('hidden');
-        }
-    });
+    this.setProgressModal();
 
 }
 
@@ -81,8 +75,7 @@ Main.prototype.getCoords = function(elem) {
   
 };
 
-// старый вариант
-Main.prototype.sendXLS_old = function() {
+Main.prototype.sendXLS = function() {
 
     let blackCover = document.getElementById('blackCover');
     blackCover.classList.add('blackCover');
@@ -172,11 +165,9 @@ Main.prototype.sendXLS_old = function() {
 
 
 /**
- * Иницаализация модального окна для прогресс бара
- * запускается при создании объекта Main
  * Collection to PDF
  */
-Main.prototype.setProgressModalPDF = function( docType )
+Main.prototype.setProgressModal = function()
 {
     let modalProgress = document.getElementById('modalProgress');
     if ( !modalProgress ) return;
@@ -185,7 +176,6 @@ Main.prototype.setProgressModalPDF = function( docType )
     let modal = $('#modalProgress');
     let xhr;
     let pdfFileName = '';
-
 
     /*
     transitionIn	- comingIn, bounceInDown, bounceInUp, fadeInDown, fadeInUp, fadeInLeft, fadeInRight, flipInX.
@@ -196,6 +186,9 @@ Main.prototype.setProgressModalPDF = function( docType )
         headerColor: '#1d82a6',
         transitionIn: 'comingIn',
         transitionOut: 'comingOut',
+        afterRender: function () {
+            document.getElementById('modalProgressContent').classList.remove('hidden');
+        }
     });
 
     //начало открываться
@@ -261,7 +254,7 @@ Main.prototype.setProgressModalPDF = function( docType )
         modalButtonsBlock.querySelector('.modalProgressOpen').classList.add('hidden');
 
         modal.iziModal('setTitle', '');
-        main.ProgressBar(-1);
+        main.ProgressBarPDF(-1);
 
         if ( !pdfFileName ) return;
         $.ajax({
@@ -279,11 +272,6 @@ Main.prototype.setProgressModalPDF = function( docType )
     });
 
 };
-
-Main.prototype.sendXLS = function() {
-
-};
-
 Main.prototype.sendPDF = function()
 {
     let collectionName = document.getElementById('collectionName');
@@ -301,11 +289,9 @@ Main.prototype.sendPDF = function()
         return;
     }
 
-    this.setProgressModalPDF();
     $('#modalProgress').iziModal('open');
 };
-
-Main.prototype.ProgressBar = function( percent )
+Main.prototype.ProgressBarPDF = function( percent )
 {
     let progBar = document.querySelector('#modalProgressContent').children[0].children[0];
 
@@ -315,10 +301,104 @@ Main.prototype.ProgressBar = function( percent )
     progBar.style.width = percent + "%";
     progBar.innerHTML = percent + "%";
 };
-
 Main.prototype.openPDF = function(filename) {
     window.open( _ROOT_ + 'Pdfs/' + filename );
 };
+
+
+// старый ProgressBar
+Main.prototype.ProgressBar = function(persent,filename)
+{
+	if ( persent < 100 ) { //если задача не достигла 100% готовности, отправляем запрос на ее выполнение
+		var that = this;
+		$.ajax({
+			url: "../Glob_Controllers/progress_pdf.php", //путь к скрипту, который обрабатывает задачу
+			data: {//данные передаваемые в POST запросе
+			   //difficult_task:"difficult_task",                                   
+			},
+			dataType:"json",
+			success:function(data) {  //функция обратного вызова, выполняется в случае успехной отработки скрипта
+				
+				var stat = data.status;
+				var overalProgress = data.overalProgress || 0;
+				filename = data.filename;
+				var progressStatus = document.getElementById("progressStatus");
+					progressStatus.innerHTML = stat;
+					
+				var progressBarDOM = document.getElementById("progress-bar");
+					progressBarDOM.style.width = overalProgress + "%";
+					progressBarDOM.innerHTML = overalProgress + "%";
+				//console.log('overalProgress = ',overalProgress);
+				
+				// рекурсивно вызываем этуже функцию, она будет выполняться пока не выполнит 100%
+				setTimeout(function(){
+					that.ProgressBar( parseInt(overalProgress), filename );
+				},250);
+			}
+		})
+	} else {//если задача выполненна на 100%, то выводим информацию об этом.
+		console.log(filename);
+		var back = document.createElement('a');
+			back.setAttribute('class','btn btn-default');
+			back.setAttribute('type','button');
+			back.style.marginBottom = '5px';
+			back.style.marginRight = '8px';
+			back.innerHTML = '<span class="glyphicon glyphicon-triangle-left"></span> Назад';
+			back.onclick = function()
+			{
+				// удаляем pdf file 
+				$.ajax({
+					url: "../AddEdit/controllers/delete.php",
+					type: "POST",
+					data: {
+						isPDF: 1,
+						pdfname: filename,
+					},
+					dataType:"json",
+					success:function(data) {
+						console.log('imhere');
+						if ( data.success ) document.location.reload();
+					}
+				})
+			};
+			
+		var openA = document.createElement('a');
+			openA.setAttribute('class','btn btn-success');
+			openA.setAttribute('type','button');
+			openA.setAttribute('onclick','main.openPDF("' + filename + '");');
+			openA.style.marginBottom = '5px';
+			openA.style.marginRight = '8px';
+			openA.innerHTML = '<span class="glyphicon glyphicon-open-file"></span> Открыть';
+			
+		var download = document.createElement('a');
+			download.setAttribute('class','btn btn-info');
+			download.setAttribute('type','button');
+			download.setAttribute('download','');
+			download.setAttribute('href', _ROOT_ + 'Pdfs/' + filename );
+			download.style.marginBottom = '5px';
+			download.innerHTML = '<span class="glyphicon glyphicon-save-file"></span> Загрузить';
+			
+		var center = document.getElementById("pdf_result").lastElementChild;
+			center.lastElementChild.remove();
+			center.appendChild(back);
+			center.appendChild(openA);
+			center.appendChild(download);
+		
+		// удаляем прогресс бар после завершения
+		$.ajax({
+			url: "../Glob_Controllers/progress_pdf.php",
+			type: "POST",
+			data: {
+			   killProgressBar: 1,                                   
+			},
+			dataType:"json",
+			success:function(data) {
+				//console.log('progress bar killed ',data.killed);
+			}
+		})
+	}
+};
+
 
 
 /**
