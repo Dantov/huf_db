@@ -4,13 +4,6 @@ function Main() {
     this.searchValue = '';
     this.collectionName = '';
 
-    $('#modalProgress').iziModal({
-
-        afterRender: function () {
-            document.getElementById('modalProgressContent').classList.remove('hidden');
-        }
-    });
-
 }
 
 Main.prototype.searchIn = function(num) {
@@ -27,7 +20,7 @@ Main.prototype.searchIn = function(num) {
 				let searchInBtn = document.getElementById('searchInBtn').firstElementChild;
 					searchInBtn.innerHTML = data;
 			}
-		})
+		});
 	}
 };
 
@@ -176,7 +169,7 @@ Main.prototype.sendXLS_old = function() {
  * запускается при создании объекта Main
  * Collection to PDF
  */
-Main.prototype.setProgressModalPDF = function( docType )
+Main.prototype.setProgressModal = function(docSwitch)
 {
     let modalProgress = document.getElementById('modalProgress');
     if ( !modalProgress ) return;
@@ -184,23 +177,48 @@ Main.prototype.setProgressModalPDF = function( docType )
     let that = this;
     let modal = $('#modalProgress');
     let xhr;
-    let pdfFileName = '';
+    let forDocument = {
+        doc: '',
+        fileName:'',
+        url:'',
+        headerColor:'',
+        type:'',
+        data:{
+            userName: userName,
+            tabID: tabName,
+        },
+        method:'',
+    };
 
+    switch ( docSwitch )
+    {
+        case 'pdf':
+            forDocument.doc = 'PDF';
+            forDocument.url = 'controllers/pdfExport_Controller.php';
+            forDocument.headerColor = '#1d82a6';
+            forDocument.method = 'POST';
+            break;
+        case 'xls':
+            forDocument.doc = 'Excel';
+            forDocument.url = 'controllers/workingCenters_xls.php';
+            forDocument.headerColor = '#00a623';
+            forDocument.method = 'GET';
+            forDocument.data.excel = 1;
+            forDocument.data.getXlsx = 1;
+            break;
+    }
 
-    /*
-    transitionIn	- comingIn, bounceInDown, bounceInUp, fadeInDown, fadeInUp, fadeInLeft, fadeInRight, flipInX.
-    transitionOut	- comingOut, bounceOutDown, bounceOutUp, fadeOutDown, fadeOutUp, , fadeOutLeft, fadeOutRight, flipOutX.
-    */
+    debug(forDocument);
 
     modal.iziModal({
-        headerColor: '#1d82a6',
+        title: 'Идёт подготовка к созданию <b>'+ forDocument.doc +'</b> документа.',
+        headerColor: forDocument.headerColor,
         transitionIn: 'comingIn',
         transitionOut: 'comingOut',
-    });
-
-    //начало открываться
-    $(document).on('opening', '#modalProgress', function () {
-        modal.iziModal('setTitle', 'Идёт подготовка к созданию <b>PDF</b> документа.');
+        overlayClose: false,
+        afterRender: function () {
+            document.getElementById('modalProgressContent').classList.remove('hidden');
+        }
     });
 
     // открылось
@@ -210,38 +228,72 @@ Main.prototype.setProgressModalPDF = function( docType )
         let cancel = modalButtonsBlock.querySelector('.modalProgressCancel');
         let download = modalButtonsBlock.querySelector('.modalProgressDownload');
         let open = modalButtonsBlock.querySelector('.modalProgressOpen');
+        let ok = modalButtonsBlock.querySelector('.modalProgressOK');
         let docStr = that.searchValue ? 'Найдено ' + that.searchValue : that.collectionName;
 
         xhr = $.ajax({
-            url: 'controllers/pdfExport_Controller.php',
-            method: 'POST',
+            url: forDocument.url,
+            method: forDocument.method,
             cache: false,
-            data: {
-                userName: userName,
-                tabID: tabName,
-            },
+            dataType:'json',
+            data: forDocument.data,
             beforeSend: function() {
-                debug(cancel);
                 cancel.classList.remove('hidden');
+                modal.iziModal('setTitle', 'Идёт создание <b>'+forDocument.doc+'</b> документа: <b>' + docStr + '</b>');
 
-                modal.iziModal('setTitle', 'Идёт создание <b>PDF</b> документа: <b>' + docStr + '</b>');
+                if ( docSwitch === 'xls' )
+                {
+                    $.ajax({
+                        type:'GET',
+                        url: 'controllers/workingCenters_xls.php',
+                        data: {
+                            excel:1,
+                            getFileName:1
+                        },
+                        cache: false,
+                        dataType:'json',
+                        success:function(data) {
+                            forDocument.fileName = data.fileName;
+                            debug(data.fileName);
+                        }
+                    });
+                }
+
             },
-            success:function(fileName) {
-                debug(fileName);
-                pdfFileName = fileName;
-                modal.iziModal('setTitle', 'Создание <b>PDF</b> документа: <b>' + docStr + '</b> завершено!');
+            success:function(fileName)
+            {
+                modal.iziModal('setTitle', 'Создание <b>'+forDocument.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
 
-                cancel.classList.add('hidden');
-                download.classList.remove('hidden');
-                open.classList.remove('hidden');
+                if ( docSwitch === 'xls' )
+                {
+                    modal.iziModal('setSubtitle', "Заберите файл <b><i>'" + forDocument.fileName + ".xlsx'</i></b> в загрузках вашего браузера.");
+                    ok.classList.remove('hidden');
+                } else {
+                    debug(fileName);
+                    forDocument.fileName = fileName;
 
-                open.addEventListener('click',function () {
-                    main.openPDF(fileName);
-                });
-                download.setAttribute('href', _ROOT_ + 'Pdfs/' + fileName );
+                    cancel.classList.add('hidden');
+                    download.classList.remove('hidden');
+                    open.classList.remove('hidden');
+
+                    open.addEventListener('click',function () {
+                        main.openPDF(fileName);
+                    });
+                    download.setAttribute('href', _ROOT_ + 'Pdfs/' + fileName );
+                }
+            }
+        }).done(function(data)
+        {
+            if ( docSwitch === 'xls' )
+            {
+                let $a = $("<a>");
+                $a.attr("href",data);
+                $("body").append($a);
+                $a.attr("download", forDocument.fileName + ".xlsx");
+                $a[0].click();
+                $a.remove();
             }
         });
-
         console.log('Modal is Open');
     });
 
@@ -250,38 +302,44 @@ Main.prototype.setProgressModalPDF = function( docType )
         console.log('Modal is closing');
         if ( xhr.readyState !== 4 ) xhr.abort();
     });
-
     // исчезло
-    $(document).on('closed', '#modalProgress', function () {
+    $(document).on('closed', '#modalProgress', function ()
+    {
         console.log('Modal is closed');
 
         let modalButtonsBlock = modalProgress.querySelector('.modalButtonsBlock');
         modalButtonsBlock.querySelector('.modalProgressCancel').classList.add('hidden');
         modalButtonsBlock.querySelector('.modalProgressDownload').classList.add('hidden');
         modalButtonsBlock.querySelector('.modalProgressOpen').classList.add('hidden');
+        modalButtonsBlock.querySelector('.modalProgressOK').classList.add('hidden');
 
         modal.iziModal('setTitle', '');
         main.ProgressBar(-1);
 
-        if ( !pdfFileName ) return;
-        $.ajax({
-            url: "../AddEdit/controllers/delete.php",
-            type: "POST",
-            data: {
-                isPDF: 1,
-                pdfname: pdfFileName,
-            },
-            dataType:"json",
-            success:function(data) {
-                if ( data.success ) console.log('delete complete'); //document.location.reload();
-            }
-        })
+        if ( !forDocument.fileName ) return;
+        if ( docSwitch === 'pdf' )
+        {
+            $.ajax({
+                url: "../AddEdit/controllers/delete.php",
+                type: "POST",
+                data: {
+                    isPDF: 1,
+                    pdfname: forDocument.fileName,
+                },
+                dataType:"json",
+                success:function(data) {
+                    if ( data.success ) console.log('delete complete'); //document.location.reload();
+                }
+            });
+        }
     });
 
 };
 
 Main.prototype.sendXLS = function() {
 
+    this.setProgressModal('xls');
+    $('#modalProgress').iziModal('open');
 };
 
 Main.prototype.sendPDF = function()
@@ -301,11 +359,11 @@ Main.prototype.sendPDF = function()
         return;
     }
 
-    this.setProgressModalPDF();
+    this.setProgressModal('pdf');
     $('#modalProgress').iziModal('open');
 };
 
-Main.prototype.ProgressBar = function( percent )
+Main.prototype.ProgressBar = function(percent)
 {
     let progBar = document.querySelector('#modalProgressContent').children[0].children[0];
 

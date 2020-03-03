@@ -12,7 +12,7 @@ require_once(_viewsDIR_ . 'Main/classes/PDFExports.php');
 require_once( _vendorDIR_.'TCPDF/HufDB_PDF.php');
 
 $collectPDF = new PDFExports($_SERVER, $_SESSION['assist'], $_SESSION['user'], $_SESSION['foundRow'], $_SESSION['searchFor'], $_SESSION['assist']['collectionName'] );
-if ( !$collectPDF->connectToDB() ) exit;
+$collectPDF->connectToDB();
 
 if ( empty($collectPDF->getRow()) ) $collectPDF->getModelsFormStock();
 $complects = $collectPDF->countComplects();
@@ -266,4 +266,4 @@ if (@file_exists(dirname(__FILE__).'/lang/rus.php')) {
 	//=============Last counter point ==============//
     $collectPDF->progressCount(100);
 	//=============Last counter point ==============//
-echo $pdfFileName;
+echo json_encode($pdfFileName);

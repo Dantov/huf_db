@@ -11,10 +11,75 @@ use PhpOffice\PhpSpreadsheet\Style;
 class ToExcel extends Main
 {
 
+    /**
+     * массив с прогрессом создания пдф, для сокет сервера
+     * @var array
+     */
+    public $progressResponse = [];
+
+    /**
+     * @var string
+     * Имя пользов. который начал процесс создания ПДФ
+     */
+    public $userName = '';
+
+    /**
+     * @var string
+     * Идентиф. вкладки с которой начат процесс создания ПДФ
+     */
+    public $tabID = '';
+
+    /**
+     * @var int
+     */
+    public $percent = 0;
+
+    /**
+     *
+     */
+    public $socketClientResource;
+
     function __construct()
     {
         parent::__construct($_SERVER, $_SESSION['assist'], false, $_SESSION['foundRow']);
-        if ( !$this->connectToDB() ) exit("Facking can't connect to DB!!!!");
+        $this->connectToDB();
+
+        $this->progressResponse = [
+            'progressBarPercent' => 0,
+            'user' => [
+                'name'=> '',
+                'tabID' => '',
+            ],
+            'message' => 'progressBarXLS' // флаг о том что идёт создание пдф
+        ];
+    }
+
+    public function setProgress($userName=false, $tabID=false)
+    {
+        $this->userName = is_string($userName)?$userName:'';
+        $this->tabID = is_string($tabID)?$tabID:'';
+
+        if ( empty($this->userName) || empty($this->tabID) ) return;
+
+        $this->progressResponse['user'] = [
+            'name'=> $this->userName,
+            'tabID' => $this->tabID,
+        ];
+
+        // выключает сообщения об ошибках
+        set_error_handler(function(){return true;});
+        $this->socketClientResource = @stream_socket_client($this->localSocket, $errNo, $errorMessage);
+        restore_error_handler();
+
+    }
+
+    public function progressCount($newPercent)
+    {
+        if ( !isset($this->socketClientResource) ) return;
+
+        $this->progressResponse['progressBarPercent'] = $newPercent;
+
+        fwrite($this->socketClientResource, json_encode($this->progressResponse));
     }
 
     public function getBordersArray($switch)
@@ -351,6 +416,8 @@ class ToExcel extends Main
 
             $rowFILLIndex = $rowFILLIndex+2;
             $rowS++;
+
+            $this->progressCount( ceil( ( $i * 100 ) / $countModelRow ) );
         }
         $this->closeDB();
 
@@ -409,6 +476,7 @@ class ToExcel extends Main
         $xlsData = ob_get_contents();
         ob_end_clean();
 
+        $this->progressCount(100);
         echo json_encode('data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'.base64_encode($xlsData));
     }
 

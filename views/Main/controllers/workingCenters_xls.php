@@ -9,6 +9,7 @@ $excel = new ToExcel();
 
 if ( (int)$_GET['getXlsx'] === 1 )
 {
+    $excel->setProgress($_GET['userName'], $_GET['tabID']);
     $excel->getXlsx();
     exit;
 }
