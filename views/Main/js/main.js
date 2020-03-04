@@ -4,6 +4,9 @@ function Main() {
     this.searchValue = '';
     this.collectionName = '';
 
+    this.lightUpSomeButtons();
+    this.modalStatusesInit();
+
 }
 
 Main.prototype.searchIn = function(num) {
@@ -72,95 +75,6 @@ Main.prototype.getCoords = function(elem) {
     left: left
   };
   
-};
-
-// старый вариант
-Main.prototype.sendXLS_old = function() {
-
-    let blackCover = document.getElementById('blackCover');
-    blackCover.classList.add('blackCover');
-    let pdf_result = document.getElementById('pdf_result');
-    pdf_result.classList.toggle('hidethis');
-
-    let fileName;
-
-    $.ajax({
-        type:'GET',
-        url: 'controllers/workingCenters_xls.php',
-        data: {
-            excel:1,
-			getXlsx:1,
-        },
-        dataType:'json',
-        beforeSend: function() {
-
-            pdf_result.children[0].style.textAlign = 'center';
-            pdf_result.children[0].innerHTML = '<p>Идет создание Excel документа...</p>';
-            pdf_result.children[1].remove();
-
-            //получим имя файла ещё одним запросом
-            $.ajax({
-                type:'GET',
-                url: 'controllers/workingCenters_xls.php',
-                data: {
-                    excel:1,
-                    getFileName:1
-                },
-                cache: false,
-                dataType:'json',
-                success:function(data) {
-                    fileName  = data.fileName;
-                    debug(data.fileName);
-                }
-            });
-
-		},
-        success:function()
-		{
-			let int = setInterval(function () {
-				if ( fileName )
-				{
-					drawSheet();
-					clearInterval(int);
-				}
-			},500);
-
-			function drawSheet()
-			{
-                pdf_result.children[0].innerHTML = "<p>Создание Excel документа завершено!</p>";
-                pdf_result.children[0].innerHTML += "Заберите файл <i>'" + fileName + ".xlsx'</i> в загрузках вашего браузера.";
-
-                let a = document.createElement('a');
-                a.setAttribute('class','btn btn-success');
-                a.setAttribute('type','button');
-                a.setAttribute('href','index.php');
-                a.style.marginTop = '10px';
-                a.innerHTML = 'OK';
-
-                let center = document.createElement('center');
-                center.appendChild(a);
-                pdf_result.appendChild(center);
-			}
-        }
-    }).done(function(data)
-	{
-        let int = setInterval(function () {
-            if ( fileName )
-            {
-                download();
-                clearInterval(int);
-            }
-        },500);
-
-		function download() {
-            let $a = $("<a>");
-            $a.attr("href",data);
-            $("body").append($a);
-            $a.attr("download", fileName + ".xlsx");
-            $a[0].click();
-            $a.remove();
-        }
-    });
 };
 
 
@@ -238,11 +152,13 @@ Main.prototype.setProgressModal = function(docSwitch)
             dataType:'json',
             data: forDocument.data,
             beforeSend: function() {
+                debug('Внешний');
                 cancel.classList.remove('hidden');
                 modal.iziModal('setTitle', 'Идёт создание <b>'+forDocument.doc+'</b> документа: <b>' + docStr + '</b>');
 
                 if ( docSwitch === 'xls' )
                 {
+                    // вторым запросом добудем имя файла
                     $.ajax({
                         type:'GET',
                         url: 'controllers/workingCenters_xls.php',
@@ -252,6 +168,9 @@ Main.prototype.setProgressModal = function(docSwitch)
                         },
                         cache: false,
                         dataType:'json',
+                        beforeSend: function() {
+                            debug('Внутренний');
+                        },
                         success:function(data) {
                             forDocument.fileName = data.fileName;
                             debug(data.fileName);
@@ -266,11 +185,18 @@ Main.prototype.setProgressModal = function(docSwitch)
 
                 if ( docSwitch === 'xls' )
                 {
-                    modal.iziModal('setSubtitle', "Заберите файл <b><i>'" + forDocument.fileName + ".xlsx'</i></b> в загрузках вашего браузера.");
-                    ok.classList.remove('hidden');
+                    let int = setInterval(function () {
+                        if ( forDocument.fileName )
+                        {
+                            modal.iziModal('setSubtitle', "Заберите файл <b><i>'" + forDocument.fileName + ".xlsx'</i></b> в загрузках вашего браузера.");
+                            ok.classList.remove('hidden');
+                            cancel.classList.add('hidden');
+                            clearInterval(int);
+                        }
+                    },500);
+
                 } else {
                     debug(fileName);
-                    forDocument.fileName = fileName;
 
                     cancel.classList.add('hidden');
                     download.classList.remove('hidden');
@@ -286,12 +212,22 @@ Main.prototype.setProgressModal = function(docSwitch)
         {
             if ( docSwitch === 'xls' )
             {
-                let $a = $("<a>");
-                $a.attr("href",data);
-                $("body").append($a);
-                $a.attr("download", forDocument.fileName + ".xlsx");
-                $a[0].click();
-                $a.remove();
+                let int = setInterval(function () {
+                    if ( forDocument.fileName )
+                    {
+                        download();
+                        clearInterval(int);
+                    }
+                },500);
+
+                function download() {
+                    let $a = $("<a>");
+                    $a.attr("href",data);
+                    $("body").append($a);
+                    $a.attr("download", forDocument.fileName + ".xlsx");
+                    $a[0].click();
+                    $a.remove();
+                }
             }
         });
         console.log('Modal is Open');
@@ -335,8 +271,23 @@ Main.prototype.setProgressModal = function(docSwitch)
     });
 
 };
+Main.prototype.getPassportRunner = function()
+{
 
-Main.prototype.sendXLS = function() {
+};
+Main.prototype.sendXLS = function()
+{
+    let collectionName = document.getElementById('collectionName');
+    let c_name = collectionName.innerHTML;
+    let topSearchInpt = document.querySelector('.topSearchInpt').getAttribute('value');
+
+    this.searchValue = topSearchInpt;
+    this.collectionName = c_name;
+
+    if ( c_name === 'Все Коллекции' && topSearchInpt === '' ) { // уходим если выбраны все коллекции
+        alert('Нужно выбрать какую нибудь коллекцию!');
+        return;
+    }
 
     this.setProgressModal('xls');
     $('#modalProgress').iziModal('open');
@@ -379,6 +330,7 @@ Main.prototype.openPDF = function(filename) {
 };
 
 
+
 /**
  * Ставит новую дату в рабочих центрах
  * @param self
@@ -413,114 +365,112 @@ Main.prototype.changeStatusDate = function(self)
     debug(data);
     //debug(_ROOT_);
 };
+Main.prototype.lightUpSomeButtons = function()
+{
+    // подсветим кнопки Send PDF Send Xlsx
+    let expiredButon = document.getElementById('expiredButon');
+    let sendXLS = document.getElementById('sendXLS');
+    let sendPDF = document.getElementById('sendPDF');
+    function farFasToggle(elem) {
+        elem.classList.toggle('far');
+        elem.classList.toggle('fas');
+    }
+    if ( expiredButon )
+    {
+        expiredButon.addEventListener('mouseover',function () {
+            farFasToggle(this.children[0]);
+        });
+        expiredButon.addEventListener('mouseout',function () {
+            farFasToggle(this.children[0]);
+        });
+    }
+    if ( sendXLS )
+    {
+        sendXLS.addEventListener('mouseover',function () {
+            farFasToggle(this.children[0]);
+        });
+        sendXLS.addEventListener('mouseout',function () {
+            farFasToggle(this.children[0]);
+        });
+    }
+    if ( sendPDF )
+    {
+        sendPDF.addEventListener('mouseover',function () {
+            farFasToggle(this.children[0]);
+        });
+        sendPDF.addEventListener('mouseout',function () {
+            farFasToggle(this.children[0]);
+        });
+    }
+};
+
+Main.prototype.modalStatusesInit = function()
+{
+    if ( document.getElementById('modalStatuses') )
+    {
+        $("#modalStatuses").iziModal({
+            width: "95%",
+            afterRender: function() {
+                document.getElementById('modalContent').classList.remove('hidden');
+                let statusesChevrons = document.querySelectorAll('.statusesChevron');
+                statusesChevrons.forEach(button => {
+                    button.addEventListener('click', function () {
+
+                        if ( button.getAttribute('data-status') == 0 )
+                        {
+                            button.setAttribute('data-status','1')
+                        } else {
+                            button.setAttribute('data-status','0');
+                        }
+                        button.classList.toggle('btn-info');
+                        button.classList.toggle('btn-primary');
+                        button.children[0].classList.toggle('glyphicon-menu-down');
+                        button.children[0].classList.toggle('glyphicon-menu-left');
+                        let statArea = this.parentElement.parentElement.children[1];
+                        statArea.classList.toggle('statusesPanelBodyHidden');
+                        statArea.classList.toggle('statusesPanelBodyVisible');
+                    }, false);
+                });
+
+                let currentSelectedStatus = document.getElementById('currentSelectedStatus').innerHTML;
+                let modalStatuses = document.getElementById('modalStatuses');
+                let statusesItems = modalStatuses.querySelectorAll('.wc-status-item');
+                let panelNeedle;
+                statusesItems.forEach(a => {
+                    if ( a.children[1].innerHTML == currentSelectedStatus )
+                    {
+                        a.classList.add('active');
+                        panelNeedle = a.parentElement.parentElement.parentElement;
+                        panelNeedle.classList.remove('panel-info');
+                        panelNeedle.classList.add('panel-primary');
+                        panelNeedle.querySelector('button').click();
+                        return;
+                    }
+                });
+
+                let openAll = document.querySelector('#openAll');
+                let closeAll = document.querySelector('#closeAll');
+                openAll.addEventListener('click', function () {
+                    statusesChevrons.forEach(button => {
+                        if ( button.getAttribute('data-status') == 1 ) return;
+                        button.click();
+                    });
+
+                    this.classList.add('hidden');
+                    closeAll.classList.remove('hidden');
+                }, false);
+                closeAll.addEventListener('click', function () {
+                    statusesChevrons.forEach(button => {
+                        if ( button.getAttribute('data-status') == 0 ) return;
+                        button.click();
+                    });
+
+                    this.classList.add('hidden');
+                    openAll.classList.remove('hidden');
+                }, false);
+            },
+        });
+    }
+};
 
 if ( main !== 'object' ) main = new Main();
-
-// подсветим кнопки Send PDF Send Xlsx
-let expiredButon = document.getElementById('expiredButon');
-let sendXLS = document.getElementById('sendXLS');
-let sendPDF = document.getElementById('sendPDF');
-function farFasToggle(elem) {
-    elem.classList.toggle('far');
-    elem.classList.toggle('fas');
-}
-if ( expiredButon )
-{
-    expiredButon.addEventListener('mouseover',function () {
-        farFasToggle(this.children[0]);
-    });
-    expiredButon.addEventListener('mouseout',function () {
-        farFasToggle(this.children[0]);
-    });
-}
-if ( sendXLS )
-{
-    sendXLS.addEventListener('mouseover',function () {
-        farFasToggle(this.children[0]);
-    });
-    sendXLS.addEventListener('mouseout',function () {
-        farFasToggle(this.children[0]);
-    });
-}
-if ( sendPDF )
-{
-    sendPDF.addEventListener('mouseover',function () {
-        farFasToggle(this.children[0]);
-    });
-    sendPDF.addEventListener('mouseout',function () {
-        farFasToggle(this.children[0]);
-    });
-}
-// END Send PDF Send Xlsx
-
-
-//modals
-
-if ( document.getElementById('modalStatuses') )
-{
-    $("#modalStatuses").iziModal({
-        width: "95%",
-        afterRender: function() {
-            document.getElementById('modalContent').classList.remove('hidden');
-            let statusesChevrons = document.querySelectorAll('.statusesChevron');
-            statusesChevrons.forEach(button => {
-                button.addEventListener('click', function () {
-
-                    if ( button.getAttribute('data-status') == 0 )
-                    {
-                        button.setAttribute('data-status','1')
-                    } else {
-                        button.setAttribute('data-status','0');
-                    }
-                    button.classList.toggle('btn-info');
-                    button.classList.toggle('btn-primary');
-                    button.children[0].classList.toggle('glyphicon-menu-down');
-                    button.children[0].classList.toggle('glyphicon-menu-left');
-                    let statArea = this.parentElement.parentElement.children[1];
-                    statArea.classList.toggle('statusesPanelBodyHidden');
-                    statArea.classList.toggle('statusesPanelBodyVisible');
-                }, false);
-            });
-
-            let currentSelectedStatus = document.getElementById('currentSelectedStatus').innerHTML;
-            let modalStatuses = document.getElementById('modalStatuses');
-            let statusesItems = modalStatuses.querySelectorAll('.wc-status-item');
-            let panelNeedle;
-            statusesItems.forEach(a => {
-                if ( a.children[1].innerHTML == currentSelectedStatus )
-                {
-                    a.classList.add('active');
-                    panelNeedle = a.parentElement.parentElement.parentElement;
-                    panelNeedle.classList.remove('panel-info');
-                    panelNeedle.classList.add('panel-primary');
-                    panelNeedle.querySelector('button').click();
-                    return;
-                }
-            });
-
-            let openAll = document.querySelector('#openAll');
-            let closeAll = document.querySelector('#closeAll');
-            openAll.addEventListener('click', function () {
-                statusesChevrons.forEach(button => {
-                    if ( button.getAttribute('data-status') == 1 ) return;
-                    button.click();
-                });
-
-                this.classList.add('hidden');
-                closeAll.classList.remove('hidden');
-            }, false);
-            closeAll.addEventListener('click', function () {
-                statusesChevrons.forEach(button => {
-                    if ( button.getAttribute('data-status') == 0 ) return;
-                    button.click();
-                });
-
-                this.classList.add('hidden');
-                openAll.classList.remove('hidden');
-            }, false);
-        },
-    });
-}
-
-
-

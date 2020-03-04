@@ -6,5 +6,5 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . Main/index.php [L]
 
 <IfModule mod_php7.c>
-    php_value auto_prepend_file F:\OpenServer\OSPanel\domains\HUF_DB\views\def.php
+    php_value auto_prepend_file F:\OpenServer\OSPanel\domains\HUF-DB-DEV\views\def.php
 </IfModule>

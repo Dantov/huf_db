@@ -50,7 +50,7 @@ class ToExcel extends Main
                 'name'=> '',
                 'tabID' => '',
             ],
-            'message' => 'progressBarXLS' // флаг о том что идёт создание пдф
+            'message' => 'progressBarPDF' // флаг о том что идёт создание пдф
         ];
     }
 
@@ -471,6 +471,7 @@ class ToExcel extends Main
             $writer->save('php://output');
         } catch (Exception $e) {
             echo json_encode(['error' => ['message'=>$e->getMessage(), 'file'=>$e->getFile(), 'line' => $e->getLine()], 'message'=>'Error in save() XLSX']);
+            exit;
         }
 
         $xlsData = ob_get_contents();
