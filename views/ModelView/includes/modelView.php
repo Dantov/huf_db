@@ -18,11 +18,11 @@
     </div>
     <div class="col-xs-12 col-sm-4 noPaddingLR">
         <center>
-            <a class="btn btn-sm btn-info" onclick="getPDF(<?=$id;?>,'passport');" role="button">
+            <a class="btn btn-sm btn-info" onclick="main.getPDF('passport');" role="button">
                 <span class="glyphicon glyphicon-print"></span>
                 <span> Пасспорт</span>
             </a>
-            <a class="btn btn-sm btn-info" onclick="getPDF(<?=$id;?>,'runner');" role="button">
+            <a class="btn btn-sm btn-info" onclick="main.getPDF('runner');" role="button">
                 <span class="glyphicon glyphicon-print"></span>
                 <span> Бегунок</span>
             </a>
@@ -318,12 +318,3 @@
 <img id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="img-thumbnail hidden"/>
 
 <?php include_once _viewsDIR_.$this->controllerName."/includes/imageWrapper.php"; ?>
-<?php include_once _viewsDIR_.$this->controllerName."/includes/mounting.php"; ?>
-<?php include_once _viewsDIR_.$this->controllerName."/includes/forms.php"; ?>
-<?php include_once _globDIR_ . "includes/pushNotice.php"?>
-
-<? if ( $_SESSION['assist']['PushNotice'] == 1 ): ?>
-    <script src="<?=_glob_HTTP_?>js/PushNotice.js?ver='.time().'"></script>
-<? endif; ?>
-
-<?php include_once _viewsDIR_.$this->controllerName."/includes/progressBar.php"; ?>

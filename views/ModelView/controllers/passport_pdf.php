@@ -1,43 +1,29 @@
 <?php
+    $id = (int)$_GET['id'];
+	if ( $id < 0 || $id > 999999 ) exit('No ID');
 
-	if (!isset($_GET['id'])) exit();
-	
 	date_default_timezone_set('Europe/Kiev');
 	ini_set('max_execution_time',600); // макс. время выполнения скрипта в секундах
 	ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
 
-	$overalProgress = 0;
-	$id_progr = time();
-    
-    session_start();
-	$_SESSION['id_progr'] = $id_progr;
-	session_write_close();
-	
-	include_once _globDIR_ .'db.php';
-	
-	$complects_lenght = 11;
-	$complectCounter = 0;  
-	$add = mysqli_query($connection,  " INSERT INTO progress (
-								idd,
-								status,
-								overalProgress,
-								filename
-								) 
-								VALUES (
-								'$id_progr',
-								'Идет создание пасспорта PDF...',
-								'$overalProgress',
-								''
-								) 
-	");
-	if ( !$add ) {
-		printf("Errormessage: %s\n", mysqli_error($connection));
-	}
+    require_once _globDIR_ .'classes/ProgressCounter.php';
+    $progress = new ProgressCounter();
+    if ( isset($_GET['userName']) && isset($_GET['tabID']) )
+    {
+        $progress->setProgress($_GET['userName'], $_GET['tabID']);
+    }
 
-    require_once(_vendorDIR_.'TCPDF/tcpdf.php');
+    $complects_lenght = 11;
+    $complectCounter = 0;
+
+    //============= counter point ==============//
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
+    require_once _globDIR_ .'db.php';
+    require_once _vendorDIR_.'TCPDF/tcpdf.php';
+
 	$uploaddir = _stockDIR_;
-	
-	$id = $_GET['id'];
+
 	$result = mysqli_query($connection, "  SELECT * FROM stock WHERE id='$id' ");
 	$img = mysqli_query($connection, "  SELECT * FROM images WHERE pos_id='$id' ");
 	$gems = mysqli_query($connection, "  SELECT * FROM gems WHERE pos_id='$id' ");
@@ -92,11 +78,8 @@
 	$pdf->AddPage();
 	
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
-	
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
 	//------------исходные данные----------------//
 	$size_range = trim($row['size_range']);
 	
@@ -154,11 +137,8 @@
 	$str_mat = $g.$g750.$g585.$colorG1.$colorG2.$colorG3;
 	
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
-	
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
     $pictsDir = _webDIR_HTTP_ . 'picts/'; 
 
 	$labelImg = '';
@@ -221,11 +201,8 @@
 	$pdf->setCellPaddings(0, 1, 0, 0);
 	
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
-	
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
 	$rowspans = 5;
 	
 	$gems_tr = '';
@@ -275,11 +252,8 @@
 	}
 	
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
-	
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
 	//--table 1--//
 	$table1 = '
 		<style>
@@ -323,12 +297,10 @@
 	$pdf->SetFont('dejavusans', '', 8, '', true);
 	$pdf->writeHTMLCell(195, '', '', '', $table1, 0, 1, 0, true, 'L', true);
 	//--END table 1 --//
+
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
-	
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
 	//--table 2--//
 	$table2 = '
 		<style>
@@ -363,12 +335,10 @@
 	$pdf->setCellPaddings(0, 2, 0, 0);
 	$pdf->SetFont('dejavusans', '', 9, '', true);
 	$pdf->writeHTMLCell(195, '', '', '', $table2, 0, 1, 0, true, 'L', true);
+
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
-	
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
 	$lastTableY = $pdf->GetY();
 	
 	// -- создание картинок -- //
@@ -448,11 +418,8 @@
 	//--END table 2--//
 	
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
-	
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
 	//--END table 3--//
 	$descr = trim($row['description']);
 	$descrScol = '';
@@ -528,11 +495,10 @@
 		</table>
 	';
 	if ( !$executive ) $pdf->writeHTMLCell(195, '', '', '', $table2, 0, 1, 0, true, 'L', true);
+
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+
 	$table3='
 		<style>
 			td {
@@ -577,23 +543,20 @@
 	';
 	$pdf->writeHTMLCell(195, '', '', '', $table3, 0, 1, 0, true, 'L', true);
 	
-	include_once('../../Glob_Controllers/glob_Variables.php');
-	include_once('../../Glob_Controllers/functs.php');
+	include_once _globDIR_ . 'glob_Variables.php';
+	include_once _globDIR_ . 'functs.php';
 	$modTypeEn = translit($row['model_type'],$alphabet);
 	$pdfname = $row['number_3d'].'-'.$modTypeEn.'_passport.pdf';
 	
 	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress',filename='$pdfname' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
 
 	//$pdf->Output($path, 'F');
 	
 	$pdf_string = $pdf->Output('pdfname.pdf', 'S');
 	file_put_contents(_rootDIR_.'Pdfs/'.$pdfname, $pdf_string);
-	
-	//============= counter point ==============//
-	mysqli_query($connection, " UPDATE progress SET status='Готово!',overalProgress='100' WHERE idd='$id_progr' ");
-	mysqli_close($connection);
-	//============= counter point ==============//
+
+    //============= counter point ==============//
+    $progress->progressCount( 100 );
+
+echo json_encode($pdfname);

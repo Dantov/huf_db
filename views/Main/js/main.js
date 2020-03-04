@@ -4,11 +4,38 @@ function Main() {
     this.searchValue = '';
     this.collectionName = '';
 
+    this.queryParams = {};
+
+    this.parseQueryString();
     this.lightUpSomeButtons();
     this.modalStatusesInit();
 
 }
 
+/**
+ * возьмем id из строки запроса, если он там есть
+ */
+Main.prototype.parseQueryString = function()
+{
+    let url = window.location.href;
+    if ( ~url.indexOf('?') )
+    {
+        let params = url.split('?')[1].split('&');
+        for (let i=0; i<params.length; i++)
+        {
+            let paramVal = params[i].split('=');
+            this.queryParams[ paramVal[0] ] = paramVal[1];
+        }
+    }
+};
+Main.prototype.getQueryParam = function(param)
+{
+    let params = this.queryParams;
+    for ( let key in params )
+    {
+        if ( key === param ) return params[key];
+    }
+};
 Main.prototype.searchIn = function(num) {
 	if ( num === 1 || num === 2 ) {
 		console.log(num);
@@ -92,24 +119,21 @@ Main.prototype.setProgressModal = function(docSwitch)
     let modal = $('#modalProgress');
     let xhr;
     let forDocument = {
-        doc: '',
+        doc: 'PDF',
         fileName:'',
         url:'',
-        headerColor:'',
+        headerColor:'#1d82a6',
         type:'',
         data:{
             userName: userName,
             tabID: tabName,
         },
-        method:'',
+        method:'GET',
     };
-
     switch ( docSwitch )
     {
         case 'pdf':
-            forDocument.doc = 'PDF';
             forDocument.url = 'controllers/pdfExport_Controller.php';
-            forDocument.headerColor = '#1d82a6';
             forDocument.method = 'POST';
             break;
         case 'xls':
@@ -119,6 +143,14 @@ Main.prototype.setProgressModal = function(docSwitch)
             forDocument.method = 'GET';
             forDocument.data.excel = 1;
             forDocument.data.getXlsx = 1;
+            break;
+        case 'passport':
+            forDocument.url = 'controllers/passport_pdf.php';
+            forDocument.data.id = this.getQueryParam('id');
+            break;
+        case 'runner':
+            forDocument.url = 'controllers/runner_pdf.php';
+            forDocument.data.id = this.getQueryParam('id');
             break;
     }
 
@@ -144,6 +176,8 @@ Main.prototype.setProgressModal = function(docSwitch)
         let open = modalButtonsBlock.querySelector('.modalProgressOpen');
         let ok = modalButtonsBlock.querySelector('.modalProgressOK');
         let docStr = that.searchValue ? 'Найдено ' + that.searchValue : that.collectionName;
+        if ( docSwitch === 'passport' ) docStr = 'Пасспорт';
+        if ( docSwitch === 'runner' ) docStr = 'Бегунок';
 
         xhr = $.ajax({
             url: forDocument.url,
@@ -152,7 +186,6 @@ Main.prototype.setProgressModal = function(docSwitch)
             dataType:'json',
             data: forDocument.data,
             beforeSend: function() {
-                debug('Внешний');
                 cancel.classList.remove('hidden');
                 modal.iziModal('setTitle', 'Идёт создание <b>'+forDocument.doc+'</b> документа: <b>' + docStr + '</b>');
 
@@ -168,19 +201,16 @@ Main.prototype.setProgressModal = function(docSwitch)
                         },
                         cache: false,
                         dataType:'json',
-                        beforeSend: function() {
-                            debug('Внутренний');
-                        },
                         success:function(data) {
                             forDocument.fileName = data.fileName;
                             debug(data.fileName);
                         }
                     });
                 }
-
             },
             success:function(fileName)
             {
+                if ( docSwitch === 'passport' || docSwitch === 'runner' ) forDocument.fileName = docStr = fileName;
                 modal.iziModal('setTitle', 'Создание <b>'+forDocument.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
 
                 if ( docSwitch === 'xls' )
@@ -207,6 +237,8 @@ Main.prototype.setProgressModal = function(docSwitch)
                     });
                     download.setAttribute('href', _ROOT_ + 'Pdfs/' + fileName );
                 }
+                // позволим закрыть по клику на оверлей
+                modal.iziModal({overlayClose: true,});
             }
         }).done(function(data)
         {
@@ -219,7 +251,6 @@ Main.prototype.setProgressModal = function(docSwitch)
                         clearInterval(int);
                     }
                 },500);
-
                 function download() {
                     let $a = $("<a>");
                     $a.attr("href",data);
@@ -253,7 +284,7 @@ Main.prototype.setProgressModal = function(docSwitch)
         main.ProgressBar(-1);
 
         if ( !forDocument.fileName ) return;
-        if ( docSwitch === 'pdf' )
+        if ( docSwitch === 'pdf' || docSwitch === 'passport' || docSwitch === 'runner' )
         {
             $.ajax({
                 url: "../AddEdit/controllers/delete.php",
@@ -269,11 +300,11 @@ Main.prototype.setProgressModal = function(docSwitch)
             });
         }
     });
-
 };
-Main.prototype.getPassportRunner = function()
+Main.prototype.getPDF = function(doc)
 {
-
+    this.setProgressModal(doc);
+    $('#modalProgress').iziModal('open');
 };
 Main.prototype.sendXLS = function()
 {

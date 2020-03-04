@@ -15,8 +15,7 @@ include_once( _rootDIR_ . 'Views/Glob_Controllers/classes/Handler.php');
 if (!class_exists('PushNotice', false)) include( _globDIR_ . 'classes/PushNotice.php' );
 
 $handler = new Handler($id, $_SERVER);
-
-if ( !$handler->connectToDB() ) exit;
+$handler->connectToDB();
 
 $handler->setDate( date('Y-m-d') );
 

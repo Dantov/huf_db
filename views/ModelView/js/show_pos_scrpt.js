@@ -182,7 +182,16 @@ function getPDF(id,doc) {
 	
 }
 
-function ProgressBar(persent,id,filename){
+/**
+ * старый вариант прогресс бара через mySQL
+ * не актуален
+ * @param persent
+ * @param id
+ * @param filename
+ * @constructor
+ */
+function ProgressBar(persent,id,filename)
+{
 	//console.log(filename);
 	if ( persent < 100 ) { //если задача не достигла 100% готовности, отправляем запрос на ее выполнение
 		$.ajax({
