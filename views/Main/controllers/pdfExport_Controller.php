@@ -1,8 +1,10 @@
 <?php
+ignore_user_abort(false);
 
 date_default_timezone_set('Europe/Kiev');
 ini_set('max_execution_time',600); //10min // макс. время выполнения скрипта в секундах
 ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
+
 session_start();
 
 $uploaddir = _stockDIR_HTTP_;
@@ -130,6 +132,8 @@ if (@file_exists(dirname(__FILE__).'/lang/rus.php')) {
  */
 	for ( $i = 0; $i < $complectsCount; $i++ ) // for ( $i = 0; $i <= $complectsCount; $i++ ) - old
 	{
+        if(connection_status() != CONNECTION_NORMAL) exit;
+
 		if (!$complects[$i]['modeller3D']) continue;
 		
 		if ( $pageRowsIter == $max_RowsPer_Half_Page ) { // печатаем на след полустранице

@@ -81,6 +81,7 @@ class ProgressCounter
 
         $this->progressResponse['progressBarPercent'] = $newPercent;
 
+
         fwrite($this->socketClientResource, json_encode($this->progressResponse));
     }
 

@@ -1,38 +1,28 @@
 <?php
-	if (!isset($_GET['id'])) exit();
-    
+    $id = $_GET['id'];
+    if ( $id < 0 || $id > 999999 ) exit('No ID');
+
 	date_default_timezone_set('Europe/Kiev');
 	ini_set('max_execution_time',600); // макс. время выполнения скрипта в секундах
 	ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
-
-	$overalProgress = 0;
-	$id_progr = time();
-    
-    session_start();
-	$_SESSION['id_progr'] = $id_progr;
-	session_write_close();
 	
 	include_once(_globDIR_.'db.php');
-	
+
+    $overalProgress = 0;
 	$complects_lenght = 9;
 	$complectCounter = 0;
-	$add = mysqli_query($connection,  " INSERT INTO progress (
-								idd,
-								status,
-								overalProgress,
-								filename
-								) 
-								VALUES (
-								'$id_progr',
-								'Идет создание бегунка PDF...',
-								'$overalProgress',
-								''
-								) 
-	");
-	if ( !$add ) {
-		printf("Errormessage: %s\n", mysqli_error($connection));
-	}
-	
+
+    require_once _globDIR_ .'classes/ProgressCounter.php';
+    $progress = new ProgressCounter();
+    if ( isset($_GET['userName']) && isset($_GET['tabID']) )
+    {
+        $progress->setProgress($_GET['userName'], $_GET['tabID']);
+    }
+
+    //============= counter point ==============//
+    $overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( (int)$overallProgress );
+
 	require_once(_vendorDIR_.'TCPDF/tcpdf.php');
 	$uploaddir = _stockDIR_;
 	
@@ -96,12 +86,10 @@
 	
 	$pdf->AddPage();
 	// ---- //
-	
-	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+
+    //============= counter point ==============//
+    $overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( (int)$overallProgress );
 	
 	//------------исходные данные----------------//
 	$size_range = trim($row['size_range']);
@@ -173,11 +161,9 @@
 
     $pictsDir = _webDIR_HTTP_ . 'picts';
 
-	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+//============= counter point ==============//
+$overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+$progress->progressCount( (int)$overallProgress );
 	
 	// ---- //
 	$labelImgDIV = '';
@@ -230,12 +216,10 @@
 	$pdf->setCellPaddings(0, 1, 0, 0);
 	
 	$pdf->Line( 10, 13, 205.5, 13, $style);
-	
-	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+
+//============= counter point ==============//
+$overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+$progress->progressCount( (int)$overallProgress );
 	
 	$rowspans = 4;
 	$size_rangeTR = '';
@@ -306,12 +290,10 @@
 	$pdf->Image($mainimg, 146, $pdfImgY, 61, 60, '', '', '', true, 150, '', false, false, 0, 'CM', false, false);
 	$afterImgY = $pdf->getImageRBY();
 	$realImgHeight = ($afterImgY - $befImgY)*3.4;
-	
-	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+
+//============= counter point ==============//
+$overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+$progress->progressCount( (int)$overallProgress );
 	
 	$top_txt = '
 		<style>
@@ -347,12 +329,10 @@
 	
 	$pdf->writeHTMLCell(195, '', '', '', $top_txt, 0, 1, 0, true, 'L', true);
 	$pdf->setCellPaddings(0, 2, 0, 0);
-	
-	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+
+//============= counter point ==============//
+$overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+$progress->progressCount( (int)$overallProgress );
 	
 	//--table 1--//
 	$table1 = "
@@ -439,12 +419,10 @@
 	";
 	$pdf->SetFont('dejavusans', '', 8, '', true);
 	$pdf->writeHTMLCell(195, '', '', '', $table1, 0, 1, 0, true, 'L', true);
-	
-	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+
+//============= counter point ==============//
+$overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+$progress->progressCount( (int)$overallProgress );
 	
 	$tableMiddl = "
 		<style>
@@ -490,12 +468,10 @@
 	include_once(_globDIR_.'functs.php');
 	$modTypeEn = translit($row['model_type'],$alphabet);
 	$pdfname = $row['number_3d'].'-'.$modTypeEn.'_runner.pdf';
-	
-	//============= counter point ==============//
-	$complectCounter++;
-	$overalProgress = ceil( ( $complectCounter * 100 ) / $complects_lenght );
-	mysqli_query($connection, " UPDATE progress SET overalProgress='$overalProgress',filename='$pdfname' WHERE idd='$id_progr' ");
-	//============= counter point ==============//
+
+    //============= counter point ==============//
+    $overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( (int)$overallProgress );
 	
 	$pdf->SetFont('dejavusans', '', 8, '', true);
 	$pdf->writeHTMLCell(195, '', '', '', $table1, 0, 1, 0, true, 'L', true);
@@ -510,8 +486,8 @@
 	$pdf_string = $pdf->Output('pdfname.pdf', 'S');
 	//echo _rootDIR_.'Pdfs/'.$pdfname;
 	file_put_contents(_rootDIR_.'Pdfs/'.$pdfname, $pdf_string);
-	
-	//============= counter point ==============//
-	mysqli_query($connection, " UPDATE progress SET status='Готово!',overalProgress='100' WHERE idd='$id_progr' ");
-	mysqli_close($connection);
-	//============= counter point ==============//
+
+    //============= counter point ==============//
+    $progress->progressCount( 100 );
+
+echo json_encode($pdfname);

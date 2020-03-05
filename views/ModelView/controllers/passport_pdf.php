@@ -13,11 +13,13 @@
         $progress->setProgress($_GET['userName'], $_GET['tabID']);
     }
 
+    $overallProgress = 0;
     $complects_lenght = 11;
     $complectCounter = 0;
 
     //============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
     require_once _globDIR_ .'db.php';
     require_once _vendorDIR_.'TCPDF/tcpdf.php';
@@ -78,7 +80,8 @@
 	$pdf->AddPage();
 	
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
 	//------------исходные данные----------------//
 	$size_range = trim($row['size_range']);
@@ -137,7 +140,8 @@
 	$str_mat = $g.$g750.$g585.$colorG1.$colorG2.$colorG3;
 	
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
     $pictsDir = _webDIR_HTTP_ . 'picts/'; 
 
@@ -201,7 +205,8 @@
 	$pdf->setCellPaddings(0, 1, 0, 0);
 	
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
 	$rowspans = 5;
 	
@@ -252,7 +257,8 @@
 	}
 	
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
 	//--table 1--//
 	$table1 = '
@@ -299,7 +305,8 @@
 	//--END table 1 --//
 
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
 	//--table 2--//
 	$table2 = '
@@ -337,7 +344,8 @@
 	$pdf->writeHTMLCell(195, '', '', '', $table2, 0, 1, 0, true, 'L', true);
 
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
 	$lastTableY = $pdf->GetY();
 	
@@ -418,7 +426,8 @@
 	//--END table 2--//
 	
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
 	//--END table 3--//
 	$descr = trim($row['description']);
@@ -497,7 +506,8 @@
 	if ( !$executive ) $pdf->writeHTMLCell(195, '', '', '', $table2, 0, 1, 0, true, 'L', true);
 
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
 	$table3='
 		<style>
@@ -549,7 +559,8 @@
 	$pdfname = $row['number_3d'].'-'.$modTypeEn.'_passport.pdf';
 	
 	//============= counter point ==============//
-    $progress->progressCount(( ++$complectCounter * 100 ) / $complects_lenght );
+    $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( $overallProgress );
 
 	//$pdf->Output($path, 'F');
 	
