@@ -201,9 +201,7 @@ JS;
             <script defer src="<?=_views_HTTP_?>Main/js/main.js?ver=<?=time()?>"></script>
         </footer>
 
-
     </div><!--content-->
-    <? include_once _globDIR_. 'includes/progressModal.php' ?>
     <? include_once _globDIR_.'includes/pushNotice.php' ?>
     <? if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
 </body>

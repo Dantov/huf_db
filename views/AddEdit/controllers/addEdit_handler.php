@@ -4,6 +4,14 @@
 		header("Location: ".$_SERVER["HTTP_REFERER"]);
 		exit();
 	}
+
+    require_once _globDIR_ .'classes/ProgressCounter.php';
+    $progress = new ProgressCounter();
+    if ( isset($_POST['userName']) && isset($_POST['tabID']) )
+    {
+        $progress->setProgress($_POST['userName'], $_POST['tabID']);
+    }
+
     if (!class_exists('PushNotice', false)) include( _globDIR_ . 'classes/PushNotice.php' );
 	session_start();
 
@@ -11,7 +19,7 @@
         
 	include(_globDIR_.'classes/Handler.php');
 	
-	$manualProcesses = 3;
+	$manualProcesses = 2;
 	$imagesProcesses = count( $_FILES['upload_images']['name']?:[] );
 	$stlProcesses = count( $_FILES['fileSTL']['name']?:[] );
 	$stonesProcesses = (int)$_POST['gemsName'];
@@ -107,7 +115,7 @@
 		$datas .= ",status='$status',
                     status_date='$date',
                     creator_name='$creator_name',
-                    date='$date'
+                    date='$date',
 		";
 
         //04,07,19 - вносим статус в таблицу statuses
@@ -117,14 +125,12 @@
             'creator_name'=> $creator_name,
             'UPdate'      => $date
         ];
-
         $handler -> addStatusesTable($statusT);
         // end
                 
 		$updateModelData = $handler -> updateDataModel($datas, $id);
-	} else { // редактирование старой
-		//if ( isset($mounting_descr) && !empty($mounting_descr) ) $datas .= ",mounting_descr='$mounting_descr'";
-
+	} else {
+	    // редактирование старой
 		$updateModelData = $handler -> updateDataModel($datas);
 		$handler -> updateCreater($creator_name);    // добавим создателя, если его не было
 		$handler -> updateStatus($status, $creator_name); // обновляем статус
@@ -132,11 +138,12 @@
 	
     if ( $updateModelData )
     {
-		$progressCounter++; // добавляем элемент когда задача выполнена 
-		$overalProgress =  ceil( ( $progressCounter * 100 ) / $overalProcesses );
+        //============= counter point ==============//
+        $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+        $progress->progressCount( $overalProgress );
 
     } else {
-		exit();
+		exit('$updateModelData Error');
     }
 	
 	
@@ -151,48 +158,40 @@
 		{
 			$quer_addImg = $handler -> addImage($_FILES['upload_images'], $_POST['upload_images_word'], $i);
 			
-			if ( $quer_addImg ) {	
-				$progressCounter++; // добавляем элемент когда задача выполнена 
-				$overalProgress =  ceil( ( $progressCounter * 100 ) / $overalProcesses );
-
+			if ( $quer_addImg ) {
+                //============= counter point ==============//
+                $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+                $progress->progressCount( $overalProgress );
 			} else {
-				exit();
+				exit('Error adding image');
 			}
 		}
 	}
-	// в этом массиве индексы картинок на которых установлены флажки
-	//$imgFlags = array();
-	/*
-	$imgFlags['mainImg']   = isset($_POST['mainImg'])   ? (int) $_POST['mainImg']   : "false";
-	$imgFlags['onBodyImg'] = isset($_POST['onBodyImg']) ? (int) $_POST['onBodyImg'] : "false";
-	$imgFlags['sketchImg'] = isset($_POST['sketchImg']) ? (int) $_POST['sketchImg'] : "false";
-	$imgFlags['detailImg'] = isset($_POST['detailImg']) ? (int) $_POST['detailImg'] : "false";
-	*/
 	$quer_updFlags = $handler->updateImageFlags($_POST['imgFor']);
 	if ( !$quer_updFlags ) exit();
 	// ----- конец добавляем картинки ----- //
 	
-	
-	// ----- Добавляем STL FILE ----- //
-	if ( !empty($_FILES['fileSTL']['name'][0]) ) {
 
-		
+
+	// ----- Добавляем STL FILE ----- //
+	if ( !empty($_FILES['fileSTL']['name'][0]) )
+	{
 		if( !file_exists($number_3d) ) mkdir($number_3d, 0777, true);
 		if( !file_exists($number_3d.'/'.$id.'/stl') ) mkdir($number_3d.'/'.$id.'/stl', 0777, true);
 		
 		$querSTL = $handler -> addSTL($_FILES['fileSTL']);
 
 		if ( $querSTL ) {
-		
-			$progressCounter++;
-			$overalProgress =  ceil( ( $progressCounter * 100 ) / $overalProcesses );
+
+            //============= counter point ==============//
+            $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+            $progress->progressCount( $overalProgress );
 
 		} else {
 			exit();
 		}
 		
-	}
-	//END Добавляем STL FILE
+	}//END Добавляем STL FILE
 
 
 
@@ -210,14 +209,13 @@
 			exit;
 		}
 		
-	}
-	//END Добавляем Ai FILE
-	
+	}//END Добавляем Ai FILE
+
+
+
 	//---------- добавляем камни ----------//
 	$gem_rows_count = count($_POST['gemsName']?:[]);
-
-    //если камни есть то добавляем их
-	if ( !empty($gem_rows_count) )
+	if ( !empty($gem_rows_count) ) //если камни есть то добавляем их
 	{
 
 		$gems = array();
@@ -229,16 +227,18 @@
 		
 		$quer_gem = $handler -> addGems( $gems );
 
-		if ( $quer_gem ) {	
-			$progressCounter++;
-			$overalProgress =  ceil( ( $progressCounter * 100 ) / $overalProcesses );
+		if ( $quer_gem ) {
+            //============= counter point ==============//
+            $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+            $progress->progressCount( $overalProgress );
 		} else {
 			exit();
 		}
     } // конец добавляем камни
 	
 	
-	
+
+
 	// добавляем доп. артикулы
 	$dopVCcount = count($_POST['dop_vc_name_']?:[]);
 	if ( !empty($dopVCcount) ) { //если доп. артикулы есть то добавляем их
@@ -251,8 +251,9 @@
 		$quer_dop_vc = $handler -> addDopVC( $vc );
 
 		if ( $quer_dop_vc ) {
-			$progressCounter++;
-			$overalProgress =  ceil( ( $progressCounter * 100 ) / $overalProcesses );
+            //============= counter point ==============//
+            $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+            $progress->progressCount( $overalProgress );
 
 		} else {
 			exit();
@@ -270,8 +271,9 @@
 		$quer_rep = $handler -> addRepairs( $repairs );
 		
 		if ( $quer_rep ) {
-			$progressCounter++;
-			$overalProgress =  ceil( ( $progressCounter * 100 ) / $overalProcesses );
+            //============= counter point ==============//
+            $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+            $progress->progressCount( $overalProgress );
                         
 		} else {
 			exit();
@@ -279,12 +281,14 @@
 	}
 	/// --------- END ремонты ----------///
 
+
     $handler->closeDB();
     $_SESSION['re_search'] = true; // флаг для репоиска
     $handler->unsetSessions();
 
     $lastMess = "Модель добавлена";
     if ( $isEdit === true ) $lastMess = "Данные изменены";
+    $resp_arr['isEdit'] = $isEdit;
     $resp_arr['number_3d'] = $number_3d;
     $resp_arr['model_type'] = $model_type;
     $resp_arr['lastMess'] = $lastMess;
@@ -293,5 +297,9 @@
     $pn = new PushNotice();
     $addPushNoticeResp = $pn->addPushNotice($id, $isEdit?2:1, $number_3d, $vendor_code, $model_type, $date, $status, $creator_name);
     if ( !$addPushNoticeResp ) $resp_arr['errors']['pushNotice'] = 'Error adding push notice';
+
+    //============= counter point ==============//
+    $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+    $progress->progressCount( $overalProgress );
 
     echo json_encode($resp_arr);

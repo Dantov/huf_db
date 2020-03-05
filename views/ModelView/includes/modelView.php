@@ -318,3 +318,4 @@
 <img id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="img-thumbnail hidden"/>
 
 <?php include_once _viewsDIR_.$this->controllerName."/includes/imageWrapper.php"; ?>
+<? include_once _globDIR_. 'includes/progressModal.php' ?>

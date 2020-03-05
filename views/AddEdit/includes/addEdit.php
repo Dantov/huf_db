@@ -701,7 +701,8 @@
 <?php include('includes/protoGemsVC_Rows.php');?>
 <?php include('includes/protoImages_Row.php');?>
 
-<script src="js/add_edit.js?ver=<?=time();?>"></script>
+<script defer src="<?=_views_HTTP_?>AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
+<script src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
 <?=$stonesScript;?>
 
 <div class="AddEditSideButtons" id="AddEditSideButtons">

@@ -654,79 +654,67 @@ function submitForm() {
 	*/
 
 	let addedit = 'controllers/addEdit_handler.php';
-        let formData = new FormData(addform);
-        
-        let result = document.getElementById('saved_form_result');
-        let progressBar = result.querySelector('#progress-bar');
-        let progressStatus = result.querySelector('#progressStatus');
-        
-        $.ajax({
-            url: addedit,
-            type: 'POST',
-            //dataType: "html", //формат данных
-            //dataType: "json",
-            //data: $("#addform").serialize(),
-            data: formData,
-            processData: false,
-            contentType: false,
-            beforeSend: function()
-            {
-                progressStatus.innerHTML = 'Отправляю данные...';
-                
-                let blackCover = document.getElementById('blackCover');
-                    blackCover.classList.add('blackCover');
-                let saved_form_result = document.getElementById('saved_form_result');
-                    saved_form_result.classList.toggle('hidethis');
-            },
-            success:function(resp) 
-            {
-                resp = JSON.parse(resp);
-                debug(resp);
-                progressBar.style.width = 100 + '%';
-				progressBar.innerHTML = 100 + '%';
-                
-                let strong =  document.createElement('strong');
-                    strong.innerHTML = resp.number_3d + ' - ' + resp.model_type;
-			
-                let h4 = document.createElement('h4');
-                        h4.innerHTML = resp.lastMess + ": ";
-                        h4.appendChild(strong);
+	let formData = new FormData(addform);
+	formData.append('userName',userName);
+	formData.append('tabID',tabName);
+    let modal = $('#modalResult');
+    let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
+    let status = modalButtonsBlock.querySelector('.modalResultStatus');
+    let back = modalButtonsBlock.querySelector('.modalProgressBack');
+    let edit = modalButtonsBlock.querySelector('.modalResultEdit');
+    let show = modalButtonsBlock.querySelector('.modalResultShow');
 
-                let a = document.createElement('a');
-                        a.setAttribute('class','btn btn-primary');
-                        a.setAttribute('type','button');
-                        a.setAttribute('href','../ModelView/index.php?id=' + resp.id);
-                        a.style.marginLeft = '20px';
-                        a.innerHTML = 'Просмотр';
+    debug('submitForm');
+    $('#modalResult').iziModal('open');
 
-                let a2 = document.createElement('a');
-                        a2.setAttribute('class','btn btn-default');
-                        a2.setAttribute('type','button');
-                        a2.setAttribute('href','index.php?id=' + resp.id + '&component=2');
-                        a2.style.marginLeft = '20px';
-                        a2.innerHTML = 'Редактировать';
+    /*
+	$.ajax({
+		url: addedit,
+		type: 'POST',
+		//dataType: "html", //формат данных
+		//dataType: "json",
+		//data: $("#addform").serialize(),
+		data: formData,
+		processData: false,
+		contentType: false,
+		beforeSend: function()
+		{
+			modal.iziModal('setTitle', 'Идёт отправление данных на сервер.');
+			modal.iziModal('setHeaderColor', '#95ffb1');
+		},
+		success:function(resp)
+		{
+			resp = JSON.parse(resp);
+			debug(resp);
 
-                let a3 = document.createElement('a');
-                        a3.setAttribute('class','btn btn-success');
-                        a3.setAttribute('type','button');
-                        a3.setAttribute('href','../Main/index.php');
-                        a3.innerHTML = 'В Базу';
+            modal.iziModal('setTitle', 'Сохранение прошло успешно!');
+            let title = '';
+			if ( resp.isEdit == true )
+			{
+				title = 'Данные модели <b>'+ resp.number_3d + ' - ' + resp.model_type+'</b> изменены!';
+            } else {
+                title = 'Новая модель <b>'+ resp.number_3d + ' - ' + resp.model_type+'</b> добавлена!';
+			}
 
-                let center = document.createElement('center');
-                        center.appendChild(a3);
-                        center.appendChild(a2);
-                        center.appendChild(a);
+			status.innerHTML = title;
 
-                progressStatus.innerHTML = 'Сохранение прошло успешно!';
+			back.href = '../Main/index.php';
+            show.href = '../ModelView/index.php?id=' + resp.id;
+            back.classList.remove('hidden');
+            edit.classList.remove('hidden');
+            show.classList.remove('hidden');
 
-                result.appendChild(h4);
-                result.appendChild(center);
-            },
-            error: function(error) { // Данные не отправлены
-                progressStatus.innerHTML = 'Ошибка отправки! Попробуйте снова.';
-                debug(error);
-            }
-        });
+		},
+		error: function(error) { // Данные не отправлены
+			modal.iziModal('setTitle', 'Ошибка отправки! Попробуйте снова.');
+			modal.iziModal('setHeaderColor', '#95ffb1');
+
+            edit.classList.remove('hidden');
+            
+			debug(error);
+		}
+	});
+	*/
 
 }
 //-------- END ОТПРАВКА ФОРМЫ ---------//

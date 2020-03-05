@@ -2,10 +2,10 @@
 document.getElementById('navnav').children[0].setAttribute('class','active');
 
 function onImgLoad(self) {
-	var prevImg = self.previousElementSibling;
+	let prevImg = self.previousElementSibling;
 		prevImg.classList.toggle('hidden');
 	self.classList.toggle('hidden');
-};
+}
 /*
 function trytoload(){
 	

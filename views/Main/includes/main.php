@@ -192,14 +192,6 @@
 </center>
 
 <?php include _viewsDIR_.'Main/includes/modal.php' ?>
+<? include_once _globDIR_. 'includes/progressModal.php' ?>
 <script src="<?=_views_HTTP_?>Main/js/Selects.js?ver=<?=time(); ?>"></script>
-
-<div id="blackCover"></div>
-<!-- progress bar -->
-<div id="pdf_result" class="alert alert-success">
-	<div id="progressStatus" style="font-weight:600;"></div>
-	<div class="progress">
-		<div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>
-	</div>
-</div>
-<!-- end progress bar -->
+<script defer src="<?=_views_HTTP_?>Main/js/ProgressModal.js?ver=<?=time()?>"></script>
