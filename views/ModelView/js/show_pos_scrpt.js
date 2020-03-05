@@ -152,36 +152,6 @@ function addPrevImg(domEl) {
 	}
 }
 
-//---------  ----------//
-function getPDF(id,doc) {
-	
-	if ( doc == 'runner' ) var urll = 'controllers/runner_pdf.php?id='+id;
-	if ( doc == 'passport' ) var urll = 'controllers/passport_pdf.php?id='+id;
-	
-	ProgressBar(0,id);
-	// --- запуск пдф скрипта --- //
-	var blackCover2 = document.getElementById('blackCover2');
-		blackCover2.classList.add('blackCover');
-	var pdf_result = document.getElementById('pdf_result');
-		pdf_result.classList.toggle('hidethis');
-	var a = document.createElement('a');
-		a.setAttribute('class','btn btn-danger');
-		a.setAttribute('type','button');
-		a.setAttribute('href','index.php?id='+id);
-		a.style.marginBottom = '5px';
-		a.innerHTML = 'Отмена';
-	var center = document.createElement('center');
-		center.appendChild(a);
-	document.getElementById("pdf_result").appendChild(center);
-	
-	$.ajax({
-		url: urll,
-		cache: false,
-		success:function(data) {}
-	});
-	
-}
-
 /**
  * старый вариант прогресс бара через mySQL
  * не актуален
@@ -281,10 +251,6 @@ function ProgressBar(persent,id,filename)
 			}
 		})
 	}                           
-}
-
-function openPDF(filename){
-	window.open( '../../Pdfs/'+filename );
 }
 
 let butt3D = document.getElementById('butt3D');

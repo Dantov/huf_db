@@ -66,12 +66,12 @@ function getVCmenu( mType_name, targetEl ) {
 		},
 		dataType:"json",
 		success:function(dataLi) { //функция обратного вызова, выполняется в случае успешной отработки скрипта
-			var num3dVC_new = document.getElementById('num3dVC_proto').cloneNode(true);
+			let num3dVC_new = document.getElementById('num3dVC_proto').cloneNode(true);
 				num3dVC_new.removeAttribute('id');
 				num3dVC_new.classList.remove('hidden');
 				num3dVC_new.children[0].setAttribute('name','num3d_vc_[]');
-			var ul = num3dVC_new.querySelector('.dropdown-menu');
-			for( var i = 0; i < dataLi.length; i++ ){
+			let ul = num3dVC_new.querySelector('.dropdown-menu');
+			for( let i = 0; i < dataLi.length; i++ ){
 				ul.innerHTML += dataLi[i];
 			}
 			addPrevImg( num3dVC_new, 'bottom', 'feft' ); // насаживаем события на показ картинки при наведении
@@ -86,16 +86,17 @@ function getVCmenu( mType_name, targetEl ) {
 // -----END  Обработчик кликов ----- //
 
 //----- Загрузка Превьюшек  -------//
-var add_img = document.getElementById('add_img');
-var picts = document.getElementById('picts');
-var imgrowProto = document.querySelector('.image_row_proto');
-if ( picts ) var uplF_count = picts.querySelectorAll('.image_row').length || 0;
+let add_img = document.getElementById('add_img');
+let picts = document.getElementById('picts');
+let imgrowProto = document.querySelector('.image_row_proto');
+let uplF_count;
+if ( picts ) uplF_count = picts.querySelectorAll('.image_row').length || 0;
 if ( add_img ) add_img.addEventListener('click', function(){ 
 	
-	var add_bef_this = document.getElementById('add_bef_this');
+	let add_bef_this = document.getElementById('add_bef_this');
 	
-	var newImgrow = imgrowProto.cloneNode(true);
-	var uploadInput = newImgrow.children[0];
+	let newImgrow = imgrowProto.cloneNode(true);
+	let uploadInput = newImgrow.children[0];
 		uploadInput.click();
 	
 	//функции предпросмотра
@@ -105,33 +106,33 @@ if ( add_img ) add_img.addEventListener('click', function(){
 	function preview(file) {
 		
 		//вставляем новые	
-			var reader = new FileReader();
+			let reader = new FileReader();
 
 			reader.addEventListener("load", function(event) {
 				
 				newImgrow.classList.remove('image_row_proto');
 				newImgrow.classList.add('image_row');
 
-				//var img_inputs = newImgrow.querySelector('.img_inputs');
-				var inputVis = newImgrow.querySelector('.vis');
-				var inputNotVis = newImgrow.querySelector('.notVis');
-				//var _labels = img_inputs.getElementsByTagName('label');
+				//let img_inputs = newImgrow.querySelector('.img_inputs');
+				let inputVis = newImgrow.querySelector('.vis');
+				let inputNotVis = newImgrow.querySelector('.notVis');
+				//let _labels = img_inputs.getElementsByTagName('label');
 
 				inputVis.setAttribute('value','Нет');
 				inputNotVis.setAttribute('name', 'imgFor[]');
 				inputNotVis.setAttribute('value', 0);
 
 				/*
-				for ( var ii = 0; ii < _inputs.length; ii++ ) {
-					var id_inpt = _inputs[ii].getAttribute('id');
-					var id_lab = _labels[ii].getAttribute('for');
+				for ( let ii = 0; ii < _inputs.length; ii++ ) {
+					let id_inpt = _inputs[ii].getAttribute('id');
+					let id_lab = _labels[ii].getAttribute('for');
 					_inputs[ii].setAttribute('id',id_inpt + uplF_count);
 					_inputs[ii].setAttribute('value', uplF_count);
 					_labels[ii].setAttribute('for',id_lab + uplF_count);
 				}
 				*/
-				var imgPrewiev = newImgrow.children[1].children[0].children[0].children[0];
-				var srcPrew = event.target.result;
+				let imgPrewiev = newImgrow.children[1].children[0].children[0].children[0];
+				let srcPrew = event.target.result;
 				imgPrewiev.setAttribute('src', srcPrew);
 
 				// вставляем картинку только после всех изменений
@@ -163,7 +164,7 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 	isSTL = isSTL || false; // если == 2 значит это Ai файл
 	dellpos = dellpos || false;
 	
-	var postObj = {
+	let postObj = {
 		id: id,
 		imgname: imgname
 	}
@@ -171,40 +172,40 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 	if ( isSTL == 2 ) postObj.isSTL = 2;
 	if ( dellpos ) postObj.dellpos = 1;
 	
-	var body = document.querySelector('body');
-	var blackCover2 = document.createElement('div');
+	let body = document.querySelector('body');
+	let blackCover2 = document.createElement('div');
 		blackCover2.setAttribute('id','blackCover2');
 		blackCover2.setAttribute('class','blackCover');
 		
-	var saved_form_result = document.getElementById('saved_form_result');
+	let saved_form_result = document.getElementById('saved_form_result');
 	
-	var abortBtn = document.createElement('a');
+	let abortBtn = document.createElement('a');
 		abortBtn.setAttribute('class','btn btn-default');
 		abortBtn.setAttribute('type','button');
 		abortBtn.innerHTML = 'Отменить';
 		abortBtn.onclick = function () {
-			var saved_form_result = document.querySelector('#saved_form_result');
-			var blackCover2 = document.querySelector('#blackCover2');
+			let saved_form_result = document.querySelector('#saved_form_result');
+			let blackCover2 = document.querySelector('#blackCover2');
 			saved_form_result.classList.remove('hidethis');
 			saved_form_result.innerHTML = '';
 			blackCover2.remove();
 		};
 	
-	var deleteBtn = document.createElement('a');
+	let deleteBtn = document.createElement('a');
 		deleteBtn.setAttribute('class','btn btn-danger');
 		deleteBtn.setAttribute('type','button');
 		deleteBtn.style.marginLeft = '20px';
 		deleteBtn.innerHTML = 'Удалить';
 		deleteBtn.onclick = function () {
 			
-			var result = document.querySelector('#saved_form_result');
+			let result = document.querySelector('#saved_form_result');
 				result.classList.remove('hidethis');
 			
-			var loading_img = document.createElement('img');
+			let loading_img = document.createElement('img');
 				loading_img.setAttribute('class','blackCover_loading');
 				loading_img.setAttribute('src','../../picts/loading.gif');
 				
-			var blackCover2 = document.querySelector('#blackCover2');
+			let blackCover2 = document.querySelector('#blackCover2');
 				blackCover2.appendChild(loading_img); // добавляем гифку
 				
 			$.ajax({
@@ -214,12 +215,12 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 				dataType:"json",
 				success:function(data) {  //функция обратного вызова, выполняется в случае успешной отработки скрипта
 					
-					var id = data.id;
-					var imgname = data.imgname;
-					var kartinka = data.kartinka;
-					var dell = data.dell;
+					let id = data.id;
+					let imgname = data.imgname;
+					let kartinka = data.kartinka;
+					let dell = data.dell;
 					
-					var href = 'index.php?id='+id+'&component=2';
+					let href = 'index.php?id='+id+'&component=2';
 					if ( dell ) {
 						href = '../Main/index.php';
 						imgname = dell;
@@ -228,16 +229,16 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 					
 					blackCover2.children[0].remove(); // удаляем гифку
 					result.classList.add('hidethis');
-					var a = document.createElement('a');
+					let a = document.createElement('a');
 						a.setAttribute('class','btn btn-primary');
 						a.setAttribute('type','button');
 						a.setAttribute('href',href);
 						a.innerHTML = 'ОК';
-					var strong = document.createElement('strong');
+					let strong = document.createElement('strong');
 						strong.innerHTML = imgname;
-					var h4 	   = document.createElement('h4');
+					let h4 	   = document.createElement('h4');
 						h4.innerHTML = kartinka + strong.outerHTML + ' удалена!' + '<br />';
-					var center = document.createElement('center');
+					let center = document.createElement('center');
 						center.appendChild(h4);
 						center.appendChild(a);
 
@@ -248,7 +249,7 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 			});
 		};
 		
-	var center = document.createElement('center');	
+	let center = document.createElement('center');	
 		center.appendChild(abortBtn);
 		center.appendChild(deleteBtn);
 	saved_form_result.innerHTML = '<center><h4>Удалить картинку - <b>' + imgname + '?</b></h4></center>';
@@ -260,9 +261,9 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 		saved_form_result.innerHTML = '<center><h4>Удалить файл накладки - <b>' + imgname + '?</b></h4></center>';
 	}
 	if ( dellpos ) {
-		var num3d = document.querySelector('#num3d').value;
-		var vendor_code = document.querySelector('#vendor_code').value;
-		var modelType = document.querySelector('#modelType').value;
+		let num3d = document.querySelector('#num3d').value;
+		let vendor_code = document.querySelector('#vendor_code').value;
+		let modelType = document.querySelector('#modelType').value;
 		
 		saved_form_result.innerHTML = '<center><h4>Удалить модель - <b>' + num3d + ' / ' + vendor_code + ' - ' + modelType + ' безвозвратно?</b></h4></center>';
 	}
@@ -279,25 +280,25 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 
 
 //-----  Добавляем STL и Ai файлы  -------//
-var stlSelect = document.getElementById('stlSelect');
-var aiSelect = document.getElementById('aiSelect');
+let stlSelect = document.getElementById('stlSelect');
+let aiSelect = document.getElementById('aiSelect');
 
 
 if ( aiSelect ) {
 	aiSelect.addEventListener('click',selectFilesAi,false);
-	var fileAi_input = document.getElementById('fileAi');
+	let fileAi_input = document.getElementById('fileAi');
 	fileAi_input.onchange = function() { // запускаем по событию change
 		
 			aiSelect.classList.toggle('hidden');
-			var files = this.files;
-			var numfiles = files.length;
+			let files = this.files;
+			let numfiles = files.length;
 			
-			var spanWrapp = document.createElement('span');
+			let spanWrapp = document.createElement('span');
 				spanWrapp.setAttribute('id','spanWrappAi');
 			
-			for( var i = 0; i < numfiles; i++ ) {
-				var size = ( (files[i].size / 1024) ).toFixed(2);
-				var span = document.createElement('span');
+			for( let i = 0; i < numfiles; i++ ) {
+				let size = ( (files[i].size / 1024) ).toFixed(2);
+				let span = document.createElement('span');
 					span.style.backgroundColor = '#fff';
 					span.style.padding = '5px 8px 5px 8px';
 					span.style.marginRight = '5px';
@@ -309,11 +310,11 @@ if ( aiSelect ) {
 			removeAi.classList.toggle('hidden');
 		};
 		
-		var removeAi = document.getElementById('removeAi');
+		let removeAi = document.getElementById('removeAi');
 			removeAi.addEventListener('click', clearAi_Inpt, false);
 			
 		function clearAi_Inpt(){
-			var spanWrapp = document.getElementById('spanWrappAi').remove();
+			let spanWrapp = document.getElementById('spanWrappAi').remove();
 			fileAi_input.value = null;
 			this.classList.toggle('hidden');
 			aiSelect.classList.toggle('hidden');
@@ -326,21 +327,21 @@ if ( aiSelect ) {
 
 if ( stlSelect ) {
 
-	var fileSTL_input = document.getElementById('fileSTL');
-    var removeStl = document.getElementById('removeStl');
+	let fileSTL_input = document.getElementById('fileSTL');
+    let removeStl = document.getElementById('removeStl');
 
 	fileSTL_input.onchange = function() // запускаем по событию change
 	{
 		stlSelect.classList.toggle('hidden');
-		var files = this.files;
-		var numfiles = files.length;
+		let files = this.files;
+		let numfiles = files.length;
 
-		var spanWrapp = document.createElement('span');
+		let spanWrapp = document.createElement('span');
 			spanWrapp.setAttribute('id','spanWrappSTl');
 
-		for( var i = 0; i < numfiles; i++ ) {
-			var size = ( (files[i].size / 1024) / 1024 ).toFixed(2);
-			var span = document.createElement('span');
+		for( let i = 0; i < numfiles; i++ ) {
+			let size = ( (files[i].size / 1024) / 1024 ).toFixed(2);
+			let span = document.createElement('span');
 				span.style.backgroundColor = '#fff';
 				span.style.padding = '5px 8px 5px 8px';
 				span.style.marginRight = '5px';
@@ -357,7 +358,7 @@ if ( stlSelect ) {
 		
 	function clearStl_Inpt()
 	{
-		var spanWrapp = document.getElementById('spanWrappSTl').remove();
+		let spanWrapp = document.getElementById('spanWrappSTl').remove();
 		fileSTL_input.value = null;
 		this.classList.toggle('hidden');
 		stlSelect.classList.toggle('hidden');
@@ -376,23 +377,23 @@ if ( stlSelect ) {
 
 
 //----- Добавляем WORD data -------//
-var docxFile = document.getElementById('docxFile');
+let docxFile = document.getElementById('docxFile');
 if ( docxFile ) {
 	docxFile.addEventListener('click',selectDocx,false);
 
-	var docxFileInpt = document.getElementById('docxFileInpt');
+	let docxFileInpt = document.getElementById('docxFileInpt');
 		docxFileInpt.onchange = function() { // запускаем по событию change
-			//var submitDocxFile = document.getElementById('submitDocxFile');
+			//let submitDocxFile = document.getElementById('submitDocxFile');
 				//submitDocxFile.click();
 			$$f({
 				formid:'docxFileForm',
 				url: 'controllers/wordParser.php',
 				onstart:function () {
-					var progressStatus = document.getElementById('progressStatus');
+					let progressStatus = document.getElementById('progressStatus');
 						progressStatus.innerHTML = 'Сканирование документа MSWord...';
-					//  var blackCover = document.getElementById('blackCover');
+					//  let blackCover = document.getElementById('blackCover');
 					//	blackCover.classList.add('blackCover');
-					var saved_form_result = document.getElementById('saved_form_result');
+					let saved_form_result = document.getElementById('saved_form_result');
 						saved_form_result.classList.toggle('hidethis');
 				},
 				onsend:function () {  //действие по окончании загрузки файла
@@ -496,15 +497,15 @@ if ( gems_table )
         if ( !event.target.hasAttribute('addElemMore') ) return;
 
         event.stopPropagation(); // прекращаем обработку других событий под этим кликом
-        var click = event.target;
-        var elemtoAdd = click.previousElementSibling.innerHTML;
+        let click = event.target;
+        let elemtoAdd = click.previousElementSibling.innerHTML;
 
-        var inputToAddSomethig = click.parentElement.parentElement.parentElement.previousElementSibling;
+        let inputToAddSomethig = click.parentElement.parentElement.parentElement.previousElementSibling;
 
-        var inputToAddSomethig_PrevVal = inputToAddSomethig.getAttribute('value');
-        var coma = '';
+        let inputToAddSomethig_PrevVal = inputToAddSomethig.getAttribute('value');
+        let coma = '';
         if ( inputToAddSomethig_PrevVal ) coma = ', ';
-        var newValue = inputToAddSomethig_PrevVal + coma + elemtoAdd;
+        let newValue = inputToAddSomethig_PrevVal + coma + elemtoAdd;
 
         inputToAddSomethig.value = newValue;
         inputToAddSomethig.setAttribute('value', newValue );
@@ -516,18 +517,18 @@ if ( gems_table )
 
 // ----- РЕМОНТЫ -------//
 function addRepairs(self) {
-	var lastRepNum = 0;
+	let lastRepNum = 0;
 	
-	var repairsBlock = document.getElementById('repairsBlock');
-	var repairsCount = repairsBlock.querySelectorAll('.repairs');
+	let repairsBlock = document.getElementById('repairsBlock');
+	let repairsCount = repairsBlock.querySelectorAll('.repairs');
 	if ( repairsCount.length ) {
 		
 		lastRepNum = repairsCount[repairsCount.length-1].querySelector('.repairs_num').getAttribute('value');
 	}
 	
-	var today = new Date();
+	let today = new Date();
 	
-	var newRepairs = document.getElementById('protoRepairs').cloneNode(true);
+	let newRepairs = document.getElementById('protoRepairs').cloneNode(true);
 		newRepairs.removeAttribute('id');
 		newRepairs.classList.remove('hidden');
 		newRepairs.classList.add('repairs');
@@ -541,19 +542,19 @@ function addRepairs(self) {
 
 }
 function removeRepairs(self) {
-	var todell = self.parentElement.parentElement;
+	let todell = self.parentElement.parentElement;
 		todell.classList.remove('repairs');
 		todell.classList.add('hidden');
 		todell.querySelector('.repairs_descr').innerHTML = -1;
 }
 function formatDate(date) {
-	var dd = date.getDate();
+	let dd = date.getDate();
 	if (dd < 10) dd = '0' + dd;
 
-	var mm = date.getMonth() + 1;
+	let mm = date.getMonth() + 1;
 	if (mm < 10) mm = '0' + mm;
 
-	var yy = date.getFullYear();
+	let yy = date.getFullYear();
 
 	return dd + '.' + mm + '.' + yy;
 }
@@ -567,27 +568,27 @@ function addPrevImg( domEl, vert, horiz )
 {
 	if ( domEl == null ) return;
 
-	var complects = domEl.querySelectorAll('a');
+	let complects = domEl.querySelectorAll('a');
 	
-	var multMinTop = 10;
-	var multMinLeft = 15;
+	let multMinTop = 10;
+	let multMinLeft = 15;
 	
 	if ( vert == 'bottom' ) multMinTop = - 185;
 	if ( horiz == 'right' ) multMinLeft = - 210;
 	
-	for ( var i = 0; i < complects.length; i++ ) {
+	for ( let i = 0; i < complects.length; i++ ) {
 		if ( !complects[i].hasAttribute('imgtoshow') ) continue;
 		complects[i].addEventListener('mouseover',function(event){
 			
-			var mouseX = event.pageX;
-			var mouseY = event.pageY;
+			let mouseX = event.pageX;
+			let mouseY = event.pageY;
 			
-			var hover = event.target;
-			var imageBoxPrev = document.getElementById('imageBoxPrev');
+			let hover = event.target;
+			let imageBoxPrev = document.getElementById('imageBoxPrev');
 				imageBoxPrev.style.top = 0 + 'px';
 				imageBoxPrev.style.left = 0 + 'px';
 			
-			var src = hover.getAttribute('imgtoshow');
+			let src = hover.getAttribute('imgtoshow');
 			
 			imageBoxPrev.style.top = mouseY + multMinTop + 'px';
 			imageBoxPrev.style.left = mouseX + multMinLeft + 'px';
@@ -598,7 +599,7 @@ function addPrevImg( domEl, vert, horiz )
 		
 		complects[i].addEventListener('mouseout',function(event) {
 			
-			var imageBoxPrev = document.getElementById('imageBoxPrev');
+			let imageBoxPrev = document.getElementById('imageBoxPrev');
 			imageBoxPrev.classList.add('hidden');
 			
 		},false);
@@ -607,21 +608,29 @@ function addPrevImg( domEl, vert, horiz )
 }
 //---------END отображаем превью при наведении ----------//
 
+
+
+
+
+
+
+
+
 //-------- ОТПРАВКА ФОРМЫ ---------//
 function submitForm() {
 	
-	var addform = document.getElementById('addform');
+	let addform = document.getElementById('addform');
 	if ( !addform.checkValidity() ) return;
 
 	/*
 	// перед отправкой проверка на покрытие и метериал
-	var material = document.getElementById('material');
-	var covering = document.getElementById('covering');
-	var inputsMaterial = material.getElementsByTagName('input');
-	var inputCovering = covering.getElementsByTagName('input');
+	let material = document.getElementById('material');
+	let covering = document.getElementById('covering');
+	let inputsMaterial = material.getElementsByTagName('input');
+	let inputCovering = covering.getElementsByTagName('input');
 
 	if ( inputsMaterial[0].checked ) {
-		for ( var i = 1; i < inputsMaterial.length; i++ ) {
+		for ( let i = 1; i < inputsMaterial.length; i++ ) {
 			if ( inputsMaterial[i].checked ) {
 				inputsMaterial[i].checked = false;
 			}
@@ -634,7 +643,7 @@ function submitForm() {
 		inputCovering[7].setAttribute('value',"");
 	}
 	if ( !inputCovering[0].checked  ) {
-		for ( var i = 3; i < inputCovering.length; i++ ) {
+		for ( let i = 3; i < inputCovering.length; i++ ) {
 			
 			if ( inputCovering[i].checked ) {
 				inputCovering[i].checked = false;
@@ -644,12 +653,12 @@ function submitForm() {
 	}
 	*/
 
-	var addedit = 'controllers/addEdit_handler.php';
-        var formData = new FormData(addform);
+	let addedit = 'controllers/addEdit_handler.php';
+        let formData = new FormData(addform);
         
-        var result = document.getElementById('saved_form_result');
-        var progressBar = result.querySelector('#progress-bar');
-        var progressStatus = result.querySelector('#progressStatus');
+        let result = document.getElementById('saved_form_result');
+        let progressBar = result.querySelector('#progress-bar');
+        let progressStatus = result.querySelector('#progressStatus');
         
         $.ajax({
             url: addedit,
@@ -664,9 +673,9 @@ function submitForm() {
             {
                 progressStatus.innerHTML = 'Отправляю данные...';
                 
-                var blackCover = document.getElementById('blackCover');
+                let blackCover = document.getElementById('blackCover');
                     blackCover.classList.add('blackCover');
-                var saved_form_result = document.getElementById('saved_form_result');
+                let saved_form_result = document.getElementById('saved_form_result');
                     saved_form_result.classList.toggle('hidethis');
             },
             success:function(resp) 
@@ -676,34 +685,34 @@ function submitForm() {
                 progressBar.style.width = 100 + '%';
 				progressBar.innerHTML = 100 + '%';
                 
-                var strong =  document.createElement('strong');
+                let strong =  document.createElement('strong');
                     strong.innerHTML = resp.number_3d + ' - ' + resp.model_type;
 			
-                var h4 = document.createElement('h4');
+                let h4 = document.createElement('h4');
                         h4.innerHTML = resp.lastMess + ": ";
                         h4.appendChild(strong);
 
-                var a = document.createElement('a');
+                let a = document.createElement('a');
                         a.setAttribute('class','btn btn-primary');
                         a.setAttribute('type','button');
                         a.setAttribute('href','../ModelView/index.php?id=' + resp.id);
                         a.style.marginLeft = '20px';
                         a.innerHTML = 'Просмотр';
 
-                var a2 = document.createElement('a');
+                let a2 = document.createElement('a');
                         a2.setAttribute('class','btn btn-default');
                         a2.setAttribute('type','button');
                         a2.setAttribute('href','index.php?id=' + resp.id + '&component=2');
                         a2.style.marginLeft = '20px';
                         a2.innerHTML = 'Редактировать';
 
-                var a3 = document.createElement('a');
+                let a3 = document.createElement('a');
                         a3.setAttribute('class','btn btn-success');
                         a3.setAttribute('type','button');
                         a3.setAttribute('href','../Main/index.php');
                         a3.innerHTML = 'В Базу';
 
-                var center = document.createElement('center');
+                let center = document.createElement('center');
                         center.appendChild(a3);
                         center.appendChild(a2);
                         center.appendChild(a);

@@ -71,7 +71,7 @@
 	$modeller3d   = strip_tags(trim($_POST['modeller3d']));
 	$jewelerName   = strip_tags(trim($_POST['jewelerName']));
 	$model_weight = strip_tags(trim($_POST['model_weight']));
-    $description  = trim($_POST['description']);
+    $description  = $_POST['description'];
 	$size_range   = strip_tags(trim($_POST['size_range']));
 	$print_cost   = strip_tags(trim($_POST['print_cost']));
 	$model_cost   = strip_tags(trim($_POST['model_cost']));
@@ -93,7 +93,7 @@
 	if ( !empty($model_covering) ) $datas .= "model_covering='$model_covering',";
 	if ( !empty($model_material) ) $datas .= "model_material='$model_material',";
 	if ( !empty($model_weight) ) $datas .= "model_weight='$model_weight',";
-	if ( !empty($description) ) $datas .= "description='$description',";
+	if ( !empty($description) ) $datas .= "description='".trim($description)."',";
 	if ( !empty($str_labels) ) $datas .= "labels='$str_labels',";
 
     $datas = trim($datas,',');
