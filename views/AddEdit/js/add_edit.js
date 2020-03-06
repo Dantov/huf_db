@@ -655,20 +655,20 @@ function submitForm() {
 
 	let addedit = 'controllers/addEdit_handler.php';
 	let formData = new FormData(addform);
-	formData.append('userName',userName);
-	formData.append('tabID',tabName);
+		formData.append('userName',userName);
+		formData.append('tabID',tabName);
+
     let modal = $('#modalResult');
     let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
-    let status = modalButtonsBlock.querySelector('.modalResultStatus');
+    let status = document.querySelector('#modalResultStatus');
     let back = modalButtonsBlock.querySelector('.modalProgressBack');
     let edit = modalButtonsBlock.querySelector('.modalResultEdit');
     let show = modalButtonsBlock.querySelector('.modalResultShow');
 
-    debug('submitForm');
     $('#modalResult').iziModal('open');
+	let xhr;
 
-    /*
-	$.ajax({
+    xhr = $.ajax({
 		url: addedit,
 		type: 'POST',
 		//dataType: "html", //формат данных
@@ -679,14 +679,20 @@ function submitForm() {
 		contentType: false,
 		beforeSend: function()
 		{
+            debug(xhr);
+
 			modal.iziModal('setTitle', 'Идёт отправление данных на сервер.');
-			modal.iziModal('setHeaderColor', '#95ffb1');
+			modal.iziModal('setHeaderColor', '#858172');
+
+			//xhr.abort();
+			//if ( xhr.readyState === 0 ) debug('aborted');
 		},
 		success:function(resp)
 		{
 			resp = JSON.parse(resp);
 			debug(resp);
 
+            modal.iziModal('setHeaderColor', '#edaa16');
             modal.iziModal('setTitle', 'Сохранение прошло успешно!');
             let title = '';
 			if ( resp.isEdit == true )
@@ -714,7 +720,7 @@ function submitForm() {
 			debug(error);
 		}
 	});
-	*/
+
 
 }
 //-------- END ОТПРАВКА ФОРМЫ ---------//

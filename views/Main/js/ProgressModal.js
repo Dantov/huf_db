@@ -2,6 +2,7 @@
 
 function ProgressModal()
 {
+    if ( !document.getElementById('modalProgress') ) return;
     this.init();
 
     this.doc = {
@@ -207,7 +208,7 @@ ProgressModal.prototype.onModalClosed = function(main, event)
     main.ProgressBar(-1);
 };
 
-ProgressModal.prototype.progressModalInit = function()
+ProgressModal.prototype.init = function()
 {
     $('#modalProgress').iziModal({
         title: '',
@@ -273,7 +274,7 @@ ProgressModal.prototype.sendPDF = function()
 
 ProgressModal.prototype.ProgressBar = function(percent)
 {
-    let progBar = document.querySelector('#modalProgressContent').children[0].children[0];
+    let progBar = document.querySelector('.progress-bar');
 
     if ( percent === -1 ) percent = 0;
 
@@ -286,8 +287,4 @@ ProgressModal.prototype.openPDF = function(filename) {
     window.open( _ROOT_ + 'Pdfs/' + filename );
 };
 
-let progressModal;
-window.onload = function progrmodalfunct()
-{
-    progressModal = new ProgressModal();
-};
+let progressModal = new ProgressModal();

@@ -52,7 +52,7 @@ ResultModal.prototype.onModalClosed = function(main, event)
 
     let modal = $('#modalResult');
     let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
-    let status = modalButtonsBlock.querySelector('.modalResultStatus');
+    let status = document.querySelector('#modalResultStatus');
     let back = modalButtonsBlock.querySelector('.modalProgressBack');
     let edit = modalButtonsBlock.querySelector('.modalResultEdit');
     let show = modalButtonsBlock.querySelector('.modalResultShow');
@@ -65,7 +65,7 @@ ResultModal.prototype.onModalClosed = function(main, event)
     modal.iziModal('setTitle', '');
     modal.iziModal('setSubtitle', '');
 
-    main.ProgressBar(-1);
+    progressModal.ProgressBar(-1);
 };
 
 let resModal = new ResultModal();

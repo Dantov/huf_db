@@ -199,6 +199,7 @@ JS;
             <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziModal.min.js"></script>
             <script src="<?=_glob_HTTP_?>js/NavBar.js"></script>
             <script defer src="<?=_views_HTTP_?>Main/js/main.js?ver=<?=time()?>"></script>
+            <script defer src="<?=_views_HTTP_?>Main/js/ProgressModal.js?ver=<?=time()?>"></script>
         </footer>
 
     </div><!--content-->

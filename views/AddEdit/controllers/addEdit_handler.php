@@ -20,8 +20,8 @@
 	include(_globDIR_.'classes/Handler.php');
 	
 	$manualProcesses = 2;
-	$imagesProcesses = count( $_FILES['upload_images']['name']?:[] );
-	$stlProcesses = count( $_FILES['fileSTL']['name']?:[] );
+	$imagesProcesses = count( $_FILES['upload_images']['name'][0]?:[] );
+	$stlProcesses = count( $_FILES['fileSTL']['name'][0]?:[] );
 	$stonesProcesses = (int)$_POST['gemsName'];
 	$dopVCProcesses = count( $_POST['dop_vc_name_']?:[] );
 	
@@ -47,7 +47,6 @@
 	$handler = new Handler($id, $_SERVER);
 	
 	if ( !$handler -> connectToDB() ) exit;
-
 
 	$number_3d = $handler -> setNumber_3d($number_3d);
 	$handler -> setVendor_code($vendor_code);
@@ -136,15 +135,13 @@
 		$handler -> updateStatus($status, $creator_name); // обновляем статус
 	}
 	
-    if ( $updateModelData )
+    if ( !$updateModelData )
     {
-        //============= counter point ==============//
-        $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-        $progress->progressCount( $overalProgress );
-
-    } else {
-		exit('$updateModelData Error');
+        exit('$updateModelData Error');
     }
+    //============= counter point ==============//
+    $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+    $progress->progressCount( $overalProgress );
 	
 	
 	//--------- добавляем картинки---------//
@@ -293,6 +290,13 @@
     $resp_arr['model_type'] = $model_type;
     $resp_arr['lastMess'] = $lastMess;
     $resp_arr['id'] = $id;
+
+    $resp_arr['imagesProcesses'] = $imagesProcesses;
+    $resp_arr['stlProcesses'] = $stlProcesses;
+    $resp_arr['stonesProcesses'] = $stonesProcesses;
+    $resp_arr['dopVCProcesses'] = $dopVCProcesses;
+    $resp_arr['manualProcesses'] = $manualProcesses;
+
 
     $pn = new PushNotice();
     $addPushNoticeResp = $pn->addPushNotice($id, $isEdit?2:1, $number_3d, $vendor_code, $model_type, $date, $status, $creator_name);

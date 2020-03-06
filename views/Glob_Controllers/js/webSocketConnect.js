@@ -45,10 +45,11 @@ function wsEventHandlers()
         try
         {
             let dataObj = JSON.parse(evt.data);
+            debug(dataObj);
 
             if ( dataObj.message === 'progressBarPDF' )
             {
-                main.ProgressBar(+dataObj.progressBarPercent);
+                progressModal.ProgressBar(+dataObj.progressBarPercent);
                 debug(+dataObj.progressBarPercent);
             }
 
