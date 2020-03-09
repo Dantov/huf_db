@@ -193,5 +193,4 @@
 
 <?php include _viewsDIR_.'Main/includes/modal.php' ?>
 <? include_once _globDIR_. 'includes/progressModal.php' ?>
-<script src="<?=_views_HTTP_?>Main/js/Selects.js?ver=<?=time(); ?>"></script>
-<script defer src="<?=_views_HTTP_?>Main/js/ProgressModal.js?ver=<?=time()?>"></script>
+<script defer src="<?=_views_HTTP_ ?>Main/js/Selects.js?ver=<?=time(); ?>"> </script>

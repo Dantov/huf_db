@@ -19,15 +19,38 @@
         
 	include(_globDIR_.'classes/Handler.php');
 	
-	$manualProcesses = 2;
-	$imagesProcesses = count( $_FILES['upload_images']['name'][0]?:[] );
-	$stlProcesses = count( $_FILES['fileSTL']['name'][0]?:[] );
-	$stonesProcesses = (int)$_POST['gemsName'];
-	$dopVCProcesses = count( $_POST['dop_vc_name_']?:[] );
+	$manualProcesses = 3;
 	
-	$overalProcesses = $manualProcesses + $imagesProcesses + $stlProcesses + $stonesProcesses + $dopVCProcesses;
+	$imagesProcesses = 0;
+	if ( !empty($_FILES['upload_images']['name'][0]) ) {
+		$imagesProcesses = count( $_FILES['upload_images']['name']?:[] );
+	}
+	
+	$stlProcesses = 0;
+	if ( !empty($_FILES['fileSTL']['name'][0]) ) {
+		$stlProcesses = 1;
+	}
+	
+	$repairsProcesses = count($_POST['repairs_descr']?:[]) > 0 ? 1 : 0;
+	$stonesProcesses = count( $_POST['gemsName']?:[] ) > 0 ? 1 : 0;
+	$dopVCProcesses = count( $_POST['dop_vc_name_']?:[] ) > 0 ? 1 : 0;
+	
+	$overalProcesses = $manualProcesses + $imagesProcesses + $stlProcesses + $repairsProcesses + $stonesProcesses + $dopVCProcesses;
 	$overalProgress = 0;
 	$progressCounter = 0;
+	
+	$resp_arr = [];
+	$resp_arr['processes'] = [];
+	
+	/*debug($manualProcesses,'$manualProcesses');
+	debug($imagesProcesses,'$imagesProcesses');
+	debug($stlProcesses,'$stlProcesses');
+	debug($stonesProcesses,'$stonesProcesses');
+	debug($dopVCProcesses,'$dopVCProcesses');
+	debug($repairsProcessec,'$repairsProcesses');
+	debug($overalProcesses,'$overalProcesses',1);*/
+	
+	
 	
 	if ( isset($_POST['edit']) && (int)$_POST['edit'] === 2 ) {
 		$isEdit = true;
@@ -38,6 +61,8 @@
 	}
 	
 	chdir(_stockDIR_);
+	
+	
 
 	$date        = trim($_POST['date']);
 	$number_3d   = strip_tags(trim($_POST['number_3d']));
@@ -58,8 +83,10 @@
 	// проверяем поменялся ли номер 3Д
 	if ( $isEdit === true ) $handler -> checkModel();
 	
-	$progressCounter++; // добавляем элемент когда задача выполнена 
-	$overalProgress =  ceil( ( $progressCounter * 100 ) / $overalProcesses );
+	//============= counter point ==============//
+	$overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+	$progress->progressCount( $overalProgress );
+	$resp_arr['processes']['manual'][] = $overalProgress;
 	
 	// добавляем во все коиплекты артикул, если он есть
 	$handler -> addVCtoComplects($vendor_code, $number_3d);
@@ -142,7 +169,7 @@
     //============= counter point ==============//
     $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
     $progress->progressCount( $overalProgress );
-	
+	$resp_arr['processes']['manual'][] = $overalProgress;
 	
 	//--------- добавляем картинки---------//
 	if ( $imgCount = count($_FILES['upload_images']['name']?:[]) )
@@ -159,6 +186,7 @@
                 //============= counter point ==============//
                 $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
                 $progress->progressCount( $overalProgress );
+				$resp_arr['processes']['picts'][] = $overalProgress;
 			} else {
 				exit('Error adding image');
 			}
@@ -183,6 +211,7 @@
             //============= counter point ==============//
             $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
             $progress->progressCount( $overalProgress );
+			$resp_arr['processes']['stl'] = $overalProgress;
 
 		} else {
 			exit();
@@ -228,6 +257,7 @@
             //============= counter point ==============//
             $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
             $progress->progressCount( $overalProgress );
+			$resp_arr['processes']['gems'] = $overalProgress;
 		} else {
 			exit();
 		}
@@ -251,6 +281,7 @@
             //============= counter point ==============//
             $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
             $progress->progressCount( $overalProgress );
+			$resp_arr['processes']['dopVC'] = $overalProgress;
 
 		} else {
 			exit();
@@ -271,6 +302,7 @@
             //============= counter point ==============//
             $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
             $progress->progressCount( $overalProgress );
+			$resp_arr['processes']['repairs'] = $overalProgress;
                         
 		} else {
 			exit();
@@ -290,20 +322,21 @@
     $resp_arr['model_type'] = $model_type;
     $resp_arr['lastMess'] = $lastMess;
     $resp_arr['id'] = $id;
-
+    
+	$resp_arr['manualProcesses'] = $manualProcesses;
     $resp_arr['imagesProcesses'] = $imagesProcesses;
     $resp_arr['stlProcesses'] = $stlProcesses;
     $resp_arr['stonesProcesses'] = $stonesProcesses;
+	$resp_arr['repairsProcesses'] = $repairsProcesses;
     $resp_arr['dopVCProcesses'] = $dopVCProcesses;
-    $resp_arr['manualProcesses'] = $manualProcesses;
-
-
+    
     $pn = new PushNotice();
     $addPushNoticeResp = $pn->addPushNotice($id, $isEdit?2:1, $number_3d, $vendor_code, $model_type, $date, $status, $creator_name);
     if ( !$addPushNoticeResp ) $resp_arr['errors']['pushNotice'] = 'Error adding push notice';
 
     //============= counter point ==============//
     $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-    $progress->progressCount( $overalProgress );
+	$progress->progressCount( $overalProgress );
+	$resp_arr['processes']['manual'][] = $overalProgress;
 
     echo json_encode($resp_arr);

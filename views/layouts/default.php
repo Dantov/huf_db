@@ -28,15 +28,13 @@ JS;
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/iziModal.min.css">
+    <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/iziToast.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/fontawesome-free-5.0.6/on-server/css/fontawesome-all.css">
     <script src="<?=_webDIR_HTTP_?>js_lib/jquery-3.2.1.min.js"></script>
     <script src="<?=_webDIR_HTTP_?>js_lib/bootstrap.min.js"></script>
     <script src="<?= _glob_HTTP_ ?>js/const.js?ver=<?=time()?>"></script>
 
-    <? if ($_SESSION['assist']['PushNotice'] == 1): ?>
-        <script src="<?=_glob_HTTP_ ?>js/PushNotice.js?ver=<?=time()?>"></script>
-    <? endif; ?>
 
     <script><?=$wsUserDataJS?></script>
     <script src="<?= _glob_HTTP_ ?>js/webSocketConnect.js?ver=<?=time()?>"></script>
@@ -94,6 +92,23 @@ JS;
                     </form>
 
                     <form class="navbar-form topuserform navbar-right">
+						<div class="btn-group">
+							<button type="button" id="noticesBadge" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span class="badge">42</span>
+							</button>
+							<ul class="dropdown-menu">
+								<li class="<?=$navBar['navbarStatsShow']; ?>">
+									<a class="noticeShow"><span class="glyphicon glyphicon-eye-open"></span>&#160; Показать</a>
+								</li>
+								<li>
+									<a class="noticeClose"><span class="glyphicon glyphicon-eye-close"></span>&#160; Спрятать</a>
+								</li>
+								<li>
+									<a class="noticeCloseAll">
+											<span class="glyphicon glyphicon-remove"></span>&#160; Закрыть все</a>
+								</li>
+							</ul>
+						</div>
                         <div class="btn-group">
                             <button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="glyphicon glyphicon-<?=$navBar['glphsd']?>"></span>&#160;<?=$navBar['userFio'];?>&#160;<span class="caret"></span>
@@ -197,9 +212,16 @@ JS;
                 <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="<?= _glob_HTTP_ ?>versions.php" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i>
             </div>
             <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziModal.min.js"></script>
-            <script src="<?=_glob_HTTP_?>js/NavBar.js"></script>
+            <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziToast.min.js"></script>
+			<script defer src="<?=_glob_HTTP_ ?>js/NavBar.js"> </script>
+			<?
+			if ($_SESSION['assist']['PushNotice'] == 1)
+				: ?>
+			<script defer src="<?=_glob_HTTP_ ?>js/PushNotice.js?ver=<?=time() ?>"> </script>
+			<? endif; ?>
             <script defer src="<?=_views_HTTP_?>Main/js/main.js?ver=<?=time()?>"></script>
             <script defer src="<?=_views_HTTP_?>Main/js/ProgressModal.js?ver=<?=time()?>"></script>
+			
         </footer>
 
     </div><!--content-->
