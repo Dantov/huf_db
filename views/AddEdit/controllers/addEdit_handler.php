@@ -51,7 +51,6 @@
 	debug($overalProcesses,'$overalProcesses',1);*/
 	
 	
-	
 	if ( isset($_POST['edit']) && (int)$_POST['edit'] === 2 ) {
 		$isEdit = true;
 		$id = (int)$_POST['id'];

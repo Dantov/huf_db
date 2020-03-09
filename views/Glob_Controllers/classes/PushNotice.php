@@ -7,8 +7,7 @@ class PushNotice extends General
     function __construct()
     {
         parent::__construct($_SERVER);
-
-        if ( !$this->connectToDB() ) exit("Facking class PushNotice can't connect to DB!!!!");
+        $this->connectToDB();
     }
 
     public function checkPushNotice()
@@ -17,7 +16,7 @@ class PushNotice extends General
 
         $query = mysqli_query($this->connection, " SELECT * FROM pushnotice where ip not like '%{$this->IP_visiter}%'" );
         // уходим если нет новых нотаций
-        if ( !$query->num_rows ) return false;
+        if ( !$query->num_rows ) return $this->IP_visiter;
 
         $c = 0;
         while( $pushRows = mysqli_fetch_assoc($query) )
@@ -62,8 +61,8 @@ class PushNotice extends General
         {
             $pushImg = mysqli_fetch_assoc($imgQuery);
             $file = $number_3d.'/'.$id.'/images/'.$pushImg['img_name'];
-            //$pathToImg = _stockDIR_HTTP_ . $file;
-            $pathToImg = "http://192.168.0.245/Stock/" . $file;
+            $pathToImg = _stockDIR_HTTP_ . $file;
+            //$pathToImg = "http://192.168.0.245/Stock/" . $file;
             if ( !file_exists(_stockDIR_ . $file) ) $pathToImg = _stockDIR_HTTP_."default.jpg";
         }
 

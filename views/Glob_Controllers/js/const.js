@@ -3,8 +3,8 @@ Node.prototype.remove = function() {  // - полифил для elem.remove(); 
     this.parentElement.removeChild(this);
 };
 
-//const _HOSTNAME_ = "127.0.0.1";
-const _HOSTNAME_ = "192.168.0.245";//location.hostname
+const _HOSTNAME_ = "127.0.0.1";
+//const _HOSTNAME_ = "192.168.0.245";
 const _URL_ = document.location.origin; // http://huf.db
 const _DIR_ = document.location.href.split('/')[3]; // views
 const _ROOT_ = _URL_ + '/'; //http://localhost/HUF_DB_Dev/

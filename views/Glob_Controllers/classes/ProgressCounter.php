@@ -1,12 +1,13 @@
 <?php
 
+if (!class_exists('General', false)) include( _globDIR_ . 'classes/General.php' );
 /**
  * Class ProgressCounter
  * Считаем процент выполнения задач, для разных контроллеров
  */
 
 
-class ProgressCounter
+class ProgressCounter extends General
 {
 
     /**
@@ -32,11 +33,6 @@ class ProgressCounter
      */
     public $percent = 0;
 
-    /**
-     * @var string - адрес сокет сервера
-     */
-    public $localSocket = 'tcp://192.168.0.245:1234';
-    //public $localSocket = 'tcp://127.0.0.1:1234';
 
     /**
      *
