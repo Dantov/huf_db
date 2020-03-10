@@ -15,25 +15,46 @@ if ( isset($_POST['search']) || $_SESSION['re_search'] === true ) {
 
 	$_SESSION['searchFor'] = $searchFor;
 	unset($_SESSION['countAmount'], $_SESSION['foundRow']);
-	
+
+    require_once _globDIR_ . "classes/General.php";
+	$general = new General();
+    $connection = $general->connectToDB();
+    $statuses = $general->statuses;
+
 	$where = "";
 	if ( ($_SESSION['assist']['searchIn'] === 2) && isset($_SESSION['assist']['collectionName']) && !empty($_SESSION['assist']['collectionName']) ) {
-		$collectionName = $_SESSION['assist']['collectionName'];
+
+	    $collectionName = $_SESSION['assist']['collectionName'];
 		$where = "WHERE collections like '%$collectionName%' ";
+
 		if ( isset($_SESSION['assist']['regStat']) && $_SESSION['assist']['regStat'] != "Нет" ) {
 			$regStat = $_SESSION['assist']['regStat'];
 			$where .= "AND status='$regStat' ";
 		}
+
 	} else if ( isset($_SESSION['assist']['regStat']) && $_SESSION['assist']['regStat'] != "Нет" ) {
-		$regStat = $_SESSION['assist']['regStat'];
+
+        $regStat = 0;
+		$regStat_str = $_SESSION['assist']['regStat'];
+        foreach ($statuses as $status)
+        {
+            if ( $status['name_ru'] === $regStat_str )
+            {
+                $regStat = (int)$status['id'];
+                break;
+            }
+        }
+
 		$where = "WHERE status='$regStat' ";
+        //debug($where,'$where',1);
 	}
+
 	$selectRow = "SELECT * FROM stock ".$where."ORDER BY ".$_SESSION['assist']['reg']." ".$_SESSION['assist']['sortDirect'];
 
-	include('db.php');
-	$result_sort = mysqli_query($connection, $selectRow); 
-	mysqli_close($connection);
-	
+	//debug($selectRow,'$selectRow');
+
+	$result_sort = mysqli_query($connection, $selectRow);
+	$general->closeDB();
 	if ( !$result_sort ) header("location: ../Main/index.php");
 	
     while( $row[] = mysqli_fetch_assoc($result_sort) ){}
@@ -86,6 +107,7 @@ if ( isset($_POST['search']) || $_SESSION['re_search'] === true ) {
         $serch_vendor_code = stristr( mb_strtolower($row[$i]['vendor_code']), $searchFor );
         $serch_collection  = stristr( mb_strtolower($row[$i]['collections']), $searchFor );
         $serch_author      = stristr( mb_strtolower($row[$i]['author']), $searchFor );
+        $serch_jeweller    = stristr( mb_strtolower($row[$i]['jewelerName']), $searchFor );
         $serch_modeller3d  = stristr( mb_strtolower($row[$i]['modeller3D']), $searchFor );
         $serch_model_type  = stristr( mb_strtolower($row[$i]['model_type']), $searchFor );
         $serch_status      = stristr( mb_strtolower($row[$i]['status']), $searchFor );
@@ -99,6 +121,7 @@ if ( isset($_POST['search']) || $_SESSION['re_search'] === true ) {
            $serch_vendor_code !== false ||
            $serch_collection  !== false ||
            $serch_author      !== false ||
+           $serch_jeweller    !== false ||
            $serch_modeller3d  !== false ||
            $serch_model_type  !== false ||
            $serch_status      !== false ||
@@ -113,7 +136,9 @@ if ( isset($_POST['search']) || $_SESSION['re_search'] === true ) {
         }
 	}
 	if ( !isset($_SESSION['foundRow']) ) $_SESSION['nothing'] = "Ничего не найдено";
-	
+
+    //debug($_SESSION['foundRow'],'foundRow',1);
+
 	$_SESSION['re_search'] = false;
 	$_SESSION['assist']['page'] = 0;
 	$_SESSION['assist']['startfromPage'] = 0;

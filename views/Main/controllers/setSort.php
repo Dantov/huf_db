@@ -224,10 +224,14 @@
         $_SESSION['assist']['page'] = 0;
         $_SESSION['assist']['startfromPage'] = 0;
         if ( isset($_SESSION['searchFor']) && !empty($_SESSION['searchFor']) ) $_SESSION['re_search'] = true;
+
+        header("location:"  . _rootDIR_HTTP_ . "Views/Glob_Controllers/search.php?searchFor={$_SESSION['searchFor']}");
+        exit;
 	}
 	
 	//countAmount
-	if ( $_SESSION['countAmount'] && $_SESSION['re_search'] === true ) {   // означает что в поиске что-то найдено, и он нуждается в обновлении 
+	if ( $_SESSION['countAmount'] && $_SESSION['re_search'] === true ) // означает что в поиске что-то найдено, и он нуждается в обновлении
+	{
 		header("location:"  . _rootDIR_HTTP_ . "Views/Glob_Controllers/search.php?searchFor={$_SESSION['searchFor']}");
 	}
 

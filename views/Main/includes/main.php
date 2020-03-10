@@ -1,5 +1,7 @@
 <?php
-
+//    debug($_SESSION['countAmount'],'countAmount');
+//    debug($_SESSION['foundRow'],'foundRow');
+//    debug($_SESSION['searchFor'],'searchFor');
 ?>
 <script src="<?=_views_HTTP_?>Main/js/trytoload.js?ver=004"> </script>
 
