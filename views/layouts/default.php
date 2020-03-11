@@ -92,20 +92,20 @@ JS;
                     </form>
 
                     <form class="navbar-form topuserform navbar-right">
-						<div class="btn-group">
-							<button type="button" id="noticesBadge" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span class="badge">42</span>
+						<div class="btn-group" id="noticesBadge">
+							<button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span class="badge pushNoticeBadge"></span>
 							</button>
 							<ul class="dropdown-menu">
 								<li class="<?=$navBar['navbarStatsShow']; ?>">
 									<a class="noticeShow"><span class="glyphicon glyphicon-eye-open"></span>&#160; Показать</a>
 								</li>
 								<li>
-									<a class="noticeClose"><span class="glyphicon glyphicon-eye-close"></span>&#160; Спрятать</a>
+									<a class="noticeHide"><span class="glyphicon glyphicon-eye-close"></span>&#160; Спрятать</a>
 								</li>
 								<li>
 									<a class="noticeCloseAll">
-											<span class="glyphicon glyphicon-remove"></span>&#160; Закрыть все</a>
+											<span class="glyphicon glyphicon-remove"></span>&#160; Убрать все</a>
 								</li>
 							</ul>
 						</div>

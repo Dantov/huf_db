@@ -6,8 +6,8 @@ class General {
 		if ( isset($server) ) {
 			$this->server = $server;
 			$this->setDirs();
-			//$this->IP_visiter = $_SERVER['HTTP_X_REAL_IP'];
-			$this->IP_visiter = $_SERVER['REMOTE_ADDR'];
+			$this->IP_visiter = $_SERVER['HTTP_X_REAL_IP'];
+			//$this->IP_visiter = $_SERVER['REMOTE_ADDR'];
 		}
 	}
 	
@@ -66,8 +66,8 @@ class General {
 
 	public $workingCentersDB;
 	public $workingCentersSorted;
-    //public $localSocket = 'tcp://192.168.0.245:1234';
-    public $localSocket = 'tcp://127.0.0.1:1234';
+    public $localSocket = 'tcp://192.168.0.245:1234';
+    //public $localSocket = 'tcp://127.0.0.1:1234';
 
 	public function formatDate($date)
     {

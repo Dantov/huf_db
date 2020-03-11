@@ -2,9 +2,26 @@
 
 function PushNotice()
 {
-    this.showedNotice = showedNotice; //здесь хранятся показанные уведомления
     this.noticesBadgeStatus = true; // все нотайсы показаны по умолчанию
+    this.pushNoticeBadge = document.querySelector('.pushNoticeBadge');
 
+    // только что полученные уведомления от checkNotice - полные данные
+    // массив объектов
+    this.incomingNotices = [];
+
+    //здесь хранятся ID показанных уведомлений
+    //delete localStorage.showedNotice;
+    this.showedNotice = [];
+
+    if ( localStorage.getItem('showedNotice') )
+    {
+        this.showedNotice = JSON.parse( localStorage.getItem('showedNotice') );
+    }
+
+    this.pushNoticeBadgeInc();
+    this.noticesBadgeToggle();
+
+    let that = this;
     iziToast.settings({
     	titleSize: 12,
 		titleLineHeight: 14,
@@ -12,21 +29,46 @@ function PushNotice()
 		messageLineHeight: 12,
 		imageWidth: 75,
 		position: 'topRight',
-		timeout: 60000,
+		timeout: 5000,
 		maxWidth: 350,
         zindex: 998,
         target: '#pushNoticeWrapp',
+        onClosing: function(instance, toast, closedBy) {
+            if ( closedBy === 'timeout' )
+            {
+                // когда нажали на Спрятать что бы второй раз не вносить показанные в массив
+                if ( that.showedNotice.includes(toast.id) ) return;
+
+                that.showedNotice.push(toast.id);
+                localStorage.setItem('showedNotice', JSON.stringify(that.showedNotice));
+                that.pushNoticeBadgeInc();
+                console.info('closedBy: ' + closedBy); // tells if it was closed by 'drag' or 'button'
+            }
+
+            if ( closedBy === 'button' || closedBy === 'drag' )
+            {
+                that.closeNotice(toast.id);
+
+            }
+
+
+            debug( JSON.parse( localStorage.getItem('showedNotice') ) );
+        }
 	});
+
+
 	
 }
+PushNotice.prototype.pushNoticeBadgeInc = function() {
+    this.pushNoticeBadge.innerHTML = this.showedNotice.length;
+};
 
 PushNotice.prototype.closeAllNotices = function() {
     // проверка, что бы поставить обработчик только раз.( пытался каждый раз ставить при checkNotice )
 	//if ( !this.closeAllPN.classList.contains('hidden') ) return;
-	
 	//this.closeAllPN.classList.remove('hidden');
+
 	let that = this;
-	
     this.closeAllPN.children[0].onclick = function()
     {
         $.ajax({
@@ -52,28 +94,58 @@ PushNotice.prototype.closeAllNotices = function() {
 	
 };
 
+/**
+ * Закрытие по крестику для каждого тоста
+ * @param id
+ */
 PushNotice.prototype.closeNotice = function(id) 
 {
     //ajax запрос на поставку ип адреса в таблицу
+    let that = this;
     $.ajax({
         url: _ROOT_ + "Views/Glob_Controllers/pushNoticeController.php",
         type: 'POST',
-        data: {//данные передаваемые в POST запросе
+        data: {
             closeNotice: id
         },
         dataType:"json",
         success:function(data) {
-            // здесь ничего нет потому что
-            // showedNotice всеравно стирается пи каждой перезагрузке стр
+            that.pushNoticeBadgeInc();
+            let objects = that.incomingNotices;
+
+            for ( let i = 0; i < objects.length; i++) {
+                if (objects[i].not_id == id) {
+                    that.incomingNotices.splice(i, 1);
+                    break;
+                }
+            }
+
+            that.showedNotice.forEach((item, i) => {
+                if (item === id) {
+                    that.showedNotice.splice(i, 1);
+                    localStorage.setItem('showedNotice', JSON.stringify(that.showedNotice));
+                    return false;
+                }
+            });
         }
     });
-
 };
 
 PushNotice.prototype.addNotice = function(notice)
 {
-    // если оно есть в массиве, значит уже показано - уходим.
-    if ( this.showedNotice.indexOf(notice.not_id) !== -1 ) return;
+    let found = false;
+    for (let object of this.incomingNotices) {
+        if (object.not_id === notice.not_id) {
+            found = true;
+            break;
+        }
+    }
+    if ( !found ) {
+        this.incomingNotices.push(notice);
+        debug(this.incomingNotices,'incomingNotices');
+    }
+
+
 
     let addStr, statusStr, abt, newNotice;
     let that = this;
@@ -161,10 +233,10 @@ PushNotice.prototype.addNotice = function(notice)
 
     // при закрытии ставим IP
     newNotice.querySelector('.iziToast-close').addEventListener('click', function() {
-
         that.closeNotice(notice.not_id);
     }, false );
-	this.showedNotice.push(notice.not_id); //добавли в массив как показанное уведомление чтоб не показывать снова
+	//this.showedNotice.push(notice.not_id); //добавли в массив как показанное уведомление чтоб не показывать снова
+    //this.pushNoticeBadgeInc();
 };
 
 PushNotice.prototype.checkNotice = function() {
@@ -180,26 +252,48 @@ PushNotice.prototype.checkNotice = function() {
 
             console.log('data = ', data);
             if ( typeof data !== 'object' ) return;
+
+            that.incomingNotices = data;
+
             for ( let i = 0; i < data.length; i++ )
             {
+                // если оно есть в массиве, значит уже показано - уходим.
+                if ( that.showedNotice.includes(data[i].not_id) ) continue;
                 that.addNotice(data[i]);
             }
 			
-            if ( data.length > 2 )
-            {
-				// если нотайсов больше 3х - запускаем функцию closeAllNotices. она выводит крестик вверху и вешает обработчик на него
-                //that.closeAllNotices();
-            }
+            // if ( data.length > 2 )
+            // {
+				// // если нотайсов больше 3х - запускаем функцию closeAllNotices. она выводит крестик вверху и вешает обработчик на него
+            //     //that.closeAllNotices();
+            // }
         }
-    })
+    });
 };
 PushNotice.prototype.noticesBadgeToggle = function() {
 	let that = this;
 	let noticesBadge = document.getElementById('noticesBadge');
+
 	noticesBadge.querySelector('.noticeShow').addEventListener('click',function(){
-		
+		debug(that.incomingNotices,'показываем');
+
+        for ( let i = 0; i < that.incomingNotices.length; i++ )
+        {
+            // если оно есть в массиве, значит уже показано - уходим.
+            //if ( that.showedNotice.includes(data[i].not_id) ) continue;
+            that.addNotice(that.incomingNotices[i]);
+        }
+
 	});
 	noticesBadge.querySelector('.noticeHide').addEventListener('click',function(){
+
+	    let pushNoticeWrapp = document.getElementById('pushNoticeWrapp');
+	    let showedToasts = pushNoticeWrapp.querySelectorAll('.iziToast');
+	    
+        for ( let i = 0; i < showedToasts.length; i++ )
+        {
+            iziToast.hide({}, showedToasts[i]);
+        }
 
 	});
 	noticesBadge.querySelector('.noticeCloseAll').addEventListener('click',function(){
