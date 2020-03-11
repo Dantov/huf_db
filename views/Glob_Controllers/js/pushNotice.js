@@ -2,17 +2,18 @@
 
 function PushNotice()
 {
-    this.noticesBadgeStatus = true; // все нотайсы показаны по умолчанию
     this.pushNoticeBadge = document.querySelector('.pushNoticeBadge');
 
     // только что полученные уведомления от checkNotice - полные данные
     // массив объектов
     this.incomingNotices = [];
 
-    //здесь хранятся ID показанных уведомлений
     //delete localStorage.showedNotice;
+    /**
+     * массив строк, здесь хранятся ID показанных уведомлений
+     * @type {Array}
+     */
     this.showedNotice = [];
-
     if ( localStorage.getItem('showedNotice') )
     {
         this.showedNotice = JSON.parse( localStorage.getItem('showedNotice') );
@@ -29,7 +30,7 @@ function PushNotice()
 		messageLineHeight: 12,
 		imageWidth: 75,
 		position: 'topRight',
-		timeout: 5000,
+		timeout: 20000,
 		maxWidth: 350,
         zindex: 998,
         target: '#pushNoticeWrapp',
@@ -47,58 +48,48 @@ function PushNotice()
 
             if ( closedBy === 'button' || closedBy === 'drag' )
             {
+                debug(closedBy,'closedBy');
                 that.closeNotice(toast.id);
-
             }
-
 
             debug( JSON.parse( localStorage.getItem('showedNotice') ) );
         }
 	});
-
-
-	
 }
+
 PushNotice.prototype.pushNoticeBadgeInc = function() {
     this.pushNoticeBadge.innerHTML = this.showedNotice.length;
 };
 
 PushNotice.prototype.closeAllNotices = function() {
-    // проверка, что бы поставить обработчик только раз.( пытался каждый раз ставить при checkNotice )
-	//if ( !this.closeAllPN.classList.contains('hidden') ) return;
-	//this.closeAllPN.classList.remove('hidden');
 
 	let that = this;
-    this.closeAllPN.children[0].onclick = function()
-    {
-        $.ajax({
-            url: _ROOT_ + "Views/Glob_Controllers/pushNoticeController.php",
-            type: 'POST',
-            data: {
-                closeAllPN: 1,
-				closeById: that.showedNotice,
-            },
-            dataType:"json",
-            success:function(data) {
+    $.ajax({
+        url: _ROOT_ + "Views/Glob_Controllers/pushNoticeController.php",
+        type: 'POST',
+        data: {
+            closeAllPN: 1,
+            closeById: that.showedNotice,
+        },
+        dataType:"json",
+        success:function(data) {
+            if ( !data.done ) return console.log('Ошибка закрытия.' + data.done);
 
-				let pushNotices = document.querySelectorAll('.pushNotice');
-                if ( !data.done ) return console.log('Ошибка закрытия.' + data.done);
-				
-                for ( let i = 0; i < pushNotices.length; i++ ) {
-                    pushNotices[i].remove();
-                }
-                that.closeAllPN.classList.add('hidden');
-            }
-        });
-    };
+            that.incomingNotices = [];
+            that.showedNotice = [];
+            that.pushNoticeBadgeInc();
+            localStorage.setItem('showedNotice', JSON.stringify(that.showedNotice));
+        }
+    });
 	
 };
 
 /**
  * Закрытие по крестику для каждого тоста
  * @param id
+ * @param url string
  */
-PushNotice.prototype.closeNotice = function(id) 
+PushNotice.prototype.closeNotice = function(id, url)
 {
     //ajax запрос на поставку ип адреса в таблицу
     let that = this;
@@ -110,16 +101,14 @@ PushNotice.prototype.closeNotice = function(id)
         },
         dataType:"json",
         success:function(data) {
-            that.pushNoticeBadgeInc();
             let objects = that.incomingNotices;
 
             for ( let i = 0; i < objects.length; i++) {
-                if (objects[i].not_id == id) {
+                if (objects[i].not_id === id) {
                     that.incomingNotices.splice(i, 1);
                     break;
                 }
             }
-
             that.showedNotice.forEach((item, i) => {
                 if (item === id) {
                     that.showedNotice.splice(i, 1);
@@ -127,6 +116,10 @@ PushNotice.prototype.closeNotice = function(id)
                     return false;
                 }
             });
+            that.pushNoticeBadgeInc();
+
+            if ( url ) document.location.href = url;
+            debug(that.showedNotice,'closeNotice-showedNotice');
         }
     });
 };
@@ -145,30 +138,18 @@ PushNotice.prototype.addNotice = function(notice)
         debug(this.incomingNotices,'incomingNotices');
     }
 
-
-
-    let addStr, statusStr, abt, newNotice;
+    let addStr, newNotice;
     let that = this;
-	
     let url = _ROOT_ + "Views/ModelView/index.php?id=" + notice.pos_id;
 
-
-    /*
-    if ( typeof notice.status === 'object' )
-    {
-        let statSpan = '<span class="glyphicon glyphicon-'+ notice.status.glyphi +'"></span>';
-        statusStr = '<div class="' + notice.status.name_en + ' pn_status pull-left" title="' + notice.status.title + '">'+ statSpan +'</div>';
-    }
-    */
-
-    if ( +notice['addEdit'] === 1 ) abt = "Добавлена новая";
-    if ( +notice['addEdit'] === 2 ) abt = "Изменена";
-    if ( +notice['addEdit'] === 3 ) abt = "Удалена";
+    if ( +notice['addEdit'] === 1 ) addStr = "Добавлена новая";
+    if ( +notice['addEdit'] === 2 ) addStr = "Изменена";
+    if ( +notice['addEdit'] === 3 ) addStr = "Удалена";
 
     iziToast.show({
 		id: notice.not_id,
 		title: notice.number_3d +'/'+ notice.vendor_code + ' - ' + notice.model_type,
-		message: abt + ' модель!',
+		message: addStr + ' модель!',
 		image: notice.img_src,
 		icon: 'glyphicon glyphicon-'+ notice.status.glyphi,
 		iconColor: '',
@@ -181,62 +162,9 @@ PushNotice.prototype.addNotice = function(notice)
     {
     	newNotice.children[0].addEventListener('click',function() {
 
-            that.closeNotice(notice.not_id);
-            document.location.href= url;
-            /*
-			$.ajax({
-				url: _ROOT_ + "Views/Glob_Controllers/pushNoticeController.php",
-				type: 'POST',
-				data: {
-					closeNotice: notice.not_id
-				},
-				dataType:"json",
-				success:function(data) {
-
-					if ( data['done'] ) {
-						console.log(data['done'],id);
-						document.location.href= url;
-					}
-				},
-				error:function(error) {
-					console.log(error);
-				}
-			});
-			*/
+            that.closeNotice(notice.not_id, url);
 		});
-		
-		/*
-        newNotice.children[1].addEventListener('click', function() {
-            let id = notice['not_id'];
-
-            $.ajax({
-                url: _ROOT_ + "Views/Glob_Controllers/pushNoticeController.php",
-                type: 'POST',
-                data: {
-                    closeNotice: id
-                },
-                dataType:"json",
-                success:function(data) {
-
-                    if ( data['done'] )
-                    {
-                        console.log(data['done'],id);
-                        document.location.href= url;
-                    }
-                },
-                error:function(error) {
-                    console.log(error);
-                }
-            });
-        }, false);*/
     }
-
-    // при закрытии ставим IP
-    newNotice.querySelector('.iziToast-close').addEventListener('click', function() {
-        that.closeNotice(notice.not_id);
-    }, false );
-	//this.showedNotice.push(notice.not_id); //добавли в массив как показанное уведомление чтоб не показывать снова
-    //this.pushNoticeBadgeInc();
 };
 
 PushNotice.prototype.checkNotice = function() {
@@ -252,7 +180,6 @@ PushNotice.prototype.checkNotice = function() {
 
             console.log('data = ', data);
             if ( typeof data !== 'object' ) return;
-
             that.incomingNotices = data;
 
             for ( let i = 0; i < data.length; i++ )
@@ -261,53 +188,92 @@ PushNotice.prototype.checkNotice = function() {
                 if ( that.showedNotice.includes(data[i].not_id) ) continue;
                 that.addNotice(data[i]);
             }
-			
-            // if ( data.length > 2 )
-            // {
-				// // если нотайсов больше 3х - запускаем функцию closeAllNotices. она выводит крестик вверху и вешает обработчик на него
-            //     //that.closeAllNotices();
-            // }
+
+
+            /// синхронизируем актуальные уведомления в data с адишниками в localStorage
+            // нужно что б нормально работало из под разные браузеров на одном IP
+            let actual = [];
+            for ( let i = 0; i < that.showedNotice.length; i++ )
+            {
+                let id = that.showedNotice[i];
+                for ( let j = 0; j < data.length; j++ )
+                {
+                    if ( id === data[j].not_id ) actual.push(id);
+                }
+            }
+            debug(actual,'third');
+            that.showedNotice = actuals;
+            localStorage.setItem('showedNotice', JSON.stringify(that.showedNotice));
+            that.pushNoticeBadgeInc();
         }
     });
 };
+/**
+ * showingToasts()
+ * В данный момент отображаемые тосты
+ * на которых еще не истек таймаут
+ */
+PushNotice.prototype.showingToasts = function() {
+    return document.getElementById('pushNoticeWrapp').querySelectorAll('.iziToast');
+};
+
+/**
+ * Обработчики на кнопки под баджем
+ */
 PushNotice.prototype.noticesBadgeToggle = function() {
 	let that = this;
 	let noticesBadge = document.getElementById('noticesBadge');
 
-	noticesBadge.querySelector('.noticeShow').addEventListener('click',function(){
-		debug(that.incomingNotices,'показываем');
-
-        for ( let i = 0; i < that.incomingNotices.length; i++ )
-        {
-            // если оно есть в массиве, значит уже показано - уходим.
-            //if ( that.showedNotice.includes(data[i].not_id) ) continue;
-            that.addNotice(that.incomingNotices[i]);
-        }
-
-	});
-	noticesBadge.querySelector('.noticeHide').addEventListener('click',function(){
-
-	    let pushNoticeWrapp = document.getElementById('pushNoticeWrapp');
-	    let showedToasts = pushNoticeWrapp.querySelectorAll('.iziToast');
-	    
+	function hideNotices()
+    {
+        let showedToasts = that.showingToasts();
         for ( let i = 0; i < showedToasts.length; i++ )
         {
             iziToast.hide({}, showedToasts[i]);
         }
+    }
 
+    // кнопка показать все
+	noticesBadge.querySelector('.noticeShow').addEventListener('click',function(){
+
+        hideNotices(); // сначало прячем все открытые
+
+        // потом заного открываем все с новыми таймаутами
+		debug(that.incomingNotices,'показываем');
+        for ( let i = 0; i < that.incomingNotices.length; i++ )
+        {
+            that.addNotice(that.incomingNotices[i]);
+        }
 	});
-	noticesBadge.querySelector('.noticeCloseAll').addEventListener('click',function(){
 
+	// кнопка скрыть все
+	noticesBadge.querySelector('.noticeHide').addEventListener('click', function(){
+
+        let showedToasts = that.showingToasts();
+        for ( let i = 0; i < showedToasts.length; i++ )
+        {
+            // если оно есть в массиве, не добавляем снова.
+            if ( that.showedNotice.includes(showedToasts[i].id) ) continue;
+            that.showedNotice.push(showedToasts[i].id);
+            that.pushNoticeBadgeInc();
+        }
+
+        hideNotices();
+    });
+
+	// кнопка убрать все
+	noticesBadge.querySelector('.noticeCloseAll').addEventListener('click',function(){
+	    that.closeAllNotices();
+        hideNotices();
 	});
 	
 };
-//let pushNotice;
+
 window.onload = function()
 {
     if ( !_PNSHOW_ ) return;
     if ( !pushNotice )
     {
-       // pushNotice = new PushNotice( document.querySelector('.closeAll'), document.getElementById('pushNoticeWrapp') );
         pushNotice = new PushNotice();
     }
     pushNotice.checkNotice();
