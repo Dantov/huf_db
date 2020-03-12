@@ -136,11 +136,11 @@
 			<?php
 			if ( $drawBy_ == 3)
 				: ?>
-			<a onclick="main.sendXLS()"  id="sendXLS" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Записать коллекцию в Excel" >
+			<a onclick="sendXLS()"  id="sendXLS" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Записать коллекцию в Excel" >
 				<i class="far fa-file-excel"></i>
 			</a>
 			<?php elseif( $drawBy_ < 5 ): ?>
-			<a onclick="main.sendPDF()"  id="sendPDF" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Записать коллекцию в PDF" >
+			<a onclick="sendPDF()"  id="sendPDF" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Записать коллекцию в PDF" >
 				<i class="far fa-file-pdf"></i>
 			</a>
 			<?php endif; ?>

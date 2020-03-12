@@ -147,6 +147,8 @@ if ( add_img ) add_img.addEventListener('click', function(){
 });
 //----- END Загрузка Превьюшек  -------//
 
+
+
 //-----  удаление превьюшек  -------//
 function dellImgPrew(self){
 	
@@ -156,8 +158,12 @@ function dellImgPrew(self){
 }
 //----- END удаление превьюшек  -------//
 
+
+
 //----- удаление с сервера картинок, стл, модели целиком -------//
 function dell_fromServ( id, imgname, isSTL, dellpos ) {
+
+    $('#modalDelete').iziModal('open');
 	
 	id = id || false;
 	imgname = imgname || false;
@@ -167,11 +173,12 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 	let postObj = {
 		id: id,
 		imgname: imgname
-	}
+	};
 	if ( isSTL == 1 ) postObj.isSTL = 1;
 	if ( isSTL == 2 ) postObj.isSTL = 2;
 	if ( dellpos ) postObj.dellpos = 1;
-	
+
+	/*
 	let body = document.querySelector('body');
 	let blackCover2 = document.createElement('div');
 		blackCover2.setAttribute('id','blackCover2');
@@ -190,7 +197,7 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 			saved_form_result.innerHTML = '';
 			blackCover2.remove();
 		};
-	
+	*/
 	let deleteBtn = document.createElement('a');
 		deleteBtn.setAttribute('class','btn btn-danger');
 		deleteBtn.setAttribute('type','button');
@@ -248,30 +255,30 @@ function dell_fromServ( id, imgname, isSTL, dellpos ) {
 				}
 			});
 		};
-		
+		/*
 	let center = document.createElement('center');	
 		center.appendChild(abortBtn);
-		center.appendChild(deleteBtn);
-	saved_form_result.innerHTML = '<center><h4>Удалить картинку - <b>' + imgname + '?</b></h4></center>';
+		center.appendChild(deleteBtn);*/
+	//saved_form_result.innerHTML = '<center><h4>Удалить картинку - <b>' + imgname + '?</b></h4></center>';
 	
 	if ( isSTL == 1 ) {
-		saved_form_result.innerHTML = '<center><h4>Удалить STL файл - <b>' + imgname + '?</b></h4></center>';
+		//saved_form_result.innerHTML = '<center><h4>Удалить STL файл - <b>' + imgname + '?</b></h4></center>';
 	}
 	if ( isSTL == 2 ) {
-		saved_form_result.innerHTML = '<center><h4>Удалить файл накладки - <b>' + imgname + '?</b></h4></center>';
+		//saved_form_result.innerHTML = '<center><h4>Удалить файл накладки - <b>' + imgname + '?</b></h4></center>';
 	}
 	if ( dellpos ) {
 		let num3d = document.querySelector('#num3d').value;
 		let vendor_code = document.querySelector('#vendor_code').value;
 		let modelType = document.querySelector('#modelType').value;
 		
-		saved_form_result.innerHTML = '<center><h4>Удалить модель - <b>' + num3d + ' / ' + vendor_code + ' - ' + modelType + ' безвозвратно?</b></h4></center>';
+		//saved_form_result.innerHTML = '<center><h4>Удалить модель - <b>' + num3d + ' / ' + vendor_code + ' - ' + modelType + ' безвозвратно?</b></h4></center>';
 	}
-	saved_form_result.appendChild(center);
-	saved_form_result.classList.add('hidethis');
+	//saved_form_result.appendChild(center);
+	//saved_form_result.classList.add('hidethis');
 	
-	body.appendChild(blackCover2);
-};
+	//body.appendChild(blackCover2);
+}
 //----- END удаление с сервера картинок, стл, модели целиком -------//
 
 

@@ -288,3 +288,10 @@ ProgressModal.prototype.openPDF = function(filename) {
 };
 
 let progressModal = new ProgressModal();
+
+function sendPDF() {
+    progressModal.sendPDF();
+}
+function sendXLS() {
+    progressModal.sendXLS();
+}

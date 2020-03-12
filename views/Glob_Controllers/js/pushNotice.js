@@ -156,6 +156,7 @@ PushNotice.prototype.addNotice = function(notice)
 	});
 	
 	newNotice = document.getElementById(notice.not_id);
+    newNotice.querySelector('.iziToast-icon').setAttribute('title',notice.status.title);
 
     // переходим на модель при клике и ставим IP
     if ( +notice['addEdit'] !== 3 )
@@ -202,7 +203,7 @@ PushNotice.prototype.checkNotice = function() {
                 }
             }
             debug(actual,'third');
-            that.showedNotice = actuals;
+            that.showedNotice = actual;
             localStorage.setItem('showedNotice', JSON.stringify(that.showedNotice));
             that.pushNoticeBadgeInc();
         }
