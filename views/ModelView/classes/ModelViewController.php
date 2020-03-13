@@ -90,6 +90,7 @@ class ModelViewController extends GeneralController
         $editBtn = false;
         if ( isset($_SESSION['user']['access']) && $_SESSION['user']['access'] > 0 )
         {
+            $userAccess = (int)$_SESSION['user']['access'];
             if ( (int)$_SESSION['user']['access'] === 1 || (int)$_SESSION['user']['id'] === 33 ) { // весь доступ
                 $editBtn = true;
             }
@@ -102,10 +103,11 @@ class ModelViewController extends GeneralController
                     $editBtn = true;
                 }
             }
-            if (
-                (int)$_SESSION['user']['access'] === 3
+
+            if ( (int)$_SESSION['user']['access'] === 3
                 || (int)$_SESSION['user']['access'] === 4
                 || (int)$_SESSION['user']['access'] === 5
+                || (int)$_SESSION['user']['access'] === 6
             ) $editBtn = true;
         }
 

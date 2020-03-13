@@ -81,6 +81,8 @@
                 'labels' => false,
                 'statuses' => false,
                 'dellModel' => false,
+                'deleteImage' => false,
+                'addModel' => false,
             ];
 
             switch ($this->user['access'])
@@ -116,6 +118,10 @@
                     $permittedFields['description'] = true;
                     $permittedFields['repairs'] = true;
                     $permittedFields['labels'] = true;
+                    $permittedFields['statuses'] = true;
+                    break;
+                case 6:
+                    $permittedFields['images'] = true;
                     $permittedFields['statuses'] = true;
                     break;
             }

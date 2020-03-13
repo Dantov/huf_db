@@ -803,7 +803,7 @@ class Main extends General {
                 || $this->user['access'] == 3
                 || $this->user['access'] == 4
                 || $this->user['access'] == 5
-				|| $this->user['id'] == 33 ) $editBtn = true;
+				|| $this->user['access'] == 6 ) $editBtn = true;
 
 			// доступ только где юзер 3д моделлер или автор
 			if ( $this->user['access'] == 2 ) 
