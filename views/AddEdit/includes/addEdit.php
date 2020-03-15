@@ -371,7 +371,7 @@
                                     </button>
                                 </div>
                             <? else: ?>
-                                <a class="btn btn-sm btn-default img_dell" role="button" onclick="dell_fromServ(<?=$id?>, '<?=$imgPath[$i]?>')">
+                                <a class="btn btn-sm btn-default img_dell" role="button" onclick="dell_fromServ(<?=$id?>, '<?=$imgPath[$i]?>', false, false, this)">
                                     <span class="glyphicon glyphicon-remove"></span>
                                 </a>
                             <? endif;?>
@@ -703,7 +703,7 @@
 <?php include('includes/protoImages_Row.php');?>
 
 <script defer src="<?=_views_HTTP_?>AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
-<script defer src="<?=_views_HTTP_?>AddEdit/js/deleteModal.js?ver=<?=time();?>"></script>
+<script defer src="<?=_views_HTTP_?>AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
 <script src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
 <?=$stonesScript;?>
 

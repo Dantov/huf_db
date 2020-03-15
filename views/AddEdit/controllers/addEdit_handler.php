@@ -135,12 +135,12 @@
 	if ( $isEdit === false )
 	{
 		$id = $handler -> addNewModel($number_3d, $model_type); // возвращает id новой модели при успехе
-		if ( !$id ) exit();
+		if ( !$id ) exit('Error in addNewModel(). No ID is coming!');
 
 		$datas .= ",status='$status',
                     status_date='$date',
                     creator_name='$creator_name',
-                    date='$date',
+                    date='$date'
 		";
 
         //04,07,19 - вносим статус в таблицу statuses
@@ -150,15 +150,15 @@
             'creator_name'=> $creator_name,
             'UPdate'      => $date
         ];
-        $handler -> addStatusesTable($statusT);
+        $handler->addStatusesTable($statusT);
         // end
-                
-		$updateModelData = $handler -> updateDataModel($datas, $id);
+		//debug($datas,'$datas',1);
+		$updateModelData = $handler->updateDataModel($datas, $id);
 	} else {
 	    // редактирование старой
 		$updateModelData = $handler -> updateDataModel($datas);
-		$handler -> updateCreater($creator_name);    // добавим создателя, если его не было
-		$handler -> updateStatus($status, $creator_name); // обновляем статус
+		$handler->updateCreater($creator_name);    // добавим создателя, если его не было
+		$handler->updateStatus($status, $creator_name); // обновляем статус
 	}
 	
     if ( !$updateModelData )

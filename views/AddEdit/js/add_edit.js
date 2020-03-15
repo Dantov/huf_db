@@ -159,130 +159,27 @@ function dellImgPrew(self){
 //----- END удаление превьюшек  -------//
 
 
-
 //----- удаление с сервера картинок, стл, модели целиком -------//
-function dell_fromServ( id, imgname, isSTL, dellpos ) {
-
-    $('#modalDelete').iziModal('open');
-	
-	id = id || false;
-	imgname = imgname || false;
-	isSTL = isSTL || false; // если == 2 значит это Ai файл
-	dellpos = dellpos || false;
-	
-	let postObj = {
-		id: id,
-		imgname: imgname
+function dell_fromServ( id, imgname, isSTL, dellpos, element ) 
+{
+	let imgtoDell;
+	if (element)
+	{
+		imgtoDell = element.parentElement.parentElement.parentElement;
+	}
+	let dellObj = {
+		id: id || false,
+		imgname: imgname || false,
+		isSTL: isSTL || false, // если == 2 значит это Ai файл
+		dellpos: dellpos || false,
+		element: imgtoDell || false,
 	};
-	if ( isSTL == 1 ) postObj.isSTL = 1;
-	if ( isSTL == 2 ) postObj.isSTL = 2;
-	if ( dellpos ) postObj.dellpos = 1;
-
-	/*
-	let body = document.querySelector('body');
-	let blackCover2 = document.createElement('div');
-		blackCover2.setAttribute('id','blackCover2');
-		blackCover2.setAttribute('class','blackCover');
-		
-	let saved_form_result = document.getElementById('saved_form_result');
 	
-	let abortBtn = document.createElement('a');
-		abortBtn.setAttribute('class','btn btn-default');
-		abortBtn.setAttribute('type','button');
-		abortBtn.innerHTML = 'Отменить';
-		abortBtn.onclick = function () {
-			let saved_form_result = document.querySelector('#saved_form_result');
-			let blackCover2 = document.querySelector('#blackCover2');
-			saved_form_result.classList.remove('hidethis');
-			saved_form_result.innerHTML = '';
-			blackCover2.remove();
-		};
-	*/
-	let deleteBtn = document.createElement('a');
-		deleteBtn.setAttribute('class','btn btn-danger');
-		deleteBtn.setAttribute('type','button');
-		deleteBtn.style.marginLeft = '20px';
-		deleteBtn.innerHTML = 'Удалить';
-		deleteBtn.onclick = function () {
-			
-			let result = document.querySelector('#saved_form_result');
-				result.classList.remove('hidethis');
-			
-			let loading_img = document.createElement('img');
-				loading_img.setAttribute('class','blackCover_loading');
-				loading_img.setAttribute('src','../../picts/loading.gif');
-				
-			let blackCover2 = document.querySelector('#blackCover2');
-				blackCover2.appendChild(loading_img); // добавляем гифку
-				
-			$.ajax({
-				type: 'POST',
-				url: 'controllers/delete.php', //путь к скрипту, который обрабатывает задачу
-				data: postObj,
-				dataType:"json",
-				success:function(data) {  //функция обратного вызова, выполняется в случае успешной отработки скрипта
-					
-					let id = data.id;
-					let imgname = data.imgname;
-					let kartinka = data.kartinka;
-					let dell = data.dell;
-					
-					let href = 'index.php?id='+id+'&component=2';
-					if ( dell ) {
-						href = '../Main/index.php';
-						imgname = dell;
-						kartinka = 'Модель ';
-					}
-					
-					blackCover2.children[0].remove(); // удаляем гифку
-					result.classList.add('hidethis');
-					let a = document.createElement('a');
-						a.setAttribute('class','btn btn-primary');
-						a.setAttribute('type','button');
-						a.setAttribute('href',href);
-						a.innerHTML = 'ОК';
-					let strong = document.createElement('strong');
-						strong.innerHTML = imgname;
-					let h4 	   = document.createElement('h4');
-						h4.innerHTML = kartinka + strong.outerHTML + ' удалена!' + '<br />';
-					let center = document.createElement('center');
-						center.appendChild(h4);
-						center.appendChild(a);
-
-					result.innerHTML = '';
-					result.appendChild(center);
-					
-				}
-			});
-		};
-		/*
-	let center = document.createElement('center');	
-		center.appendChild(abortBtn);
-		center.appendChild(deleteBtn);*/
-	//saved_form_result.innerHTML = '<center><h4>Удалить картинку - <b>' + imgname + '?</b></h4></center>';
+	dellModal.modalDataInit(dellObj);
+	$('#modalDelete').iziModal('open');
 	
-	if ( isSTL == 1 ) {
-		//saved_form_result.innerHTML = '<center><h4>Удалить STL файл - <b>' + imgname + '?</b></h4></center>';
-	}
-	if ( isSTL == 2 ) {
-		//saved_form_result.innerHTML = '<center><h4>Удалить файл накладки - <b>' + imgname + '?</b></h4></center>';
-	}
-	if ( dellpos ) {
-		let num3d = document.querySelector('#num3d').value;
-		let vendor_code = document.querySelector('#vendor_code').value;
-		let modelType = document.querySelector('#modelType').value;
-		
-		//saved_form_result.innerHTML = '<center><h4>Удалить модель - <b>' + num3d + ' / ' + vendor_code + ' - ' + modelType + ' безвозвратно?</b></h4></center>';
-	}
-	//saved_form_result.appendChild(center);
-	//saved_form_result.classList.add('hidethis');
-	
-	//body.appendChild(blackCover2);
 }
 //----- END удаление с сервера картинок, стл, модели целиком -------//
-
-
-
 
 
 
@@ -629,37 +526,6 @@ function submitForm() {
 	let addform = document.getElementById('addform');
 	if ( !addform.checkValidity() ) return;
 
-	/*
-	// перед отправкой проверка на покрытие и метериал
-	let material = document.getElementById('material');
-	let covering = document.getElementById('covering');
-	let inputsMaterial = material.getElementsByTagName('input');
-	let inputCovering = covering.getElementsByTagName('input');
-
-	if ( inputsMaterial[0].checked ) {
-		for ( let i = 1; i < inputsMaterial.length; i++ ) {
-			if ( inputsMaterial[i].checked ) {
-				inputsMaterial[i].checked = false;
-			}
-		}
-	}
-	if ( inputCovering[0].checked && inputCovering[3].checked ) {
-
-		inputCovering[5].checked = false;
-		inputCovering[6].checked = false;
-		inputCovering[7].setAttribute('value',"");
-	}
-	if ( !inputCovering[0].checked  ) {
-		for ( let i = 3; i < inputCovering.length; i++ ) {
-			
-			if ( inputCovering[i].checked ) {
-				inputCovering[i].checked = false;
-			}
-		}
-		inputCovering[7].setAttribute('value',"");
-	}
-	*/
-
 	let addedit = 'controllers/addEdit_handler.php';
 	let formData = new FormData(addform);
 		formData.append('userName',userName);
@@ -699,6 +565,7 @@ function submitForm() {
 			resp = JSON.parse(resp);
 			debug(resp);
 
+			modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-saved');
             modal.iziModal('setHeaderColor', '#edaa16');
             modal.iziModal('setTitle', 'Сохранение прошло успешно!');
             let title = '';
@@ -713,6 +580,9 @@ function submitForm() {
 
 			back.href = '../Main/index.php';
             show.href = '../ModelView/index.php?id=' + resp.id;
+            edit.onclick = function() {
+            	document.location.reload(true);
+            }
             back.classList.remove('hidden');
             edit.classList.remove('hidden');
             show.classList.remove('hidden');

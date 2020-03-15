@@ -3,11 +3,12 @@ Node.prototype.remove = function() {  // - полифил для elem.remove(); 
     this.parentElement.removeChild(this);
 };
 
-//const _HOSTNAME_ = "127.0.0.1";
-const _HOSTNAME_ = "192.168.0.245";
+const _HOSTNAME_ = "127.0.0.1";
+//const _HOSTNAME_ = "192.168.0.245";
 const _URL_ = document.location.origin; // http://huf.db
 const _DIR_ = document.location.href.split('/')[3]; // views
 const _ROOT_ = _URL_ + '/'; //http://localhost/HUF_DB_Dev/
+
 /**
  * @type {string}
  * _CONTROLLER_ - страница где находимся
@@ -16,6 +17,7 @@ const _CONTROLLER_ = document.location.href.split('/')[4]; // AddEdit/Main/Model
 let approvedControllers = [
     'Main',
     'ModelView',
+    'Nomenclature',
 ];
 const _PNSHOW_ = approvedControllers.includes(_CONTROLLER_);
 

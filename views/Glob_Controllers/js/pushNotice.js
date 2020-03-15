@@ -62,6 +62,8 @@ PushNotice.prototype.pushNoticeBadgeInc = function() {
 };
 
 PushNotice.prototype.closeAllNotices = function() {
+	
+	
 
 	let that = this;
     $.ajax({
@@ -137,6 +139,8 @@ PushNotice.prototype.addNotice = function(notice)
         this.incomingNotices.push(notice);
         debug(this.incomingNotices,'incomingNotices');
     }
+    
+    
 
     let addStr, newNotice;
     let that = this;
@@ -146,26 +150,37 @@ PushNotice.prototype.addNotice = function(notice)
     if ( +notice['addEdit'] === 2 ) addStr = "Изменена";
     if ( +notice['addEdit'] === 3 ) addStr = "Удалена";
 
+	let glyphi,title,img_src;
+	
+	// переходим на модель при клике и ставим IP если она не удалена
+	if ( +notice['addEdit'] !== 3 ) {
+		glyphi = notice.status.glyphi;
+		title = notice.status.title;
+		img_src = notice.img_src;
+	} else { // модель удалена
+		glyphi = 'remove-sign';
+		title = 'Модель удалена!';
+		img_src = _URL_ + '/web/picts/deleted.png';
+	}
+	
     iziToast.show({
 		id: notice.not_id,
 		title: notice.number_3d +'/'+ notice.vendor_code + ' - ' + notice.model_type,
 		message: addStr + ' модель!',
-		image: notice.img_src,
-		icon: 'glyphicon glyphicon-'+ notice.status.glyphi,
+		image: img_src,
+		icon: 'glyphicon glyphicon-'+ glyphi,
 		iconColor: '',
 	});
 	
 	newNotice = document.getElementById(notice.not_id);
-    newNotice.querySelector('.iziToast-icon').setAttribute('title',notice.status.title);
-
-    // переходим на модель при клике и ставим IP
-    if ( +notice['addEdit'] !== 3 )
-    {
-    	newNotice.children[0].addEventListener('click',function() {
-
-            that.closeNotice(notice.not_id, url);
+    newNotice.querySelector('.iziToast-icon').setAttribute('title', title);
+    
+	if ( +notice['addEdit'] !== 3 ) {
+		newNotice.children[0].addEventListener('click',function() {
+			that.closeNotice(notice.not_id, url);
 		});
-    }
+	}
+    
 };
 
 PushNotice.prototype.checkNotice = function() {
@@ -179,7 +194,7 @@ PushNotice.prototype.checkNotice = function() {
         dataType:"json",
         success:function(data) {
 
-            console.log('data = ', data);
+            console.log('incomingNotices = ', data);
             if ( typeof data !== 'object' ) return;
             that.incomingNotices = data;
 
@@ -189,20 +204,22 @@ PushNotice.prototype.checkNotice = function() {
                 if ( that.showedNotice.includes(data[i].not_id) ) continue;
                 that.addNotice(data[i]);
             }
-
-
+            
             /// синхронизируем актуальные уведомления в data с адишниками в localStorage
-            // нужно что б нормально работало из под разные браузеров на одном IP
+            //  нужно что б нормально работало из под разные браузеров на одном IP
             let actual = [];
+            debug(that.showedNotice,'showedNotice');
             for ( let i = 0; i < that.showedNotice.length; i++ )
             {
                 let id = that.showedNotice[i];
                 for ( let j = 0; j < data.length; j++ )
                 {
-                    if ( id === data[j].not_id ) actual.push(id);
+                    if ( id == data[j].not_id ) actual.push(id);
                 }
             }
-            debug(actual,'third');
+            
+            debug(actual,'actual');
+            
             that.showedNotice = actual;
             localStorage.setItem('showedNotice', JSON.stringify(that.showedNotice));
             that.pushNoticeBadgeInc();
@@ -253,17 +270,22 @@ PushNotice.prototype.noticesBadgeToggle = function() {
         let showedToasts = that.showingToasts();
         for ( let i = 0; i < showedToasts.length; i++ )
         {
+        	//debug(showedToasts[i].id, 'showedToastsID');
             // если оно есть в массиве, не добавляем снова.
             if ( that.showedNotice.includes(showedToasts[i].id) ) continue;
             that.showedNotice.push(showedToasts[i].id);
             that.pushNoticeBadgeInc();
         }
-
+        
+        localStorage.setItem('showedNotice', JSON.stringify(that.showedNotice));
+        
         hideNotices();
     });
 
 	// кнопка убрать все
 	noticesBadge.querySelector('.noticeCloseAll').addEventListener('click',function(){
+		noticesBadge.querySelector('.noticeHide').click();
+		
 	    that.closeAllNotices();
         hideNotices();
 	});

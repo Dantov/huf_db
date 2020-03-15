@@ -115,7 +115,8 @@
 <img id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
 
 <?php include('../AddEdit/includes/resultModal.php');?>
-<script src="js/edit.js?ver=<?=time();?>"></script>
+<script defer src="<?= _views_HTTP_ ?>AddEdit/js/ResultModal.js?ver=<?=time() ?>"> </script>
+<script defer src="js/edit.js?ver=<?=time();?>"></script>
 
 
 <div class="AddEditSideButtons" id="AddEditSideButtons">

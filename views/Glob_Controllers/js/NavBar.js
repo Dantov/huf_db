@@ -1,7 +1,8 @@
 function NavBar()
 {
-
+	if ( !_PNSHOW_ ) document.getElementById('noticesBadge').classList.add('hidden');
 }
+	
 NavBar.prototype.getCoords = function(elem) {
 
     let box = elem.getBoundingClientRect();

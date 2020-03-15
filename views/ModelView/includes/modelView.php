@@ -18,11 +18,11 @@
     </div>
     <div class="col-xs-12 col-sm-4 noPaddingLR">
         <center>
-            <a class="btn btn-sm btn-info" onclick="main.getPDF('passport');" role="button">
+            <a class="btn btn-sm btn-info" onclick="getPDF('passport');" role="button">
                 <span class="glyphicon glyphicon-print"></span>
                 <span> Пасспорт</span>
             </a>
-            <a class="btn btn-sm btn-info" onclick="main.getPDF('runner');" role="button">
+            <a class="btn btn-sm btn-info" onclick="getPDF('runner');" role="button">
                 <span class="glyphicon glyphicon-print"></span>
                 <span> Бегунок</span>
             </a>

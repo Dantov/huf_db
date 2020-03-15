@@ -45,68 +45,63 @@ function submitForm() {
 
     var addedit = 'controllers/editHandler.php';
     var formData = new FormData(editform);
+    formData.append('userName',userName);
+	formData.append('tabID',tabName);
+	
+	let modal = $('#modalResult');
+	let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
+	let status = document.querySelector('#modalResultStatus');
+	let back = modalButtonsBlock.querySelector('.modalProgressBack');
+	let edit = modalButtonsBlock.querySelector('.modalResultEdit');
+	let show = modalButtonsBlock.querySelector('.modalResultShow');
 
-    var result = document.getElementById('saved_form_result');
-    var progressBar = result.querySelector('#progress-bar');
-    var progressStatus = result.querySelector('#progressStatus');
+	$('#modalResult').iziModal('open');
+	let xhr;
+	
+	xhr = $.ajax({
+		url: addedit,
+		type: 'POST',
+		data: formData,
+		processData: false,
+		contentType: false,
+		beforeSend: function() {
+			debug(xhr);
 
-    $.ajax({
-        url: addedit,
-        type: 'POST',
-        //dataType: "html", //формат данных
-        //dataType: "json",
-        //data: $("#addform").serialize(),
-        data: formData,
-        processData: false,
-        contentType: false,
-        beforeSend: function()
-        {
-            progressStatus.innerHTML = 'Отправляю данные...';
+			modal.iziModal('setTitle', 'Идёт отправление данных на сервер.');
+			modal.iziModal('setHeaderColor', '#858172');
+		},
+		success:function(resp) {
+			resp = JSON.parse(resp);
+			debug(resp);
 
-            var blackCover = document.getElementById('blackCover');
-                blackCover.classList.add('blackCover');
-            var saved_form_result = document.getElementById('saved_form_result');
-                saved_form_result.classList.toggle('hidethis');
-        },
-        success:function(resp) 
-        {
-            resp = JSON.parse(resp);
-            //debug(resp);
+			if ( resp.done == 1 ) {
+				modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-saved');
+				modal.iziModal('setHeaderColor', '#edaa16');
+				modal.iziModal('setTitle', 'Статусы внесены успешно!');
+			} else {
+				modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-remove');
+				modal.iziModal('setHeaderColor', '#7f6f13');
+				modal.iziModal('setTitle', 'Ошибка при сохранении статусов!');
+			}
 
-            progressBar.style.width = 100 + '%';
-            progressBar.innerHTML = 100 + '%';
+			back.href = '../Main/index.php';
+			
+			back.classList.remove('hidden');
+		},
+		error: function(error) { // Данные не отправлены
+			modal.iziModal('setTitle', 'Ошибка отправки! Попробуйте снова.');
+			modal.iziModal('setHeaderColor', '#95ffb1');
 
-            var strong =  document.createElement('strong');
-                strong.innerHTML = "Статусы внесены успешно!";
-            if ( resp.done == 1 )
-            {
-                strong.innerHTML = "Статусы внесены успешно!";
-            } else {
-                strong.innerHTML = "Ошибка!";
-            }
-            var h4 = document.createElement('h4');
-                    h4.appendChild(strong);
+			edit.onclick = function() {
+				document.location.reload(true);
+			}
+			edit.innerHTL = 'Назад';
+			edit.classList.remove('hidden');
 
-            var a3 = document.createElement('a');
-                    a3.setAttribute('class','btn btn-success');
-                    a3.setAttribute('type','button');
-                    a3.setAttribute('href','../Main/index.php');
-                    a3.innerHTML = 'OK';
-
-            var center = document.createElement('center');
-                    center.appendChild(a3);
-
-            progressStatus.innerHTML = 'Готово!';
-
-            result.appendChild(h4);
-            result.appendChild(center);
-            
-        },
-        error: function() { // Данные не отправлены
-            progressStatus.innerHTML = 'Ошибка отправки! Попробуйте снова.';
-        }
-    });
-
+			debug(error);
+		}
+	});
+	
 }
 
 

@@ -7,7 +7,8 @@
         <div class="modalButtonsBlock text-center">
             <a class="btn btn-success hidden modalProgressBack" href="" role="button"><span class="glyphicon glyphicon-triangle-left"></span> В Базу</a>
             <a class="btn btn-default hidden modalResultEdit" data-izimodal-close="#modalResult" role="button"><span class="glyphicon glyphicon-pencil"></span> Редактировать</a>
-            <a class="btn btn-info hidden modalResultShow" href="" role="button"><span class="glyphicon glyphicon-saved"></span> Посмотреть</a>
+			<a class="btn btn-info hidden modalResultShow" href="" role="button">
+				<span class="glyphicon glyphicon-eye-open"></span> Посмотреть</a>
         </div>
     </div>
 </div>

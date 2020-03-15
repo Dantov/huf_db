@@ -257,8 +257,9 @@ class Handler extends General { // общий класс, для манипул�
 	public function updateDataModel($datas, $id=false) {
 		if (!$id) $id = $this->id;
 		
-		$where = " WHERE id='$id'";
+		$where = " WHERE id='$id' ";
 		$queryStr = $datas.$where;
+		//debug($queryStr,'$queryStr');
 		$addEdit = mysqli_query($this->connection, $queryStr);
 		if ( !$addEdit ) {
 			printf( "Error updateDataModel() in class ".get_class($this)." : %s\n", mysqli_error($this->connection) );
@@ -615,11 +616,12 @@ class Handler extends General { // общий класс, для манипул�
             'dell' => $row['number_3d']." / ".$row['vendor_code']." - ".$row['model_type'],
         ];
 
-		mysqli_query($this->connection, " DELETE FROM stock    WHERE     id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM images   WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM gems     WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM vc_links WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM statuses WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM stock      WHERE     id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM images     WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM gems       WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM vc_links   WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM statuses   WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM pushnotice WHERE pos_id='$this->id' ");
 		$path = $row['number_3d'].'/'.$this->id;
 		
 		if ( file_exists($path) ) $this->rrmdir($path);

@@ -213,11 +213,9 @@ JS;
             </div>
             <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziModal.min.js"></script>
             <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziToast.min.js"></script>
-			<script defer src="<?=_glob_HTTP_ ?>js/NavBar.js"> </script>
-			<?
-			if ($_SESSION['assist']['PushNotice'] == 1)
-				: ?>
-			<script defer src="<?=_glob_HTTP_ ?>js/PushNotice.js?ver=<?=time() ?>"> </script>
+			<script defer src="<?=_glob_HTTP_ ?>js/NavBar.js?ver=<?=time()?>"></script>
+			<? if ($_SESSION['assist']['PushNotice'] == 1): ?>
+				<script defer src="<?=_glob_HTTP_ ?>js/PushNotice.js?ver=<?=time() ?>"> </script>
 			<? endif; ?>
             <script defer src="<?=_views_HTTP_?>Main/js/main.js?ver=<?=time()?>"></script>
             <script defer src="<?=_views_HTTP_?>Main/js/ProgressModal.js?ver=<?=time()?>"></script>
@@ -225,7 +223,7 @@ JS;
         </footer>
 
     </div><!--content-->
-    <? include_once _globDIR_.'includes/pushNotice.php' ?>
+	<div id="pushNoticeWrapp" class="row"></div>
     <? if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
 </body>
 </html>

@@ -10,6 +10,7 @@ ResultModal.prototype.init = function()
     debug('init');
     $('#modalResult').iziModal({
         title: 'Подготовка...',
+        icon: 'glyphicon glyphicon-floppy-disk',
         transitionIn: 'comingIn',
         transitionOut: 'comingOut',
         overlayClose: false,
@@ -64,6 +65,7 @@ ResultModal.prototype.onModalClosed = function(main, event)
 
     modal.iziModal('setTitle', '');
     modal.iziModal('setSubtitle', '');
+    modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-disk');
 
     progressModal.ProgressBar(-1);
 };

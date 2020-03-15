@@ -3,13 +3,13 @@
 function ProgressModal()
 {
     if ( !document.getElementById('modalProgress') ) return;
-    this.init();
 
     this.doc = {
         doc: 'PDF',
         fileName:'',
         url:'',
         headerColor:'#1d82a6',
+        icon: 'far fa-file-pdf',
         type:'',
         data:{
             userName: userName,
@@ -19,6 +19,9 @@ function ProgressModal()
         xhr: '',
         switch:'',
     };
+    
+    this.init();
+    
 }
 
 /**
@@ -40,6 +43,7 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
             break;
         case 'xls':
             doc.doc = 'Excel';
+            doc.icon = 'far fa-file-excel';
             doc.url = 'controllers/workingCenters_xls.php';
             doc.headerColor = '#00a623';
             doc.method = 'GET';
@@ -63,6 +67,7 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
     let modal = $('#modalProgress');
     modal.iziModal('setTitle', 'Идёт подготовка к созданию <b>'+ doc.doc +'</b> документа.');
     modal.iziModal('setHeaderColor', doc.headerColor);
+    modal.iziModal('setIcon', doc.icon);
 };
 
 ProgressModal.prototype.onModalOpen = function(that, event)
@@ -294,4 +299,8 @@ function sendPDF() {
 }
 function sendXLS() {
     progressModal.sendXLS();
+}
+function getPDF(doc)
+{
+	progressModal.getPDF(doc);
 }

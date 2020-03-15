@@ -1,5 +1,4 @@
 <?php
-date_default_timezone_set('Europe/Kiev');
 session_start();
 
 $id = (int) $_POST['id'];
