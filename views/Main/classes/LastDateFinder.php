@@ -39,7 +39,12 @@ class LastDateFinder
         return self::getMax('end');
     }
 
-    protected static function getMax( $str='' )
+    /**
+     * @param string $str
+     * @return array
+     * Вернет пустой массив если не было дат статусов
+     */
+    protected static function getMax($str='' )
     {
         //поиск макс
         $max = 0;

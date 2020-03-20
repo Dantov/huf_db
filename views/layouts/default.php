@@ -97,7 +97,7 @@ JS;
 								<span class="badge pushNoticeBadge"></span>
 							</button>
 							<ul class="dropdown-menu">
-								<li class="<?=$navBar['navbarStatsShow']; ?>">
+								<li>
 									<a class="noticeShow"><span class="glyphicon glyphicon-eye-open"></span>&#160; Показать</a>
 								</li>
 								<li>
@@ -198,7 +198,7 @@ JS;
         </div>
         <!-- END Блок коллекций -->
 
-        <div class="container content">
+        <div class="<?=$this->varBlock['container'] === 2 ? 'containerWC' : 'container'?> content">
             <?=$content;?>
         </div><!--container-->
         <footer class="footer" style="box-shadow: 0 -1px 5px rgba(0,0,0,.075)">

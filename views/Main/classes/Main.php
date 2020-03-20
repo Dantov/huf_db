@@ -15,8 +15,7 @@ class Main extends General {
 	{
 		parent::__construct($server);
 		if ( isset($assist) ) $this->assist = $assist;
-		//if ( isset($user) ) $this->user = $user;
-		
+
 		$this->row = !empty($foundRow) ? $foundRow : array();
 
 		$this->today = time();
@@ -40,15 +39,6 @@ class Main extends General {
 		if ( is_int($iter) ) return $this->row[$iter];
 		return $this->row;
 	}
-
-//    /**
-//     * @return array
-//     */
-//    public function getWorkingCenters()
-//    {
-//        //$this->workingCenters = require _viewsDIR_ . 'Main/includes/workingCenters.php';
-//        return $this->workingCenters;
-//    }
 	
 	public function getVeriables()
 	{
@@ -80,6 +70,7 @@ class Main extends General {
 		
 		return $result;
 	}
+
 
     public function getStatusesSelect()
 	{
@@ -232,32 +223,6 @@ class Main extends General {
 
 		return $this->row;
 	}
-
-	/*
-	 * Дополнтельная выборка по участкам, для приложения №2
-	 */
-	public function dopSortByWC()
-    {
-        // массив ID участков
-        // надо выбрать все статусы которые относятся к этим участкам
-        $workCenterIds = $_SESSION['assist']['wcSort']['ids'];
-        $needleStatuses = [];
-        foreach ( $workCenterIds as $wcID )
-        {
-            foreach ( $this->statuses as $status )
-            {
-                if ( $status['location'] == $wcID ) $needleStatuses[] = $status;
-            }
-        }
-        $in = 'IN (';
-        foreach ( $needleStatuses as $needleStatus )
-        {
-            $in .= "'".$needleStatus['id'] . "','" . $needleStatus['name_ru'] . "',";
-        }
-        //debug($in);
-        return trim($in, ',') . ')';
-    }
-
 
 	
 	public function getModelsByRows() {
@@ -419,12 +384,12 @@ class Main extends General {
 	{
         $wCenters = $this->workingCentersSorted;
         $statusesTable = $this->getStatusesTable($row['id']); // список статусов по ID из табл. Statuses
-        $lastStatus = $row['status'];
+        $lastStatus = $row['status']; // ID
 
-        // Красим всю строку если статус отложено или снет с произв.
-        $trFill = false;
+        $trFill = false; // Покрасит всю строку если статус отложено или снет с произв.
 
 		//debug($statusesTable,'$statusesTable',1);
+		//debug($wCenters,'$wCenters',1);
         /*
          * $cKey - номер участка по порядку
          * $wCenter - массив с информацией об участке.
@@ -432,43 +397,47 @@ class Main extends General {
          */
         foreach ( $wCenters as $cKey => $wCenterSorted ) // распределяем даты статусов по таблице
         {
+            //debug($wCenterSorted,'$wCenterSorted');
             $wCenter = [];
         	if ( !isset($wCenterSorted['statuses']) ) continue;
             $wCenter['start'] = $wCenterSorted['statuses']['start']['id'];
             $wCenter['end'] = $wCenterSorted['statuses']['end']['id'];
 
             // запомним даты, для каждого участка
-			// что бы выбрать самые последние ( бывает если есть несколько одинаковых статусов )
+			// что бы выбрать самые последние ( бывает если есть несколько одинаковых статусов ) используем LastDateFinder
+            // это нужно что бы отобразить более точную информацию о текущем местоположении модели.
+            // Поправки делает - ExpiredCorrection
 			foreach ( $statusesTable as $status )
 			{
                 if ( $status['status_id'] == $wCenter['start'] ) LastDateFinder::setDatesStart($status);
                 if ( $status['status_id'] == $wCenter['end'] ) LastDateFinder::setDatesEnd($status);
 			}
-
             $wCenter['start'] = LastDateFinder::getDateStart();
             $wCenter['end'] = LastDateFinder::getDateEnd();
-            LastDateFinder::clear(); // стираем, для следующего участка
+            LastDateFinder::clear(); // стираем данные внутри, для следующего участка
 
             $dateStart = $wCenter['start']['date']; // запомним дату принятия, что-бы вычислить оставшееся время для сдачи.
             $dateEnd = $wCenter['end']['date']; // взяли дату сдачи
 
 			if ( !empty($dateStart) ) // начнем проверку, если есть дата принятия
 			{
+			    // договоренности
                 $plusDay = 2 * 24 * 60 * 60; // +сутки в раб. день // 1 дней; 24 часа; 60 минут; 60 секунд
-                if ( date("w", strtotime($dateStart)) == 5 ) $plusDay = 4 * 24 * 60 * 60; // +3 суток с рятницы
-                if ( date("w", strtotime($dateStart)) == 6 ) $plusDay = 3 * 24 * 60 * 60; // +2 суток с субботы
+                if ( date("w", strtotime($dateStart)) == 5 ) $plusDay = 4 * 24 * 60 * 60; // +4 суток с пятницы
+                if ( date("w", strtotime($dateStart)) == 6 ) $plusDay = 3 * 24 * 60 * 60; // +3 суток с субботы
 
-				$dateStart = strtotime($dateStart) + $plusDay;
+				$dateStart = strtotime($dateStart) + $plusDay; // изменяем $dateStart в соответствии с выше описанными договоренностями
 
 				if ( ($this->today > $dateStart) && empty($dateEnd) )
 				{
                     $wCenter['end']['date'] = -1;
+
                     if ( $lastStatus == 11 ) $wCenter['end']['date'] = 'Отложено';
                     if ( $lastStatus == 88 ) $wCenter['end']['date'] = 'Снято с Пр.';
+
 				} else {
                     if (isset($wCenter['end']['date'])) $wCenter['end']['date'] = formatDate($wCenter['end']['date']);
 				}
-
 
                 $wCenter['start']['date'] = formatDate($wCenter['start']['date']);
 				//debug(date('Y-m-d',$dateStart),'modyf');
@@ -482,10 +451,20 @@ class Main extends General {
 
 			$wCenters[$cKey] = $wCenter;
         } //END распределяем даты статусов по таблице
+        //debug($wCenters,'$wCenters',1);
+
 
 
         // Убираем Просрочено если дальше, на участках, есть даты
         ExpiredCorrection::adjust($wCenters);
+        // или на пред. участках даты старше чем последняя дата принятия
+        ExpiredCorrection::adjust2($wCenters);
+        // если есть дата сдачи но нет даты принятия в течении 2х суток - поставим просрочено!
+        ExpiredCorrection::adjust3($wCenters, $lastStatus);
+
+        ExpiredCorrection::clear(); // почистим для след. модели
+
+
 
         // парсим размеры. Считаем кол-во моделей в размерном ряде.
         $sizeRange = 1;
@@ -514,9 +493,10 @@ class Main extends General {
 		//debug($wCenters,'$wCenters');
 
         require _viewsDIR_ . "Main/includes/drawTableRow.php";
-
 		return true;
 	}
+
+
 
     /**
 	 * Сформируем массив данных для вывода в excel
@@ -527,6 +507,33 @@ class Main extends General {
 	{
 		return $this->drawTableRow($row,true);
 	}
+
+
+    /*
+     * Дополнтельная выборка по участкам, для приложения №2
+     */
+    public function dopSortByWC()
+    {
+        // массив ID участков
+        // надо выбрать все статусы которые относятся к этим участкам
+        $workCenterIds = $_SESSION['assist']['wcSort']['ids'];
+        $needleStatuses = [];
+        foreach ( $workCenterIds as $wcID )
+        {
+            foreach ( $this->statuses as $status )
+            {
+                if ( $status['location'] == $wcID ) $needleStatuses[] = $status;
+            }
+        }
+        $in = 'IN (';
+        foreach ( $needleStatuses as $needleStatus )
+        {
+            $in .= "'".$needleStatus['id'] . "','" . $needleStatus['name_ru'] . "',";
+        }
+        //debug($in);
+        return trim($in, ',') . ')';
+    }
+
 
 	/*
 	 * приложение №2
@@ -544,7 +551,6 @@ class Main extends General {
             //debug($wCenter,'$wCenter');
             foreach ( $wCenterDB as $wCenter )
             {
-
             	if (isset($lastStatus['status']['location']) )
             	{
                     if ( $lastStatus['status']['location'] == $wCenter['id'] )
@@ -564,8 +570,41 @@ class Main extends General {
 			if ( $workingCenter['name'] !== $wcSort ) return false;
 		}
 
-		//массив со списком статусов
-		$premitedStatusesToEditDate = require _viewsDIR_ . "Main/includes/premittedStatusesToEditDate.php";
+
+        //массив со списком статусов принятия (start)
+        $permittedStatusesToEditDate = [];
+        foreach ( $this->workingCentersDB as $wcGlobalName => $wCentersDB )
+		{
+		    foreach ( $wCentersDB as $subUnit )
+		    {
+                foreach ( $this->statuses as $status )
+                {
+                    if ( $status['type'] === 'start' && $status['location'] == $subUnit['id'] ) $permittedStatusesToEditDate[$wcGlobalName][] = $status['id'];
+                }
+            }
+
+        }
+        //debug($permittedStatusesToEditDate,'permittedStatusesToEditDate',1);
+        // Определим рисовать ли нам инпут смены даты или просто дату
+        $locations = explode(',',$this->user['location']);
+//        debug($locations);
+        $wcID = $workingCenter['id'];
+        $drawEditDate = false;
+        if ( in_array($wcID,$locations) )
+        {
+            foreach ($permittedStatusesToEditDate as $wcName => $statusesID) {
+                if ($workingCenter['name'] == $wcName) {
+                    //debug($wc);
+                    //debug($lastStatus['status']['id'],'id');
+                    if (in_array($lastStatus['status']['id'], $statusesID))
+                    {
+                        $drawEditDate = true;
+                        break;
+                    }
+                }
+            }
+        }
+
 
         // парсим размеры. Считаем кол-во моделей в размерном ряде.
         $sizeRange = 1;

@@ -580,9 +580,12 @@ function submitForm() {
 
 			back.href = '../Main/index.php';
             show.href = '../ModelView/index.php?id=' + resp.id;
+            let href = _URL_ + '/views/AddEdit/index.php?id=' + resp.id + '&component=2';
+
             edit.onclick = function() {
-            	document.location.reload(true);
-            }
+            	document.location.href = href;
+            };
+
             back.classList.remove('hidden');
             edit.classList.remove('hidden');
             show.classList.remove('hidden');

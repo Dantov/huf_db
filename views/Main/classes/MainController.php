@@ -113,6 +113,7 @@ class MainController extends GeneralController
 
 				$statsbottom = "<i>Сортировка по: </i>".$showsort." || "."<i>Найдено (Изделий):</i> ".$wholePos." || "."<i>Показано:</i> ".$iter;
 			}
+            if ( $drawBy_ === 3 ) $this->varBlock['container'] = 2; //уберем класс container в шаблоне чтоб стало шире
 
 			//Табличка участов с просроченными
 			if ( $drawBy_ === 5 ) {

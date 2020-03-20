@@ -8,15 +8,21 @@ class PushNotice extends General
     {
         parent::__construct($_SERVER);
         $this->connectToDB();
+        $this->getUser();
+
+        $this->userID = $this->user['id'];
     }
+
+    public $userID;
 
     public function checkPushNotice()
     {
         $noticesResult = [];
 
-        $query = mysqli_query($this->connection, " SELECT * FROM pushnotice where ip not like '%{$this->IP_visiter}%'" );
+        $userId = 'a'.$this->userID.'a';
+        $query = mysqli_query($this->connection, " SELECT * FROM pushnotice where ip not like '%$userId%'" );
         // уходим если нет новых нотаций
-        if ( !$query->num_rows ) return $this->IP_visiter;
+        if ( !$query->num_rows ) return $userId;
 
         $c = 0;
         while( $pushRows = mysqli_fetch_assoc($query) )
@@ -138,7 +144,7 @@ class PushNotice extends General
      */
     public function addIPtoNotice($id)
     {
-        $newIpRow = $this->IP_visiter.';';
+        $newIpRow = 'a'.$this->userID.'a;';
 
         $addIPShowed = mysqli_query($this->connection, " UPDATE pushnotice SET ip=CONCAT(ip,'$newIpRow') WHERE id='$id' ");
 
@@ -147,7 +153,7 @@ class PushNotice extends General
             printf( "addIPtoNotice() error: %s\n", mysqli_error($this->connection) );
             return false;
         }
-        return $this->IP_visiter;
+        return $this->userID;
     }
 
 
@@ -161,14 +167,12 @@ class PushNotice extends General
         $in = '(';
         for( $i = 0; $i < count($not_id); $i++ )
         {
-            //$where .= "id='{$not_id[$i]}' OR ";
-            $in .= $not_id[$i] . ',';
+            $in .= $not_id[$i].',';
         }
-        //$where = trim($where);
-        //$where = substr($where, 0, -2);
         $in = trim($in,',') . ')';
 
-        $newIpRow = $this->IP_visiter.';';
+        $newIpRow = 'a'.$this->userID.'a;';
+
         //CONCAT соединяет строки
         //REPLACE - заменяет в строкке
         $query = " UPDATE pushnotice SET ip=CONCAT(ip,'$newIpRow') WHERE id IN $in ";

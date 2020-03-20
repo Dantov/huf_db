@@ -60,8 +60,6 @@
 	}
 	
 	chdir(_stockDIR_);
-	
-	
 
 	$date        = trim($_POST['date']);
 	$number_3d   = strip_tags(trim($_POST['number_3d']));
@@ -72,7 +70,9 @@
 	
 	if ( !$handler -> connectToDB() ) exit;
 
-	$number_3d = $handler -> setNumber_3d($number_3d);
+	$permissions = $handler->permittedFields();
+
+	$number_3d = $handler->setNumber_3d($number_3d);
 	$handler -> setVendor_code($vendor_code);
 	$handler -> setModel_typeEn($model_type);
 	$handler -> setModel_type($model_type);
@@ -91,10 +91,10 @@
 	$handler -> addVCtoComplects($vendor_code, $number_3d);
 	
 	// формируем строку model_material
-	$model_material = $handler -> makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
+	$model_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
 	
 	// формируем строку model_covering
-	$model_covering = $handler -> makeModelCovering($_POST['rhodium'],$_POST['golding'],$_POST['blacking'],$_POST['rhodium_fill'],$_POST['onProngs'],$_POST['onParts'],$_POST['rhodium_PrivParts']);
+	$model_covering = $handler->makeModelCovering($_POST['rhodium'],$_POST['golding'],$_POST['blacking'],$_POST['rhodium_fill'],$_POST['onProngs'],$_POST['onParts'],$_POST['rhodium_PrivParts']);
 
 	$str_labels =  $handler->makeLabels($_POST['labels']);
 
@@ -113,21 +113,30 @@
 	
 	$datas = "UPDATE stock SET ";
 
-	if ( !empty($number_3d) ) $datas .= "number_3d='$number_3d',";
-	if ( !empty($vendor_code) ) $datas .= "vendor_code='$vendor_code',";
-	if ( !empty($collection) ) $datas .= "collections='$collection',";
-	if ( !empty($author) ) $datas .= "author='$author',";
-	if ( !empty($modeller3d) ) $datas .= "modeller3D='$modeller3d',";
-	if ( !empty($jewelerName) ) $datas .= "jewelerName='$jewelerName',";
-	if ( !empty($model_type) ) $datas .= "model_type='$model_type',";
-	if ( !empty($size_range) ) $datas .= "size_range='$size_range',";
-	if ( !empty($print_cost) ) $datas .= "print_cost='$print_cost',";
-	if ( !empty($model_cost) ) $datas .= "model_cost='$model_cost',";
-	if ( !empty($model_covering) ) $datas .= "model_covering='$model_covering',";
-	if ( !empty($model_material) ) $datas .= "model_material='$model_material',";
-	if ( !empty($model_weight) ) $datas .= "model_weight='$model_weight',";
-	if ( !empty($description) ) $datas .= "description='".trim($description)."',";
-	if ( !empty($str_labels) ) $datas .= "labels='$str_labels',";
+	if ( !empty($number_3d) && $permissions['number_3d'] ) $datas .= "number_3d='$number_3d',";
+
+	if ( $permissions['vendor_code']  ) $datas .= "vendor_code='$vendor_code',";
+
+	if ( !empty($collection) && $permissions['collections'] ) $datas .= "collections='$collection',";
+
+	if ( !empty($author) && $permissions['author'] ) $datas .= "author='$author',";
+
+	if ( !empty($modeller3d) && $permissions['modeller3d'] ) $datas .= "modeller3D='$modeller3d',";
+	if ( $permissions['jewelerName'] ) $datas .= "jewelerName='$jewelerName',";
+
+	if ( !empty($model_type) && $permissions['model_type'] ) $datas .= "model_type='$model_type',";
+	if ( $permissions['size_range'] ) $datas .= "size_range='$size_range',";
+
+	if ( !empty($print_cost) && $permissions['print_cost'] ) $datas .= "print_cost='$print_cost',";
+	if ( !empty($model_cost) && $permissions['model_cost'] ) $datas .= "model_cost='$model_cost',";
+
+	if ( $permissions['covering'] ) $datas .= "model_covering='$model_covering',";
+	if ( $permissions['material'] ) $datas .= "model_material='$model_material',";
+
+	if ( !empty($model_weight) && $permissions['model_weight'] ) $datas .= "model_weight='$model_weight',";
+
+	if ( $permissions['description'] ) $datas .= "description='".trim($description)."',";
+	if ( $permissions['labels'] ) $datas .= "labels='$str_labels',";
 
     $datas = trim($datas,',');
 
@@ -169,36 +178,40 @@
     $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
     $progress->progressCount( $overalProgress );
 	$resp_arr['processes']['manual'][] = $overalProgress;
-	
+
+
 	//--------- добавляем картинки---------//
-	if ( $imgCount = count($_FILES['upload_images']['name']?:[]) )
-	{
-		if( !file_exists($number_3d) ) mkdir($number_3d, 0777, true);
-		if( !file_exists($number_3d.'/'.$id) ) mkdir($number_3d.'/'.$id, 0777, true);
-		if( !file_exists($number_3d.'/'.$id.'/images') ) mkdir($number_3d.'/'.$id.'/images', 0777, true);
-		
-		for ( $i = 0; $i < $imgCount; $i++ )
-		{
-			$quer_addImg = $handler -> addImage($_FILES['upload_images'], $_POST['upload_images_word'], $i);
-			
-			if ( $quer_addImg ) {
-                //============= counter point ==============//
-                $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-                $progress->progressCount( $overalProgress );
-				$resp_arr['processes']['picts'][] = $overalProgress;
-			} else {
-				exit('Error adding image');
-			}
-		}
-	}
-	$quer_updFlags = $handler->updateImageFlags($_POST['imgFor']);
-	if ( !$quer_updFlags ) exit();
-	// ----- конец добавляем картинки ----- //
+    if ( $permissions['images'] )
+    {
+        if ( $imgCount = count($_FILES['upload_images']['name']?:[]) )
+        {
+            if( !file_exists($number_3d) ) mkdir($number_3d, 0777, true);
+            if( !file_exists($number_3d.'/'.$id) ) mkdir($number_3d.'/'.$id, 0777, true);
+            if( !file_exists($number_3d.'/'.$id.'/images') ) mkdir($number_3d.'/'.$id.'/images', 0777, true);
+
+            for ( $i = 0; $i < $imgCount; $i++ )
+            {
+                $quer_addImg = $handler -> addImage($_FILES['upload_images'], $_POST['upload_images_word'], $i);
+
+                if ( $quer_addImg ) {
+                    //============= counter point ==============//
+                    $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+                    $progress->progressCount( $overalProgress );
+                    $resp_arr['processes']['picts'][] = $overalProgress;
+                } else {
+                    exit('Error adding image');
+                }
+            }
+        }
+        $quer_updFlags = $handler->updateImageFlags($_POST['imgFor']);
+        if ( !$quer_updFlags ) exit('Error updateImageFlags in ' . __FILE__);
+        // ----- конец добавляем картинки ----- //
+    }
 	
 
 
 	// ----- Добавляем STL FILE ----- //
-	if ( !empty($_FILES['fileSTL']['name'][0]) )
+	if ( !empty($_FILES['fileSTL']['name'][0]) && $permissions['stl'] )
 	{
 		if( !file_exists($number_3d) ) mkdir($number_3d, 0777, true);
 		if( !file_exists($number_3d.'/'.$id.'/stl') ) mkdir($number_3d.'/'.$id.'/stl', 0777, true);
@@ -221,7 +234,7 @@
 
 
 	// ----- Добавляем Ai FILE ----- //
-	if ( !empty($_FILES['fileAi']['name'][0]) ) {
+	if ( !empty($_FILES['fileAi']['name'][0]) && $permissions['ai'] ) {
 		
 		if( !file_exists($number_3d) ) mkdir($number_3d, 0777, true);
 		if( !file_exists($number_3d.'/'.$id.'/ai') ) mkdir($number_3d.'/'.$id.'/ai', 0777, true);
@@ -239,10 +252,10 @@
 
 
 	//---------- добавляем камни ----------//
-	$gem_rows_count = count($_POST['gemsName']?:[]);
-	if ( !empty($gem_rows_count) ) //если камни есть то добавляем их
+	//$gem_rows_count = count($_POST['gemsName']?:[]);
+	if ( $permissions['gems'] )
 	{
-
+        //если камни есть то добавляем их
 		$gems = array();
 		$gems['name']  = &$_POST['gemsName'];
 		$gems['cut']   = &$_POST['gemsCut'];
@@ -266,15 +279,20 @@
 
 
 	// добавляем доп. артикулы
-	$dopVCcount = count($_POST['dop_vc_name_']?:[]);
-	if ( !empty($dopVCcount) ) { //если доп. артикулы есть то добавляем их
+//	debug($_POST['dop_vc_name_'],'dop_vc_name_');
+//	debug($_POST['num3d_vc_'],'num3d_vc_');
+//	debug($_POST['descr_dopvc_'],'descr_dopvc_');
 
+    //$dopVCcount = count($_POST['dop_vc_name_']?:[]);
+	//if ( !empty($dopVCcount) ) { //если доп. артикулы есть то добавляем их
+	if ( $permissions['vc_links'] )
+	{
 		$vc = array();
-		$vc['dop_vc_name'] =  &$_POST['dop_vc_name_'];
-		$vc['num3d_vc']	   =  &$_POST['num3d_vc_'];
-		$vc['descr_dopvc'] =  &$_POST['descr_dopvc_'];
+		$vc['dop_vc_name'] =  $_POST['dop_vc_name_'];
+		$vc['num3d_vc']	   =  $_POST['num3d_vc_'];
+		$vc['descr_dopvc'] =  $_POST['descr_dopvc_'];
 		
-		$quer_dop_vc = $handler -> addDopVC( $vc );
+		$quer_dop_vc = $handler->addDopVC( $vc );
 
 		if ( $quer_dop_vc ) {
             //============= counter point ==============//
@@ -290,7 +308,7 @@
 	
 	
 	/// --------- Добавляем ремонты ----------///
-	if ( $rep_count = count($_POST['repairs_descr']?:[]) ) {
+	if ( $rep_count = count($_POST['repairs_descr']?:[]) && $permissions['repairs'] ) {
 		
 		$repairs = array();
 		$repairs['repairs_num']   = &$_POST['repairs_num'];
@@ -335,7 +353,7 @@
 
     //============= counter point ==============//
     $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-	$progress->progressCount( $overalProgress );
+	$progress->progressCount( 100 );
 	$resp_arr['processes']['manual'][] = $overalProgress;
 
     echo json_encode($resp_arr);

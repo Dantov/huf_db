@@ -1208,5 +1208,12 @@ p2 {
 .iziToast {
 	cursor: pointer !important;
 }
+.containerWC {
+	width: auto;
+	padding-right: 15px;
+	padding-left: 15px;
+	margin-right: auto;
+	margin-left: auto;
+}
 
 

@@ -10,9 +10,6 @@
                 <br/>
                 <strong> Фабричный Артикул: </strong>
                 <span id="articl" class="text-warning"><?=$stillNo;?></span>
-                <? if ( $_SESSION['user']['access'] == 4 ): ?>
-                    <a  class="btn btn-sm btn-default" id="vc_create_btn" title="Изменить"><span class="glyphicon glyphicon-pencil"></span></a>
-                <? endif; ?>
             </span>
         </h4>
     </div>

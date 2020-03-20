@@ -121,14 +121,14 @@ DeleteModal.prototype.onModalClosed = function(that, event)
 DeleteModal.prototype.modalDataInit = function(dellObj) 
 {
 	this.dellObj = dellObj;
-}
+};
 DeleteModal.prototype.modalDeleteButton = function(that, event) {
 	debug(that.dellObj,'dellObj');
 	let dellData = that.dellObj;
 	let imgElement;
 	if ( dellData.element )
 	{
-		imgElement = dellData.element
+		imgElement = dellData.element;
 		delete dellData.element;
 	}
 		
@@ -145,18 +145,16 @@ DeleteModal.prototype.modalDeleteButton = function(that, event) {
 		url: 'controllers/delete.php',
 		data: dellData,
 		dataType:"json",
-		success:function(data) {
-			
-			let imgname = data.imgname;
-			let kartinka = data.kartinka;
-			let dellObj = data.dell;
+		success:function(response) {
+            debug(response,'response');
 
-			if ( dellObj ) {
-				href = '../Main/index.php';
-				imgname = dellObj;
+			let imgname = response.imgname;
+			let kartinka = response.kartinka;
+
+			if ( response.dell ) { // удалили модель целиком
+				imgname = response.dell; // здесь строка с именем модели
 				kartinka = 'Модель ';
 			}
-			
 			
 			modal.iziModal('setTitle', kartinka + imgname +' удалена!');
 			modal.iziModal('setSubtitle', '');
@@ -164,16 +162,16 @@ DeleteModal.prototype.modalDeleteButton = function(that, event) {
 			modal.iziModal('setIcon', 'glyphicon glyphicon-ok');
 			
 			if (imgElement) imgElement.remove();
-			
+
+            ok.onclick = function() {
+                document.location.reload(true);
+            };
 			ok.classList.remove('hidden');
-			ok.onclick = function() {
-				document.location.reload(true);
-			}
 			back.classList.add('hidden');
 			dell.classList.add('hidden');
 		}
 	});
 
-}
+};
 
 let dellModal = new DeleteModal();

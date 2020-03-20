@@ -294,19 +294,23 @@ class Handler extends General { // общий класс, для манипул�
 		}
 	}
 	
-	public function addImage(&$files, &$imgWord, $i) {
+	public function addImage(&$files, &$imgWord, $i)
+    {
 		$iter = $i;
+		/*
 		if ( $this->isEdit === true ) {
 			$last_number = $this->findLastNum();
 			$last_number++;
 			$iter = $last_number;
 		}
-		
+		*/
+		$randomString = randomStringChars(8,'en','symbols');
 		//если имя есть, это значит что добавили вручную
-		if ( !empty( basename($files['name'][$i]) ) ) {
+		if ( !empty( basename($files['name'][$i]) ) )
+		{
 			$info = new SplFileInfo($files['name'][$i]);
 			$extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
-			$uploading_img_name = $this->number_3d."-".$this->model_typeEn."-".time()."-".$iter.".".$extension;
+			$uploading_img_name = $this->number_3d."_".$randomString.mt_rand(0,98764321).".".$extension;
 			move_uploaded_file($files['tmp_name'][$i], $this->number_3d.'/'.$this->id.'/images/'.$uploading_img_name);	
 			
 		} else { //иначе, пришло из ворд файла
@@ -324,7 +328,7 @@ class Handler extends General { // общий класс, для манипул�
 			if ( !empty($fullPath) ) { //если файл есть то добавляем запись
 				$path_parts = pathinfo($fullPath);
 				$extension = $path_parts['extension'];
-				$uploading_img_name = $this->number_3d."-".$this->model_typeEn."-".$i.".".$extension;
+				$uploading_img_name = $this->number_3d."-".$this->model_typeEn."_".$randomString.time().".".$extension;
 				copy($fullPath, $this->number_3d.'/'.$this->id.'/images/'.$uploading_img_name);
 			}
 		}
@@ -336,6 +340,9 @@ class Handler extends General { // общий класс, для манипул�
 		}
 		return true;
 	}
+
+
+
 	public function updateImageFlags($imgFlags)
 	{
 	    if ( empty($imgFlags) ) return true;
@@ -455,7 +462,7 @@ class Handler extends General { // общий класс, для манипул�
 	public function addGems( &$gems ) {
 		if ( $this->isEdit === true ) mysqli_query($this->connection, " DELETE FROM gems WHERE pos_id='$this->id' ");
 		
-		for ( $i = 0; $i < count($gems['name']); $i++ ) {
+		for ( $i = 0; $i < count($gems['name']?:[]); $i++ ) {
 			
 			$gemsName  = trim($gems['name'][$i]);
 			$gemsCut   = trim($gems['cut'][$i]);
@@ -493,7 +500,7 @@ class Handler extends General { // общий класс, для манипул�
 	public function addDopVC( &$vc ) {
 		if ( $this->isEdit === true ) mysqli_query($this->connection, " DELETE FROM vc_links WHERE pos_id='$this->id' ");
 		
-		for ( $i = 0; $i < count($_POST['dop_vc_name_']); $i++ ) {
+		for ( $i = 0; $i < count($_POST['dop_vc_name_']?:[]); $i++ ) {
 		
 			$dop_vc_name = trim($vc['dop_vc_name'][$i]);
 			$num3d_vc =  trim($vc['num3d_vc'][$i]);

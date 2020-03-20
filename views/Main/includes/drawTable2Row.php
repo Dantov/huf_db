@@ -12,26 +12,7 @@
     <td><?=$vc_done?></td>
     <td><?=$vc_balance?></td>
     <td>
-    <?php
-        $locations = explode(',',$_SESSION['user']['location']);
-        $wcID = $workingCenter['id'];
-        $toDraw = false;
-        if ( in_array($wcID,$locations) )
-        {
-            foreach ($premitedStatusesToEditDate as $wcName => $wc) {
-                if ($workingCenter['name'] == $wcName) {
-                    //debug($wc);
-                    //debug($lastStatus['status']['id'],'id');
-                    if (in_array($lastStatus['status']['id'], $wc))
-                    {
-                        $toDraw = true;
-                        break;
-                    }
-                }
-            }
-        }
-    ?>
-    <?php if ( $toDraw ) : ?>
+    <?php if ( $drawEditDate ) : ?>
          <input type="date" name="lastStatusDate" class="form-control input-sm" onchange="main.changeStatusDate(this)" data-id="<?=$lastStatus['id']?>" value="<?=$lastStatus['date']?>">
     <?php else: ?>
         <?=$this->formatDate($lastStatus['date'])?>
