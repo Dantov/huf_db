@@ -508,7 +508,7 @@ class Main extends General {
 	/*
 	 * приложение №2
 	 */
-    private function drawTable2Row($row)
+	private function drawTable2Row($row, $xlsx=false)
     {
         //$wCenters = $this->getWorkingCentersSorted();
 
@@ -597,6 +597,17 @@ class Main extends General {
         if ( isset($lastStatus['status']['id']) ) if ( (int)$lastStatus['status']['id'] === 7 ) $vc_done = 1;
         $vc_balance = $sizeRange - $vc_done;
 
+        
+		if ( $xlsx ) 
+		{
+			$result=[];
+			$result['workingCenter'] = $workingCenter;
+			$result['sizeRange'] = $sizeRange;
+			$result['vc_balance'] = $vc_balance;
+			$result['lastStatus'] = $lastStatus;
+			return $result;
+		}
+		
         require _viewsDIR_ . "Main/includes/drawTable2Row.php";
 
         return true;

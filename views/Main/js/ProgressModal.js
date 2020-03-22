@@ -34,6 +34,15 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
     let doc = this.doc;
     doc.switch = docSwitch;
 
+	if ( docSwitch == 'xls' || docSwitch == 'getXlsxFwc' || docSwitch == 'getXlsxExpired' )
+	{
+		doc.doc = 'Excel';
+		doc.icon = 'far fa-file-excel';
+		doc.url = 'controllers/workingCenters_xls.php';
+		doc.headerColor = '#00a623';
+		doc.method = 'GET';
+		doc.data.excel = 1;
+	}
     switch ( docSwitch )
     {
         case 'pdf':
@@ -41,15 +50,18 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
             doc.url = 'controllers/pdfExport_Controller.php';
             doc.method = 'POST';
             break;
-        case 'xls':
-            doc.doc = 'Excel';
-            doc.icon = 'far fa-file-excel';
-            doc.url = 'controllers/workingCenters_xls.php';
-            doc.headerColor = '#00a623';
-            doc.method = 'GET';
-            doc.data.excel = 1;
+		case 'xls':
             doc.data.getXlsx = 1;
+            doc.subtitle = 'Таблица Рабочих Участков';
             break;
+		case 'getXlsxFwc':
+			doc.data.getXlsxFwc = 1;
+			doc.subtitle = 'Таблица "Конечный центр нахождения модели"';
+			break;
+		case 'getXlsxExpired':
+			doc.data.getXlsxExpired = 1;
+			doc.subtitle = 'Таблица Просроченнх';
+			break;
         case 'passport':
             doc.doc = 'PDF';
             doc.url = 'controllers/passport_pdf.php';
@@ -66,6 +78,7 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
 
     let modal = $('#modalProgress');
     modal.iziModal('setTitle', 'Идёт подготовка к созданию <b>'+ doc.doc +'</b> документа.');
+	if ( doc.subtitle ) modal.iziModal('setSubtitle', doc.subtitle);
     modal.iziModal('setHeaderColor', doc.headerColor);
     modal.iziModal('setIcon', doc.icon);
 };
@@ -149,7 +162,7 @@ ProgressModal.prototype.onModalOpen = function(that, event)
         }
     }).done(function(data)
     {
-        if ( doc.switch === 'xls' )
+		if ( doc.switch === 'xls' || doc.switch === 'getXlsxFwc' || doc.switch === 'getXlsxExpired' )
         {
             let int = setInterval(function () {
                 if ( doc.fileName )
@@ -238,7 +251,9 @@ ProgressModal.prototype.getPDF = function(doc)
     this.setProgressModal(doc);
     $('#modalProgress').iziModal('open');
 };
-ProgressModal.prototype.sendXLS = function()
+
+
+ProgressModal.prototype.sendXLS = function(doc)
 {
     let collectionName = document.getElementById('collectionName');
     let c_name = collectionName.innerHTML;
@@ -252,7 +267,7 @@ ProgressModal.prototype.sendXLS = function()
         return;
     }
 
-    this.setProgressModal('xls');
+    this.setProgressModal(doc);
     $('#modalProgress').iziModal('open');
 };
 
@@ -297,8 +312,14 @@ let progressModal = new ProgressModal();
 function sendPDF() {
     progressModal.sendPDF();
 }
-function sendXLS() {
-    progressModal.sendXLS();
+function sendXLS(drawBy)
+{
+	let doc = '';
+	if ( drawBy == 3 ) doc = 'xls';
+	if ( drawBy == 4 ) doc = 'getXlsxFwc';
+	if ( drawBy == 5 ) doc = 'getXlsxExpired';
+		
+    progressModal.sendXLS(doc);
 }
 function getPDF(doc)
 {

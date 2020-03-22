@@ -14,6 +14,25 @@ if ( (int)$_GET['getXlsx'] === 1 )
     exit;
 }
 
+//final working center
+if ( (int)$_GET['getXlsxFwc'] === 1 ) {
+	echo "getXlsxFwc";
+	exit;
+	$excel->setProgress($_GET['userName'], $_GET['tabID']);
+	$excel->getXlsxFwc();
+	exit;
+}
+
+//ExpiredTable
+if ( (int)$_GET['getXlsxExpired'] === 1 ) {
+	echo "getXlsxExpired";
+	exit;
+	$excel->setProgress($_GET['userName'], $_GET['tabID']);
+	$excel->getXlsxExpired();
+	exit;
+}
+
+
 if ( (int)$_GET['getFileName'] === 1 )
 {
     if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) )

@@ -506,6 +506,79 @@ class ToExcel extends Main
         $this->progressCount(100);
         echo json_encode('data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'.base64_encode($xlsData));
     }
+    
+    /**
+	* Final Working centers
+	* Конечный центр нахождения
+	* @return
+	*/
+	public function getXlsxFwc()
+	{
+		// уходим если нет моделей для вывода
+		if ( isset($_SESSION['nothing']) ) {
+			debug($_SESSION['nothing']);
+			return;
+		}
+		
+		$spreadsheet = new Spreadsheet();
+		try {
+			$sheet = $spreadsheet->getActiveSheet();
+		} catch (Exception $e) {
+			echo 'Ошибка при создании getActiveSheet()' . $e->getMessage();
+			exit();
+		}
+
+		$startRow = 1;
+		$columnIndex = 1;
+		
+		$sheet->mergeCellsByColumnAndRow($columnIndex,$startRow,$columnIndex+4,$startRow);
+		$sheet->mergeCellsByColumnAndRow($columnIndex+5,$startRow,$columnIndex+7,$startRow);
+		
+		$sheet->setCellValueByColumnAndRow($columnIndex, $startRow, 'Наименование Коллекции: ' . $_SESSION['assist']['collectionName']);
+		$sheet->setCellValueByColumnAndRow($columnIndex+5, $startRow, 'Дата: '. $this->formatDate(time()));
+		
+		$sheet->getRowDimension($startRow)->setRowHeight(20);
+		
+		$startRow++;
+		$sheet->setCellValue('A'.$startRow, 'Артикул / №3Д');
+		$sheet->setCellValue('B'.$startRow, 'Наименование');
+		$sheet->setCellValue('C'.$startRow, 'Конечный рабочий центр нахождения');
+		$sheet->setCellValue('D'.$startRow, 'Статус');
+		$sheet->setCellValue('E'.$startRow, 'Кол-во арт. в коллекции шт.');
+		$sheet->setCellValue('F'.$startRow, 'Кол-во готовых арт. шт.');
+		$sheet->setCellValue('G'.$startRow, 'Остаток артикулов');
+		$sheet->setCellValue('H'.$startRow, 'Дата');
+		
+		// высоты строк
+		$sheet->getRowDimension($startRow)->setRowHeight(22);
+		
+		// ширины колоок
+		for ( $columnIndex = 1; $columnIndex <= 8; $columnIndex++ ) {
+			$sheet->getColumnDimensionByColumn($columnIndex)->setWidth(13);
+		}
+		
+		
+		
+		$ModelRows = $this->getRow();
+		$countModelRows = count(is_array( $ModelRows ) ? $ModelRows : [] );
+		
+		for ( $i = 0; $i < $countModelRows; $i++ ) 
+		{
+			$thisModel = $this->drawTable2Row( $ModelRows[$i], true );
+			$thisModel['model'] = $ModelRows[$i];
+			
+			
+			
+		}
+		
+		
+	}
+	
+	
+	public function getXlsxExpired()
+	{
+		
+	}
 
 
 }

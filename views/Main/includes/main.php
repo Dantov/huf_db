@@ -135,31 +135,27 @@
 
 		<!-- Кнопки Xlsx PDF -->
 		<div class="btn-group pull-left" role="group">
-			<?php $drawBy_ = $_SESSION['assist']['drawBy_']; ?>
-			<?php
-			if ( $drawBy_ == 3)
-				: ?>
-			<a onclick="sendXLS()"  id="sendXLS" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Записать коллекцию в Excel" >
-				<i class="far fa-file-excel"></i>
-			</a>
-			<?php elseif( $drawBy_ < 5 ): ?>
-			<a onclick="sendPDF()"  id="sendPDF" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Записать коллекцию в PDF" >
-				<i class="far fa-file-pdf"></i>
-			</a>
+			<?php $drawBy_ = (int)$_SESSION['assist']['drawBy_']; ?>
+			<?php if ( $drawBy_ > 2 && $drawBy_ < 6  ): ?>
+				<a onclick="sendXLS(<?=$drawBy_ ?>)"  id="sendXLS" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Записать коллекцию в Excel" >
+					<i class="far fa-file-excel"></i>
+				</a>
+			<?php elseif( $drawBy_ > 0 && $drawBy_ < 3 ): ?>
+				<a onclick="sendPDF()"  id="sendPDF" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Записать коллекцию в PDF" >
+					<i class="far fa-file-pdf"></i>
+				</a>
 			<?php endif; ?>
-			<?php
-			if ( $drawBy_ == 3 )
-				: ?>
-			<a id="expiredButon" href="controllers/setSort.php?row_pos=5" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Таблица просроченных" >
-				<i class="far fa-clock"></i>
-			</a>
+			
+			<?php if ( $drawBy_ == 3 ): ?>
+				<a id="expiredButon" href="controllers/setSort.php?row_pos=5" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Таблица просроченных" >
+					<i class="far fa-clock"></i>
+				</a>
 			<?php endif; ?>
-			<?php
-			if ( $drawBy_ == 5 )
-				: ?>
-			<a id="wCentersButon" href="controllers/setSort.php?row_pos=3" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Таблица Рабочих Участков" >
-				<i class="fas fa-tasks"></i>
-			</a>
+			
+			<?php if ( $drawBy_ == 5 ): ?>
+				<a id="wCentersButon" href="controllers/setSort.php?row_pos=3" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Таблица Рабочих Участков" >
+					<i class="fas fa-tasks"></i>
+				</a>
 			<?php endif; ?>
 		</div>
 
