@@ -98,15 +98,18 @@
 			</div>
 			<div class="btn-group" role="group">
 				<button type="button" class="btn btn-default <?=$activeWorkingCenters; ?> <?=$activeWorkingCenters2; ?> dropdown-toggle" title="кол-во отображаемых позиций" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					<span class="glyphicon glyphicon-save-file" title="Таблицы Рабочих участков">
+					<span class="glyphicon glyphicon-save-file" title="Таблицы Рабочих участков"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
 					<li>
 						<a href="controllers/setSort.php?row_pos=3">
-							<span class="glyphicon glyphicon-tasks"></span> Отобразить в таблице Рабочих Участков</a></li>
+							<span class="glyphicon glyphicon-tasks"></span> Таблица Рабочих Участков</a></li>
 					<li>
 						<a href="controllers/setSort.php?row_pos=4">
-							<span class="glyphicon glyphicon-menu-hamburger"></span> Отобразить по Рабочим Центрам</a></li>
+							<span class="glyphicon glyphicon-menu-hamburger"></span> Конечный центр нахождения</a></li>
+					<li>
+						<a href="controllers/setSort.php?row_pos=5">
+							<i class="fa-clock far"></i> Таблица просроченных</a></li>
 				</ul>
 			</div>
 

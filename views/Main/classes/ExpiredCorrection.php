@@ -4,12 +4,34 @@ class ExpiredCorrection
 {
 
     /**
-     * заполняется методом adjust()
      * @expiredCenter array - все данные последнего участка на котором есть "просрочено"
+     * или на котором установлена последняя дата
      */
     public static $expiredCenter;
+	
+	/**
+	* @var int $plusDays
+	* Дни в миллисекундах. 
+	*/
+	private static $plusDays;
+	
+	
+	public static function run(&$wCenters, $lastStatus)
+	{
+		// Если на пред. участках даты свежее чем последняя дата
+		// сотрет старые даты
+		self::freshDateCorrection($wCenters);
+		
+		// если есть дата сдачи но нет даты принятия в течении 2х суток - поставим просрочено!
+		self::adjustExpiredAdmission($wCenters, $lastStatus);
+		
+		// на последок проверим просроченные
+		self::adjustExpiredFinish($wCenters, $lastStatus);
 
-
+		// почистим для след. модели
+		self::clear();
+	}
+	
     /**
      * найдет последнюю поставленную дату
      * @param array $wCenters
@@ -20,24 +42,39 @@ class ExpiredCorrection
         {
             if ( isset($wCenter['end']['date']) && is_string($wCenter['end']['date']) )
             {
-                self::$expiredCenter = $wCenter;
-                return;
+				return self::$expiredCenter = $wCenter;
             }
             if ( isset($wCenter['start']['date']) && is_string($wCenter['start']['date']) )
             {
-                self::$expiredCenter = $wCenter;
-                return;
+				return self::$expiredCenter = $wCenter;
             }
         }
+    }
+    
+    /**
+	* среднее отведенное время для работы над каждой моделью
+	* 
+	*/
+	private static function allowedWorkTime($lastCheckedCenterDate)
+    {
+		$plusDays = 2 * 24 * 60 * 60; // +сутки в раб. день // 1 дней; 24 часа; 60 минут; 60 секунд
+		if ( date("w", $lastCheckedCenterDate) == 5 )
+			$plusDays = 4 * 24 * 60 * 60; // +4 суток с пятницы
+		if ( date("w", $lastCheckedCenterDate) == 6 )
+			$plusDays = 3 * 24 * 60 * 60; // +3 суток с субботы	
+		self::$plusDays = $plusDays;
+		return $plusDays;
     }
 
 
     /**
+     * Не актуально
+	 * Убираем Просрочено если дальше, на участках, есть даты
      * @param array $wCenters - массив участков
      * проверим наличие дат, после "просрочено"
      * изменяет оригинальный массив
      */
-    public static function adjust(&$wCenters = [])
+    public static function adjustOLD(&$wCenters = [])
     {
 
         /* @var &$wCenterEndDate
@@ -83,54 +120,77 @@ class ExpiredCorrection
     }
 
     /**
-     * Сотрем 'просторено' если на предыдущих участках есть даты свежее чем дата принятия
-     * из-за которой выпало 'просрочено'
+	 * Если на пред. участках даты свежее чем последняя дата
+     * Сотрем старые даты
      * @param array $wCenters
      */
-    public static function adjust2(&$wCenters = [])
+	public static function freshDateCorrection(&$wCenters = [])
     {
-        if ( empty(self::$expiredCenter) ) self::findLastMove($wCenters); // нет просроченных - найдем последнюю дату
-
-        $expiredCenter = self::$expiredCenter; // участок на котором висит просрочено
-
-        // дата принятия из-за которой все просрочено
-        $expiredStartStatusDate = 0;
+		$expiredCenter = self::$expiredCenter; // участок на котором висит просрочено
+		if ( empty($expiredCenter) )
+			$expiredCenter = self::findLastMove($wCenters); // нет просроченных - найдем последнюю дату
+		//debug($expiredCenter,'$expiredCenter');
+		
+		
+        
+        $lastStatusDate = 0;
         if ( isset( $expiredCenter['end']['date'] ) && is_string($expiredCenter['end']['date']) )
         {
-            $expiredStartStatusDate = strtotime($expiredCenter['end']['date']);
+			$lastStatusDate = strtotime($expiredCenter['end']['date']);
+			//debug($expiredCenter['end'],'enddate');
         } elseif ( isset( $expiredCenter['start']['date'] ) && is_string($expiredCenter['start']['date']) )
         {
-            $expiredStartStatusDate = strtotime($expiredCenter['start']['date']);
+			$lastStatusDate = strtotime($expiredCenter['start']['date']);
+			//debug($expiredCenter['start'],'startdate');
         }
+        
 
 
         $wCenterStartDate = 0;
         $wCenterEndDate = 0;
-        $arrayNeedle = [];
+		$arrayNeedle = [];
+        $arrayNeedle['start']['date'] = '';
+        $arrayNeedle['end']['date'] = '';
 
         // начинаем смотреть с конца, для того что бы найти первую(с конца) свежую дату
+        // на данный момент ищем самую новую
         foreach ( array_reverse($wCenters) as &$wCenter )
         {
-            if ( $wCenter['end']['date'] === -1 ) continue; // этот же просроченный участок пропустим
-            if ( isset($wCenter['start']['date']) ) $wCenterStartDate = strtotime($wCenter['start']['date']);
-            if ( isset($wCenter['end']['date']) ) $wCenterEndDate = strtotime($wCenter['end']['date']);
+			$endDate = $wCenter['end']['date'] ? : '';
+			$startDate = $wCenter['start']['date'] ? : '';
+			
+			// этот же просроченный участок пропустим
+			if ( $endDate === -1 || $startDate === -1 ) continue;
+				
+			if ( is_string($startDate) )
+				$wCenterStartDate = strtotime($startDate);
+			if ( is_string($endDate) )
+				$wCenterEndDate = strtotime($endDate);
 
-            if ( $wCenterEndDate > $expiredStartStatusDate || $wCenterStartDate > $expiredStartStatusDate )
+			if ( $wCenterEndDate > $lastStatusDate || $wCenterStartDate > $lastStatusDate )
             {
                 // если нашли такую дату - запомним этот участок
-                $arrayNeedle = $wCenter;
-                break;
+				if ($wCenterEndDate > strtotime($arrayNeedle['end']['date']) )
+				{
+					$arrayNeedle = $wCenter;
+				}
+				if ($wCenterStartDate > strtotime($arrayNeedle['start']['date']) ) {
+					$arrayNeedle = $wCenter;
+				}
+				
+                //$arrayNeedle = $wCenter;
+				//debug($arrayNeedle,'$arrayNeedle');
             }
         }
 
         // вычислим ID участка с которого надо начинать стирать даты
         $id = 987;
         foreach ( $wCenters as $arrID => $wCenter ) if ( $wCenter === $arrayNeedle ) { $id = $arrID; break; }
-
+		
         // сотрем дату принятия на этом участке, если она старая
         if ( isset($wCenters[$id]['end']['date']) )
         {
-            if ( strtotime($wCenters[$id]['end']['date']) < $expiredStartStatusDate )
+			if ( strtotime($wCenters[$id]['end']['date']) <= $lastStatusDate )
             {
                 $wCenters[$id]['end'] = [];
             }
@@ -152,9 +212,11 @@ class ExpiredCorrection
      * @param $lastStatus
      * Последний статус у этой модели из таблице Stock
      */
-    public static function adjust3(&$wCenters = [], $lastStatus)
+	public static function adjustExpiredAdmission(&$wCenters = [], $lastStatus)
     {
-
+    	// Уходим если модель Отложена/Снята с пр.
+		if ( $lastStatus == 11 || $lastStatus == 88) return;
+			
         $lastCheckedCenter = [];
 
         // Если нашли дату сдачи - запомним этот участок.
@@ -178,26 +240,51 @@ class ExpiredCorrection
             if ( isset( $wCenters[$j]['start']['date'] ) && is_string($wCenters[$j]['start']['date']) ) return;
         }
 
-
         // Если мы еще здесь, после всех манипуляций!!!
         // значит след. участки пусты.
         // проверим сколько прошло времени и поставим просрочено.
 
-        // договоренности
         $lastCheckedCenterDate = strtotime($lastCheckedCenter['end']['date']);
-        $plusDay = 2 * 24 * 60 * 60; // +сутки в раб. день // 1 дней; 24 часа; 60 минут; 60 секунд
-        if ( date("w", $lastCheckedCenterDate) == 5 ) $plusDay = 4 * 24 * 60 * 60; // +4 суток с пятницы
-        if ( date("w", $lastCheckedCenterDate) == 6 ) $plusDay = 3 * 24 * 60 * 60; // +3 суток с субботы
+		$runningOutIn = $lastCheckedCenterDate + self::allowedWorkTime($lastCheckedCenterDate);
 
-        debug($plusDay,'$plusDay');
-
-        if ( time() > $plusDay && isset($wCenters[$id]) )
+		if ( time() > $runningOutIn && isset($wCenters[$id]) )
         {
-            $nextWCenter = &$wCenters[$id];
-
-            if ( $lastStatus == 11 || $lastStatus == 88) return;
-            $nextWCenter['start']['date'] = -1;
+            $wCenters[$id]['start']['date'] = -1;
         }
+    }
+    
+    /**
+	* Последгий раз ищем просроченную дату
+	* после всех манипуляций
+	* 
+	* @return
+	*/
+	public static function adjustExpiredFinish(&$wCenters = [], $lastStatus)
+    {
+		if ( $lastStatus == 11 || $lastStatus == 88) return;
+		
+		// последний участок с датой
+		$lastCenter = self::findLastMove($wCenters);
+		if ( isset($lastCenter['end']['date']) )
+			return;
+		
+		if ( isset($lastCenter['start']['date']) && is_string($lastCenter['start']['date']) ) 
+		{
+			$lastCheckedCenterDate = strtotime($lastCenter['start']['date']);
+			$plusDays = self::allowedWorkTime($lastCheckedCenterDate);
+			$runningOutIn = $lastCheckedCenterDate + $plusDays;
+			
+			if ( time() > $runningOutIn ) {
+				
+				$id = 987; //ID этого участка в массиве
+				foreach ( $wCenters as $arrID => $wCenter )
+					if ( $wCenter === $lastCenter ) {
+					    $id = $arrID; 
+					    break; 
+					}
+				$wCenters[$id]['end']['date'] = -1;
+			}
+		}
     }
 
     /**
@@ -206,6 +293,7 @@ class ExpiredCorrection
     public static function clear()
     {
         self::$expiredCenter = [];
+        self::$plusDays = 0;
     }
 
     

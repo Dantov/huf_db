@@ -387,11 +387,15 @@ class Main extends General {
         $lastStatus = $row['status']; // ID
 
         $trFill = false; // Покрасит всю строку если статус отложено или снет с произв.
-
+		// проверка на отложено сняио с произв.
+		if ( $lastStatus == 11 || $lastStatus == 88) {
+			$trFill = true;  // Покрасим строку в красный
+		}
+		
 		//debug($statusesTable,'$statusesTable',1);
 		//debug($wCenters,'$wCenters',1);
         /*
-         * $cKey - номер участка по порядку
+         * $cKey - номер участка по порядку ID
          * $wCenter - массив с информацией об участке.
          * start end - статусы принятия сдачи
          */
@@ -400,71 +404,38 @@ class Main extends General {
             //debug($wCenterSorted,'$wCenterSorted');
             $wCenter = [];
         	if ( !isset($wCenterSorted['statuses']) ) continue;
-            $wCenter['start'] = $wCenterSorted['statuses']['start']['id'];
-            $wCenter['end'] = $wCenterSorted['statuses']['end']['id'];
+        		
+            $startID = $wCenterSorted['statuses']['start']['id'];
+            $endID = $wCenterSorted['statuses']['end']['id'];
 
             // запомним даты, для каждого участка
 			// что бы выбрать самые последние ( бывает если есть несколько одинаковых статусов ) используем LastDateFinder
             // это нужно что бы отобразить более точную информацию о текущем местоположении модели.
             // Поправки делает - ExpiredCorrection
+            
 			foreach ( $statusesTable as $status )
 			{
-                if ( $status['status_id'] == $wCenter['start'] ) LastDateFinder::setDatesStart($status);
-                if ( $status['status_id'] == $wCenter['end'] ) LastDateFinder::setDatesEnd($status);
+				if ( $status['status_id'] == $startID )
+					LastDateFinder::setDatesStart($status);
+				if ( $status['status_id'] == $endID )
+					LastDateFinder::setDatesEnd($status);
 			}
             $wCenter['start'] = LastDateFinder::getDateStart();
             $wCenter['end'] = LastDateFinder::getDateEnd();
             LastDateFinder::clear(); // стираем данные внутри, для следующего участка
 
-            $dateStart = $wCenter['start']['date']; // запомним дату принятия, что-бы вычислить оставшееся время для сдачи.
-            $dateEnd = $wCenter['end']['date']; // взяли дату сдачи
-
-			if ( !empty($dateStart) ) // начнем проверку, если есть дата принятия
-			{
-			    // договоренности
-                $plusDay = 2 * 24 * 60 * 60; // +сутки в раб. день // 1 дней; 24 часа; 60 минут; 60 секунд
-                if ( date("w", strtotime($dateStart)) == 5 ) $plusDay = 4 * 24 * 60 * 60; // +4 суток с пятницы
-                if ( date("w", strtotime($dateStart)) == 6 ) $plusDay = 3 * 24 * 60 * 60; // +3 суток с субботы
-
-				$dateStart = strtotime($dateStart) + $plusDay; // изменяем $dateStart в соответствии с выше описанными договоренностями
-
-				if ( ($this->today > $dateStart) && empty($dateEnd) )
-				{
-                    $wCenter['end']['date'] = -1;
-
-                    if ( $lastStatus == 11 ) $wCenter['end']['date'] = 'Отложено';
-                    if ( $lastStatus == 88 ) $wCenter['end']['date'] = 'Снято с Пр.';
-
-				} else {
-                    if (isset($wCenter['end']['date'])) $wCenter['end']['date'] = formatDate($wCenter['end']['date']);
-				}
-
-                $wCenter['start']['date'] = formatDate($wCenter['start']['date']);
-				//debug(date('Y-m-d',$dateStart),'modyf');
-				//debug(date('Y-m-d',$dateEnd),'$dateEnd modyf');
-			} else {
-                if (isset($wCenter['end']['date'])) $wCenter['end']['date'] = formatDate($wCenter['end']['date']);
-			}
-
-			// проверка на отложено сняио с произв.
-            if ( $lastStatus == 11 || $lastStatus == 88) $trFill = true;
-
+			if (isset($wCenter['end']['date']))
+				$wCenter['end']['date'] = formatDate($wCenter['end']['date']);
+			if (isset($wCenter['start']['date']))
+				$wCenter['start']['date'] = formatDate($wCenter['start']['date']);
+		
 			$wCenters[$cKey] = $wCenter;
-        } //END распределяем даты статусов по таблице
+        } 
+        //END распределяем даты статусов по таблице
         //debug($wCenters,'$wCenters',1);
-
-
-
-        // Убираем Просрочено если дальше, на участках, есть даты
-        ExpiredCorrection::adjust($wCenters);
-        // или на пред. участках даты старше чем последняя дата принятия
-        ExpiredCorrection::adjust2($wCenters);
-        // если есть дата сдачи но нет даты принятия в течении 2х суток - поставим просрочено!
-        ExpiredCorrection::adjust3($wCenters, $lastStatus);
-
-        ExpiredCorrection::clear(); // почистим для след. модели
-
-
+        
+        // Корректировки по датам, и поставить просроченные
+		ExpiredCorrection::run($wCenters, $lastStatus);
 
         // парсим размеры. Считаем кол-во моделей в размерном ряде.
         $sizeRange = 1;
@@ -495,7 +466,6 @@ class Main extends General {
         require _viewsDIR_ . "Main/includes/drawTableRow.php";
 		return true;
 	}
-
 
 
     /**

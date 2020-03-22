@@ -371,8 +371,31 @@ class ToExcel extends Main
                 */
 
                 $endDate = $wCenterL['end']['date'];
+                $startDate = $wCenterL['start']['date'];
 
-                $sheet->setCellValueByColumnAndRow($columnIndex, $rowS, $wCenterL['start']['date']);
+				if ( $startDate === -1 ) {
+					$sheet->setCellValueByColumnAndRow($columnIndex, $rowS, "Просрочено");
+					$sheet->getStyleByColumnAndRow($columnIndex, $rowS)
+					->getFill()
+					->setFillType(Style\Fill::FILL_SOLID)
+					->getStartColor()
+					->setRGB('333');
+
+					try {
+						$sheet->getStyleByColumnAndRow($columnIndex, $rowS)
+						->getFont()
+						->applyFromArray([
+							'color' => [
+								'rgb' => 'FFFFFF'
+							]
+						]);
+					} catch (Exception $e) {
+						echo "/n Error getStyleByColumnAndRow()". $e->getMessage() . "/n";
+					}
+				} else {
+					$sheet->setCellValueByColumnAndRow($columnIndex, $rowS, $wCenterL['start']['date']);
+				}
+				
                 $columnIndex++;
 
                 if ( $endDate === -1 ) { //просрачено
@@ -391,11 +414,14 @@ class ToExcel extends Main
                                     'rgb' => 'FFFFFF'
                                 ]
                             ]);
-                    } catch (Exception $e){ echo "/n Error getStyleByColumnAndRow()". $e->getMessage() . "/n"; }
+                    } catch (Exception $e) { 
+                    	echo "/n Error getStyleByColumnAndRow()". $e->getMessage() . "/n"; 
+                    }
 
                 } else {
                     $sheet->setCellValueByColumnAndRow($columnIndex, $rowS, $wCenterL['end']['date']);
                 }
+					
 
                 // горизонтальная черта под строкой
                 $sheet->getStyleByColumnAndRow($borderColumnIndex, $rowS, $columnIndex, $rowS)->applyFromArray( $bottomBorderPerCell );
