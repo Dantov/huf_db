@@ -34,7 +34,7 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
     let doc = this.doc;
     doc.switch = docSwitch;
 
-	if ( docSwitch == 'xls' || docSwitch == 'getXlsxFwc' || docSwitch == 'getXlsxExpired' )
+	if ( docSwitch !== 'pdf' )
 	{
 		doc.doc = 'Excel';
 		doc.icon = 'far fa-file-excel';
@@ -110,7 +110,7 @@ ProgressModal.prototype.onModalOpen = function(that, event)
             cancel.classList.remove('hidden');
             modal.iziModal('setTitle', 'Идёт создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b>');
 
-            if ( doc.switch === 'xls' )
+            if ( doc.switch !== 'pdf' )
             {
                 // вторым запросом добудем имя файла
                 $.ajax({
@@ -134,7 +134,7 @@ ProgressModal.prototype.onModalOpen = function(that, event)
             if ( doc.switch === 'passport' || doc.switch === 'runner' ) doc.fileName = docStr = fileName;
             modal.iziModal('setTitle', 'Создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
 
-            if ( doc.switch === 'xls' )
+            if ( doc.switch !== 'pdf' )
             {
                 let int = setInterval(function () {
                     if ( doc.fileName )
@@ -315,9 +315,9 @@ function sendPDF() {
 function sendXLS(drawBy)
 {
 	let doc = '';
-	if ( drawBy == 3 ) doc = 'xls';
-	if ( drawBy == 4 ) doc = 'getXlsxFwc';
-	if ( drawBy == 5 ) doc = 'getXlsxExpired';
+	if ( +drawBy === 3 ) doc = 'xls';
+	if ( +drawBy === 4 ) doc = 'getXlsxFwc';
+	if ( +drawBy === 5 ) doc = 'getXlsxExpired';
 		
     progressModal.sendXLS(doc);
 }

@@ -54,11 +54,12 @@ class Controller
         if ( empty( $this->title ) )  $this->title = "Powered by Dantov's Framework";
     }
 
-    /*
+    /**
      * setLayout()
      * Устанавливает шаблон из конфиг файла приложения, или из контроллера, если был задан в нем
      * return void
-     * */
+     * @param string $layout
+     */
     protected function setLayout($layout='')
     {
         if ( !empty($layout) && is_string($layout) ) $this->layout = $layout;

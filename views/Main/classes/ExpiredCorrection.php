@@ -31,10 +31,11 @@ class ExpiredCorrection
 		// почистим для след. модели
 		self::clear();
 	}
-	
+
     /**
      * найдет последнюю поставленную дату
      * @param array $wCenters
+     * @return array
      */
     protected static function findLastMove(&$wCenters = [])
     {
@@ -49,6 +50,7 @@ class ExpiredCorrection
 				return self::$expiredCenter = $wCenter;
             }
         }
+        return [];
     }
     
     /**
@@ -296,5 +298,4 @@ class ExpiredCorrection
         self::$plusDays = 0;
     }
 
-    
 }

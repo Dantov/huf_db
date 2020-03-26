@@ -508,7 +508,7 @@ class Main extends General {
 	/*
 	 * приложение №2
 	 */
-	private function drawTable2Row($row, $xlsx=false)
+	protected function drawTable2Row($row, $xlsx=false)
     {
         //$wCenters = $this->getWorkingCentersSorted();
 
@@ -601,9 +601,10 @@ class Main extends General {
 		if ( $xlsx ) 
 		{
 			$result=[];
+			$result['model'] = $row;
 			$result['workingCenter'] = $workingCenter;
 			$result['sizeRange'] = $sizeRange;
-			$result['vc_balance'] = $vc_balance;
+			$result['vc_balance'] = $vc_done;
 			$result['lastStatus'] = $lastStatus;
 			return $result;
 		}
@@ -613,10 +614,13 @@ class Main extends General {
         return true;
     }
 
+
     /**
      * таблица просроченных
+     * @param bool $xls
+     * @return mixed
      */
-    public function getWorkingCentersExpired()
+    public function getWorkingCentersExpired($xls = false)
 	{
         $workingCenters = $this->getWorkingCentersSorted();
 
@@ -735,6 +739,14 @@ class Main extends General {
         $workingCenters = array_reverse($workingCenters);
 		//debug($workingCenters,'',1);
 
+        if ( $xls === true )
+        {
+            $res['countAll'] = $countAll;
+            $res['countAllExpired'] = $countAllExpired;
+            $res['workingCenters'] = $workingCenters;
+            return $res;
+        }
+
 		ob_start();
         require_once  _viewsDIR_ . "Main/includes/drawTableExpired_Start.php";
 
@@ -758,7 +770,6 @@ class Main extends General {
 
         return $result;
 	}
-
     public function drawTableExpiredRow( $workingCenter )
 	{
         $users = $this->getUsers();
@@ -775,6 +786,9 @@ class Main extends General {
 
         require _viewsDIR_ . "Main/includes/drawTableExpired_Row.php";
 	}
+
+
+
 
     /**
      * плиткой

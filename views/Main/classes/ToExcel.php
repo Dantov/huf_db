@@ -39,10 +39,27 @@ class ToExcel extends Main
      */
     public $socketClientResource;
 
+    public $collectionName;
+
     function __construct()
     {
+        // уходим если нет моделей для вывода
+        if ( isset($_SESSION['nothing']) )
+        {
+            debug($_SESSION['nothing']);
+            return;
+        }
+
         parent::__construct($_SERVER, $_SESSION['assist'], false, $_SESSION['foundRow']);
         $this->connectToDB();
+
+        if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) )
+        {
+            $this->getModelsFormStock();
+            $this->collectionName = $_SESSION['assist']['collectionName'];
+        } else {
+            $this->collectionName = (int)$_SESSION['assist']['searchIn'] === 1 ? 'Поиск по: '.$_SESSION['searchFor'] : $_SESSION['assist']['collectionName'].'" Поиск по: '.$_SESSION['searchFor'].':';
+        }
 
         $this->progressResponse = [
             'progressBarPercent' => 0,
@@ -129,12 +146,6 @@ class ToExcel extends Main
 
     public function getXlsx()
     {
-        // уходим если нет моделей для вывода
-        if ( isset($_SESSION['nothing']) )
-        {
-            debug($_SESSION['nothing']);
-            return;
-        }
 
         $workingCenters = $this->getWorkingCentersSorted();
         foreach ( $workingCenters as &$workingCenter )
@@ -284,14 +295,6 @@ class ToExcel extends Main
 
 
 
-        if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) )
-        {
-            $this->getModelsFormStock();
-            $collectionName = $_SESSION['assist']['collectionName'];
-        } else {
-            $collectionName = (int)$_SESSION['assist']['searchIn'] === 1 ? $_SESSION['searchFor'] : $_SESSION['assist']['collectionName'].'" Поиск по :'.$_SESSION['searchFor'].':';
-        }
-
         $sheet->setTitle('Отчёт рабочих центров');
 
         $ModelRow = $this->getRow();
@@ -299,7 +302,7 @@ class ToExcel extends Main
 
         // Запишем вверху дату и коллекцию
         $topText1 = 'Общее кол-во выведенных изделий:  '.$countModelRow;
-        $topText2 = 'Коллекция:  "'. $collectionName.'"';
+        $topText2 = 'Коллекция:  "'. $this->collectionName.'"';
         $topText3 = 'Дата:  '. date('d.m.Y');
         $sheet->setCellValue('D1', $topText1);
         $sheet->setCellValue('H1', $topText2);
@@ -316,6 +319,8 @@ class ToExcel extends Main
         $bottomBorderPerCell = $this->getBordersArray('horPerRow');
         $verticalBordersPerCell = $this->getBordersArray('vertical');
         $verticalBorderLast = $this->getBordersArray('verLast');
+
+
 
         // Внешний цикл выводит строки
         for ( $i = 0; $i < $countModelRow; $i++ )
@@ -379,14 +384,14 @@ class ToExcel extends Main
 					->getFill()
 					->setFillType(Style\Fill::FILL_SOLID)
 					->getStartColor()
-					->setRGB('333');
+					->setRGB('2d2d2d');
 
 					try {
 						$sheet->getStyleByColumnAndRow($columnIndex, $rowS)
 						->getFont()
 						->applyFromArray([
 							'color' => [
-								'rgb' => 'FFFFFF'
+								'rgb' => 'fff'
 							]
 						]);
 					} catch (Exception $e) {
@@ -404,7 +409,7 @@ class ToExcel extends Main
                         ->getFill()
                         ->setFillType(Style\Fill::FILL_SOLID)
                         ->getStartColor()
-                        ->setRGB('3c510c');
+                        ->setRGB('dc5d26');
 
                     try {
                         $sheet->getStyleByColumnAndRow($columnIndex, $rowS)
@@ -470,27 +475,504 @@ class ToExcel extends Main
         $sheet->getStyleByColumnAndRow(1, $rowS, $allAvailableColumns, $rowS)->applyFromArray($borderBottom);
 
 
-        //$sheet->mergeCells('C1:F1');
-        //$sheet->setCellValueByColumnAndRow(2, 2, 'Hello World !22');
-        //$sheet->mergeCellsByColumnAndRow(4,1,5,1);
+        $this->output($spreadsheet);
+    }
 
-        /*
-        $sheet->getStyleByColumnAndRow(1,1)
-            ->getAlignment()
-            ->setHorizontal(Style\Alignment::HORIZONTAL_CENTER)
-            ->setVertical(Style\Alignment::VERTICAL_CENTER);
-        */
 
-        /*
-        $sheet->getStyle('D3:F6')
+
+
+
+    /**
+     * Final Working centers
+     * Конечный центр нахождения
+     * @return void
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     */
+	public function getXlsxFwc()
+	{
+		$spreadsheet = new Spreadsheet();
+		try {
+			$sheet = $spreadsheet->getActiveSheet();
+		} catch (Exception $e) {
+			exit( 'Ошибка при создании getActiveSheet()' . $e->getMessage() );
+		}
+
+		$startRow = 1;
+		// Титул
+        $sheet->mergeCellsByColumnAndRow(1,$startRow,8,$startRow);
+        $sheet->setCellValueByColumnAndRow(1, $startRow, 'Конечный Рабочий Центр Нахождения');
+        // Шрифт 2й строки
+        try
+        {
+            $fontStyleTop = array(
+                'name'      	=> 'Calibri',
+                'size'     	    => 12,
+                'bold'      	=> true,
+                'italic'    	=> false,
+                //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
+                'strike'    	=> false,
+                'superScript' 	=> false,
+                'subScript' 	=> false,
+                'color'     	=> array(
+                    'rgb' => '460e15'
+                )
+            );
+            $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleTop);
+        } catch (Exception $e) {}
+        // высоты строк
+		$sheet->getRowDimension($startRow)->setRowHeight(25);
+
+        $startRow++;
+		$sheet->mergeCellsByColumnAndRow(1,$startRow,5,$startRow);
+		$sheet->mergeCellsByColumnAndRow(6,$startRow,8,$startRow);
+		
+
+		$sheet->setCellValueByColumnAndRow(6, $startRow, 'Дата: '. $this->formatDate(time()));
+		$sheet->getRowDimension($startRow)->setRowHeight(20);
+
+        // Шрифт 1й строки
+        try
+        {
+            $fontStyleTop = array(
+                'name'      	=> 'Calibri',
+                'size'     	    => 12,
+                'bold'      	=> true,
+                'italic'    	=> false,
+                //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
+                'strike'    	=> false,
+                'superScript' 	=> false,
+                'subScript' 	=> false,
+                'color'     	=> array(
+                    'rgb' => 'E0FFFF'
+                )
+            );
+            $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleTop);
+        } catch (Exception $e) {}
+
+        // фоновый цвет 2й строки
+        $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)
             ->getFill()
             ->setFillType(Style\Fill::FILL_SOLID)
             ->getStartColor()
-            ->setRGB('FF69B4');
-        */
+            ->setRGB('4682B4');
+		
+		$startRow++;
+		$sheet->setCellValue('A'.$startRow, 'Артикул / №3Д');
+		$sheet->setCellValue('B'.$startRow, 'Наименование');
+		$sheet->setCellValue('C'.$startRow, 'Конечный рабочий центр нахождения');
+		$sheet->setCellValue('D'.$startRow, 'Статус');
+		$sheet->setCellValue('E'.$startRow, 'Кол-во арт. в коллекции шт.');
+		$sheet->setCellValue('F'.$startRow, 'Кол-во готовых арт. шт.');
+		$sheet->setCellValue('G'.$startRow, 'Остаток артикулов');
+		$sheet->setCellValue('H'.$startRow, 'Дата');
 
-        //$sheet->getStyle('A2:Z2')->applyFromArray($borderStyleArray);
+		// высоты строк
+		$sheet->getRowDimension($startRow)->setRowHeight(25);
+        // ширины колоок
+        for ( $columnIndex = 1; $columnIndex <= 8; $columnIndex++ ) {
+            $sheet->getColumnDimensionByColumn($columnIndex)->setWidth(20);
+        }
 
+        // Шрифт 3й строки
+        try
+        {
+            $fontStyleRow2 = [
+                'size'  => 10,
+                'color' => [
+                    'rgb' => '2F4F4F'
+                ]
+            ];
+            $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleRow2);
+        } catch (Exception $e) {}
+
+
+        $borderStyleArray = array(
+            'borders' => array(
+                'outline' => array(
+                    'borderStyle' => Style\Border::BORDER_THIN,
+                    'color' => array('rgb' => '000000'),
+                ),
+                'horizontal' => array(
+                    'borderStyle' => Style\Border::BORDER_THIN,//BORDER_THICK
+                    'color' => array('rgb' => '000000'),
+                ),
+                'vertical' => array(
+                    'borderStyle' => Style\Border::BORDER_THIN,
+                    'color' => array('rgb' => '000000'),
+                ),
+            ),
+        );
+
+        // Границы 3х строк
+        $sheet->getStyleByColumnAndRow(1, 2, 8, 3)->applyFromArray($borderStyleArray);
+        // горизонтальное выравнивание 3х первых строк
+        $sheet->getStyleByColumnAndRow(1, 1, 8, 3)
+            ->getAlignment()
+            ->setWrapText(true)
+            ->setHorizontal(Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Style\Alignment::VERTICAL_CENTER);
+
+
+        // фоновый цвет 3й строки
+        $sheet->getStyleByColumnAndRow(1, 3, 8, 3)
+            ->getFill()
+            ->setFillType(Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setRGB('d3ffd3');
+
+
+
+        $sheet->setTitle('Отчёт "Конечный рабочий центр"');
+
+        $ModelRows = $this->getRow();
+        $countModelRows = count(is_array( $ModelRows ) ? $ModelRows : [] );
+
+        // Запишем вверху дату и коллекцию
+        $sheet->setCellValueByColumnAndRow(1, 2, $this->collectionName . '  -  Изделий: '. $countModelRows);
+
+
+        $bottomBorderPerCell = $this->getBordersArray('horPerRow');
+
+        $startRow++; // начинаем с 3й строки
+		for ( $i = 0; $i < $countModelRows; $i++ )
+		{
+			$thisModel = $this->drawTable2Row( $ModelRows[$i], true );
+            $lastStatus = $thisModel['lastStatus'];
+            $vendor_code = trim($thisModel['model']['vendor_code']);
+
+            // заполняем колонки
+            $sheet->setCellValueByColumnAndRow(1, $startRow, $vendor_code ?: $thisModel['model']['number_3d']);
+            $sheet->setCellValueByColumnAndRow(2, $startRow, $thisModel['model']['model_type']);
+            $sheet->setCellValueByColumnAndRow(3, $startRow, $thisModel['workingCenter']['name']);
+            $sheet->setCellValueByColumnAndRow(4, $startRow, isset($lastStatus['status']['name_ru'])?$lastStatus['status']['name_ru']:"");
+            $sheet->setCellValueByColumnAndRow(5, $startRow, $thisModel['sizeRange']);
+            $sheet->setCellValueByColumnAndRow(6, $startRow, 0);
+            $sheet->setCellValueByColumnAndRow(7, $startRow, $thisModel['vc_balance']);
+            $sheet->setCellValueByColumnAndRow(8, $startRow, $this->formatDate($lastStatus['date']));
+
+            // высоты строк
+            $sheet->getRowDimension($startRow)->setRowHeight(20);
+
+            // выноска
+            if ( isset($lastStatus['status']['title']) )
+            {
+                $title = $lastStatus['status']['title']." - ".$lastStatus['name']?:"";
+                try {
+                    $sheet->getCommentByColumnAndRow(4, $startRow)->getText()->createTextRun($title);
+                } catch (Exception $e) {
+                    echo "/n". "Error in createTextRun " . $e->getMessage() . "/n";
+                }
+            }
+
+            // выравнивание
+            $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)
+                ->getAlignment()
+                ->setHorizontal(Style\Alignment::VERTICAL_CENTER)
+                ->setVertical(Style\Alignment::VERTICAL_CENTER);
+
+            // границы
+            $sheet->getStyleByColumnAndRow(1, $startRow,8, $startRow)->applyFromArray( $bottomBorderPerCell );
+            $sheet->getStyleByColumnAndRow(8, $startRow)->applyFromArray( array(
+                    'borders' => array(
+                        'right' => array(
+                            'borderStyle' => Style\Border::BORDER_THIN,
+                            'color' => array('rgb' => '000000'),
+                        ),
+                    ),
+                )
+            );
+
+            //заполнение цветом через строку если есть остаток от деления
+            if ( $i % 2 )
+            {
+                $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)
+                    ->getFill()
+                    ->setFillType(Style\Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setRGB('f1edff');
+            }
+            $lastStatusID = (int)$lastStatus['status']['id']?:0;
+            if ( $lastStatusID === 11 || $lastStatusID === 88)
+            {
+                $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)
+                    ->getFill()
+                    ->setFillType(Style\Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setRGB('f7a8b2');
+            }
+
+            $startRow++;
+            $this->progressCount( ceil( ( $i * 100 ) / $countModelRows ) );
+		}
+
+        $sheet->mergeCellsByColumnAndRow(1,$startRow,8,$startRow);
+
+        // Границы
+        $sheet->getStyleByColumnAndRow(1, $startRow,8,$startRow)->applyFromArray(array(
+                'borders' => array(
+                    'top' => array(
+                        'borderStyle' => Style\Border::BORDER_THICK,
+                        'color' => array('rgb' => '000000'),
+                    ),
+                ),
+            )
+        );
+
+        // горизонтальное выравнивание
+        $sheet->getStyleByColumnAndRow(1, $startRow,8,$startRow)
+            ->getAlignment()
+            ->setWrapText(true)
+            ->setVertical(Style\Alignment::VERTICAL_CENTER);
+        $sheet->setCellValueByColumnAndRow(1, $startRow, 'Общее кол-во выведенных изделий: '.$countModelRows);
+
+
+        $this->output($spreadsheet);
+	}
+
+
+    /**
+     * Таблица просроченных
+     *
+     */
+	public function getXlsxExpired()
+	{
+        $spreadsheet = new Spreadsheet();
+        try {
+            $sheet = $spreadsheet->getActiveSheet();
+        } catch (Exception $e) {
+            exit( 'Ошибка при создании getActiveSheet()' . $e->getMessage() );
+        }
+
+        //========= Шапка таблицы ========//
+        $sheet->setTitle('Отчёт Таблица Просроченных');
+
+        $startRow = 1;
+        // Титул
+        try{
+            $sheet->mergeCellsByColumnAndRow(1,$startRow,5,$startRow);
+        } catch (Exception $e) {}
+        $sheet->setCellValueByColumnAndRow(1, $startRow, 'Таблица Просроченных');
+        // Шрифт 2й строки
+        try
+        {
+            $fontStyleTop = array(
+                'name'      	=> 'Calibri',
+                'size'     	    => 12,
+                'bold'      	=> true,
+                'italic'    	=> false,
+                //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
+                'strike'    	=> false,
+                'superScript' 	=> false,
+                'subScript' 	=> false,
+                'color'     	=> array(
+                    'rgb' => '460e15'
+                )
+            );
+            $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleTop);
+        } catch (Exception $e) {}
+        // высоты строк
+        $sheet->getRowDimension($startRow)->setRowHeight(25);
+
+        $startRow++;
+        try {
+            $sheet->mergeCellsByColumnAndRow(1,$startRow,3,$startRow);
+            $sheet->mergeCellsByColumnAndRow(4,$startRow,5,$startRow);
+        } catch (Exception $e) {}
+
+
+        $sheet->setCellValueByColumnAndRow(1, $startRow, $this->collectionName);
+        $sheet->setCellValueByColumnAndRow(4, $startRow, 'Дата: '. $this->formatDate(time()));
+        $sheet->getRowDimension($startRow)->setRowHeight(20);
+
+        // Шрифт 1й строки
+        try
+        {
+            $fontStyleTop = array(
+                'name'      	=> 'Calibri',
+                'size'     	    => 12,
+                'bold'      	=> true,
+                'italic'    	=> false,
+                //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
+                'strike'    	=> false,
+                'superScript' 	=> false,
+                'subScript' 	=> false,
+                'color'     	=> array(
+                    'rgb' => 'E0FFFF'
+                )
+            );
+            $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleTop);
+        } catch (Exception $e) {}
+
+        // фоновый цвет 2й строки
+        $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)
+            ->getFill()
+            ->setFillType(Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setRGB('4682B4');
+
+        $startRow++;
+        $sheet->setCellValue('A'.$startRow, 'Участок: ');
+        $sheet->setCellValue('B'.$startRow, 'Описание участка');
+        $sheet->setCellValue('C'.$startRow, 'Все Изделия');
+        $sheet->setCellValue('D'.$startRow, 'Просроченные');
+        $sheet->setCellValue('E'.$startRow, 'Ответственный');
+
+        // высоты строк
+        $sheet->getRowDimension($startRow)->setRowHeight(25);
+        // ширины колоок
+        $sheet->getColumnDimensionByColumn(1)->setWidth(30);
+        $sheet->getColumnDimensionByColumn(2)->setWidth(55);
+        $sheet->getColumnDimensionByColumn(3)->setWidth(15);
+        $sheet->getColumnDimensionByColumn(4)->setWidth(15);
+        $sheet->getColumnDimensionByColumn(5)->setWidth(20);
+
+        // Шрифт 3й строки
+        try
+        {
+            $fontStyleRow2 = [
+                'size'  => 12,
+                'color' => [
+                    'rgb' => '2F4F4F'
+                ]
+            ];
+            $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleRow2);
+        } catch (Exception $e) {}
+
+
+        $borderStyleArray = array(
+            'borders' => array(
+                'outline' => array(
+                    'borderStyle' => Style\Border::BORDER_THIN,
+                    'color' => array('rgb' => '000000'),
+                ),
+                'horizontal' => array(
+                    'borderStyle' => Style\Border::BORDER_THIN,//BORDER_THICK
+                    'color' => array('rgb' => '000000'),
+                ),
+                'vertical' => array(
+                    'borderStyle' => Style\Border::BORDER_THIN,
+                    'color' => array('rgb' => '000000'),
+                ),
+            ),
+        );
+
+        // Границы 3х строк
+        $sheet->getStyleByColumnAndRow(1, 2, 5, 3)->applyFromArray($borderStyleArray);
+        // горизонтальное выравнивание 3х первых строк
+        $sheet->getStyleByColumnAndRow(1, 1, 5, 3)
+            ->getAlignment()
+            ->setWrapText(true)
+            ->setHorizontal(Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Style\Alignment::VERTICAL_CENTER);
+
+        // фоновый цвет 3й строки
+        $sheet->getStyleByColumnAndRow(1, 3, 5, 3)
+            ->getFill()
+            ->setFillType(Style\Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setRGB('d3ffd3');
+        //========= Конец Шапки  ========//
+
+
+        $workingCentersExpired = $this->getWorkingCentersExpired(true);
+        $countAll = $workingCentersExpired['countAll'];
+        $countAllExpired = $workingCentersExpired['countAllExpired'];
+        $workingCenters = $workingCentersExpired['workingCenters'];
+        $users = $this->getUsers();
+
+        $count = count($workingCenters);
+        $i = 0;
+        $startRow++;
+
+        foreach ( $workingCenters as $workingCenter )
+        {
+            $wcUser = [];
+            foreach ( $users as $user )
+            {
+                if ( $user['id'] == $workingCenter['user_id'] )
+                {
+                    $wcUser['fio'] = $user['fio'];
+                    $wcUser['fullFio'] = $user['fullFio'];
+                }
+            }
+            $sheet->getRowDimension($startRow)->setRowHeight(25);
+            $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)
+                ->getAlignment()
+                ->setWrapText(true)
+                ->setHorizontal(Style\Alignment::HORIZONTAL_CENTER)
+                ->setVertical(Style\Alignment::VERTICAL_CENTER);
+            $sheet->getStyleByColumnAndRow(1, $startRow)
+                ->getAlignment()
+                ->setWrapText(true)
+                ->setHorizontal(Style\Alignment::HORIZONTAL_RIGHT)
+                ->setVertical(Style\Alignment::VERTICAL_CENTER);
+            $sheet->getStyleByColumnAndRow(2, $startRow)
+                ->getAlignment()
+                ->setWrapText(true)
+                ->setHorizontal(Style\Alignment::HORIZONTAL_LEFT)
+                ->setVertical(Style\Alignment::VERTICAL_CENTER);
+            //заполнение цветом через строку если есть остаток от деления
+            if ( $i % 2 )
+            {
+                $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)
+                    ->getFill()
+                    ->setFillType(Style\Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setRGB('6cffe9');
+            }
+
+            $sheet->setCellValueByColumnAndRow(1, $startRow, $workingCenter['name']?$workingCenter['name'] . ':':'');
+            $sheet->setCellValueByColumnAndRow(2, $startRow, $workingCenter['descr']?:'');
+            $sheet->setCellValueByColumnAndRow(3, $startRow, $workingCenter['countAll']?:'');
+            $sheet->setCellValueByColumnAndRow(4, $startRow, $workingCenter['expired']?:'');
+            $sheet->setCellValueByColumnAndRow(5, $startRow, $wcUser['fio']);
+
+
+            $this->progressCount( floor( ( $i * 100 ) / $count ) );
+            $i++;
+            $startRow++;
+        }
+
+        //========= Подвал ========//
+        $sheet->setCellValue('A'.$startRow, 'Всего / ');
+        $sheet->setCellValue('B'.$startRow, 'Просроченных');
+        $sheet->setCellValue('C'.$startRow, $countAll);
+        $sheet->setCellValue('D'.$startRow, $countAllExpired);
+
+        // Границы
+        $sheet->getStyleByColumnAndRow(1, $startRow,5,$startRow)->applyFromArray(array(
+                'borders' => array(
+                    'top' => array(
+                        'borderStyle' => Style\Border::BORDER_THICK,
+                        'color' => array('rgb' => '000000'),
+                    ),
+                ),
+            )
+        );
+
+        // выравнивание
+        $sheet->getStyleByColumnAndRow(1, $startRow)
+            ->getAlignment()
+            ->setWrapText(true)
+            ->setHorizontal(Style\Alignment::HORIZONTAL_RIGHT)
+            ->setVertical(Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyleByColumnAndRow(2, $startRow)
+            ->getAlignment()
+            ->setWrapText(true)
+            ->setHorizontal(Style\Alignment::HORIZONTAL_LEFT)
+            ->setVertical(Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyleByColumnAndRow(3, $startRow,5,$startRow)
+            ->getAlignment()
+            ->setWrapText(true)
+            ->setHorizontal(Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Style\Alignment::VERTICAL_CENTER);
+
+
+        $this->output($spreadsheet);
+	}
+
+	protected function output($spreadsheet)
+    {
         $writer = new Xlsx($spreadsheet);
         ob_start();
         try {
@@ -506,79 +988,6 @@ class ToExcel extends Main
         $this->progressCount(100);
         echo json_encode('data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'.base64_encode($xlsData));
     }
-    
-    /**
-	* Final Working centers
-	* Конечный центр нахождения
-	* @return
-	*/
-	public function getXlsxFwc()
-	{
-		// уходим если нет моделей для вывода
-		if ( isset($_SESSION['nothing']) ) {
-			debug($_SESSION['nothing']);
-			return;
-		}
-		
-		$spreadsheet = new Spreadsheet();
-		try {
-			$sheet = $spreadsheet->getActiveSheet();
-		} catch (Exception $e) {
-			echo 'Ошибка при создании getActiveSheet()' . $e->getMessage();
-			exit();
-		}
-
-		$startRow = 1;
-		$columnIndex = 1;
-		
-		$sheet->mergeCellsByColumnAndRow($columnIndex,$startRow,$columnIndex+4,$startRow);
-		$sheet->mergeCellsByColumnAndRow($columnIndex+5,$startRow,$columnIndex+7,$startRow);
-		
-		$sheet->setCellValueByColumnAndRow($columnIndex, $startRow, 'Наименование Коллекции: ' . $_SESSION['assist']['collectionName']);
-		$sheet->setCellValueByColumnAndRow($columnIndex+5, $startRow, 'Дата: '. $this->formatDate(time()));
-		
-		$sheet->getRowDimension($startRow)->setRowHeight(20);
-		
-		$startRow++;
-		$sheet->setCellValue('A'.$startRow, 'Артикул / №3Д');
-		$sheet->setCellValue('B'.$startRow, 'Наименование');
-		$sheet->setCellValue('C'.$startRow, 'Конечный рабочий центр нахождения');
-		$sheet->setCellValue('D'.$startRow, 'Статус');
-		$sheet->setCellValue('E'.$startRow, 'Кол-во арт. в коллекции шт.');
-		$sheet->setCellValue('F'.$startRow, 'Кол-во готовых арт. шт.');
-		$sheet->setCellValue('G'.$startRow, 'Остаток артикулов');
-		$sheet->setCellValue('H'.$startRow, 'Дата');
-		
-		// высоты строк
-		$sheet->getRowDimension($startRow)->setRowHeight(22);
-		
-		// ширины колоок
-		for ( $columnIndex = 1; $columnIndex <= 8; $columnIndex++ ) {
-			$sheet->getColumnDimensionByColumn($columnIndex)->setWidth(13);
-		}
-		
-		
-		
-		$ModelRows = $this->getRow();
-		$countModelRows = count(is_array( $ModelRows ) ? $ModelRows : [] );
-		
-		for ( $i = 0; $i < $countModelRows; $i++ ) 
-		{
-			$thisModel = $this->drawTable2Row( $ModelRows[$i], true );
-			$thisModel['model'] = $ModelRows[$i];
-			
-			
-			
-		}
-		
-		
-	}
-	
-	
-	public function getXlsxExpired()
-	{
-		
-	}
 
 
 }
