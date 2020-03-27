@@ -19,6 +19,10 @@ class OptionsController extends GeneralController
             $_SESSION['prevPage'] = $_SERVER["HTTP_REFERER"];
         }
 
+        $widthCheck = '';
+        if ( $_SESSION['assist']['containerFullWidth'] == 1 ) {
+            $widthCheck = 'checked';
+        }
         $PushNoticeCheck = '';
         if ( $_SESSION['assist']['PushNotice'] == 1 ) {
             $PushNoticeCheck = 'checked';
@@ -31,7 +35,7 @@ class OptionsController extends GeneralController
         }
 
         $compacts = compact([
-            'PushNoticeCheck','bgsImg'
+            'PushNoticeCheck','bgsImg','widthCheck'
         ]);
         return $this->render('options', $compacts);
     }

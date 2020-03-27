@@ -1,4 +1,4 @@
-<div id="<?=$row['id'] ?>" class="col-xs-6 col-sm-4 col-md-<?=$col_md ?> prj-item">
+<div id="<?=$row['id'] ?>" class="col-xs-6 col-sm-4 col-md-<?=$columns?> col-lg-<?=$columnsLG?> prj-item">
 	<div class="ratio">
 		<div class="ratio-inner ratio-4-3">
 			<div class="ratio-content">

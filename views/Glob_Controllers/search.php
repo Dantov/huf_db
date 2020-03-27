@@ -16,49 +16,58 @@ if ( isset($_POST['search']) || $_SESSION['re_search'] === true ) {
 	$_SESSION['searchFor'] = $searchFor;
 	unset($_SESSION['countAmount'], $_SESSION['foundRow']);
 
+    require_once _globDIR_ . "classes/Search.php";
     require_once _globDIR_ . "classes/General.php";
 	$general = new General();
     $connection = $general->connectToDB();
     $statuses = $general->statuses;
 
 	$where = "";
-	if ( ($_SESSION['assist']['searchIn'] === 2) && isset($_SESSION['assist']['collectionName']) && !empty($_SESSION['assist']['collectionName']) ) {
+
+    $regStat = 0;
+    $regStat_str = $_SESSION['assist']['regStat'];
+    foreach ($statuses as $status)
+    {
+        if ( $status['name_ru'] === $regStat_str )
+        {
+            $regStat = (int)$status['id'];
+            break;
+        }
+    }
+    //debug($regStat_str,'$regStat_str');
+    //debug($regStat,'$regStat');
+
+	if ( $_SESSION['assist']['searchIn'] === 2 && isset($_SESSION['assist']['collectionName']) && !empty($_SESSION['assist']['collectionName']) ) {
 
 	    $collectionName = $_SESSION['assist']['collectionName'];
 		$where = "WHERE collections like '%$collectionName%' ";
 
-		if ( isset($_SESSION['assist']['regStat']) && $_SESSION['assist']['regStat'] != "Нет" ) {
-			$regStat = $_SESSION['assist']['regStat'];
+		if ( $_SESSION['assist']['byStatHistory'] != 1 && $regStat_str != "Нет" )
+		{
 			$where .= "AND status='$regStat' ";
 		}
 
-	} else if ( isset($_SESSION['assist']['regStat']) && $_SESSION['assist']['regStat'] != "Нет" ) {
-
-        $regStat = 0;
-		$regStat_str = $_SESSION['assist']['regStat'];
-        foreach ($statuses as $status)
-        {
-            if ( $status['name_ru'] === $regStat_str )
-            {
-                $regStat = (int)$status['id'];
-                break;
-            }
-        }
+	} else if ( $_SESSION['assist']['byStatHistory'] != 1 && $regStat_str != "Нет" ) {
 
 		$where = "WHERE status='$regStat' ";
-        //debug($where,'$where',1);
 	}
 
 	$selectRow = "SELECT * FROM stock ".$where."ORDER BY ".$_SESSION['assist']['reg']." ".$_SESSION['assist']['sortDirect'];
-
-	//debug($selectRow,'$selectRow');
-
 	$result_sort = mysqli_query($connection, $selectRow);
-	$general->closeDB();
 	if ( !$result_sort ) header("location: ../Main/index.php");
-	
-    while( $row[] = mysqli_fetch_assoc($result_sort) ){}
-	$wholePos = count($row);
+
+    $row = [];
+    while( $resRow = mysqli_fetch_assoc($result_sort) ) { $row[] = $resRow; }
+
+    if ( $_SESSION['assist']['byStatHistory'] == 1 )
+    {
+        $dates = [];
+        if ( isset($_SESSION['assist']['byStatHistoryFrom'])) $dates['from'] = $_SESSION['assist']['byStatHistoryFrom'];
+        if ( isset($_SESSION['assist']['byStatHistoryTo'])) $dates['to'] = $_SESSION['assist']['byStatHistoryTo'];
+        Search::byStatusesHistory($connection, $regStat, $row, $dates);
+    }
+
+    $general->closeDB();
 
     // если дата
     $date = false;
@@ -99,6 +108,7 @@ if ( isset($_POST['search']) || $_SESSION['re_search'] === true ) {
         */
     }
 
+    $wholePos = count($row);
     // цикл поиска позиций
     for ( $i = 0; $i < $wholePos; $i++ )
     {

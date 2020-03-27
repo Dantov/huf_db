@@ -6,9 +6,10 @@
 		
 		$_SESSION['access'] = true;
 		
-		$_SESSION['assist']['maxPos']		   = 24; 		// кол-во выводимых позиций по дефолту
+		$_SESSION['assist']['maxPos']		    = 24; 		// кол-во выводимых позиций по дефолту
 		$_SESSION['assist']['regStat']         = "Нет"; 	// выбор статуса по умоляанию
-		$_SESSION['assist']['wcSort']         = []; 	// выбор рабочего участка по умоляанию
+		$_SESSION['assist']['byStatHistory']   = 0;  	// искать в истории статусов
+		$_SESSION['assist']['wcSort']          = []; 	    // выбор рабочего участка по умоляанию
 		$_SESSION['assist']['searchIn']        = 1;
 		$_SESSION['assist']['reg']             = "number_3d"; // сорттровка по дефолту
 		$_SESSION['assist']['startfromPage']   = (int)0; 		// начальная страница пагинации
@@ -17,6 +18,7 @@
 		$_SESSION['assist']['sortDirect']      = "DESC"; 	// по умолчанию
 	    $_SESSION['assist']['collectionName']  = "Все Коллекции";
 		$_SESSION['assist']['collection_id']   = -1;		// все коллекции
+		$_SESSION['assist']['containerFullWidth'] = 2;		// на всю ширину
 		$_SESSION['assist']['PushNotice']      = 1;		// показываем уведомления
 		$_SESSION['assist']['update']          = 7;
 		$_SESSION['assist']['bodyImg']         = 'bodyimg0'; // название класса

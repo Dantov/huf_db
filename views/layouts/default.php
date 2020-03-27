@@ -198,7 +198,17 @@ JS;
         </div>
         <!-- END Блок коллекций -->
 
-        <div class="<?=$this->varBlock['container'] === 2 ? 'containerWC' : 'container'?> content">
+        <?
+            $container = 'container';
+            if ( $this->varBlock['container'] === 2 )
+            {
+                $container = 'containerFullWidth';
+            } elseif ( $_SESSION['assist']['containerFullWidth'] == 1 )
+            {
+                $container = 'containerFullWidth';
+            }
+        ?>
+        <div class="<?=$container?> content">
             <?=$content;?>
         </div><!--container-->
         <footer class="footer" style="box-shadow: 0 -1px 5px rgba(0,0,0,.075)">

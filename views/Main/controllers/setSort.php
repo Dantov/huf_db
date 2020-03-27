@@ -219,7 +219,15 @@
                 $flag = true;
             }
         }
-        if ( !$flag ) $_SESSION['assist']['regStat'] = "Нет";
+        if ( !$flag )
+        {
+            $_SESSION['assist']['regStat'] = "Нет";
+
+            // выключаем поиск по истории статусов при клике на НЕТ
+            $_SESSION['assist']['byStatHistory'] = 0;
+            $_SESSION['assist']['byStatHistoryFrom'] = '';
+            $_SESSION['assist']['byStatHistoryTo'] = '';
+        }
 
         $_SESSION['assist']['page'] = 0;
         $_SESSION['assist']['startfromPage'] = 0;

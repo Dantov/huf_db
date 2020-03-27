@@ -4,8 +4,8 @@
     </td>
     <td><?=$row['model_type']?></td>
     <td><?= $workingCenter['name'] ?></td>
-    <td title="<?= $lastStatus['status']['title']." - ".$lastStatus['name'] ?>">
-        <span class="glyphicon glyphicon-<?=$lastStatus['status']['glyphi']?>"></span>&nbsp;
+    <td title="<?= isset($lastStatus['status']['title'])?$lastStatus['status']['title']:'' . " - " . isset($lastStatus['name'])?:'' ?>">
+        <span class="glyphicon glyphicon-<?=isset($lastStatus['status']['glyphi'])?:''?>"></span>&nbsp;
         <?= isset($lastStatus['status']['name_ru'])?$lastStatus['status']['name_ru']:"" ?>
     </td>
     <td title="<?=$row['size_range']?>"><?=$sizeRange?></td>

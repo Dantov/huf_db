@@ -10,7 +10,8 @@
         <div class="tab-content">
             <div role="tabpanel" class="tab-pane active in fade" id="tab1">
                 <center><h4></h4></center>
-                <p><label for="PN_control" style="cursor:pointer;">Показывать уведомления</label> &nbsp;<input id="PN_control" type="checkbox" <?=$PushNoticeCheck;?> ></p>
+                <p><label for="width_control" title="Для широкоформатных мониторов" style="cursor:pointer;">Во всю ширину экрана</label> &nbsp;<input id="width_control" type="checkbox" <?=$widthCheck?> ></p>
+                <p><label for="PN_control" style="cursor:pointer;">Показывать уведомления</label> &nbsp;<input id="PN_control" type="checkbox" <?=$PushNoticeCheck?> ></p>
                 <p>Цвета фона:
                     <div class="row">
                         <?php for( $i = 0; $i < count($bgsImg); $i++ ): ?>

@@ -9,6 +9,7 @@ function Main() {
     this.parseQueryString();
     this.lightUpSomeButtons();
     this.modalStatusesInit();
+    debug('Main Init');
 }
 
 /**
@@ -182,9 +183,11 @@ Main.prototype.lightUpSomeButtons = function()
 
 Main.prototype.modalStatusesInit = function()
 {
+    let that = this;
     if ( document.getElementById('modalStatuses') )
     {
         $("#modalStatuses").iziModal({
+            icon: 'fas fa-code-branch',
             width: "95%",
             afterRender: function() {
                 document.getElementById('modalContent').classList.remove('hidden');
@@ -226,6 +229,9 @@ Main.prototype.modalStatusesInit = function()
 
                 let openAll = document.querySelector('#openAll');
                 let closeAll = document.querySelector('#closeAll');
+                let switchByStatusHistory = document.querySelector('.switchByStatusHistory');
+                let inputDates = document.querySelector('.byStatHistory_dates').querySelectorAll('input');
+
                 openAll.addEventListener('click', function () {
                     statusesChevrons.forEach(button => {
                         if ( button.getAttribute('data-status') == 1 ) return;
@@ -244,9 +250,86 @@ Main.prototype.modalStatusesInit = function()
                     this.classList.add('hidden');
                     openAll.classList.remove('hidden');
                 }, false);
+
+                switchByStatusHistory.addEventListener('mouseup', function (event) {
+                    // event.stopPropagation();
+                    // event.preventDefault();
+                    that.searchByStatusesHistory(this.querySelector('input'));
+                });
+
+                inputDates[0].addEventListener('change', function () {
+                    that.changeDateByStatusesHistory(this);
+                });
+                inputDates[1].addEventListener('change', function () {
+                    that.changeDateByStatusesHistory(this);
+                });
             },
         });
     }
 };
+Main.prototype.searchByStatusesHistory = function(input)
+{
+    let check = !input.checked;
+    let span = input.parentElement.nextElementSibling;
+    let dates = span.nextElementSibling;
+    let inputDates = dates.querySelectorAll('input');
+
+    $.ajax({
+        url: _ROOT_ + "Views/Main/Controllers/changeStatusByHistory.php",
+        type: "POST",
+        data: {
+            statHistoryON: 1,
+            byStatHistory: +check,
+        },
+        dataType:"json",
+        success:function(data)
+        {
+            if ( data.ok )
+            {
+                span.style.fontWeight = 'bold';
+                span.innerHTML = 'Поиск в истории включен!';
+
+                dates.classList.remove('hidden');
+            } else {
+                span.style.fontWeight = 'normal';
+                span.innerHTML = 'Поиск в истории выключен';
+
+                inputDates[0].value = '';
+                inputDates[1].value = '';
+                dates.classList.add('hidden');
+            }
+        },
+        error: function ()
+        {
+            alert('Ошибка!');
+        }
+    });
+};
+Main.prototype.changeDateByStatusesHistory = function(dateInput)
+{
+    let obj = {
+        changeDates: 1,
+    };
+    obj[dateInput.name] = dateInput.value;
+
+    $.ajax({
+        url: _ROOT_ + "Views/Main/Controllers/changeStatusByHistory.php",
+        type: "POST",
+        data: obj,
+        dataType:"json",
+        success:function(data)
+        {
+            if ( data.ok ) {
+                debug(data.ok);
+            }
+        },
+        error: function (e)
+        {
+            debug(e,'Ошибка!');
+        }
+    });
+
+};
 
 if ( main !== 'object' ) main = new Main();
+

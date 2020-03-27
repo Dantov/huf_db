@@ -1,12 +1,28 @@
 "use strict";
 
-function Options(){
-    this.loc = document.location.origin;
-}
+function Options(){}
+
+Options.prototype.widthControl = function(opt) {
+
+    //let that = this;
+    $.ajax({
+        url: _ROOT_ + "Views/Options/controllers/opt_handler.php",
+        type: 'POST',
+        data: {
+            widthControl: opt
+        },
+        dataType:"json",
+        success:function(data) {
+            // if ( data.done === 1 ) console.log('показать во всю ширину');
+            // if ( data.done === 2 ) console.log('Показать по центру');
+            document.location.reload(true);
+        }
+    });
+};
 
 Options.prototype.noticeControl = function(opt) {
 
-    //var that = this;
+    //let that = this;
     $.ajax({
         url: _ROOT_ + "Views/Options/controllers/opt_handler.php",
         type: 'POST',
@@ -15,8 +31,8 @@ Options.prototype.noticeControl = function(opt) {
         },
         dataType:"json",
         success:function(data) {
-            if ( data.done == 1 ) console.log('Уведомления активированы');
-            if ( data.done == 2 ) console.log('Уведомления отключены');
+            if ( data.done === 1 ) console.log('Уведомления активированы');
+            if ( data.done === 2 ) console.log('Уведомления отключены');
         }
     });
 };
@@ -28,8 +44,8 @@ Options.prototype.changeBgImg = function() {
         return;
     }
 
-    //var src = this.previousElementSibling.getAttribute('src');
-    var src = this.getAttribute('data-class');
+    //let src = this.previousElementSibling.getAttribute('src');
+    let src = this.getAttribute('data-class');
     console.log(src);
     $.ajax({
         url: _ROOT_ + "Views/Options/controllers/opt_handler.php",
@@ -41,7 +57,7 @@ Options.prototype.changeBgImg = function() {
         success:function(data) {
             if ( data.done ) {
                 //alert('Новый фон установлен!');
-                var ddd = document.querySelector('body').setAttribute('class',src);
+                document.querySelector('body').setAttribute('class',src);
                 //document.location.reload(true);
             } else {
                 alert('что-то пошло не так!');
@@ -51,23 +67,32 @@ Options.prototype.changeBgImg = function() {
 };
 
 
-var options = new Options();
+let options = new Options();
 
-var PN_control = document.getElementById('PN_control');
+let width_control = document.getElementById('width_control');
+if ( width_control.checked ) {
+    width_control.addEventListener('click',function(){
+        options.widthControl(2);
+    }, false);
+} else {
+    width_control.addEventListener('click',function(){
+        options.widthControl(1);
+    }, false);
+}
+
+let PN_control = document.getElementById('PN_control');
 if ( PN_control.checked ) {
     PN_control.addEventListener('click',function(){
         options.noticeControl(2);
-        //console.log('посылаю 2 checked=',this.checked);
     }, false);
 } else {
     PN_control.addEventListener('click',function(){
         options.noticeControl(1);
-        //console.log('посылаю 1 checked=',this.checked);
     }, false);
 }
 
-var bgImages = document.querySelectorAll('.bg_img');
-for( var i = 0; i < bgImages.length; i++ ) {
+let bgImages = document.querySelectorAll('.bg_img');
+for( let i = 0; i < bgImages.length; i++ ) {
     bgImages[i].addEventListener('change', options.changeBgImg, false);
 }
 

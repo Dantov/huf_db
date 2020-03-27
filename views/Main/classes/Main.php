@@ -184,7 +184,16 @@ class Main extends General {
         $where = "WHERE collections<>'Детали'";
         if ( $this->assist['collectionName'] != 'Все Коллекции' ) $where = "WHERE collections like '%{$this->assist['collectionName']}%'";
 
-        $in = '';
+        $regStat = 0;
+        foreach ( $this->statuses as $status )
+        {
+            if ( $status['name_ru'] == $this->assist['regStat'] )
+            {
+                $regStat = (int)$status['id'];
+                break;
+            }
+        }
+
         if ( !empty($_SESSION['assist']['drawBy_'] === 4) )
         {
             if ( !empty($_SESSION['assist']['wcSort']['ids']) )
@@ -194,40 +203,43 @@ class Main extends General {
             }
         }
 
-		//if ( $this->assist['regStat'] !== "Нет" ) $where .= " AND status='".$this->assist['regStat']."'";
-        if ( $this->assist['regStat'] !== "Нет" )
+        if ( $this->assist['regStat'] !== "Нет" && $this->assist['byStatHistory'] !== 1 )
         {
-            $neededStatus = ['id'=>'','name_ru'=>''];
-            foreach ( $this->statuses as $status )
-            {
-                if ( $status['name_ru'] == $this->assist['regStat'] )
-                {
-                    $neededStatus = $status;
-                    break;
-                }
-            }
-
-            $where .= " AND status in ('{$neededStatus['id']}','{$neededStatus['name_ru']}')";
+            $where .= " AND status='$regStat'";
         }
 
 		$selectRow = "SELECT * FROM stock " . $where . " ORDER BY " .$this->assist['reg']." ".$this->assist['sortDirect'];
-        //debug($selectRow);
 		$result_sort = mysqli_query($this->connection, $selectRow);
 
 		if ( !$result_sort ) {
 			printf( "Error SELECT: %s\n", mysqli_error($this->connection) );
 			return false;
 		}
-
 		while( $row = mysqli_fetch_assoc($result_sort) ) $this->row[] = $row;
+
+		if ( $this->assist['byStatHistory'] === 1 )
+        {
+            include_once _globDIR_ . "classes/Search.php";
+            $dates = [];
+            if ( !empty($_SESSION['assist']['byStatHistoryFrom'])) $dates['from'] = $_SESSION['assist']['byStatHistoryFrom'];
+            if ( !empty($_SESSION['assist']['byStatHistoryTo'])) $dates['to'] = $_SESSION['assist']['byStatHistoryTo'];
+            Search::byStatusesHistory($this->connection, $regStat, $this->row, $dates);
+        }
 
 		return $this->row;
 	}
 
 	
-	public function getModelsByRows() {
-		$result = array();
-		$result['posIter'] = count($this->row); // кол-во всех моделей
+	public function getModelsByRows()
+    {
+        $result = [
+            'showByRows' => '',
+            'posIter' => 0,
+            'ComplShown' => 0,
+            'wholePos' => 0
+        ];
+        $result['posIter'] = count($this->row); // кол-во всех моделей
+        if ( empty($result['posIter']) ) return $result;
 
 		$complArray = $this->countComplects();
 		$this->wholePos = $result['wholePos'] = count($complArray); // кол-во комплектов
@@ -274,8 +286,13 @@ class Main extends General {
 
 	public function getModelsByTiles()
 	{
-		$result = array();
+		$result = [
+		    'showByTiles' => '',
+            'iter' => 0,
+            'wholePos' => 0
+        ];
 		$this->wholePos = $result['wholePos'] = count($this->row);
+		if ( empty($this->wholePos) ) return $result;
 		
 		$from = $this->assist['page'] * $this->assist['maxPos'];
 		$to = ($this->assist['page'] + 1) * $this->assist['maxPos'];
@@ -286,7 +303,8 @@ class Main extends General {
 		
 		$posIds = '(';
 		for ( $i = $from; $i < $to; $i++ ) $posIds .= $this->row[$i]['id'].',';
-		$posIds = trim($posIds,',') . ')';	
+		$posIds = trim($posIds,',') . ')';
+		//debug($this->row,'$this->row');
 		$imagesQuery = mysqli_query($this->connection, " SELECT pos_id,img_name FROM images WHERE pos_id IN $posIds AND main=1 ");
 		$stlQuer = mysqli_query($this->connection, " SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN $posIds ");
 		while ( $image = mysqli_fetch_assoc($imagesQuery) ) $rowImages[$image['pos_id']] = $image;
@@ -795,14 +813,13 @@ class Main extends General {
      * @param array $row - each model data
      * @param $comlectIdent
 	 * true - drawModel вызвана в отрисовке комплекта
-     * @return string
      */
 	private function drawModel(&$row, $rowImages, $rowStls, $comlectIdent=false)
 	{
 		//по дефолту
 		$vc_show = "";
 		if ( !empty($row['vendor_code']) ) $vc_show = " | ".$row['vendor_code'];
-		$col_md = $comlectIdent === true ? 3 : 2;
+		$columns = $comlectIdent === true ? 3 : 2;
 		
 		
 		$image = [];
@@ -847,7 +864,7 @@ class Main extends General {
 				$modellerFIO = $row['modeller3D'];
 				if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE ) {
 					$editBtn = true;
-				} 
+				}
 			}
 		}
 		
@@ -863,6 +880,13 @@ class Main extends General {
             $modTypeStr.= "...";
         } else {
             $modTypeStr = $row['model_type'];
+        }
+
+        // проверка на всю ширину
+        $columnsLG = 2;
+        if ( $_SESSION['assist']['containerFullWidth'] == 1 )
+        {
+            $columnsLG = 1;
         }
         
 		require _viewsDIR_. "Main/includes/drawModel.php";
