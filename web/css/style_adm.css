@@ -44,6 +44,9 @@ body {
 .textSizeMiddle {
 	font-size: 150%;
 }
+.cursorPointer {
+	cursor: pointer;
+}
 .memeMe {
 	cursor: pointer;
 	-moz-user-select: none;

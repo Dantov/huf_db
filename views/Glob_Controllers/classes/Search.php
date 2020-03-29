@@ -4,6 +4,14 @@ class Search
 {
 
 
+    /**
+     * @param @object $connection - объект соединения
+     * @param @number $statusID - ID статуса по которому ищем
+     * @param @array $searchedModels - массив моделей в которых ищем
+     * @param $dates - массив с датами От и До, если они были заданы
+     *
+     * Производит дополнительный поиск в таблице статусов
+     */
     public static function byStatusesHistory($connection, $statusID, &$searchedModels, $dates = [])
     {
         if ( !$connection ) return;
@@ -14,7 +22,6 @@ class Search
         if ( !empty($dates) )
         {
             $from = '';
-            $to = '';
             $andDates = " AND ( ";
             if (!empty($dates['from'])) {
                 $from = $dates['from'];
@@ -34,12 +41,10 @@ class Search
         unset($model);
 
         $query = "SELECT pos_id,status,date FROM statuses WHERE status='$statusID' $andDates AND pos_id IN $in";
-        //debug($query,'',1);
         $resultQuery = mysqli_query($connection, $query);
         $statuses = [];
         while( $resRow = mysqli_fetch_assoc($resultQuery) ) { $statuses[] = $resRow; }
 
-        //debug($statuses,'$statuses',1);
 
         $resultModels = [];
         foreach ( $searchedModels as $model )
@@ -49,7 +54,7 @@ class Search
                 if ( $status['pos_id'] === $model['id'] )
                 {
                     $resultModels[] = $model;
-                    continue 2;
+                    continue 2; // что б не выводил 2 одинаковых модели если было 2 одинаковых статуса
                 }
             }
         }

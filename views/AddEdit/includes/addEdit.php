@@ -693,16 +693,18 @@
     </div><!--end col-xs-6-->
 </div><!--end row-->
 
-<p></p>
+<p><?//debug($this->navBar,'1',1)?></p>
 
 <img id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
 <?php include('includes/resultModal.php');?>
+<?php include('includes/collectionsModal.php');?>
 <?php include('includes/deleteModal.php');?>
 <?php include('includes/num3dVC_input_Proto.php');?>
 <?php include('includes/protoGemsVC_Rows.php');?>
 <?php include('includes/protoImages_Row.php');?>
 
 <script defer src="<?=_views_HTTP_?>AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
+<script defer src="<?=_views_HTTP_?>AddEdit/js/CollectionsModal.js?ver=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
 <script src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
 <?=$stonesScript;?>

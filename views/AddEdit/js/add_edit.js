@@ -1,7 +1,7 @@
 "use strict";
 
 // ----- Обработчик кликов на контейнер 25,02,18 ----- //
-document.querySelector('.container').addEventListener('click', function(event) {
+document.querySelector('.content').addEventListener('click', function(event) {
 		let click = event.target;
 		if ( !click.hasAttribute('elemToAdd') ) return;
 		if ( click.hasAttribute('VCTelem') ) {
