@@ -148,41 +148,6 @@ if ( add_img ) add_img.addEventListener('click', function(){
 //----- END Загрузка Превьюшек  -------//
 
 
-
-//-----  удаление превьюшек  -------//
-function dellImgPrew(self){
-	
-	let todell = self.parentElement.parentElement.parentElement.parentElement;
-	todell.remove();
-	uplF_count--;
-}
-//----- END удаление превьюшек  -------//
-
-
-//----- удаление с сервера картинок, стл, модели целиком -------//
-function dell_fromServ( id, imgname, isSTL, dellpos, element ) 
-{
-	let imgtoDell;
-	if (element)
-	{
-		imgtoDell = element.parentElement.parentElement.parentElement;
-	}
-	let dellObj = {
-		id: id || false,
-		imgname: imgname || false,
-		isSTL: isSTL || false, // если == 2 значит это Ai файл
-		dellpos: dellpos || false,
-		element: imgtoDell || false,
-	};
-	
-	dellModal.modalDataInit(dellObj);
-	$('#modalDelete').iziModal('open');
-	
-}
-//----- END удаление с сервера картинок, стл, модели целиком -------//
-
-
-
 //-----  Добавляем STL и Ai файлы  -------//
 let stlSelect = document.getElementById('stlSelect');
 let aiSelect = document.getElementById('aiSelect');
@@ -420,36 +385,180 @@ if ( gems_table )
 
 
 // ----- РЕМОНТЫ -------//
-function addRepairs(self) {
-	let lastRepNum = 0;
-	
-	let repairsBlock = document.getElementById('repairsBlock');
-	let repairsCount = repairsBlock.querySelectorAll('.repairs');
-	if ( repairsCount.length ) {
-		
-		lastRepNum = repairsCount[repairsCount.length-1].querySelector('.repairs_num').getAttribute('value');
-	}
-	
-	let today = new Date();
-	
-	let newRepairs = document.getElementById('protoRepairs').cloneNode(true);
-		newRepairs.removeAttribute('id');
-		newRepairs.classList.remove('hidden');
-		newRepairs.classList.add('repairs');
-		newRepairs.querySelector('.repairs_number').innerHTML = +lastRepNum+1;
-		newRepairs.querySelector('.repairs_num').setAttribute('value', +lastRepNum+1);
-		newRepairs.querySelector('.repairs_num').setAttribute('name','repairs_num[]');
-		newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs_descr[]');
-		newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
-		
-	repairsBlock.insertBefore(newRepairs, self.parentElement);
+document.getElementById('repairsBlock').querySelectorAll('.addRepairs').forEach( button => {
 
+    button.addEventListener('click',function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        let lastRepNum = 0, repairsCount = 0;
+        let repairsBlock = document.getElementById('repairsBlock');
+
+        let today = new Date();
+
+        let dataRepair = this.getAttribute('data-repair');
+        let newRepairs = document.getElementById('protoRepairs').cloneNode(true);
+
+        switch (dataRepair) {
+            case '3d':
+                repairsCount = repairsBlock.querySelectorAll('.repairs3d');
+                if ( repairsCount.length ) {
+                    lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
+                }
+
+                newRepairs.removeAttribute('id');
+                newRepairs.classList.remove('hidden');
+                newRepairs.classList.add('repairs3d');
+                newRepairs.classList.add('panel-info');
+                newRepairs.querySelector('.repairs_name').innerHTML = '3Д Ремонт №';
+                newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
+                newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
+                newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[3d][num][]');
+                newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[3d][id][]');
+                newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[3d][description][]');
+                newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[3d][which][]');
+                newRepairs.querySelector('.repairs_which').setAttribute('value','0');
+                newRepairs.querySelector('.repairCost').setAttribute('name','repairs[3d][cost][]');
+                newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
+                break;
+            case 'jeweler':
+                repairsCount = repairsBlock.querySelectorAll('.repairsJew');
+                if ( repairsCount.length ) {
+                    lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
+                }
+
+                newRepairs.removeAttribute('id');
+                newRepairs.classList.remove('hidden');
+                newRepairs.classList.add('repairsJew');
+                newRepairs.classList.add('panel-success');
+                newRepairs.querySelector('.repairs_name').innerHTML = 'Ремонт Модельера-доработчика №';
+                newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
+                newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
+                newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[jew][num][]');
+                newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[jew][id][]');
+                newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[jew][description][]');
+                newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[jew][which][]');
+                newRepairs.querySelector('.repairs_which').setAttribute('value','1');
+                newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
+
+                newRepairs.querySelector('.repairCost').setAttribute('name','repairs[jew][cost][]');
+                newRepairs.querySelector('.repairsPayment').classList.remove('hidden');
+
+                break;
+        }
+
+        repairsBlock.insertBefore(newRepairs, this);
+    });
+
+});
+function initPaidModal() {
+
+    $('#modalPaid').iziModal({
+        title: 'Пометить ремонт оплаченным?',
+        headerColor: '#56a66e',
+        icon: 'far fa-credit-card',
+        transitionIn: 'comingIn',
+        transitionOut: 'comingOut',
+        overlayClose: false,
+        closeButton: true,
+        afterRender: function () {
+            document.getElementById('modalPaidContent').classList.remove('hidden');
+        }
+    });
+
+    // начало открытия
+    $(document).on('opening', '#modalDelete', function () {
+
+    } );
+    // Начало закрытия
+    $(document).on('closing', '#modalDelete', function () {
+
+    });
+    // исчезло
+    $(document).on('closed', '#modalDelete', function () {
+
+    } );
+
+    //обработчики на кнопки
+    let buttons = document.getElementById('modalPaidContent').querySelectorAll('a');
+    let cancel = buttons[0];
+    let ok = buttons[1];
+    let paid = buttons[2];
+
+    cancel.classList.remove('hidden');
+    paid.classList.remove('hidden');
+
+    paid.addEventListener('click', function () {
+
+    	let data = paidRepair.data;
+        if ( data.paid !== 1 ) return;
+    	debug(data);
+
+        $.ajax({
+            type: 'POST',
+            url: 'controllers/repairsPayment.php',
+            data: data,
+            dataType:"json",
+            success:function(response) {
+                debug(response,'response');
+
+                if (response.error)
+				{
+					debug(response.error);
+					return;
+				}
+				if (response.done !== true)
+				{
+					alert('error');
+					return;
+				}
+                let modal = $('#modalPaid');
+
+                modal.iziModal('setTitle', 'Ремонт отмечен оплаченным.');
+                modal.iziModal('setSubtitle', '');
+                modal.iziModal('setHeaderColor', '#66d246');
+                modal.iziModal('setIcon', 'glyphicon glyphicon-ok');
+
+                ok.onclick = function() {
+                    document.location.reload(true);
+                };
+                ok.classList.remove('hidden');
+                cancel.classList.add('hidden');
+                paid.classList.add('hidden');
+            }
+        });
+
+    } );
+
+	debug('Paid modal init');
+}(initPaidModal());
+function paidRepair(self) {
+    event.preventDefault();
+    event.stopPropagation();
+
+	let repair = self.parentElement.parentElement.parentElement;
+    let repairID = repair.querySelector('.repairs_id').value;
+    let repairName = repair.querySelector('.repairs_name').innerHTML + repair.querySelector('.repairs_number').innerHTML + ' от ' + repair.querySelector('.repairs_date').innerHTML;
+    let repairText = repair.querySelector('.repairs_descr').value;
+    let repairCost = repair.querySelector('.repairCost').value;
+
+    let data = {
+    	paid: 1,
+        repairID: repairID,
+    };
+    let modal = $('#modalPaid');
+
+    modal.iziModal('setSubtitle', 'Это действие будет невозможно отменить!');
+    modal[0].querySelector('#modalPaidStatus').innerHTML = '<b>'+repairName + '</b><br>' + repairText + '<br><b>Стоимость: ' + repairCost + '</b>';
+    $('#modalPaid').iziModal('open');
+
+    paidRepair.data = data;
 }
 function removeRepairs(self) {
-	let todell = self.parentElement.parentElement;
-		todell.classList.remove('repairs');
-		todell.classList.add('hidden');
-		todell.querySelector('.repairs_descr').innerHTML = -1;
+	let toDell = self.parentElement.parentElement;
+    toDell.classList.remove('repairs');
+    toDell.classList.add('hidden');
+    toDell.querySelector('.repairs_descr').innerHTML = -1;
 }
 function formatDate(date) {
 	let dd = date.getDate();
@@ -463,6 +572,38 @@ function formatDate(date) {
 	return dd + '.' + mm + '.' + yy;
 }
 // ----- END РЕМОНТЫ -------//
+
+//-----  удаление превьюшек  -------//
+function dellImgPrew(self){
+
+    let todell = self.parentElement.parentElement.parentElement.parentElement;
+    todell.remove();
+    uplF_count--;
+}
+//----- END удаление превьюшек  -------//
+//----- удаление с сервера картинок, стл, модели целиком -------//
+function dell_fromServ( id, imgname, isSTL, dellpos, element )
+{
+    let imgtoDell;
+    if (element)
+    {
+        imgtoDell = element.parentElement.parentElement.parentElement;
+    }
+    let dellObj = {
+        id: id || false,
+        imgname: imgname || false,
+        isSTL: isSTL || false, // если == 2 значит это Ai файл
+        dellpos: dellpos || false,
+        element: imgtoDell || false,
+    };
+
+    dellModal.modalDataInit(dellObj);
+
+    $('#modalDelete').iziModal('open');
+
+}
+//----- END удаление с сервера картинок, стл, модели целиком -------//
+
 
 //--------- отображаем превью при наведении ----------//
 addPrevImg( document.getElementById('topName'), 'top', 'right' );

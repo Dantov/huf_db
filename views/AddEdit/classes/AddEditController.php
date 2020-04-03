@@ -69,9 +69,9 @@ class AddEditController extends GeneralController
         }
 
 
-
         if ( $component === 2 )  // значит что мы в форме редактирования
         {
+
             unset($_SESSION['general_data']);
 
             $row = $addEdit->getGeneralData();
@@ -105,10 +105,6 @@ class AddEditController extends GeneralController
             $noAi = $ai_file['noAi'];
 
             $repairs = $addEdit->getRepairs();
-            $showRepairsBlock = $repairs['showRepairsBlock'];
-            $repRow_Num = $repairs['repRow_Num'];
-            $repRow_date = $repairs['repRow_date'];
-            $repRow_descr = $repairs['repRow_descr'];
 
             $images  = $addEdit->getImages();
             $imgLen  = $images['imgLen'];
@@ -202,8 +198,8 @@ class AddEditController extends GeneralController
         $compact = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi',
             'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','ai_hide','status','haveAi','noAi','vc_Len','collections_len',
-            'imgFromWord','stonesFromWord','vcDopFromWord','stonesScript','row','stl_file','haveStl','noStl','ai_file','showRepairsBlock',
-            'repRow_Num','repRow_date','repRow_descr','imgLen','imgPath','imgStat','gs_len','row_gems','row_dop_vc','num3DVC_LI',
+            'imgFromWord','stonesFromWord','vcDopFromWord','stonesScript','row','stl_file','haveStl','noStl','ai_file','repairs',
+            'imgLen','imgPath','imgStat','gs_len','row_gems','row_dop_vc','num3DVC_LI',
             'rowStatus','material','covering','labels','header',
         ]);
         return $this->render('addEdit',$compact);

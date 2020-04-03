@@ -23,9 +23,9 @@ class Handler extends General { // общий класс, для манипул�
     {
 		if ( isset($number_3d) )
 		{
-		    $needls = ['/','\\',"'",'"','?',':','*','|','>','<',',','.'];
+		    $needles = ['/','\\',"'",'"','?',':','*','|','>','<',',','.'];
 
-			$this->number_3d = $this->add000( $this->checkCyrillic( str_replace($needls,'_',$number_3d) ) );
+			$this->number_3d = $this->add000( $this->checkCyrillic( str_replace($needles,'_',$number_3d) ) );
 			return $this->number_3d;
 		}
 	}
@@ -528,8 +528,113 @@ class Handler extends General { // общий класс, для манипул�
 		}
 		return true;
 	}
-	
-	public function addRepairs( &$repairs ) {
+
+	protected function parseRepairs($repairs)
+    {
+        if ( !is_array($repairs) ) return [];
+        $parsedRepairs = [];
+
+        foreach ( $repairs as $field => $records )
+        {
+            foreach ( $records as $key => $value )
+            {
+                $parsedRepairs[$key][$field] = $value;
+            }
+        }
+        return $parsedRepairs;
+    }
+	public function addRepairs( $repairs )
+    {
+        if ( !is_array($repairs) || empty($repairs) ) return [];
+        $repairs = $this->parseRepairs($repairs);
+        //$repairsJew = $this->parseRepairs(isset($repairs['jew'])?$repairs['jew']:[]);
+        //$repairs = array_merge($repairs3D, $repairsJew);
+
+        //debug($repairs,'$repairs');
+
+        $deletions = [];
+        $updates = [];
+        $insertions = [];
+
+        foreach ( $repairs as $repair )
+        {
+            $repID = (int)$repair['id'];
+            $repDescr = trim($repair['description']);
+
+            if ( $repID > 0 )
+            {
+                $repQuery = mysqli_query($this->connection, " SELECT COUNT(1) FROM repairs WHERE id='$repID' ");
+                if ( $repQuery->num_rows && (empty($repDescr) || $repDescr == -1) ) { // кандидат на удаление
+                    $deletions[] = $repair;
+                } elseif ($repQuery->num_rows)
+                {
+                    $updates[] = $repair;
+                }
+            }
+            if ( $repID === 0 )
+            {
+                $insertions[] = $repair;
+                continue;
+            }
+        }
+
+//        debug($deletions,'$deletions');
+//        debug($updates,'$updates');
+//        debug($insertions,'$insertions',1);
+
+        $result = [];
+        if ( !empty($deletions) )
+        {
+            $dellIds = '(';
+            foreach ( $deletions as $deletion ) $dellIds .= $deletion['id'] . ',';
+            $dellIds = trim($dellIds,',') . ')';
+
+            $dellQuery = mysqli_query($this->connection, " DELETE FROM repairs WHERE id in $dellIds ");
+            if ($dellQuery) {
+                $result['deletions'] = $dellIds . ' - deleted.';
+            } else {
+                printf( "Error Delete repairs: %s\n", mysqli_error($this->connection) );
+                $result['deletions'] = 'error';
+            }
+        }
+        if ( !empty($updates) )
+        {
+            foreach ( $updates as $update )
+            {
+                $id = $update['id'];
+                $description = $update['description'];
+                $cost = $update['cost'];
+                $which = $update['which'];
+                $updQuery = mysqli_query($this->connection, " UPDATE repairs SET repair_descr='$description', which='$which', cost='$cost' WHERE id='$id' ");
+                if ($updQuery) {
+                    $result['updates'][] = $id . ' - success.';
+                } else {
+                    printf( "Error Update repairs: %s\n", mysqli_error($this->connection) );
+                    $result['updates'][] = $id . ' - update error!';
+                }
+            }
+        }
+        if ( !empty($insertions) )
+        {
+            foreach ( $insertions as $insertion )
+            {
+                $num = $insertion['num'];
+                $description = $insertion['description'];
+                $cost = $insertion['cost'];
+                $which = $insertion['which'];
+                $insertQuery = mysqli_query($this->connection, " INSERT INTO repairs (rep_num, repair_descr, cost, which, date, pos_id) 
+		                                                                 VALUES ('$num','$description','$cost','$which','$this->date','$this->id') ");
+                if ($insertQuery) {
+                    $result['insertions'][] = $id . ' - success.';
+                } else {
+                    printf( "Error Insert repairs: %s\n", mysqli_error($this->connection) );
+                    $result['insertions'][] = ' Insert error!';
+                }
+            }
+        }
+
+        return $result;
+        /*
 		for ( $i = 0; $i < count($repairs['repairs_descr']); $i++ ) {
 			
 			$repairs_descr = trim($repairs['repairs_descr'][$i]);
@@ -583,6 +688,7 @@ class Handler extends General { // общий класс, для манипул�
 			}
 		}
 		return true;
+        */
 	}
 	
 	public function getModelsByType($modelType)
@@ -759,4 +865,10 @@ class Handler extends General { // общий класс, для манипул�
 		
 		return $dislikes;
 	}
+	public function setRepairPaid($repairID)
+    {
+        $query = mysqli_query($this->connection, " UPDATE repairs SET paid=1 WHERE id='$repairID' ");
+        if ($query) return true;
+        return false;
+    }
 }

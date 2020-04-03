@@ -510,49 +510,37 @@
         </div> <!--col-xs-12-->
 
 
+        <!--РЕМОНТЫ-->
         <?php if ( $permittedFields['repairs'] ): ?>
-            <!--РЕМОНТЫ-->
             <div class="col-xs-12" id="repairsBlock">
-                <?php for ( $i = 0; $i < count($repRow_Num?:[]); $i++ ) :?>
-                    <div class="panel panel-danger repairs">
-                        <div class="panel-heading">
-                            <span class="glyphicon glyphicon-wrench" style="color:green;"></span>
-                            <strong>
-                                Ремонт №<span class="repairs_number"> <?=$repRow_Num[$i];?></span>
-                                от - <span class="repairs_date"><?=date_create( $repRow_date[$i] )->Format('d.m.Y');?></span>
-                            </strong>
-                            <button onclick="removeRepairs(this);" class="btn btn-sm btn-default pull-right" style="top:-5px !important; position:relative;" type="button" title="Удалить Ремонт">
-                                <span class="glyphicon glyphicon-remove"></span>
-                            </button>
-                        </div>
-                        <textarea class="form-control repairs_descr" rows="3" name="repairs_descr[]"><?=$repRow_descr[$i];?></textarea>
-                        <input type="hidden" class="repairs_num" name="repairs_num[]" value="<?=$repRow_Num[$i];?>"/>
-                    </div>
-                <?php endfor; ?>
-                <div style="margin-top:20px;" id="addRepairs">
-                    <span class="stlSelect" onclick="addRepairs(this);">
-                        <span class="glyphicon glyphicon-wrench"></span>
-                        Добавить ремонт
-                    </span>
-                </div>
-                <!--Прото ремонт-->
-                <div id="protoRepairs" class="panel panel-danger hidden">
-                    <div class="panel-heading">
-                        <span class="glyphicon glyphicon-wrench" style="color:green;"></span>
-                        <strong>
-                            Ремонт №<span class="repairs_number"></span>
-                            от - <span class="repairs_date"></span>
-                        </strong>
-                        <button onclick="removeRepairs(this);" class="btn btn-sm btn-default pull-right" style="top:-5px !important; position:relative;" type="button" title="Удалить Ремонт">
-                            <span class="glyphicon glyphicon-remove"></span>
-                        </button>
-                    </div>
-                    <textarea class="form-control repairs_descr" rows="3" name=""></textarea>
-                    <input type="hidden" class="repairs_num" name="" value=""/>
-                </div><!--END Прото ремонт-->
+                <?php if ( $permittedFields['repairs3D'] ): ?>
+                <?
+                    $isRepairProto = false;
+                    for ( $i = 0; $i < count($repairs?:[]); $i++ )
+                    {
+                        $repair = $repairs[$i];
+                        if ( $whichRepair = $repair['which'] ? true : false ) continue; // пропустим ремонты модельеров, у них 1
+                        require "includes/protoRepair.php";
+                    }
+                ?>
+                <button data-repair="3d" style="margin-top:10px;" class="btn btn-info addRepairs"><span class="glyphicon glyphicon-cog"></span> Добавить ремонт 3Д</button>
+                <?php endif; ?>
+
+                <?php if ( $permittedFields['repairsJew'] ): ?>
+                <?
+                    for ( $i = 0; $i < count($repairs?:[]); $i++ )
+                    {
+                        $repair = $repairs[$i];
+                        if ( !$whichRepair = $repair['which'] ? true : false ) continue; // пропустим ремонты 3д, у них 0
+                        require "includes/protoRepair.php";
+                    }
+                    if (isset($whichRepair)) unset($whichRepair);
+                ?>
+                <button data-repair="jeweler" style="margin-top:10px;" class="btn btn-success addRepairs"><span class="glyphicon glyphicon-wrench"></span> Добавить ремонт Модельера-доработчика</button>
+                <?php endif; ?>
             </div>
-            <!--END РЕМОНТЫ-->
         <?php endif; ?>
+        <!--END РЕМОНТЫ-->
 
     </div><!--row-->
 
@@ -663,7 +651,7 @@
     <?php if ( !$permittedFields['number_3d'] ): ?>
         <input type="hidden" name="number_3d" value="<?=$_SESSION['general_data']['number_3d'];?>"/>
     <?php endif;?>
-    <input type="hidden" name="id" value="<?=$id;?>"/>
+    <input type="hidden" name="id" value="<?=$id?>"/>
     <input type="hidden" name="edit" id="edit" value="<?=$component;?>"/>
     <input type="hidden" name="date" value="<?=date('Y-m-d'); ?>" />
 </form>
@@ -702,11 +690,12 @@
 <?php include('includes/num3dVC_input_Proto.php');?>
 <?php include('includes/protoGemsVC_Rows.php');?>
 <?php include('includes/protoImages_Row.php');?>
+<?php $isRepairProto = true; include('includes/protoRepair.php');?>
 
 <script defer src="<?=_views_HTTP_?>AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/CollectionsModal.js?ver=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
-<script src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
+<script defer src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
 <?=$stonesScript;?>
 
 <div class="AddEditSideButtons" id="AddEditSideButtons">

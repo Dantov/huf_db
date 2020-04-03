@@ -230,31 +230,11 @@
         </div><!-- panel end -->
     <?php endif; ?>
 
-    <?php if ( !empty($row['mounting_descr']) ) :?>
-        <br/>
-        <div class="panel panel-default" style="margin-bottom:0px !important;">
-            <div class="panel-heading">
-                <span class="glyphicon glyphicon-comment"></span>
-                <strong style="color:red;"> Монтировщик отправил в ремонт по причине:</strong>
-                <span class="pull-right"><?=date_create( $row['status_date'] )->Format('d.m.Y');?></span>
-            </div>
-            <div style="margin:15px;"><?=$row['mounting_descr'];?></div>
-        </div><!-- panel end -->
-    <?php endif; ?>
+    <!--РЕМОНТЫ-->
+    <?= $repairs3D ?>
+    <?= $repairsJew ?>
+    <!--END РЕМОНТЫ-->
 
-    <?php while($repRow = mysqli_fetch_assoc($rep_Query)) :?>
-        <br/>
-        <div class="panel panel-danger repairs" style="margin-bottom: 0 !important;">
-            <div class="panel-heading">
-                <span class="glyphicon glyphicon-wrench" style="color:green;"></span>
-                <strong>
-                    Ремонт №<span class="repairs_number"> <?=$repRow['rep_num'];?></span>
-                    от - <span class="repairs_date"><?=date_create( $repRow['date'] )->Format('d.m.Y');?></span>
-                </strong>
-            </div>
-            <textarea readonly style="resize: none;" class="form-control repairs_descr" rows="3"><?=$repRow['repair_descr'];?></textarea>
-        </div>
-    <?php endwhile; ?>
     <div class="bg-info butt-inf">
         <small class="pull-left">
 					<span title="Создатель">

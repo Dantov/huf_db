@@ -44,7 +44,30 @@ class ModelViewController extends GeneralController
         $gemsTR = $modelView->getGems();
         $dopVCTr = $modelView->getDopVC();
 
+
         $rep_Query = $modelView->rep_Query;
+        $repairs = [];
+        if ( $rep_Query->num_rows > 0 ) while($repRow = mysqli_fetch_assoc($rep_Query)) $repairs[] = $repRow;
+        $isView = true;
+        $isRepairProto = false;
+        $repairs3D = '';
+        $repairsJew = '';
+        ob_start();
+        foreach ( $repairs as $repair )
+        {
+            if ( !$whichRepair = $repair['which'] ? true : false )
+            {
+                require _viewsDIR_ . "AddEdit/includes/protoRepair.php";
+                $repairs3D .= ob_get_contents();
+                ob_clean();
+            } else {
+                require _viewsDIR_ . "AddEdit/includes/protoRepair.php";
+                $repairsJew .= ob_get_contents();
+                ob_clean();
+            }
+        }
+        ob_end_clean();
+
 
         $stts = $modelView->getStatus($row);
         $stat_name = $stts['stat_name'];
@@ -117,7 +140,7 @@ class ModelViewController extends GeneralController
         $compacted = compact([
             'id','row','coll_id','getStl','button3D','dopBottomScripts','complStr','images', 'labels', 'str_mat','str_Covering','gemsTR',
             'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','statuses','stillNo','ai_file','thisPage','editBtn',
-            'btnlikes','rep_Query']);
+            'btnlikes','repairs3D','repairsJew']);
 
         return $this->render('modelView', $compacted);
     }

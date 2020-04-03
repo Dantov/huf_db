@@ -325,21 +325,21 @@
 			$respArr['row_dop_vc'] = &$rowVC;
 			return $respArr;
 		}
-		public function getRepairs(){
-			$respArr = array();	
-			$repQuer = mysqli_query($this->connection, " SELECT * FROM repairs WHERE pos_id='$this->id' ");
-			$respArr['showRepairsBlock'] = 'hidden';
-			if ( $repQuer -> num_rows > 0 ) {
-				$respArr['showRepairsBlock'] = '';
-				while($repRow = mysqli_fetch_assoc($repQuer)){
-					$respArr['repRow_Num'][] = $repRow['rep_num'];
-					$respArr['repRow_date'][] = $repRow['date'];
-					$respArr['repRow_descr'][] = $repRow['repair_descr'];
-				}
+
+		public function getRepairs()
+        {
+			$result = [];
+			$repQuery = mysqli_query($this->connection, " SELECT * FROM repairs WHERE pos_id='$this->id' ");
+
+			if ( $repQuery->num_rows > 0 ) {
+				while($repRow = mysqli_fetch_assoc($repQuery)) $result[] = $repRow;
+
 			}
-			return $respArr;
+			return $result;
 		}
-		public function getWordData(){
+
+		public function getWordData()
+        {
 			$respArr = array();
 			
 			$respArr['stonesFromWord'] = 'hidden';

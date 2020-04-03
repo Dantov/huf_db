@@ -132,6 +132,8 @@ class General {
             'vc_links' => false,
             'description' => false,
             'repairs' => false,
+            'repairs3D' => false,
+            'repairsJew' => false,
             'labels' => false,
             'statuses' => false,
             'dellModel' => false,
@@ -149,6 +151,11 @@ class General {
                 $permittedFields['print_cost'] = false;
                 $permittedFields['model_cost'] = false;
                 $permittedFields['jewelerName'] = false;
+                $permittedFields['repairsJew'] = false;
+                break;
+            case 3:
+                $permittedFields['print_cost'] = true;
+                $permittedFields['statuses'] = true;
                 break;
             case 4:
                 $permittedFields['vendor_code'] = true;
@@ -158,12 +165,7 @@ class General {
                 $permittedFields['vc_links'] = true;
                 $permittedFields['description'] = true;
                 $permittedFields['statuses'] = true;
-                $permittedFields['repairs'] = true;
                 $permittedFields['labels'] = true;
-                break;
-            case 3:
-                $permittedFields['print_cost'] = true;
-                $permittedFields['statuses'] = true;
                 break;
             case 5:
                 $permittedFields['images'] = true;
@@ -172,6 +174,7 @@ class General {
                 $permittedFields['model_cost'] = true;
                 $permittedFields['description'] = true;
                 $permittedFields['repairs'] = true;
+                $permittedFields['repairsJew'] = true;
                 $permittedFields['labels'] = true;
                 $permittedFields['statuses'] = true;
                 break;

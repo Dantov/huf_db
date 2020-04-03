@@ -118,7 +118,7 @@ class GeneralController extends Controller
             return $res;
         }
 
-        require_once _globDIR_ . "/db.php";
+        require_once _globDIR_ . "db.php";
         $collections_arr = [];
         $coll_res = mysqli_query($connection, " SELECT * FROM collections ORDER BY name");
         while( $coll_row = mysqli_fetch_assoc($coll_res) ) $collections_arr[] = $coll_row;

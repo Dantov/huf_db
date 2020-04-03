@@ -31,7 +31,7 @@
 		$stlProcesses = 1;
 	}
 	
-	$repairsProcesses = count($_POST['repairs_descr']?:[]) > 0 ? 1 : 0;
+	$repairsProcesses = count($_POST['repairs']['3d']?:[]) > 0 ? 1 : 0;
 	$stonesProcesses = count( $_POST['gemsName']?:[] ) > 0 ? 1 : 0;
 	$dopVCProcesses = count( $_POST['dop_vc_name_']?:[] ) > 0 ? 1 : 0;
 	
@@ -54,11 +54,14 @@
 	if ( isset($_POST['edit']) && (int)$_POST['edit'] === 2 ) {
 		$isEdit = true;
 		$id = (int)$_POST['id'];
+        //$id = (int)$_SESSION['editingModel']['id'];
 	} else {
 		$isEdit = false; // новая модель!
 		unset($_SESSION['general_data']);
 	}
-	
+
+	//debug($id,'$id',1);
+
 	chdir(_stockDIR_);
 
 	$date        = trim($_POST['date']);
@@ -80,7 +83,7 @@
 	$handler -> setDate($date);
 	
 	// проверяем поменялся ли номер 3Д
-	if ( $isEdit === true ) $handler -> checkModel();
+	if ( $isEdit === true ) $handler->checkModel();
 	
 	//============= counter point ==============//
 	$overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
@@ -279,12 +282,6 @@
 
 
 	// добавляем доп. артикулы
-//	debug($_POST['dop_vc_name_'],'dop_vc_name_');
-//	debug($_POST['num3d_vc_'],'num3d_vc_');
-//	debug($_POST['descr_dopvc_'],'descr_dopvc_');
-
-    //$dopVCcount = count($_POST['dop_vc_name_']?:[]);
-	//if ( !empty($dopVCcount) ) { //если доп. артикулы есть то добавляем их
 	if ( $permissions['vc_links'] )
 	{
 		$vc = array();
@@ -308,22 +305,30 @@
 	
 	
 	/// --------- Добавляем ремонты ----------///
-	if ( $rep_count = count($_POST['repairs_descr']?:[]) && $permissions['repairs'] ) {
-		
-		$repairs = array();
-		$repairs['repairs_num']   = &$_POST['repairs_num'];
-		$repairs['repairs_descr'] = &$_POST['repairs_descr'];
-		$quer_rep = $handler -> addRepairs( $repairs );
-		
-		if ( $quer_rep ) {
-            //============= counter point ==============//
-            $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-            $progress->progressCount( $overalProgress );
-			$resp_arr['processes']['repairs'] = $overalProgress;
-                        
-		} else {
-			exit();
-		}
+	if ( $permissions['repairs'] )
+	{
+	    if ( $permissions['repairs3D'] )
+        {
+            $repairResp = $handler->addRepairs( $_POST['repairs']['3d'] );
+            if ( $repairResp ) {
+                //============= counter point ==============//
+                $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+                $progress->progressCount( $overalProgress );
+                $resp_arr['processes']['repairs'] = $overalProgress;
+
+            }
+        }
+        if ( $permissions['repairsJew'] )
+        {
+            $repairResp = $handler->addRepairs( $_POST['repairs']['jew'] );
+            if ( $repairResp ) {
+                //============= counter point ==============//
+                $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+                $progress->progressCount( $overalProgress );
+                $resp_arr['processes']['repairs'] = $overalProgress;
+
+            }
+        }
 	}
 	/// --------- END ремонты ----------///
 

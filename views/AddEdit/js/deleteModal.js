@@ -25,7 +25,10 @@ DeleteModal.prototype.init = function()
 
     let that = this;
     // начало открытия
-    $(document).on('opening', '#modalDelete', that.onModalOpen.bind(null, that) );
+    //$(document).on('opening', '#modalDelete', that.onModalOpen.bind(null, that) );
+    $(document).on('opening', '#modalDelete', function () {
+		that.onModalOpen(that);
+    } );
     // Начало закрытия
     $(document).on('closing', '#modalDelete', that.onModalClosing.bind(null, that) );
     // исчезло
@@ -35,12 +38,13 @@ DeleteModal.prototype.init = function()
     let buttons = document.getElementById('modalDeleteContent').querySelectorAll('a');
     let dell = buttons[1];
     let ok = buttons[2];
-    
+
     dell.addEventListener('click', that.modalDeleteButton.bind(event,that) );
+
 };
 
 
-DeleteModal.prototype.onModalOpen = function(that, event)
+DeleteModal.prototype.onModalOpen = function(that)
 {
     console.log('Dell Modal is Open');
 
@@ -171,7 +175,6 @@ DeleteModal.prototype.modalDeleteButton = function(that, event) {
 			dell.classList.add('hidden');
 		}
 	});
-
 };
 
 let dellModal = new DeleteModal();
