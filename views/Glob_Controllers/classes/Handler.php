@@ -580,7 +580,7 @@ class Handler extends General { // общий класс, для манипул�
 
 //        debug($deletions,'$deletions');
 //        debug($updates,'$updates');
-//        debug($insertions,'$insertions',1);
+//        debug($insertions,'$insertions');
 
         $result = [];
         if ( !empty($deletions) )
@@ -603,9 +603,13 @@ class Handler extends General { // общий класс, для манипул�
             {
                 $id = $update['id'];
                 $description = $update['description'];
-                $cost = $update['cost'];
                 $which = $update['which'];
-                $updQuery = mysqli_query($this->connection, " UPDATE repairs SET repair_descr='$description', which='$which', cost='$cost' WHERE id='$id' ");
+                $cost = '';
+                if ( isset($update['cost']) ) $cost = ", cost='{$update['cost']}'";
+
+                $queryStr = " UPDATE repairs SET repair_descr='$description', which='$which' $cost WHERE id='$id' ";
+
+                $updQuery = mysqli_query($this->connection, $queryStr);
                 if ($updQuery) {
                     $result['updates'][] = $id . ' - success.';
                 } else {

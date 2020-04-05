@@ -522,9 +522,9 @@ function initPaidModal() {
                 ok.onclick = function() {
                     document.location.reload(true);
                 };
-                ok.classList.remove('hidden');
                 cancel.classList.add('hidden');
                 paid.classList.add('hidden');
+                ok.classList.remove('hidden');
             }
         });
 

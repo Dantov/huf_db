@@ -50,16 +50,25 @@ if ( !$isRepairProto )
     <? if ( !$isView ): ?>
     <div class="row repairsPayment <?= $whichRepair ? '' : 'hidden'?>" style="margin: 5px 10px 0 10px;">
         <div class="col-xs-4">
-            <label for="model_type" class="">
-                <span class="glyphicon glyphicon-usd"></span> Стоимость:
-                <input type="number" class="form-control repairCost" name="<?=$repairRow['repairsCostName']?>" value="<?=$repairRow['cost']?>">
-            </label>
+            <? if( !$repair['paid'] ) : ?>
+                <label for="model_type" class="">
+                    <span class="glyphicon glyphicon-usd"></span> Стоимость:
+                    <input type="number" class="form-control repairCost" name="<?=$repairRow['repairsCostName']?>" value="<?=$repairRow['cost']?>">
+                </label>
+            <?else:?>
+                <span><span class="glyphicon glyphicon-usd"></span> Стоимость: <?=$repairRow['cost']?></span>
+                <input type="hidden" class="hidden" name="<?=$repairRow['repairsCostName']?>" value="<?=$repairRow['cost']?>">
+            <?endif;?>
         </div>
         <div class="col-xs-8">
-            <br>
-            <button onclick="paidRepair(this);" class="btn btn-default pull-right" style="top:-5px !important; position:relative;" type="button">
-                <i class="far fa-credit-card"></i> Отметить ремонт оплаченым
-            </button>
+            <? if( !$repair['paid'] ) : ?>
+                <br>
+                <button onclick="paidRepair(this);" class="btn btn-default pull-right" style="top:-5px !important; position:relative;" type="button">
+                    <i class="far fa-credit-card"></i> Отметить ремонт оплаченым
+                </button>
+            <?else:?>
+                <span class="text-bold">Этот ремонт отмечен как оплаченый.</span>
+            <?endif;?>
         </div>
     </div>
     <?endif;?>
