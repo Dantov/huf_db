@@ -22,6 +22,7 @@ JS;
     <title><?= $this->title ?></title>
     <link rel="icon" href="<?= _rootDIR_HTTP_ ?>web/favicon.ico?ver=106">
 
+    <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/cssFW.css?ver=<?=time();?>">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/style.css?ver=<?=time();?>">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/style_adm.css?ver=<?=time();?>">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/bodyImg.css?ver=<?=time();?>">

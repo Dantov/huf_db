@@ -29,7 +29,7 @@ if ( !$isRepairProto )
     if ( isset($repair['cost']) ) $repairRow['cost'] = $repair['cost'];
 }
 ?>
-<div id="<?=$repairRow['idProto']?>" class="panel <?=$repairRow['panelColor']?> <?=$repairRow['isHidden']?> <?=$repairRow['which']?>" style="margin-top: 10px;">
+<div id="<?=$repairRow['idProto']?>" class="panel <?=$repairRow['panelColor']?> <?=$repairRow['isHidden']?> <?=$repairRow['which']?> " style="margin-top: 10px;">
     <div class="panel-heading">
         <span class="glyphicon glyphicon-<?=$repairRow['panelIcon']?>" style="color:green;"></span>
         <strong>
@@ -50,7 +50,8 @@ if ( !$isRepairProto )
     <? if ( !$isView ): ?>
     <div class="row repairsPayment <?= $whichRepair ? '' : 'hidden'?>" style="margin: 5px 10px 0 10px;">
         <div class="col-xs-4">
-            <? if( !$repair['paid'] ) : ?>
+
+            <? if( !$repair['paid'] || $isRepairProto ) : ?>
                 <label for="model_type" class="">
                     <span class="glyphicon glyphicon-usd"></span> Стоимость:
                     <input type="number" class="form-control repairCost" name="<?=$repairRow['repairsCostName']?>" value="<?=$repairRow['cost']?>">
@@ -61,15 +62,18 @@ if ( !$isRepairProto )
             <?endif;?>
         </div>
         <div class="col-xs-8">
-            <? if( !$repair['paid'] ) : ?>
+            <? if( !$repair['paid'] && !$isRepairProto ) : ?>
                 <br>
                 <button onclick="paidRepair(this);" class="btn btn-default pull-right" style="top:-5px !important; position:relative;" type="button">
                     <i class="far fa-credit-card"></i> Отметить ремонт оплаченым
                 </button>
-            <?else:?>
+            <?elseif (!$isRepairProto) :?>
                 <span class="text-bold">Этот ремонт отмечен как оплаченый.</span>
             <?endif;?>
         </div>
     </div>
+    <?endif;?>
+    <? if( $repair['paid'] ) : ?>
+        <div class="w100 pb-1 brb-3-success"></div>
     <?endif;?>
 </div>

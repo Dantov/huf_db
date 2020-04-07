@@ -514,9 +514,11 @@ class General {
             {
                 if ( $imageStatus['tab'] == 'status_image' )
                 {
-                    $this->imageStatuses[$c]['id'] = $imageStatus['name_en'];
+                    $this->imageStatuses[$c]['id'] = $imageStatus['id'];
                     $this->imageStatuses[$c]['name'] = $imageStatus['name_ru'];
-                    $this->imageStatuses[$c]['check'] = '';
+                    $this->imageStatuses[$c]['name_en'] = $imageStatus['name_en'];
+                    $this->imageStatuses[$c]['selected'] = '';
+                    if ( $imageStatus['id'] == 27 ) $this->imageStatuses[$c]['selected'] = 1;
                     $c++;
                 }
             }
@@ -592,5 +594,29 @@ class General {
 		
 		//debug( $name . " " . date("F d Y H:i:s.", $min) , "ggggggg");
 	}
+
+	public function sql($sqlStr)
+    {
+        if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
+        $result = [];
+
+        $query = mysqli_query($this->connection, $sqlStr );
+        if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];
+
+        return $this->connection->insert_id;
+    }
+
+	public function findAsArray($sqlStr)
+    {
+        if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
+
+        $result = [];
+
+        $query = mysqli_query($this->connection, $sqlStr );
+        if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];
+
+        while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;
+        return $result;
+    }
 	
 }

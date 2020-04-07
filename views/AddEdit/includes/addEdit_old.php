@@ -86,7 +86,7 @@
                     </thead>
                     <tbody id="collections_table">
                     <!-- // автозаполнение если добавляем комплект или редакт модель -->
-                    <?php $i = 0; foreach ( $collections_len?:[] as $collection ) : ?>
+                    <?php $i = 0; foreach ( $collections_len as $collection ) : ?>
                         <tr>
                             <td style="width: 30px"><?=++$i?><?php --$i; ?></td>
                             <td><?php include('includes/collections_input.php'); $i++?></td>
@@ -351,11 +351,51 @@
     <?php if ( $permittedFields['images'] ): ?>
         <div class="row" id="picts">
             <span id="imgFor" class="help-block hidden err-notice"></span>
-            <?php //debug($images); ?>
-            <?php $switchTableRow = "dropImage"; $protoImgRow = 0; ?>
-            <?php foreach ( $images?:[] as $image ) : ?>
-                <?php require "includes/protoRows.php"?>
-            <?php endforeach; ?>
+            <?php for ( $i = 0; $i < $imgLen; $i++ ): ?>
+                <div class="col-xs-6 col-sm-3 col-md-2 image_row">
+                    <? if ( $component === 3 ):?>
+                        <input class="hidden" type="file" name="upload_images[]" accept="image/jpeg,image/png,image/gif">
+                    <? endif;?>
+                    <div class="ratio img-thumbnail">
+                        <div class="ratio-inner ratio-4-3">
+                            <div class="ratio-content">
+                                <img src="<?=_stockDIR_HTTP_.$_SESSION['general_data']['number_3d'].'/'.$_SESSION['general_data']['id'].'/images/'.$imgPath[$i];?>" class="dopImg img-responsive "/>
+                            </div>
+                            <? if ( $component === 3 ):?>
+                                <div class="img_dell">
+                                    <button class="btn btn-default" type="button" onclick="dellImgPrew(this);">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </button>
+                                </div>
+                            <? else: ?>
+                                <a class="btn btn-sm btn-default img_dell" role="button" onclick="dell_fromServ(<?=$id?>, '<?=$imgPath[$i]?>', false, false, this)">
+                                    <span class="glyphicon glyphicon-remove"></span>
+                                </a>
+                            <? endif;?>
+                        </div>
+                    </div>
+                    <div class="img_inputs">
+                        <div class="input-group">
+                            <input type="hidden" class="notVis" name="imgFor[]" value="<?=$imgStat[$i]['id'];?>" />
+                            <input required type="text" readonly class="form-control vis" aria-label="..." value="<?=$imgStat[$i]['name'];?>" />
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li title="Будет помещено на главной странице, в паспорте и бегунке, а так же в коллекции."><a data-imgFor="1" elemToAdd>Главная</a></li>
+                                    <li title="Будет помещено в паспорте и бегунке."><a data-imgFor="2" elemToAdd>На теле</a></li>
+                                    <li title="Будет помещено в паспорте."><a data-imgFor="3" elemToAdd>Эскиз</a></li>
+                                    <li title="Будет печатать в коллекции как доп. картинка."><a data-imgFor="4" elemToAdd>Деталировка</a></li>
+                                    <li title="Будет помещено в бегунке на последней странице."><a data-imgFor="5" elemToAdd>Схема сборки</a></li>
+                                    <li title="Будет видно на странице показа модели."><a data-imgFor="0" elemToAdd>Нет</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endfor; ?>
+
             <div class="col-xs-12">
                 <div id="drop-area" title="Загрузить картинку">
                     <p>Загрузить картинки можно перетащив их в эту область</p>
@@ -363,7 +403,21 @@
                 </div>
             </div>
 
-            <?php $protoImgRow = 1; require 'includes/protoRows.php' // Прототип ?>
+            <div class="col-xs-6 col-sm-3 col-md-2 prj" id="add_bef_this">
+                <div class="ratio" id="add_img">
+                    <div class="ratio-inner ratio-4-3">
+                        <div class="ratio-content">
+                            <span class="add_img">
+                                <span class="glyphicon glyphicon-picture"></span>
+                            </span>
+                            <div class="add_img_text">
+                                Загрузить картинку
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div><!--Picts row-->
         <hr />
     <?php endif; ?>
@@ -374,6 +428,7 @@
     <div class="row">
         <?php if ( $permittedFields['gems'] ): ?>
             <div class="col-sm-12">
+                <div id="stonesFromWord" class="<?=$stonesFromWord;?>"><?=$_SESSION['fromWord_data']['stones'];?></div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <i class="far fa-gem"></i>
@@ -642,13 +697,13 @@
 <?php include('includes/deleteModal.php');?>
 <?php include('includes/num3dVC_input_Proto.php');?>
 <?php include('includes/protoGemsVC_Rows.php');?>
+<?php include('includes/protoImages_Row.php');?>
 <?php $isRepairProto = true; include('includes/protoRepair.php');?>
 
 <script defer src="<?=_views_HTTP_?>AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/CollectionsModal.js?ver=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
-<script defer src="<?=_views_HTTP_?>AddEdit/js/HandlerFiles.js?ver=<?=time();?>"></script>
 <?=$stonesScript;?>
 
 <div class="AddEditSideButtons" id="AddEditSideButtons">

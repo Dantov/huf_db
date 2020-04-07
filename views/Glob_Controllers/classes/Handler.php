@@ -294,51 +294,55 @@ class Handler extends General { // общий класс, для манипул�
 		}
 	}
 	
-	public function addImage(&$files, &$imgWord, $i)
+	public function addImageFiles($files, $imgRows)
     {
-		$iter = $i;
-		/*
-		if ( $this->isEdit === true ) {
-			$last_number = $this->findLastNum();
-			$last_number++;
-			$iter = $last_number;
-		}
-		*/
-		$randomString = randomStringChars(8,'en','symbols');
-		//если имя есть, это значит что добавили вручную
-		if ( !empty( basename($files['name'][$i]) ) )
-		{
-			$info = new SplFileInfo($files['name'][$i]);
-			$extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
-			$uploading_img_name = $this->number_3d."_".$randomString.mt_rand(0,98764321).".".$extension;
-			move_uploaded_file($files['tmp_name'][$i], $this->number_3d.'/'.$this->id.'/images/'.$uploading_img_name);	
-			
-		} else { //иначе, пришло из ворд файла
-			
-			//$fullPath = $imgWord[$i];
-			// т.к. находится в /Stock нужно отобрать один переход
-			$fullPath = explode('../',$imgWord[$i]);
-			
-			if ( empty($fullPath[0]) ) {         //if ( $fullPath[0] == '../' ) {
-				$fullPath = '../'.$fullPath[2];
-			} else {
-				$fullPath = $fullPath[0];
-			}
-			
-			if ( !empty($fullPath) ) { //если файл есть то добавляем запись
-				$path_parts = pathinfo($fullPath);
-				$extension = $path_parts['extension'];
-				$uploading_img_name = $this->number_3d."-".$this->model_typeEn."_".$randomString.time().".".$extension;
-				copy($fullPath, $this->number_3d.'/'.$this->id.'/images/'.$uploading_img_name);
-			}
-		}
-		
-		$quer = mysqli_query($this->connection, " INSERT INTO images (img_name, pos_id) VALUES ('$uploading_img_name','$this->id') ");
-		if ( !$quer ) {
-			printf( "Error add img: %s\n", mysqli_error($this->connection) );
-			return false;
-		}
-		return true;
+        $imgCount = count($files['name']?:[]);
+
+        /* для добавления эскиза */
+        $c = 0;
+        if ( !empty($imgRows[$c]['img_name']) && $imgRows[$c]['sketch'] == 1 )
+        {
+            $sketchNames = explode('#',$imgRows[$c]['img_name']);
+            $num3D = $sketchNames[0];
+            $modelID = $sketchNames[1];
+            $imgName = $sketchNames[2];
+
+            $pathFrom = _stockDIR_ . $num3D . "/" . $modelID . "/images/" . $imgName;
+            if ( file_exists($pathFrom) )
+            {
+                $pathTo = $this->number_3d.'/'.$this->id.'/images/'.$imgName;
+                if ( copy($pathFrom, $pathTo) )
+                {
+                    $imgRows[$c]['img_name'] = $imgName;
+                }
+            }
+            $c++;
+        }
+        /* енд для добавления эскиза */
+
+
+        for ( $i = 0; $i < $imgCount; $i++ )
+        {
+            $randomString = randomStringChars(8,'en','symbols');
+            //если имя есть, это значит что добавили вручную
+            if ( !empty( basename($files['name'][$i]) ) )
+            {
+                $info = new SplFileInfo($files['name'][$i]);
+                $extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
+                $uploading_img_name = $this->number_3d."_".$randomString.mt_rand(0,98764321).".".$extension;
+                $destination = $this->number_3d.'/'.$this->id.'/images/'.$uploading_img_name;
+                $tmpName = $files['tmp_name'][$i];
+
+                if ( move_uploaded_file($tmpName, $destination) ) {
+                    $imgRows[$c]['img_name'] = $uploading_img_name;
+                    $c++;
+                } else {
+                    exit('Error moving image file '. $uploading_img_name);
+                }
+            }
+        }
+
+		return $imgRows;
 	}
 
 
@@ -869,10 +873,168 @@ class Handler extends General { // общий класс, для манипул�
 		
 		return $dislikes;
 	}
-	public function setRepairPaid($repairID)
+	public function setRepairPaid($repairID, $repairCost)
     {
-        $query = mysqli_query($this->connection, " UPDATE repairs SET paid=1 WHERE id='$repairID' ");
+        $query = mysqli_query($this->connection, " UPDATE repairs SET paid=1, cost='$repairCost' WHERE id='$repairID' ");
         if ($query) return true;
-        return false;
+
+        return 'Error in setRepairPaid() ' . mysqli_error($this->connection);
     }
+
+
+    public function makeBatchImgInsertRow($data)
+    {
+        $newImgRows = [];
+        $imgRows = [];
+        if ( !is_array($data) || empty($data) ) return false;
+
+        /* для добавления эскиза */
+        $sketchImgName = '';
+        if ( isset($data['img_name']['sketch']) ) $sketchImgName = $data['img_name']['sketch'];
+
+
+        foreach ( $data as $mats )
+        {
+            for( $i = 0; $i < count($mats); $i++ )
+            {
+                $imgRows[$i][] = $mats[$i];
+            }
+        }
+        //debug($imgRows,'$imgRow');
+        $images = $this->findAsArray("SELECT * FROM images WHERE pos_id='$this->id' ");
+        //debug($images,'Images');
+
+        foreach( $imgRows as $imgRowKey => &$imgRow )
+        {
+            $imgId = (int)$imgRow[0];
+            $imgFor = (int)$imgRow[1];
+            $isNEWImage = true;
+            $modifiedImgRow = [];
+            foreach( $images as $image )
+            {
+                if ( $imgId === (int)$image['id'] )
+                {
+                    $modifiedImgRow = $image;
+                    $isNEWImage = false;
+                    break;
+                }
+            }
+            //
+            if ( $isNEWImage )
+            {
+                $modifiedImgRow = ['id'=>'','img_name'=>$sketchImgName,'main'=>'','onbody'=>'','sketch'=>'','detail'=>'','scheme'=>'','pos_id'=>$this->id];
+            }
+            // уже новая $imgRow
+            // сформируем массив флажков
+            foreach( $modifiedImgRow as $keyCol => &$column )
+            {
+                switch ($keyCol)
+                {
+                    case 'main':
+                        $column = ($imgFor == 22)  ? 1 : "";
+                        break;
+                    case 'onbody':
+                        $column = ($imgFor == 23)  ? 1 : "";
+                        break;
+                    case 'sketch':
+                        $column = ($imgFor == 24)  ? 1 : "";
+                        break;
+                    case 'detail':
+                        $column = ($imgFor == 25)  ? 1 : "";
+                        break;
+                    case 'scheme':
+                        $column = ($imgFor == 26)  ? 1 : "";
+                        break;
+                }
+            }
+            if ( $isNEWImage )
+            {
+                $newImgRows[] = $modifiedImgRow;
+                unset($imgRows[$imgRowKey]);
+            } else {
+                $imgRow = $modifiedImgRow;
+            }
+        }
+
+        return ['newImages'=>$newImgRows,'updateImages'=>$imgRows];
+    }
+
+    /**
+     * Example:
+        INSERT INTO mytable (id, a, b, c)
+            VALUES  (1, 'a1', 'b1', 'c1'),
+                    (2, 'a2', 'b2', 'c2'),
+                    (3, 'a3', 'b3', 'c3'),
+                    (4, 'a4', 'b4', 'c4'),
+                    (5, 'a5', 'b5', 'c5'),
+                    (6, 'a6', 'b6', 'c6')
+        ON DUPLICATE KEY UPDATE
+                    id=VALUES(id),
+                    a=VALUES(a),
+                    b=VALUES(b),
+                    c=VALUES(c)
+     *
+     * @param array $rows
+     * массив строк
+     * @param string $table
+     * имя таблицы
+     * @return bool|int
+     */
+    public function insertUpdateRows($rows, $table)
+    {
+        if ( empty($rows) || empty($table) ) return false;
+        $values = '';
+        $fields = [];
+        foreach ($rows as $row)
+        {
+            $val = '';
+            foreach ($row as $field => $value)
+            {
+                $fields[$field] = $field;
+
+                $val .= "'".$value."'" . ',';
+            }
+            $values  .= '(' . trim($val,',') . '),';
+        }
+        $values  =  trim($values,',');
+        $columns = '';
+        $update = [];
+        foreach ($fields as $field)
+        {
+            $columns .= $field . ',';
+            $update[] = $field . '=VALUES(' . $field . ')';
+        }
+        $columns = '(' . trim($columns,',') . ')';
+        $update = implode(',', $update);
+
+        $sqlStr = "INSERT INTO images $columns VALUES $values ON DUPLICATE KEY UPDATE $update";
+
+        if ( is_array( $sql = $this->sql($sqlStr) ) ) return $sql;
+
+        return true;
+        //debug($sql,'$sql',1);
+
+
+        /*
+        $db = Yii::$app->db;
+        $sql = $db->queryBuilder->batchInsert($table, $fields, $rows );
+
+        $update = [];
+        foreach ($fields as $field)
+        {
+            $field  = $db->quoteSql($field);
+            $update[] = $field . '=VALUES(' . $field . ')';
+        }
+        $update = implode(',', $update);
+
+        try {
+            return $db->createCommand($sql . ' ON DUPLICATE KEY UPDATE '. $update )->execute();
+        } catch ( Exception $e) {
+            echo 'insertUpdateRows() Выбросил исключение: ',  $e->getMessage(), "\n";
+        }
+
+        return false;
+        */
+    }
+
 }

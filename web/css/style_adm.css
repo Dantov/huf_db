@@ -23,30 +23,7 @@ body {
 	/*about-bg.png*/
 	background: url('../picts/bg-dot.jpg') repeat scroll 0 0 rgba(0, 0, 0, 0);
 }
-.pb-0 {
-	padding-bottom: 0 !important;
-}
-.pt-1 {
-	padding-top: 5px;
-}
-.pt-2 {
-	padding-top: 10px;
-}
-.p1 {
-	padding: 5px;
-}
-.p2 {
-	padding: 10px;
-}
-.text-bold {
-	font-weight: bold;
-}
-.textSizeMiddle {
-	font-size: 150%;
-}
-.cursorPointer {
-	cursor: pointer;
-}
+
 .memeMe {
 	cursor: pointer;
 	-moz-user-select: none;
@@ -61,9 +38,6 @@ body {
 }
 .fasL {
 	font-size: 130%;
-}
-.mrgnLeft {
-	margin-left: 50px;
 }
 .stats_table {
 	padding: 15px;
@@ -1287,4 +1261,41 @@ body {
 .switchByStatusHistory .slider.round:before {
 	border-radius: 50%;
 }
+
+
+/* DROP AREA START */
+#drop-area {
+	border: 2px dashed #ccc;
+	/*border-radius: 20px;*/
+	font-family: sans-serif;
+	padding: 40px 40px 40px 40px;
+}
+#drop-area.highlight {
+	border-color: purple;
+	background-color: #00FFFF;
+}
+#drop-area p {
+	margin-top: 0;
+}
+#drop-area .button {
+	display: inline-block;
+	padding: 10px;
+	background: #ccc;
+	cursor: pointer;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+}
+#drop-area .button:hover {
+	background: #ddd;
+}
+.fileElem {
+	display: none;
+}
+.imgThumbs {
+	display: block;
+	margin: 0 auto;
+	max-width: 100% !important;
+	max-height: 100% !important;
+}
+/* DROP AREA END */
 

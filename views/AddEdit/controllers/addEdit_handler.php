@@ -22,10 +22,11 @@
 	$manualProcesses = 3;
 	
 	$imagesProcesses = 0;
-	if ( !empty($_FILES['upload_images']['name'][0]) ) {
-		$imagesProcesses = count( $_FILES['upload_images']['name']?:[] );
+	if ( !empty($_FILES['UploadImages']['images'][0]) ) {
+		$imagesProcesses = count( $_FILES['UploadImages']['images']?:[] );
 	}
-	
+	//debug($_FILES,'$_FILES');
+
 	$stlProcesses = 0;
 	if ( !empty($_FILES['fileSTL']['name'][0]) ) {
 		$stlProcesses = 1;
@@ -72,6 +73,7 @@
 	$handler = new Handler($id, $_SERVER);
 	
 	if ( !$handler -> connectToDB() ) exit;
+
 
 	$permissions = $handler->permittedFields();
 
@@ -183,34 +185,47 @@
 	$resp_arr['processes']['manual'][] = $overalProgress;
 
 
+
+
+
+
+
+
 	//--------- добавляем картинки---------//
     if ( $permissions['images'] )
     {
-        if ( $imgCount = count($_FILES['upload_images']['name']?:[]) )
+        $imgRows = [];
+        if ( !empty($_POST['image']['imgFor']) )
+        {
+            // Обновляем флажки на существующих картинках
+            $imgRows = $handler->makeBatchImgInsertRow($_POST['image']);
+            $handler->insertUpdateRows($imgRows['updateImages'], 'images');
+        }
+
+        if ( $imgCount = count($_FILES['UploadImages']['name']?:[]) )
         {
             if( !file_exists($number_3d) ) mkdir($number_3d, 0777, true);
             if( !file_exists($number_3d.'/'.$id) ) mkdir($number_3d.'/'.$id, 0777, true);
             if( !file_exists($number_3d.'/'.$id.'/images') ) mkdir($number_3d.'/'.$id.'/images', 0777, true);
 
-            for ( $i = 0; $i < $imgCount; $i++ )
+            if ( $newImages = $handler->addImageFiles($_FILES['UploadImages'], $imgRows['newImages']) )
             {
-                $quer_addImg = $handler -> addImage($_FILES['upload_images'], $_POST['upload_images_word'], $i);
-
-                if ( $quer_addImg ) {
-                    //============= counter point ==============//
-                    $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-                    $progress->progressCount( $overalProgress );
-                    $resp_arr['processes']['picts'][] = $overalProgress;
-                } else {
-                    exit('Error adding image');
-                }
+                $insertImages = $handler->insertUpdateRows($newImages, 'images');
+                if ( is_array($insertImages) ) debug($insertImages,'Error in insertUpdateRows',1);
             }
+
         }
-        $quer_updFlags = $handler->updateImageFlags($_POST['imgFor']);
-        if ( !$quer_updFlags ) exit('Error updateImageFlags in ' . __FILE__);
-        // ----- конец добавляем картинки ----- //
+
+        //============= counter point ==============//
+        $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+        $progress->progressCount( $overalProgress );
+        $resp_arr['processes']['picts'][] = $overalProgress;
     }
-	
+    // ----- конец добавляем картинки ----- //
+
+
+
+
 
 
 	// ----- Добавляем STL FILE ----- //

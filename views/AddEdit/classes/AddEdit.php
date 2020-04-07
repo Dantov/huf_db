@@ -18,7 +18,8 @@
             return $this->connection;
         }
 
-		private $id;
+        public $id;
+        public $row;
 		public $workingCenters;
 		public $users; //array - массив пользователей. Нужен для статусов
 
@@ -234,6 +235,7 @@
 
             $_SESSION['general_data']['collection'] 	= $row['collections'];
 
+            $this->row = $row;
 			return $row;
 		}
 		public function getStl(){
@@ -264,49 +266,56 @@
 			return $respArr;
 		}
 		
-		public function getImages($scetch=false) {
+		public function getImages($sketch = false)
+        {
 			$respArr = array();
-			if ( $scetch === 'sketch' ) {
+			if ( $sketch === true ) {
 				$img = mysqli_query($this->connection, " SELECT * FROM images WHERE pos_id='$this->id' AND sketch='1' ");
 			} else {
 				$img = mysqli_query($this->connection, " SELECT * FROM images WHERE pos_id='$this->id' ");
 			}
 			
-			if ( $img -> num_rows > 0 ) {
-				$respArr['imgLen'] = $img->num_rows;
+			if ( $img->num_rows > 0 ) {
+                $this->getStatLabArr('image');
 				$i = 0;
 				while( $row_img = mysqli_fetch_assoc($img) ) {
-					$respArr['imgPath'][$i] = $row_img['img_name'];
+					$respArr[$i]['id'] = $row_img['id'];
+                    $respArr[$i]['imgName'] = $row_img['img_name'];
+
+                    $imgPath = $_SESSION['general_data']['number_3d'].'/'.$this->id.'/images/'.$row_img['img_name'];
+
+                    if ( !file_exists(_stockDIR_.$imgPath) )
+                    {
+                        $respArr[$i]['imgPath'] = _stockDIR_HTTP_."default.jpg";
+                    } else {
+                        $respArr[$i]['imgPath'] = _stockDIR_HTTP_.$imgPath;
+                    }
+
 					// проставляем флажки
-					
-					$respArr['imgStat'][$i]['name'] = 'Нет';
-					$respArr['imgStat'][$i]['id'] = (int)0;
-					
-					if ( $row_img['onbody'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'На теле';
-						$respArr['imgStat'][$i]['id'] = 2;
-					}
-					if ( $row_img['sketch'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'Эскиз';
-						$respArr['imgStat'][$i]['id'] = 3;
-					}
-					if ( $row_img['detail'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'Деталировка';
-						$respArr['imgStat'][$i]['id'] = 4;
-					}
-					if ( $row_img['scheme'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'Схема сборки';
-						$respArr['imgStat'][$i]['id'] = 5;
-					}
-					if ( $row_img['main'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'Главная';
-						$respArr['imgStat'][$i]['id'] = 1;
-					}
-					$i++;
+                    $img_arr = $this->imageStatuses;
+                    foreach ( $row_img as $key => $value )
+                    {
+                        // нижний ходит по статусам из табл и сверяет имена с ключом из картинок
+                        $flagToResetNo = false;
+                        foreach ( $img_arr as &$option )
+                        {
+                            if ( $key === $option['name_en'] && (int)$value === 1 )
+                            {
+                                $option['selected'] = $value;
+                                $flagToResetNo = true;
+                            }
+                            // уберем флажек с "НЕТ" если был выставлен на чем-то другом
+                            if (  (int)$option['id'] === 27 && $flagToResetNo === true ) $option['selected'] = 0;
+                        }
+                    }
+                    $respArr[$i]['imgStat'] = $img_arr;
+                    $i++;
 				}
 			}
 			return $respArr;
 		}
+
+
 		public function getGems(){
 			$respArr = array();	
 			$gems = mysqli_query($this->connection, " SELECT * FROM gems WHERE pos_id='$this->id' ");

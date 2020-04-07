@@ -90,6 +90,73 @@ function getVCmenu( mType_name, targetEl ) {
 
 
 
+//----- Загрузка Превьюшек  -------//
+let add_img = document.getElementById('add_img');
+let picts = document.getElementById('picts');
+let imgrowProto = document.querySelector('.image_row_proto');
+let uplF_count;
+if ( picts ) uplF_count = picts.querySelectorAll('.image_row').length || 0;
+if ( add_img ) add_img.addEventListener('click', function(){ 
+	
+	let add_bef_this = document.getElementById('add_bef_this');
+	
+	let newImgrow = imgrowProto.cloneNode(true);
+	let uploadInput = newImgrow.children[0];
+		uploadInput.click();
+	
+	//функции предпросмотра
+	uploadInput.onchange = function() { // запускаем по событию change
+        preview(this.files[0]);
+    };
+	function preview(file) {
+		
+		//вставляем новые	
+			let reader = new FileReader();
+
+			reader.addEventListener("load", function(event) {
+				
+				newImgrow.classList.remove('image_row_proto');
+				newImgrow.classList.add('image_row');
+
+				//let img_inputs = newImgrow.querySelector('.img_inputs');
+				let inputVis = newImgrow.querySelector('.vis');
+				let inputNotVis = newImgrow.querySelector('.notVis');
+				//let _labels = img_inputs.getElementsByTagName('label');
+
+				inputVis.setAttribute('value','Нет');
+				inputNotVis.setAttribute('name', 'imgFor[]');
+				inputNotVis.setAttribute('value', 0);
+
+				/*
+				for ( let ii = 0; ii < _inputs.length; ii++ ) {
+					let id_inpt = _inputs[ii].getAttribute('id');
+					let id_lab = _labels[ii].getAttribute('for');
+					_inputs[ii].setAttribute('id',id_inpt + uplF_count);
+					_inputs[ii].setAttribute('value', uplF_count);
+					_labels[ii].setAttribute('for',id_lab + uplF_count);
+				}
+				*/
+				let imgPrewiev = newImgrow.children[1].children[0].children[0].children[0];
+				let srcPrew = event.target.result;
+				imgPrewiev.setAttribute('src', srcPrew);
+
+				// вставляем картинку только после всех изменений
+				picts.insertBefore(newImgrow, add_bef_this);
+				uplF_count++;
+			});
+
+		reader.readAsDataURL(file);
+
+	}
+	
+});
+//----- END Загрузка Превьюшек  -------//
+
+
+
+
+
+
 //-----  Добавляем STL и Ai файлы  -------//
 let stlSelect = document.getElementById('stlSelect');
 let aiSelect = document.getElementById('aiSelect');
@@ -451,8 +518,7 @@ function initPaidModal() {
 				}
 				if (response.done !== true)
 				{
-					alert('Ошибка на стороне сервера! Попробуйте позже.');
-                    debug(response.done);
+					alert('error');
 					return;
 				}
                 let modal = $('#modalPaid');
@@ -481,14 +547,12 @@ function paidRepair(self) {
 
 	let repair = self.parentElement.parentElement.parentElement;
     let repairID = repair.querySelector('.repairs_id').value;
-    let cost = repair.querySelector('.repairCost').value;
     let repairName = repair.querySelector('.repairs_name').innerHTML + repair.querySelector('.repairs_number').innerHTML + ' от ' + repair.querySelector('.repairs_date').innerHTML;
     let repairText = repair.querySelector('.repairs_descr').value;
     let repairCost = repair.querySelector('.repairCost').value;
 
     let data = {
     	paid: 1,
-    	cost: cost,
         repairID: repairID,
     };
     let modal = $('#modalPaid');
@@ -533,7 +597,6 @@ function dellImgPrew(self){
 //----- удаление с сервера картинок, стл, модели целиком -------//
 function dell_fromServ( id, imgname, isSTL, dellpos, element )
 {
-
     let imgtoDell;
     if (element)
     {
@@ -625,10 +688,6 @@ function submitForm() {
 	let formData = new FormData(addform);
 		formData.append('userName',userName);
 		formData.append('tabID',tabName);
-
-    handlerFiles.getFiles().forEach(function (file) {
-        formData.append('UploadImages[]',file);
-    });
 
     let modal = $('#modalResult');
     let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
