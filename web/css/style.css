@@ -22,17 +22,10 @@ font-weight: normal;
 .hotLable {
 	margin-left: 10px;
 }
-#images_block {
-	background-color: rgba(255, 255, 255, 0.8);
-	padding-top: 15px;
-}
 .table-hover {
 	cursor: pointer;
 }
 
-.mainImg img {
-	/*margin-bottom: 15px;*/
-}
 .stanimex span{
 	-webkit-user-select: none;
 	-moz-user-select: none;
@@ -58,11 +51,6 @@ font-weight: normal;
 	margin-bottom: 0;
 }
 
-.image {
-	margin: 0 auto;
-	margin-bottom: 15px;
-	max-height: 100% !important;
-}
 .image-zoom {
 	position:relative;
 	margin: 0 auto;
@@ -74,13 +62,6 @@ font-weight: normal;
 	left: 0;
 	margin-top: -14px;
 	z-index: -1;
-}
-.imageSmall:hover{
-	cursor: pointer;
-	opacity: 0.7;
-}
-.imageSmall:active{
-	opacity: 0.5;
 }
 .image-zoom:hover .image{
 	cursor: pointer;

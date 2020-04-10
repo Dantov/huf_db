@@ -1,177 +1,647 @@
-"use strict"
+"use strict";
+function ImageViewer(images)
+{
+    if ( images ) this.images = images;
 
-Node.prototype.remove = function() {  // - полифил для elem.remove(); document.getElementById('elem').remove();
-	this.parentElement.removeChild(this);
-	};
+    /**
+     *      В Открытом состоянии
+     */
+    this.smallImagesRowIsSet = false;
+    this.activeImage = null; // активная маленькая картинка внизу слева
 
-//                       !!!!!функции для открытвания больших картинок!!!!!
 
-var images_block = document.getElementById('images_block');
-var popup = document.getElementById('popup');
-var images_block =  document.getElementById('images_block');
-var img_arr = images_block.getElementsByTagName('img');
-var num = null;
-var tid; // айдишник для интервала
+    this.nW = null; //natural Width (оригинальная ширина картинки)
+    this.nH = null; //natural Height (оригинальная высота картинки)
+    /*
+    * реальная( такая на данный момент ) Ширина и высота в пикселях
+    * после увеличения картинки (клик по +)
+    * */
+    this.realW = null;
+    this.realH = null;
+    this.percent = 0; // текущий размер картинки в %
 
-images_block.addEventListener("click", function(event) {
-	if ( !(event.target.getAttribute('class') == 'img-responsive image') ) return;
-	blackCover_toggle();
-	var click = event.target;
-	var wrapper_img = document.getElementById('wrapper_img');
-	var img_src = click.getAttribute('src'); // взяли имя картинки
-	var img_count = document.getElementById('img_count');
+    /**
+    * переменные для передвижения картинки
+    */
+    this.mouseIsDown = false;
+    this.mouseOnImage = false;
+    this.plusActive = false; // когда true - картинка увеличена
+    this.savedMouseX = null;
+    this.savedMouseY = null;
+    //Позиция главной фоновой картинки
+    this.bgPosX = null;
+    this.bgPosY = null;
 
-	var name   = document.getElementById('num3d').innerHTML;
-	var articl = document.getElementById('articl').innerHTML;
-	var mtype  = document.getElementById('modelType').innerHTML;
-	
-	var model_name = document.getElementById('model_name');
-	
-	num = event.target.getAttribute('num');
-	var num1 = num;
-	
-	wrapper_img.children[0].setAttribute('src', img_src);
-	
-	
-	img_count.innerHTML = ++num1 + " / " + img_arr.length;
-	model_name.innerHTML = name + " / " + articl + " &#8212; " + mtype;
-	
-	tid = setInterval(function(){
-	  wrapp_center();
-    }, 50);
+    this.attachedEvents = false;
 
-});
-// закрытие
-popup.addEventListener("click", function(event) {
-	var click = event.target;
-	
-	if ( click.getAttribute('class') == 'blackCover' || click.getAttribute('id') == 'close_popup' ) {
-		var img = this.children[3].children[0]; // картинка которая сейчас открыта
-	    img.removeAttribute('style');
-		blackCover_toggle();
-		clearInterval(tid);
-		return;
-	}
-});
 
-function prev_next_Img(self) {
-	var arrow = self.getAttribute('id');
-	var loadSrc = '../picts/loading.gif';
-	var img = popup.children[3].children[0]; // картинка которая сейчас открыта
-		img.removeAttribute('style');
-	var l = img_arr.length;
-	if ( arrow == 'left-bracket' ) {
-		++num;
-		if ( num > l-1 ) num = 0;
-	} 
-	if ( arrow == 'right-bracket' ) {
-		--num;
-		if ( num < 0 ) num = l-1;
-	}
-	var newimgsrc = img_arr[num].getAttribute('src');
-	img.setAttribute('src', newimgsrc);
-	popup.querySelector('#img_count').innerHTML = num+1 + " / " + img_arr.length;
-};
-
-if (popup.addEventListener) {
-  if ('onwheel' in document) {
-    // IE9+, FF17+, Ch31+
-    popup.addEventListener("wheel", onWheel);
-  } else if ('onmousewheel' in document) {
-    // устаревший вариант события
-    popup.addEventListener("mousewheel", onWheel);
-  } else {
-    // Firefox < 17
-    popup.addEventListener("MozMousePixelScroll", onWheel);
-  }
-} else { // IE8-
-  popup.attachEvent("onmousewheel", onWheel);
-};
-function onWheel() {
-	var img = popup.children[3].children[0]; // картинка которая сейчас открыта
-	img.removeAttribute('style');
-    blackCover_toggle();
-    clearInterval(tid);
-};
-
-function wrapp_center() { // центрируем большую картинку и стрелки
-		var screen = document.documentElement;
-		
-		var thisimg = wrapper_img.children[0];
-		var img_Width = wrapper_img.offsetWidth;
-		var img_Height = wrapper_img.offsetHeight;
-		//alert( a + ' ' + b );
-		
-		if ( screen.clientHeight <= img_Height ) {
-			thisimg.style.height = screen.clientHeight + 'px';
-			//thisimg.setAttribute('height', screen.clientHeight + 'px');
-		} else {
-			thisimg.style.height = '';
-			//thisimg.removeAttribute('height');
-		}
-
-		img_Height = wrapper_img.offsetHeight; 
-		
-		wrapper_img.style.marginLeft = '50%';//Math.round( img_Width / 2) + 'px';
-		//wrapper_img.style.marginTop = '50%';// Math.round( img_Height / 2 ) + 'px';
-		
-		var computedStyle = getComputedStyle(wrapper_img);
-		
-		var wrapper_img_marginLeft = computedStyle.marginLeft;
-		var pxidL = wrapper_img_marginLeft.indexOf('px');
-		wrapper_img_marginLeft = +wrapper_img_marginLeft.slice(0,pxidL);
-		//alert( wrapper_img_marginLeft );
-		var imgMargLeft = wrapper_img_marginLeft - Math.round( img_Width / 2);
-		//alert( imgMargLeft );
-	    wrapper_img.style.marginLeft = imgMargLeft + 'px';
-		/*
-		var wrapper_img_marginTop = computedStyle.marginTop;
-		var pxidT = wrapper_img_marginTop.indexOf('px');
-		wrapper_img_marginTop = +wrapper_img_marginTop.slice(0,pxidT);
-		//alert( wrapper_img_marginTop );
-		var imgMargTop = wrapper_img_marginTop - Math.round( img_Height / 2);
-		alert( imgMargTop );*/
-	    wrapper_img.style.top = Math.round( screen.clientHeight / 2 - Math.round( img_Height / 2) ) + 'px';
-		
-
-	    // установка стрелок
-		var arrows = document.getElementById('arrows');
-
-	    arrows.style.top = Math.round(screen.clientHeight / 2 - 41) + "px";
-		
-	};
-	
-function blackCover_toggle() {
-    var popup = document.getElementById('popup');
-	var blackCover = document.getElementById('blackCover');
-	
-	popup.classList.toggle('hidden_popup');
-	blackCover.classList.toggle('blackCover');
-};
-
-//                              !!!!! конец функции для картинок!!!!!
-
-function getCoords(elem) {
-  // (1)
-  var box = elem.getBoundingClientRect();
-
-  var body = document.body;
-  var docEl = document.documentElement;
-
-  // (2)
-  var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-  var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-
-  // (3)
-  var clientTop = docEl.clientTop || body.clientTop || 0;
-  var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-
-  // (4)
-  var top = box.top + scrollTop - clientTop;
-  var left = box.left + scrollLeft - clientLeft;
-
-  return {
-    top: top,
-    left: left
-  };
+    /**
+     *  В закрытом состоянии
+     */
+    this.mainImage = document.querySelector(".mainImage");
+    this.bottomDopImages = document.querySelector(".dopImages").querySelectorAll(".imageSmall");
 }
+
+ImageViewer.prototype.init = function()
+{
+    let that = this;
+
+    $('#modalImageViewer').iziModal({
+        title: '',
+        subtitle: '',
+        headerColor: '#1a1c19ad',
+        background: '#212320ad',
+        icon: 'fas fa-image',
+        width: '100%',
+        radius: 0,
+        openFullscreen: true,
+        transitionIn: 'comingIn',
+        transitionOut: 'comingOut',
+        overlayClose: false,
+        closeButton: true,
+        afterRender: function () {
+            document.getElementById('modalImageViewerContent').classList.remove('hidden');
+        }
+    });
+
+    $(document).on('opening', '#modalImageViewer', function () {
+
+        let num3D = document.getElementById('num3d').innerHTML;
+        let article = document.getElementById('articl').innerHTML !== 'Нет' ? ' / ' + document.getElementById('articl').innerHTML : '';
+        let modType = document.getElementById('modelType').innerHTML;
+        let titleStr = num3D + article + ' - ' + modType;
+        $('#modalImageViewer').iziModal('setTitle',titleStr);
+
+        that.start();
+    });
+
+    // открылось
+    $(document).on('opened', '#modalImageViewer', function () {
+
+        if ( that.attachedEvents === false )
+        {
+            let imageViewer = document.querySelector('#modalImageViewer');
+            let viewerContent = imageViewer.querySelector('.ImageViewerMainImage');
+            viewerContent.addEventListener('mousedown', that.mouseDownIMG.bind(event, that, viewerContent), false );
+            viewerContent.addEventListener('mouseup', that.mouseUpIMG.bind(event, that, viewerContent), false );
+            viewerContent.addEventListener('mousemove', that.mouseMoveIMG.bind(event, that, viewerContent), false );
+
+            viewerContent.addEventListener('mouseout', function () {
+                that.mouseOutIMG();
+            }, false );
+            viewerContent.addEventListener('mouseover', function () {
+                that.mouseInIMG();
+            }, false );
+
+            imageViewer.addEventListener('mouseup', function (event) {
+                if ( that.plusActive === true && that.mouseIsDown === true && that.mouseOnImage === false )
+                {
+                    that.mouseUpIMG(that, viewerContent, event);
+                }
+            }, false );
+
+            that.attachedEvents = true;
+        }
+
+    });
+    // Начало закрытия
+    $(document).on('closing', '#modalImageViewer', function (event){
+        event.preventDefault();
+        that.stop();
+    });
+    // исчезло
+    $(document).on('closed', '#modalImageViewer', function () {
+    });
+
+    this.mainImageSetter();
+    this.mainImageLoupe();
+
+    this.mainImage.addEventListener('click', function(event)
+    {
+        event.preventDefault();
+        $('#modalImageViewer').iziModal('open');
+    });
+
+    let imageViewer = document.querySelector('#modalImageViewer');
+    let dopButtons = imageViewer.querySelector('.dopButtons').querySelectorAll('a');
+    dopButtons[0].addEventListener('click',function (event)
+    {
+        event.preventDefault();
+        that.sizeIncrease();
+    }, false);
+
+    dopButtons[1].addEventListener('click', function (event)
+    {
+        event.preventDefault();
+        that.sizeDecrease();
+    }, false);
+    dopButtons[2].addEventListener('click', function (event)
+    {
+        event.preventDefault();
+        that.sizeFull();
+    }, false);
+    dopButtons[3].addEventListener('click', function (event)
+    {
+        event.preventDefault();
+        that.sizeDefault();
+    }, false);
+
+
+    debug('Image Viewer Init(ok)');
+};
+
+
+/**
+ * запускаем просмотр картинок при клике на главную
+ */
+ImageViewer.prototype.start = function()
+{
+    let imgID = this.mainImage.getAttribute('data-id');
+    let imgSrc = this.images[imgID]['img_name'];
+
+    this.setBackgroundImage(imgSrc);
+    this.smallImagesRow(imgID);
+
+    document.body.style.overflow = 'hidden'; // убираем полосу прокрутки
+};
+ImageViewer.prototype.stop = function() // закрываем просмотр картинок при клике на крестик
+{
+    this.plusActive = false;
+    this.percent = 0;
+    this.clearMovingVars();
+
+    document.body.style.overflow = 'visible'; // восстановим полосу прокрутки
+};
+ImageViewer.prototype.clearMovingVars = function()
+{
+    this.plusActive = false;
+    this.savedMouseX = null;
+    this.savedMouseY = null;
+    this.bgPosX = null;
+    this.bgPosY = null;
+};
+
+
+
+
+/**
+ *    Устанавливаем картинку в просмотре
+ */
+ImageViewer.prototype.setBackgroundImage = function(imgSrc)
+{
+    let imageViewer = document.querySelector('#modalImageViewer');
+    let viewerContent = imageViewer.querySelector('.ImageViewerMainImage');
+
+    viewerContent.classList.remove('cursorGrab');
+    viewerContent.classList.remove('cursorGrabbing');
+
+    let that = this;
+
+    let img = new Image(); // создаем картинку
+    img.src = imgSrc;
+    img.onload = function() {
+
+        that.nW = this.naturalWidth;
+        that.nH = this.naturalHeight;
+
+        // изначально реальные размеры равны натуральным
+        that.realW = this.naturalWidth;
+        that.realH = this.naturalHeight;
+
+        viewerContent.style.backgroundImage =  "url("+ imgSrc +")";
+        debug(viewerContent.style.backgroundImage,'backgroundImage');
+        debug(this.width + 'x' + this.height);
+        debug(this.naturalWidth + 'x' + this.naturalHeight);
+
+        that.setBgSize();
+    };
+
+};
+ImageViewer.prototype.setBgSize = function() // ставит backgroundSize на просмотре
+{
+    let imageViewer = document.querySelector('#modalImageViewer');
+    let viewerContent = imageViewer.querySelector('.ImageViewerMainImage');
+
+    let screenW = document.documentElement.clientWidth;
+    let screenH = document.documentElement.clientHeight;
+
+    if ( this.nH > screenH || this.nW > screenW ) {
+        //if ( this.imageViewer.style.backgroundSize == "contain" ) return;
+        viewerContent.style.backgroundSize = "contain";
+
+        debug('setBgSize used = ' +  viewerContent.style.backgroundSize);
+    } else {
+        //if ( this.imageViewer.style.backgroundSize == "auto" ) return;
+        viewerContent.style.backgroundSize = "auto";
+
+        debug('setBgSize used = ' + viewerContent.style.backgroundSize);
+    }
+
+    viewerContent.style.backgroundPositionX = "";
+    viewerContent.style.backgroundPositionY = "";
+
+    this.setBgRealSizePxPercent();
+};
+ImageViewer.prototype.setBgRealSizePxPercent = function()
+{
+    let screenW = document.documentElement.clientWidth;
+    let screenH = document.documentElement.clientHeight;
+
+    // узнаем размер картинки в %
+    if ( this.nW >= screenW )
+    {
+        this.realW = screenW;
+        this.percent = this.realW * 100 / this.nW; // текущий размер картинки в %
+        this.realH = this.nH * this.percent / 100;
+    }
+    if ( this.nH >= screenH )
+    {
+        this.realH = screenH;
+        this.percent = this.realH * 100 / this.nH; // текущий размер картинки в %
+        this.realW = this.nW * this.percent / 100;
+    }
+    if ( +this.nH === +screenH && +this.nW === +screenW )
+    {
+        this.realH = screenH;
+        this.realW = screenW;
+        this.percent = this.realH * 100 / this.nH;
+    }
+    if ( this.nH < screenH && this.nW < screenW )
+    {
+        this.realH = this.nH;
+        this.realW = this.nW;
+        this.percent = 100;
+    }
+
+    debug(this.realH ,'realH');
+    debug(this.realW ,'realW');
+    debug(this.percent ,'%');
+};
+
+
+/**
+ * ставим доп картинки внизу слева
+ */
+ImageViewer.prototype.smallImagesRow = function()
+{
+    let that = this;
+    let imageViewer = document.querySelector('#modalImageViewer');
+    let viewerContent = imageViewer.querySelector('#modalImageViewerContent');
+
+    let smallImgRow = viewerContent.querySelector('.smallImgRow');
+
+    if ( this.smallImagesRowIsSet === true )
+    {
+        let mainImgID = that.mainImage.getAttribute('data-id');
+        $.each(smallImgRow.querySelectorAll('div'), function(i, image) {
+            if ( +mainImgID === +image.getAttribute('data-id') )
+            {
+                image.classList.remove('border-secondary-2');
+                image.classList.add('border-primary-2','activeImage');
+            } else {
+                image.classList.remove('border-primary-2','activeImage');
+                image.classList.add('border-secondary-2');
+            }
+        });
+        return;
+    }
+
+    // формируем новые
+    let flagActive = false;
+    $.each(this.images, function(id, image) {
+
+        let src = image.img_name;
+        let div = document.createElement('div');
+            div.classList.add('col-xs-2', 'col-sm-3', 'p-0', 'imageSmall');
+        let mainImgID = that.mainImage.getAttribute('data-id');
+        if ( +mainImgID === +image.id )
+        {
+            div.classList.add('border-primary-2','activeImage');
+            flagActive = true;
+        } else {
+            div.classList.add('border-secondary-2');
+        }
+        div.setAttribute('data-id',image.id);
+        div.style.backgroundImage = "url("+ src  +")";
+        div.style.width = 6+"rem";
+        div.style.height = 6+"rem";
+
+        let appended = smallImgRow.appendChild(div);
+        if ( flagActive )
+        {
+            that.activeImage = appended;
+            flagActive = false;
+        }
+
+        appended.onclick = function()
+        {
+            that.stop();
+            that.setBackgroundImage(this.style.backgroundImage.split("\"")[1]);
+
+            that.activeImage.classList.remove('activeImage','border-primary-2');
+            that.activeImage.classList.add('border-secondary-2');
+
+            this.classList.remove('border-secondary-2');
+            this.classList.add('activeImage','border-primary-2');
+
+            that.activeImage = this;
+        };
+    });
+
+    this.smallImagesRowIsSet = true;
+};
+
+
+/**
+ *
+ */
+ImageViewer.prototype.setBgPosition = function(background)
+{
+    let screenW = document.documentElement.clientWidth;
+    let screenH = document.documentElement.clientHeight;
+    let offsetImgHeight,offsetImgWidth, screenCenterX, screenCenterY;
+    offsetImgWidth = this.realW / 2;
+    offsetImgHeight = this.realH / 2;
+    screenCenterX = screenW / 2;
+    screenCenterY = screenH / 2;
+
+    // текущие коорд. картинки
+    this.bgPosX = screenCenterX - offsetImgWidth;
+    this.bgPosY = screenCenterY - offsetImgHeight - 1;
+
+    background.style.backgroundPositionX = this.bgPosX + "px";
+    background.style.backgroundPositionY = this.bgPosY + "px";
+};
+ImageViewer.prototype.sizeIncrease = function() // увеличим картинку на 1/4
+{
+    if ( this.percent >= 200 ) return; // макс увеличение в 2 раза
+
+    if ( this.plusActive !== true )
+    {
+        this.plusActive = true;
+    }
+    this.percent += 25;
+    if ( this.percent > 200 ) this.percent = 200;
+
+    let imageViewer = document.querySelector('#modalImageViewer');
+    let viewerContent = imageViewer.querySelector('.ImageViewerMainImage');
+
+    this.realW = (this.nW * this.percent ) / 100;
+    this.realH = (this.nH * this.percent ) / 100;
+
+    viewerContent.style.backgroundSize = this.realW + "px" + "," + this.realH + "px";
+    this.setBgPosition(viewerContent);
+
+    viewerContent.classList.add('cursorGrab');
+
+    debug(this.percent,'+%');
+    debug(this.realH ,'realH');
+    debug(this.realW ,'realW');
+};
+ImageViewer.prototype.sizeDecrease = function() // уменьшим картинку на 1/4
+{
+    if ( this.percent <= 25 ) return;
+    if ( this.plusActive !== true )
+    {
+        this.plusActive = true;
+    }
+
+    this.percent -= 25;
+    if ( this.percent <= 25 ) this.percent = 25;
+
+    let imageViewer = document.querySelector('#modalImageViewer');
+    let viewerContent = imageViewer.querySelector('.ImageViewerMainImage');
+
+    this.realW = (this.nW * this.percent ) / 100;
+    this.realH = (this.nH * this.percent ) / 100;
+
+    viewerContent.style.backgroundSize = this.realW + "px" + "," + this.realH + "px";
+    this.setBgPosition(viewerContent);
+
+    viewerContent.classList.add('cursorGrab');
+
+    debug(this.percent,'-%');
+    debug(this.realH ,'realH');
+    debug(this.realW ,'realW');
+};
+/**
+ * увеличим картинку на полную
+ */
+ImageViewer.prototype.sizeFull = function()
+{
+    let imageViewer = document.querySelector('#modalImageViewer');
+    let viewerContent = imageViewer.querySelector('.ImageViewerMainImage');
+
+    this.plusActive = true;
+    this.realH = this.nH;
+    this.realW = this.nW;
+    this.percent = 100;
+
+    viewerContent.style.backgroundSize = 'auto auto';
+    this.setBgPosition(viewerContent);
+
+    viewerContent.classList.add('cursorGrab');
+
+    debug("-------sizeFull bgPos-------");
+    debug(this.realH ,'realH');
+    debug(this.realW ,'realW');
+    debug(this.percent ,'%');
+
+    debug(viewerContent.style.backgroundSize,'backgroundSize');
+    debug(viewerContent.style.backgroundPositionX,'bgPos X');
+    debug(viewerContent.style.backgroundPositionY,'bgPos Y');
+    debug("------------End-------------");
+};
+/**
+ * Размер картинки по умолчанию
+ */
+ImageViewer.prototype.sizeDefault = function()
+{
+    if ( this.plusActive === false ) return;
+    this.plusActive = false;
+    this.percent = 0;
+
+    let imageViewer = document.querySelector('#modalImageViewer');
+    let viewerContent = imageViewer.querySelector('.ImageViewerMainImage');
+
+    viewerContent.classList.remove('cursorGrab');
+    viewerContent.classList.remove('cursorGrabbing');
+
+    this.setBgSize();
+    this.clearMovingVars();
+};
+
+
+/**
+ * ПЕРЕТАСКИВАНИЕ КАРТИНКИ
+ */
+/**
+ *
+ * @param that
+ * @param imageContent
+ * @param event
+ */
+ImageViewer.prototype.mouseUpIMG = function(that, imageContent, event)
+{
+    event.preventDefault();
+    if ( that.plusActive === false ) return;
+    that.mouseIsDown = false;
+
+    imageContent.classList.add('cursorGrab');
+    imageContent.classList.remove('cursorGrabbing');
+
+    // сохраним координаты картинки
+    that.bgPosX = +imageContent.style.backgroundPositionX.split('px')[0];
+    that.bgPosY = +imageContent.style.backgroundPositionY.split('px')[0];
+
+    // debug("----------Start MUp----------");
+    // debug(that,'that');
+    // debug(imageContent,'imageContent');
+    // debug(that.bgPosX,'mouseUp bgPosX');
+    // debug(that.bgPosY,'mouseUp bgPosY');
+    // debug(imageContent.style.backgroundPositionX,'mouseUp backgroundPositionX');
+    // debug(imageContent.style.backgroundPositionY,'mouseUp backgroundPositionY');
+    // debug("-----------End MUp-----------");
+};
+ImageViewer.prototype.mouseDownIMG = function(that, imageContent, event)
+{
+    event.preventDefault();
+    if ( that.plusActive === false ) return;
+    that.mouseIsDown = true;
+
+    imageContent.classList.remove('cursorGrab');
+    imageContent.classList.add('cursorGrabbing');
+
+    // коорд клика мыши
+    that.savedMouseX = event.clientX;
+    that.savedMouseY = event.clientY;
+
+    // debug("----------Start MDn----------");
+    // debug(that,'that');
+    // debug(imageContent,'imageContent');
+    // debug(that.savedMouseX,'MD savedMouseX');
+    // debug(that.savedMouseY,'MD savedMouseY');
+    // debug(imageContent.style.backgroundPositionX,'MD backgroundPositionX');
+    // debug(imageContent.style.backgroundPositionY,'MD backgroundPositionY');
+    // debug("------------End MD-----------");
+
+};
+ImageViewer.prototype.mouseMoveIMG = function(that, imageContent, event)
+{
+    event.preventDefault();
+    if ( that.plusActive === false ) return;
+    if ( that.mouseIsDown === false ) return;
+    if ( that.mouseOnImage === false ) return;
+
+    // координаты в текущий момент
+    let currentMouseX = event.clientX;
+    let currentMouseY = event.clientY;
+
+    // расстояния на которые надо сдвинуть картинку по X и Y
+    let diffX = currentMouseX - that.savedMouseX;
+    let diffY = currentMouseY - that.savedMouseY;
+
+    imageContent.style.backgroundPositionX = diffX + that.bgPosX + "px";
+    imageContent.style.backgroundPositionY = diffY + that.bgPosY + "px";
+
+    // debug("----------Start Move----------");
+    // debug(currentMouseX,'MM currentMouseX');
+    // debug(currentMouseY,'MM currentMouseY');
+    // debug(diffX,'MM diffX');
+    // debug(diffY,'MM diffY');
+    // debug(imageContent.style.backgroundPositionX,'MouseMove backgroundPositionX');
+    // debug(imageContent.style.backgroundPositionY,'MouseMove backgroundPositionY');
+    // debug("------------End Move-----------");
+
+};
+ImageViewer.prototype.mouseOutIMG = function()
+{
+    this.mouseOnImage = false;
+    //debug('MOUSE out IMG');
+};
+ImageViewer.prototype.mouseInIMG = function()
+{
+    this.mouseOnImage = true;
+    //debug('MOUSE IN IMG');
+};
+
+
+
+
+
+
+/**
+ * При клике на доп ставим главной
+ */
+ImageViewer.prototype.mainImageSetter = function()
+{
+    let that = this;
+    let activeImage;
+    this.bottomDopImages.forEach(dopImage => {
+        if ( dopImage.classList.contains('activeImage') ) activeImage = dopImage;
+
+        dopImage.addEventListener('click', function () {
+            let dataID = this.getAttribute('data-id');
+            // console.log( dataID );
+            let src = that.images[dataID]['img_name'];
+            // debug(src,'SRC');
+            that.mainImage.style.backgroundImage = "url("+ src +")";
+            that.mainImage.setAttribute('data-id',dataID);
+
+            activeImage.classList.remove('activeImage','border-primary-1');
+            activeImage.classList.add("border-secondary-1");
+
+            this.classList.remove('border-secondary-1');
+            this.classList.add('activeImage','border-primary-1');
+            activeImage = this;
+        });
+    });
+};
+/**
+ * Лупа
+ */
+ImageViewer.prototype.mainImageLoupe = function()
+{
+    let overImage = false;
+    let realClientX, realClientY, loupeDelayID, coordinates;
+
+    this.mainImage.addEventListener('mouseover',function () {
+        let that = this;
+        loupeDelayID = setTimeout(function () {
+            overImage = true;
+            coordinates = that.getBoundingClientRect();
+            that.style.backgroundSize = 200 + "%";
+            moveImage(that);
+        }, 300);
+
+        //debug(coordinates.left,"left");
+        //debug(coordinates.top,"top");
+
+        // ширина высота
+        // debug(this.offsetHeight,"offsetHeight");
+        // debug(this.offsetWidth,'offsetWidth');
+    });
+    this.mainImage.addEventListener('mouseout',function () {
+        clearTimeout(loupeDelayID);
+        overImage = false;
+        coordinates = null;
+        this.style.backgroundSize = "contain";
+        this.style.backgroundPosition = "center center";
+    });
+    this.mainImage.addEventListener('mousemove',function (event) {
+        realClientX = event.clientX;
+        realClientY = event.clientY;
+        if ( coordinates === null || overImage === false ) return;
+        //debug(event.clientX - coordinates.left,"X");
+        //debug(event.clientY - coordinates.top,"Y");
+        moveImage(this);
+    });
+
+    function moveImage(mainImage)
+    {
+        let x = -( (realClientX - coordinates.left)-200 ) * 2;
+        let y = -( (realClientY - coordinates.top) ) * 2;
+        mainImage.style.backgroundPositionX = x + "px";
+        mainImage.style.backgroundPositionY = y + "px";
+    }
+};

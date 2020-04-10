@@ -94,32 +94,24 @@ class ModelView extends General {
 		return $complStr;
 	}
 	
-	public function getImages() {
-		$result = array();
-		$result['mainSrcImg'] = _stockDIR_HTTP_."default.jpg";
-		$result['dopImg'] = array();
-		
-		while( $row_img = mysqli_fetch_assoc($this->img_Query) ) {
-			if ( (int)$row_img['main'] == 1 )
-			{
-			    $fileImg = $this->number_3d.'/'.$this->id.'/images/'.$row_img['img_name'];
-                $result['mainSrcImg'] = _stockDIR_HTTP_.$fileImg;
+	public function getImages()
+    {
+		$images = [];
 
-			    if ( !file_exists(_stockDIR_.$fileImg) ) $result['mainSrcImg'] = _stockDIR_HTTP_."default.jpg";
-				continue;
-			}
+		while( $row_img = mysqli_fetch_assoc($this->img_Query) ) $images[$row_img['id']] = $row_img;
+		foreach ( $images as &$image )
+        {
+            $fileImg = $this->number_3d.'/'.$this->id.'/images/'.$image['img_name'];
+            $image['img_name'] = _stockDIR_HTTP_.$fileImg;
+            if ( !file_exists(_stockDIR_.$fileImg) ) $image['img_name'] = _stockDIR_HTTP_."default.jpg";
+        }
+        //debug($images,'$images',1);
 
-            $dopImg = $this->number_3d.'/'.$this->id.'/images/'.$row_img['img_name'];
-            if ( !file_exists(_stockDIR_.$dopImg) )
-            {
-                $result['dopImg'][] = _stockDIR_HTTP_."default.jpg";
-            } else {
-                $result['dopImg'][] = _stockDIR_HTTP_.$this->number_3d.'/'.$this->id.'/images/'.$row_img['img_name'];
-            }
 
-		}
-		return $result;
+		return $images;
 	}
+
+
 	public function getModelMaterial() {
 		$str_material_arr = explode(";",$this->row['model_material']);
 		$metalColor = '';
@@ -222,7 +214,6 @@ class ModelView extends General {
 
 			return '<a imgtoshow="'.$fileImg.'" href="index.php?id='.$id.'">'.$vc_3dnum.'</a>';
 		}
-		
 		function vc_3dnumExpl($connection, $vc_3dnum, $vc_name, $stockDir) {
 			$arr = explode('/',$vc_3dnum);
 			$quer = mysqli_query($connection, " SELECT id,number_3d,vendor_code FROM stock WHERE model_type='$vc_name' ");
