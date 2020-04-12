@@ -86,7 +86,7 @@
                     </thead>
                     <tbody id="collections_table">
                     <!-- // автозаполнение если добавляем комплект или редакт модель -->
-                    <?php $i = 0; foreach ( $collections_len as $collection ) : ?>
+                    <?php $i = 0; foreach ( $collections_len?:[] as $collection ) : ?>
                         <tr>
                             <td style="width: 30px"><?=++$i?><?php --$i; ?></td>
                             <td><?php include('includes/collections_input.php'); $i++?></td>
@@ -207,87 +207,13 @@
             <div class="col-xs-12 "><br></div>
         <?php endif; ?>
 
+        <? $materialsData = $dataArrays['materialsData']['materials']; ?>
+        <? $coveringsData = $dataArrays['materialsData']['coverings']; ?>
+        <? $handlingsData = $dataArrays['materialsData']['handlings']; ?>
 
         <?php if ( $permittedFields['material'] ): ?>
-            <div class="col-xs-6" id="material">
-                <label for=""></label>
-                <p></p>
-                <span class="model_material"><span class="glyphicons-cube"></span> <b>Материал изделия:</b></span>
-
-                <input type="radio" <?=$material['metall_silv'];?> name="model_material" id="sivler" class="radio" value="Серебро">
-                <label for="sivler" class="sivler">
-                    <span class="redSilverLabel"> Серебро 925</span>
-                </label>
-
-                <input type="radio" <?=$material['metall_gold'];?> name="model_material" id="gold" class="radio" value="Золото">
-                <label for="gold" class="gold">
-                    <span class="redGoldLabel">	Золото</span>
-                </label>
-
-                <div class="goldsample">
-                    <input type="radio" <?=$material['probe585'];?> name="samplegold" id="sample585" class="radio" value="585">
-                    <label for="sample585" class="sample">
-                        <span class="">585&#176;  &nbsp;&nbsp;</span>
-                    </label>
-                    <input type="radio" <?=$material['probe750'];?> name="samplegold" id="sample750" class="radio" value="750">
-                    <label for="sample750" class="sample">
-                        <span class="">750&#176;</span>
-                    </label>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <input type="checkbox" <?=$material['gold_white'];?> name="whitegold" id="whitegold" class="whitegChk radio" value="Белое">
-                    <label for="whitegold" class="sample">
-                        <span class="">Белое&nbsp;&nbsp;</span>
-                    </label>
-                    <input type="checkbox" <?=$material['gold_red'];?> name="redgold" id="redgold" class="redgChk radio" value="Красное">
-                    <label for="redgold" class="sample">
-                        <span class="">Красное&nbsp;&nbsp;</span>
-                    </label>
-                    <input type="checkbox" <?=$material['gold_yellow'];?> name="eurogold" id="eurogold" class="eurogChk radio" value="Желтое(евро)">
-                    <label for="eurogold" class="sample">
-                        <span class="">Желтое(евро)</span>
-                    </label>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <?php if ( $permittedFields['covering'] ): ?>
-            <div class="col-xs-6" id="covering">
-                <label for=""></label>
-                <p></p>
-                <span class="model_material"><i class="fas fa-cube fasL"></i> <b>Покрытие:</b></span>
-
-                <input type="checkbox" <?=$covering['rhodium'];?> name="rhodium" id="rhodium" class="rhodium radio" value="Родирование">
-                <label for="rhodium" class="sivler rhodiumed">
-                    <span class="redSilverLabel">Родирование</span>
-                </label>
-
-                <input type="checkbox" <?=$covering['golding'];?> name="golding" id="golding" class="radio" value="Золочение">
-                <label for="golding" class="gold golded">
-                    <span class="redGoldLabel golding">Золочение</span>
-                </label>
-                &nbsp;&nbsp;&nbsp;
-                <input type="checkbox" <?=$covering['blacking'];?> name="blacking" id="blacking" class="radio" value="Чернение">
-                <label for="blacking" class="gold blackeg">
-                    <span class="redGoldLabel blacking">Чернение</span>
-                </label>
-
-                <div class="rhodium">
-
-                    <input type="radio" <?=$covering['full'];?> name="rhodium_fill" id="rhodium_full" class="radio" value="Полное">
-                    <label for="rhodium_full" class="sample"><span class="">Полное&nbsp;&nbsp;&nbsp;</span></label>
-
-                    <input type="radio" <?=$covering['onPartical'];?> name="rhodium_fill" id="rhodium_part" class="radio rhod_part" value="Частичное">
-                    <label for="rhodium_part" class="sample"><span class="">Частичное</span></label>
-
-                    <div class="rhodium_parts">
-                        <input type="checkbox" <?=$covering['onProngs'];?> name="onProngs" id="onProngs" class="radio" value="По крапанам">
-                        <label for="onProngs" class="sample"><span class="">По крапанам &nbsp;&nbsp;</span></label>
-                        <input type="checkbox" <?=$covering['parts'];?> name="onParts" id="onParts" class="onParts radio" value="Отдельные части">
-                        <label for="onParts" class="sample"><span class="">Отдельные части</span></label>
-                        <input type="text" name="rhodium_PrivParts" class="mytextinput rhodium_PrivParts" value="<?=$covering['partsStr'];?>">
-                    </div>
-
-                </div>
+            <div class="col-xs-12" id="material">
+                <?php require _viewsDIR_."AddEdit/includes/model_materials_full.php" ?>
             </div>
         <?php endif; ?>
 
@@ -350,77 +276,30 @@
 
     <?php if ( $permittedFields['images'] ): ?>
         <div class="row" id="picts">
-            <div id="imgFromWord" class="hidden">
-                <?=$imgFromWord;?>
-                <input id="pathToimg" class="hidden" value="<?=$_SESSION['fromWord_data']['pathToimg'];?>">
-            </div>
-            <?php for ( $i = 0; $i < $imgLen; $i++ ): ?>
-                <div class="col-xs-6 col-sm-3 col-md-2 image_row">
-                    <? if ( $component === 3 ):?>
-                        <input class="hidden" type="file" name="upload_images[]" accept="image/jpeg,image/png,image/gif">
-                    <? endif;?>
-                    <div class="ratio img-thumbnail">
-                        <div class="ratio-inner ratio-4-3">
-                            <div class="ratio-content">
-                                <img src="<?=_stockDIR_HTTP_.$_SESSION['general_data']['number_3d'].'/'.$_SESSION['general_data']['id'].'/images/'.$imgPath[$i];?>" class="dopImg img-responsive "/>
-                            </div>
-                            <? if ( $component === 3 ):?>
-                                <div class="img_dell">
-                                    <button class="btn btn-default" type="button" onclick="dellImgPrew(this);">
-                                        <span class="glyphicon glyphicon-remove"></span>
-                                    </button>
-                                </div>
-                            <? else: ?>
-                                <a class="btn btn-sm btn-default img_dell" role="button" onclick="dell_fromServ(<?=$id?>, '<?=$imgPath[$i]?>', false, false, this)">
-                                    <span class="glyphicon glyphicon-remove"></span>
-                                </a>
-                            <? endif;?>
-                        </div>
-                    </div>
-                    <div class="img_inputs">
-                        <div class="input-group">
-                            <input type="hidden" class="notVis" name="imgFor[]" value="<?=$imgStat[$i]['id'];?>" />
-                            <input required type="text" readonly class="form-control vis" aria-label="..." value="<?=$imgStat[$i]['name'];?>" />
-                            <div class="input-group-btn">
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li title="Будет помещено на главной странице, в паспорте и бегунке, а так же в коллекции."><a data-imgFor="1" elemToAdd>Главная</a></li>
-                                    <li title="Будет помещено в паспорте и бегунке."><a data-imgFor="2" elemToAdd>На теле</a></li>
-                                    <li title="Будет помещено в паспорте."><a data-imgFor="3" elemToAdd>Эскиз</a></li>
-                                    <li title="Будет печатать в коллекции как доп. картинка."><a data-imgFor="4" elemToAdd>Деталировка</a></li>
-                                    <li title="Будет помещено в бегунке на последней странице."><a data-imgFor="5" elemToAdd>Схема сборки</a></li>
-                                    <li title="Будет видно на странице показа модели."><a data-imgFor="0" elemToAdd>Нет</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            <?php endfor; ?>
-            <div class="col-xs-6 col-sm-3 col-md-2 prj" id="add_bef_this">
-                <div class="ratio" id="add_img">
-                    <div class="ratio-inner ratio-4-3">
-                        <div class="ratio-content">
-                            <span class="add_img">
-                                <span class="glyphicon glyphicon-picture"></span>
-                            </span>
-                            <div class="add_img_text">
-                                Загрузить картинку
-                            </div>
-                        </div>
-                    </div>
+            <span id="imgFor" class="help-block hidden err-notice"></span>
+            <?php //debug($images); ?>
+            <?php $switchTableRow = "dropImage"; $protoImgRow = 0; ?>
+            <?php foreach ( $images?:[] as $image ) : ?>
+                <?php require "includes/protoRows.php"?>
+            <?php endforeach; ?>
+            <div class="col-xs-12">
+                <div id="drop-area" title="Загрузить картинку">
+                    <p>Загрузить картинки можно перетащив их в эту область</p>
+                    <button type="button" id="addImageFiles" class="button"><i class="far fa-images"></i> Выбрать изображения</button>
                 </div>
             </div>
+
+            <?php $protoImgRow = 1; require 'includes/protoRows.php' // Прототип ?>
         </div><!--Picts row-->
+        <hr />
     <?php endif; ?>
-    <hr />
+
+
 
 
     <div class="row">
         <?php if ( $permittedFields['gems'] ): ?>
             <div class="col-sm-12">
-                <div id="stonesFromWord" class="<?=$stonesFromWord;?>"><?=$_SESSION['fromWord_data']['stones'];?></div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <i class="far fa-gem"></i>
@@ -654,32 +533,35 @@
     <input type="hidden" name="id" value="<?=$id?>"/>
     <input type="hidden" name="edit" id="edit" value="<?=$component;?>"/>
     <input type="hidden" name="date" value="<?=date('Y-m-d'); ?>" />
+
+    <div class="row">
+        <div class="col-xs-4">
+            <a class="btn btn-default pull-left" role="button" href="<?=$prevPage;?>">
+                <span class="glyphicon glyphicon-triangle-left"></span>
+                Назад
+            </a>
+        </div><!--end col-xs-6-->
+        <div class="col-xs-4">
+            <center id="tosubmt">
+                <button class="btn btn-default"  onclick="submitForm();" >
+                    <span class="glyphicon glyphicon-floppy-disk"></span>
+                    Сохранить
+                </button>
+            </center>
+        </div><!--end col-xs-6-->
+        <div class="col-xs-4">
+            <? if ( $component === 2 && $_SESSION['user']['access'] < 3 ): ?>
+            <a type="button" class="btn btn-danger pull-right" onclick="dell_fromServ(<?=$id;?>, false, false, 1);">
+                <span class="glyphicon glyphicon-remove"></span>
+                Удалить
+            </a>
+            <? endif; ?>
+        </div><!--end col-xs-6-->
+    </div><!--end row-->
+
 </form>
 
-<div class="row">
-    <div class="col-xs-4">
-        <a class="btn btn-default pull-left" role="button" href="<?=$prevPage;?>">
-            <span class="glyphicon glyphicon-triangle-left"></span>
-            Назад
-        </a>
-    </div><!--end col-xs-6-->
-    <div class="col-xs-4">
-        <center id="tosubmt">
-            <button class="btn btn-default"  onclick="submitForm();" >
-                <span class="glyphicon glyphicon-floppy-disk"></span>
-                Сохранить
-            </button>
-        </center>
-    </div><!--end col-xs-6-->
-    <div class="col-xs-4">
-        <? if ( $component === 2 && $_SESSION['user']['access'] < 3 ): ?>
-        <a type="button" class="btn btn-danger pull-right" onclick="dell_fromServ(<?=$id;?>, false, false, 1);">
-            <span class="glyphicon glyphicon-remove"></span>
-            Удалить
-        </a>
-        <? endif; ?>
-    </div><!--end col-xs-6-->
-</div><!--end row-->
+
 
 <p><?//debug($this->navBar,'1',1)?></p>
 
@@ -689,13 +571,13 @@
 <?php include('includes/deleteModal.php');?>
 <?php include('includes/num3dVC_input_Proto.php');?>
 <?php include('includes/protoGemsVC_Rows.php');?>
-<?php include('includes/protoImages_Row.php');?>
-<?php $isRepairProto = true; include('includes/protoRepair.php');?>
+<? $isRepairProto = true; include('includes/protoRepair.php') ?>
 
 <script defer src="<?=_views_HTTP_?>AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/CollectionsModal.js?ver=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
+<script defer src="<?=_views_HTTP_?>AddEdit/js/HandlerFiles.js?ver=<?=time();?>"></script>
 <?=$stonesScript;?>
 
 <div class="AddEditSideButtons" id="AddEditSideButtons">

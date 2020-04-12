@@ -92,7 +92,7 @@ wsConnect();
 setInterval(function() {
     if ( ws.readyState === 1 )
     {
-        console.log('Connected.');
+        //console.log('Connected.');
         /*
         ws.send(
             JSON.stringify({

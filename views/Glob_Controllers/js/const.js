@@ -38,8 +38,13 @@ function debug(arr, str)
 {
     if ( str )
     {
-        console.info(str + ': ');
-        console.log(arr);
+        if ( typeof arr === 'object' ) {
+            console.info(str + ': ');
+            console.log(arr);
+        } else {
+            console.log(str + ': ' + arr);
+        }
+
     } else {
         console.log(arr);
     }

@@ -18,9 +18,61 @@
             return $this->connection;
         }
 
-		private $id;
+        public $id;
+        public $row;
 		public $workingCenters;
 		public $users; //array - массив пользователей. Нужен для статусов
+
+
+		/**
+		*
+		*/
+		public function getDataTables()
+        {
+			$tabs = [
+			    'author',
+                'modeller3d',
+                'model_type',
+                'model_material',
+                'model_covering',
+                'handling',
+                'metal_color',
+                'vc_names',
+                'gems_color',
+                'gems_cut',
+                'gems_names',
+                'gems_sizes',
+            ];
+			$tables = [];
+
+            $service_data = $this->findAsArray("select * from service_data ORDER BY name");
+
+			foreach ( $service_data as $row )
+			{
+                foreach ( $tabs as $tab )
+                {
+                    if ( $row['tab'] === $tab ) $tables[$tab][] = $row;
+                }
+			}
+
+			//debug($tables,'',1);
+
+            foreach ( $tables['gems_sizes'] as $size )
+            {
+                if ( is_numeric($size['name']) )
+                {
+                    $tables['gems_sizes']['num'][] = $size['name'];
+                } else {
+                    $tables['gems_sizes']['notnum'][] = $size['name'];
+                }
+            }
+            sort($tables['gems_sizes']['num']);
+
+            //$tables['collections'] = $this->general->collections_arr;
+            //$tables['vc_names'] = $this->getNum3dVCList($tables['vc_names']);
+
+			return $tables;
+		}
 
 
         /**
@@ -234,6 +286,7 @@
 
             $_SESSION['general_data']['collection'] 	= $row['collections'];
 
+            $this->row = $row;
 			return $row;
 		}
 		public function getStl(){
@@ -263,50 +316,201 @@
 			}
 			return $respArr;
 		}
+
+
+		/*	Старый вариант
+		public function getMaterial($str_material) 
+		{
+			$material = array();
+			if ( !empty($str_material) ) {
+				$material_arr = explode(";",$str_material);
+				foreach ( $material_arr as &$value ) {
+					if ( "Золото" == $value )       $material['metall_gold'] = "checked";
+					if ( "Серебро" == $value )      $material['metall_silv'] = "checked";
+					
+					if ( "585" == $value )          $material['probe585'] = "checked";
+					if ( "750" == $value )          $material['probe750'] = "checked";
+					
+					if ( "Белое" == $value )        $material['gold_white'] = "checked";
+					if ( "Красное" == $value )      $material['gold_red'] = "checked";
+					if ( "Желтое(евро)" == $value ) $material['gold_yellow'] = "checked";
+				}
+			} else {
+				$material['metall_silv'] = "checked";
+			}
+			return $material;
+		}
+		public function getCovering($str_covering) {
+			$covering = array();
+			if ( !empty($str_covering) ) {
+				$covering_arr = explode(";",$str_covering);
+				foreach ( $covering_arr as &$value ) {
+					if ( "Родирование" == $value )      $covering['rhodium']  = "checked";
+					if ( "Золочение" == $value )        $covering['golding']  = "checked";
+					if ( "Чернение" == $value )         $covering['blacking'] = "checked";
+					
+					if ( "Полное" == $value )           $covering['full']     = "checked";
+					if ( "Частичное" == $value )        $covering['onPartical']    = "checked";
+					if ( "По крапанам" == $value )      $covering['onProngs'] = "checked";
+					if ( "Отдельные части" == $value )  $covering['parts'] = "checked";
+				}
+				$covering_part = explode("-",$str_covering);
+				if ( $covering_part[1] ) $covering['partsStr'] = $covering_part[1];
+			}
+
+			return $covering;
+		}
+		*/
+		public function getMaterials($row=false)
+		{
+			$materials = $this->findAsArray(" SELECT * FROM metal_covering WHERE pos_id='$this->id' ");
+			if ( isset($materials['error']) ) throw new Exception("Error in getMaterials(): " . $materials['error'], 500);
+			if (!empty($materials)) return $materials;
+
+			if ( $row ) $this->row = $row;
+
+			 $materials = [
+	            [
+	                'part' => '',
+	                'type' => '',
+	                'probe' => '',
+	                'metalColor' => '',
+	                'covering' => '',
+	                'area' => '',
+	                'covColor' => '',
+	                'handling' => '',
+                ],
+	        ];
+
+	        $privParts = stristr($this->row['model_covering'], 'Отдельные части');
+	        $hasDetail = false; // есть деталировка
+	        if ( $privParts )
+	        {
+	        	$str_mod_priv_arr = explode("-",$this->row['model_covering']);
+	        	$hasDetail = true;
+	        	$materials[1]['part'] = $str_mod_priv_arr[1]?:'';
+	        }
+
+	        $str_material_arr = explode(";",$this->row['model_material']);
+
+	        foreach ( $str_material_arr as $value )
+	        {
+	        	$i = 0;
+	            switch ( $value )
+	            {
+	                case "585":
+	                    $materials[0]['probe'] = $value;
+	                    if ( $hasDetail ) $materials[1]['probe'] = $value;
+	                    break;
+	                case "750":
+	                    $materials[0]['probe'] = $value;
+	                    if ( $hasDetail ) $materials[1]['probe'] = $value;
+	                    break;
+	                case "Золото":
+	                    $materials[0]['type'] = $value;
+	                    if ( $hasDetail ) $materials[1]['type'] = $value;
+	                    break;
+	                case "Серебро":
+	                    $materials[0]['type'] = $value;
+	                    break;
+                    case "Красное":
+                    	$materials[0]['metalColor'] = $value;
+	                    break;
+	                case "Белое":
+	                	if ( $hasDetail ) $i = 1;
+	                    $materials[$i]['metalColor'] = $value;
+	                    break;	               
+	                case "Желтое(евро)":
+	                	if ( $hasDetail ) $i = 1;
+	                    $materials[$i]['metalColor'] = $value;
+	                    break;
+	            }
+	        }
+
+	        $i = $hasDetail?1:0;
+	        $str_mod_cov_arr = explode(";",$this->row['model_covering']);
+	        foreach ( $str_mod_cov_arr as $value )
+	        {
+	            switch ( $value )
+	            {
+	                case "Родирование":
+	                    $materials[$i]['covering'] = $value;
+	                    break;
+	                case "Золочение":
+	                    $materials[$i]['covering'] = $value;
+	                    break;
+	                case "Чернение":
+	                    $materials[$i]['covering'] = $value;
+	                    break;
+	                case "Полное":
+	                    $materials[$i]['area'] = $value;
+	                    break;
+	                case "Частичное":
+	                    $materials[$i]['area'] = $value;
+	                    break;
+	                case "По крапанам":
+	                    $materials[$i]['area'] = $value;
+	                    break;
+	            }
+	        }
+	        
+
+	        return $materials;
+		}
 		
-		public function getImages($scetch=false) {
+		public function getImages($sketch = false)
+        {
 			$respArr = array();
-			if ( $scetch === 'sketch' ) {
+			if ( $sketch === true ) {
 				$img = mysqli_query($this->connection, " SELECT * FROM images WHERE pos_id='$this->id' AND sketch='1' ");
 			} else {
 				$img = mysqli_query($this->connection, " SELECT * FROM images WHERE pos_id='$this->id' ");
 			}
 			
-			if ( $img -> num_rows > 0 ) {
-				$respArr['imgLen'] = $img->num_rows;
+			if ( $img->num_rows > 0 ) {
+                $this->getStatLabArr('image');
 				$i = 0;
 				while( $row_img = mysqli_fetch_assoc($img) ) {
-					$respArr['imgPath'][$i] = $row_img['img_name'];
+					$respArr[$i]['id'] = $row_img['id'];
+                    $respArr[$i]['imgName'] = $row_img['img_name'];
+
+                    $imgPath = $_SESSION['general_data']['number_3d'].'/'.$this->id.'/images/'.$row_img['img_name'];
+
+                    if ( !file_exists(_stockDIR_.$imgPath) )
+                    {
+                        $respArr[$i]['imgPath'] = _stockDIR_HTTP_."default.jpg";
+                    } else {
+                        $respArr[$i]['imgPath'] = _stockDIR_HTTP_.$imgPath;
+                    }
+
+                    //debug($row_img,'$row_img');
+
 					// проставляем флажки
-					
-					$respArr['imgStat'][$i]['name'] = 'Нет';
-					$respArr['imgStat'][$i]['id'] = (int)0;
-					
-					if ( $row_img['onbody'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'На теле';
-						$respArr['imgStat'][$i]['id'] = 2;
-					}
-					if ( $row_img['sketch'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'Эскиз';
-						$respArr['imgStat'][$i]['id'] = 3;
-					}
-					if ( $row_img['detail'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'Деталировка';
-						$respArr['imgStat'][$i]['id'] = 4;
-					}
-					if ( $row_img['scheme'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'Схема сборки';
-						$respArr['imgStat'][$i]['id'] = 5;
-					}
-					if ( $row_img['main'] == 1 ) {
-						$respArr['imgStat'][$i]['name'] = 'Главная';
-						$respArr['imgStat'][$i]['id'] = 1;
-					}
-					$i++;
+                    $img_arr = $this->imageStatuses;
+                    //debug($img_arr,'$img_arr',1);
+                    foreach ( $row_img as $key => $value )
+                    {
+                        // нижний ходит по статусам из табл и сверяет имена с ключом из картинок
+                        $flagToResetNo = false;
+                        foreach ( $img_arr as &$option )
+                        {
+                            if ( $key === $option['name_en'] && (int)$value === 1 )
+                            {
+                                $option['selected'] = $value;
+                                $flagToResetNo = true;
+                            }
+                            // уберем флажек с "НЕТ" если был выставлен на чем-то другом
+                            if (  (int)$option['id'] === 27 && $flagToResetNo === true ) $option['selected'] = 0;
+                        }
+                    }
+                    $respArr[$i]['imgStat'] = $img_arr;
+                    $i++;
 				}
 			}
 			return $respArr;
 		}
+
+
 		public function getGems(){
 			$respArr = array();	
 			$gems = mysqli_query($this->connection, " SELECT * FROM gems WHERE pos_id='$this->id' ");
@@ -367,46 +571,9 @@
 		}
 
 
-		public function getMaterial($str_material) {
-			$material = array();
-			if ( !empty($str_material) ) {
-				$material_arr = explode(";",$str_material);
-				foreach ( $material_arr as &$value ) {
-					if ( "Золото" == $value )       $material['metall_gold'] = "checked";
-					if ( "Серебро" == $value )      $material['metall_silv'] = "checked";
-					
-					if ( "585" == $value )          $material['probe585'] = "checked";
-					if ( "750" == $value )          $material['probe750'] = "checked";
-					
-					if ( "Белое" == $value )        $material['gold_white'] = "checked";
-					if ( "Красное" == $value )      $material['gold_red'] = "checked";
-					if ( "Желтое(евро)" == $value ) $material['gold_yellow'] = "checked";
-				}
-			} else {
-				$material['metall_silv'] = "checked";
-			}
-			return $material;
-		}
-		public function getCovering($str_covering) {
-			$covering = array();
-			if ( !empty($str_covering) ) {
-				$covering_arr = explode(";",$str_covering);
-				foreach ( $covering_arr as &$value ) {
-					if ( "Родирование" == $value )      $covering['rhodium']  = "checked";
-					if ( "Золочение" == $value )        $covering['golding']  = "checked";
-					if ( "Чернение" == $value )         $covering['blacking'] = "checked";
-					
-					if ( "Полное" == $value )           $covering['full']     = "checked";
-					if ( "Частичное" == $value )        $covering['onPartical']    = "checked";
-					if ( "По крапанам" == $value )      $covering['onProngs'] = "checked";
-					if ( "Отдельные части" == $value )  $covering['parts'] = "checked";
-				}
-				$covering_part = explode("-",$str_covering);
-				if ( $covering_part[1] ) $covering['partsStr'] = $covering_part[1];
-			}
+		
 
-			return $covering;
-		}
+
 
 		public function getStatus($row=[], $selMode='')
         {

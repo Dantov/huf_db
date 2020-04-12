@@ -22,6 +22,7 @@ JS;
     <title><?= $this->title ?></title>
     <link rel="icon" href="<?= _rootDIR_HTTP_ ?>web/favicon.ico?ver=106">
 
+    <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/cssFW.css?ver=<?=time();?>">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/style.css?ver=<?=time();?>">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/style_adm.css?ver=<?=time();?>">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/bodyImg.css?ver=<?=time();?>">
@@ -29,12 +30,10 @@ JS;
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/iziModal.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/iziToast.min.css">
-    <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/font-awesome-4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/fontawesome-free-5.0.6/on-server/css/fontawesome-all.css">
+    <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/fontawesome5.9.0/css/all.min.css">
     <script src="<?=_webDIR_HTTP_?>js_lib/jquery-3.2.1.min.js"></script>
     <script src="<?=_webDIR_HTTP_?>js_lib/bootstrap.min.js"></script>
     <script src="<?= _glob_HTTP_ ?>js/const.js?ver=<?=time()?>"></script>
-
 
     <script><?=$wsUserDataJS?></script>
     <script src="<?= _glob_HTTP_ ?>js/webSocketConnect.js?ver=<?=time()?>"></script>

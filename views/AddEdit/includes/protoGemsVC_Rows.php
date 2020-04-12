@@ -15,6 +15,7 @@
 	  </td>
 	</tr>
 	<!-- END прототип строки доп. артикулов -->
+
 	<!-- прототип строки камней -->
 	<tr style="display:none;" id="protoGemRow">
 	  <td></td>
@@ -33,6 +34,7 @@
 	  </td>
 	</tr>
 	<!-- END прототип строки камней -->
+
     <!-- прототип строки коллекций -->
     <tr style="display:none;" id="protoCollectionRow">
         <td style="width: 30px"></td>
@@ -44,4 +46,8 @@
         </td>
     </tr>
     <!-- END прототип строки коллекций -->
+
+    <!-- прототип строки Материалов -->
+	<? $switchTableRow = "materialsFull"; require _viewsDIR_."AddEdit/includes/protoRows.php" ?>
+    <!-- END прототип строки Материалов -->
 </table>

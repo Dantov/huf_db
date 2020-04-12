@@ -22,10 +22,11 @@
 	$manualProcesses = 3;
 	
 	$imagesProcesses = 0;
-	if ( !empty($_FILES['upload_images']['name'][0]) ) {
-		$imagesProcesses = count( $_FILES['upload_images']['name']?:[] );
+	if ( !empty($_FILES['UploadImages']['images'][0]) ) {
+		$imagesProcesses = count( $_FILES['UploadImages']['images']?:[] );
 	}
-	
+	//debug($_FILES,'$_FILES');
+
 	$stlProcesses = 0;
 	if ( !empty($_FILES['fileSTL']['name'][0]) ) {
 		$stlProcesses = 1;
@@ -60,7 +61,7 @@
 		unset($_SESSION['general_data']);
 	}
 
-	//debug($id,'$id',1);
+	//debug($_POST['mats'],'mats',1);
 
 	chdir(_stockDIR_);
 
@@ -72,6 +73,7 @@
 	$handler = new Handler($id, $_SERVER);
 	
 	if ( !$handler -> connectToDB() ) exit;
+
 
 	$permissions = $handler->permittedFields();
 
@@ -94,10 +96,10 @@
 	$handler -> addVCtoComplects($vendor_code, $number_3d);
 	
 	// формируем строку model_material
-	$model_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
+	//$model_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
 	
 	// формируем строку model_covering
-	$model_covering = $handler->makeModelCovering($_POST['rhodium'],$_POST['golding'],$_POST['blacking'],$_POST['rhodium_fill'],$_POST['onProngs'],$_POST['onParts'],$_POST['rhodium_PrivParts']);
+	//$model_covering = $handler->makeModelCovering($_POST['rhodium'],$_POST['golding'],$_POST['blacking'],$_POST['rhodium_fill'],$_POST['onProngs'],$_POST['onParts'],$_POST['rhodium_PrivParts']);
 
 	$str_labels =  $handler->makeLabels($_POST['labels']);
 
@@ -133,8 +135,8 @@
 	if ( !empty($print_cost) && $permissions['print_cost'] ) $datas .= "print_cost='$print_cost',";
 	if ( !empty($model_cost) && $permissions['model_cost'] ) $datas .= "model_cost='$model_cost',";
 
-	if ( $permissions['covering'] ) $datas .= "model_covering='$model_covering',";
-	if ( $permissions['material'] ) $datas .= "model_material='$model_material',";
+	//if ( $permissions['covering'] ) $datas .= "model_covering='$model_covering',";
+	//if ( $permissions['material'] ) $datas .= "model_material='$model_material',";
 
 	if ( !empty($model_weight) && $permissions['model_weight'] ) $datas .= "model_weight='$model_weight',";
 
@@ -183,34 +185,57 @@
 	$resp_arr['processes']['manual'][] = $overalProgress;
 
 
+	//-------------- материалы ----------------//
+	if ( $permissions['material'] )
+	{
+		if ( !empty($_POST['mats']) )
+        {
+	        $materialRows = $handler->makeBatchInsertRow($_POST['mats'], $id, 'metal_covering');
+	        //debug($materialRows,'makeBatchInsertRow',1);
+	        $resp_arr['materials']['insertUpdate'] = $handler->insertUpdateRows($materialRows['insertUpdate'], 'metal_covering');
+	        $resp_arr['materials']['delete'] = $handler->removeRows($materialRows['remove'], 'metal_covering');
+        }
+	}
+	//-------------- материалы ----------------//
+
+
+
 	//--------- добавляем картинки---------//
     if ( $permissions['images'] )
     {
-        if ( $imgCount = count($_FILES['upload_images']['name']?:[]) )
+        $imgRows = [];
+        if ( !empty($_POST['image']['imgFor']) )
+        {
+            // Обновляем флажки на существующих картинках
+            $imgRows = $handler->makeBatchImgInsertRow($_POST['image']);
+            //debug($imgRows,'$imgRows',1);
+            $handler->insertUpdateRows($imgRows['updateImages'], 'images');
+        }
+
+        if ( $imgCount = count($_FILES['UploadImages']['name']?:[]) )
         {
             if( !file_exists($number_3d) ) mkdir($number_3d, 0777, true);
             if( !file_exists($number_3d.'/'.$id) ) mkdir($number_3d.'/'.$id, 0777, true);
             if( !file_exists($number_3d.'/'.$id.'/images') ) mkdir($number_3d.'/'.$id.'/images', 0777, true);
 
-            for ( $i = 0; $i < $imgCount; $i++ )
+            if ( $newImages = $handler->addImageFiles($_FILES['UploadImages'], $imgRows['newImages']) )
             {
-                $quer_addImg = $handler -> addImage($_FILES['upload_images'], $_POST['upload_images_word'], $i);
-
-                if ( $quer_addImg ) {
-                    //============= counter point ==============//
-                    $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-                    $progress->progressCount( $overalProgress );
-                    $resp_arr['processes']['picts'][] = $overalProgress;
-                } else {
-                    exit('Error adding image');
-                }
+                $insertImages = $handler->insertUpdateRows($newImages, 'images');
+                if ( is_array($insertImages) ) debug($insertImages,'Error in insertUpdateRows',1);
             }
+
         }
-        $quer_updFlags = $handler->updateImageFlags($_POST['imgFor']);
-        if ( !$quer_updFlags ) exit('Error updateImageFlags in ' . __FILE__);
-        // ----- конец добавляем картинки ----- //
+
+        //============= counter point ==============//
+        $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
+        $progress->progressCount( $overalProgress );
+        $resp_arr['processes']['picts'][] = $overalProgress;
     }
-	
+    // ----- конец добавляем картинки ----- //
+
+
+
+
 
 
 	// ----- Добавляем STL FILE ----- //

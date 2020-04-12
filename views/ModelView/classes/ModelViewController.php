@@ -8,6 +8,11 @@ class ModelViewController extends GeneralController
 
     public $title = 'ХЮФ 3Д Модель - ';
 
+    public function beforeAction()
+    {
+
+    }
+
     public function action()
     {
         if ( filter_has_var(INPUT_GET, 'id') ) {
@@ -36,11 +41,24 @@ class ModelViewController extends GeneralController
         $button3D = $getStl['button3D'];
         $dopBottomScripts = $getStl['dopBottomScripts'];
 
+        $matsCovers = $modelView->getModelMaterials();
+
         $complStr = $modelView->getComplects();
         $images = $modelView->getImages();
+        $mainImg = [];
+        foreach ( $images as $image )
+        {
+            if ( $image['main'] == 1 )
+            {
+                $mainImg['src'] = $image['img_name'];
+                $mainImg['id'] = $image['id'];
+                break;
+            }
+        }
+
         $labels = $modelView->getLabels($row['labels']);
-        $str_mat = $modelView->getModelMaterial();
-        $str_Covering = $modelView->getModelCovering();
+        //$str_mat = $modelView->getModelMaterial();
+        //$str_Covering = $modelView->getModelCovering();
         $gemsTR = $modelView->getGems();
         $dopVCTr = $modelView->getDopVC();
 
@@ -74,16 +92,13 @@ class ModelViewController extends GeneralController
         $stat_date = $stts['stat_date'];
         $stat_class = $stts['class'];
         $stat_title = $stts['title'];
+        $stat_glyphi = 'glyphicon glyphicon-' . $stts['glyphi'];
 
-        if ( $stts['glyphi'] == 'glyphicons-ring' ) {
-            $stat_glyphi = $stts['glyphi'];
-        } else {
-            $stat_glyphi = 'glyphicon glyphicon-' . $stts['glyphi'];
-        }
+        //debug($stts);
 
         $statuses = $modelView->getStatuses();
 
-        $stillNo = !empty($row['vendor_code']) ? $row['vendor_code'] : "Еще нет";
+        $stillNo = !empty($row['vendor_code']) ? $row['vendor_code'] : "Нет";
 
         $ai_file = '';
         foreach ( $coll_id as $coll )
@@ -138,9 +153,9 @@ class ModelViewController extends GeneralController
         if ( $modelView->checklikePos() ) $btnlikes = 'btnlikesoff';
 
         $compacted = compact([
-            'id','row','coll_id','getStl','button3D','dopBottomScripts','complStr','images', 'labels', 'str_mat','str_Covering','gemsTR',
-            'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','statuses','stillNo','ai_file','thisPage','editBtn',
-            'btnlikes','repairs3D','repairsJew']);
+            'id','row','coll_id','getStl','button3D','dopBottomScripts','complStr','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
+            'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','stillNo','ai_file','thisPage','editBtn',
+            'btnlikes','repairs3D','repairsJew', 'matsCovers']);
 
         return $this->render('modelView', $compacted);
     }

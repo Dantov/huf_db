@@ -13,7 +13,14 @@
 	}
 	if ( isset($_POST['closeAllPN']) ) {
 
-		$arr['done'] = $pn->addIPtoALLNotices($_POST['closeById']);
+	    $notIDs = $_POST['closeById'];
+        if ( !is_array($notIDs) || empty($notIDs) )
+        {
+            echo json_encode($arr['done'] = true);
+            exit;
+        }
+
+		$arr['done'] = $pn->addIPtoALLNotices($notIDs);
 		
 		echo json_encode($arr);
 		exit;

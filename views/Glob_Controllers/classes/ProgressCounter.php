@@ -73,7 +73,7 @@ class ProgressCounter extends General
 
     public function progressCount($newPercent)
     {
-        if ( !isset($this->socketClientResource) ) return;
+        if ( !$this->socketClientResource ) return;
 
         $this->progressResponse['progressBarPercent'] = $newPercent;
 
