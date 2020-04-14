@@ -6,8 +6,8 @@ class General {
 		if ( isset($server) ) {
 			$this->server = $server;
 			$this->setDirs();
-			//$this->IP_visiter = $_SERVER['HTTP_X_REAL_IP'];
-			$this->IP_visiter = $_SERVER['REMOTE_ADDR'];
+			$this->IP_visiter = $_SERVER['HTTP_X_REAL_IP'];
+			//$this->IP_visiter = $_SERVER['REMOTE_ADDR'];
 		}
 	}
 	
@@ -66,8 +66,8 @@ class General {
 
 	public $workingCentersDB;
 	public $workingCentersSorted;
-    //public $localSocket = 'tcp://192.168.0.245:1234';
-    public $localSocket = 'tcp://127.0.0.1:1234';
+    public $localSocket = 'tcp://192.168.0.245:1234';
+    //public $localSocket = 'tcp://127.0.0.1:1234';
 
 	public function formatDate($date)
     {
@@ -104,6 +104,82 @@ class General {
         }
         return $this->users;
     }
+	
+	public function permittedFields()
+	{
+		$permittedFields = [
+			'addComplect' => false,
+			'number_3d' => false,
+			'vendor_code' => false,
+			'collections' => false,
+			'author' => false,
+			'modeller3d' => false,
+			'jewelerName' => false,
+			'model_type' => false,
+			'model_weight' => false,
+			'size_range' => false,
+			'print_cost' => false,
+			'model_cost' => false,
+			'material' => false,
+			'covering' => false,
+			'stl' => false,
+			'ai' => false,
+			'images' => false,
+			'dellImage' => false,
+			'gems' => false,
+			'vc_links' => false,
+			'description' => false,
+			'repairs' => false,
+			'labels' => false,
+			'statuses' => false,
+			'dellModel' => false,
+			'deleteImage' => false,
+			'addModel' => false,
+		];
+
+		switch ($this->user['access'])
+		{
+			case 1:
+				foreach ( $permittedFields as &$bool ) $bool = true;
+				break;
+			case 2:
+				foreach ( $permittedFields as &$bool ) $bool = true;
+				$permittedFields['print_cost'] = false;
+				$permittedFields['model_cost'] = false;
+				$permittedFields['jewelerName'] = false;
+				break;
+			case 4:
+				$permittedFields['vendor_code'] = true;
+				$permittedFields['material'] = true;
+				$permittedFields['covering'] = true;
+				$permittedFields['gems'] = true;
+				$permittedFields['vc_links'] = true;
+				$permittedFields['description'] = true;
+				$permittedFields['statuses'] = true;
+				$permittedFields['repairs'] = true;
+				break;
+			case 3:
+				$permittedFields['print_cost'] = true;
+				$permittedFields['statuses'] = true;
+				break;
+			case 5:
+				$permittedFields['images'] = true;
+				$permittedFields['jewelerName'] = true;
+				$permittedFields['gems'] = true;
+				$permittedFields['model_cost'] = true;
+				$permittedFields['description'] = true;
+				$permittedFields['repairs'] = true;
+				$permittedFields['labels'] = true;
+				$permittedFields['statuses'] = true;
+				break;
+			case 6:
+				$permittedFields['images'] = true;
+				$permittedFields['statuses'] = true;
+				break;
+		}
+
+		return $permittedFields;
+	}
 
     /*
      * рабочие центры из БД

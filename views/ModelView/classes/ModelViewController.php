@@ -28,6 +28,8 @@ class ModelViewController extends GeneralController
         $modelView->unsetSessions();
 
         $modelView->dataQuery();
+		
+		$permittedFields = $modelView->permittedFields();
 
         $row = $modelView->row;
         $coll_id = $modelView->getCollections();
@@ -117,7 +119,7 @@ class ModelViewController extends GeneralController
         $compacted = compact([
             'id','row','coll_id','getStl','button3D','dopBottomScripts','complStr','images', 'labels', 'str_mat','str_Covering','gemsTR',
             'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','statuses','stillNo','ai_file','thisPage','editBtn',
-            'btnlikes','rep_Query']);
+            'btnlikes','rep_Query','permittedFields']);
 
         return $this->render('modelView', $compacted);
     }

@@ -18,7 +18,7 @@
 	    $_SESSION['assist']['collectionName']  = "Все Коллекции";
 		$_SESSION['assist']['collection_id']   = -1;		// все коллекции
 		$_SESSION['assist']['PushNotice']      = 1;		// показываем уведомления
-		$_SESSION['assist']['update']          = 7;
+		$_SESSION['assist']['update']          = 8;
 		$_SESSION['assist']['bodyImg']         = 'bodyimg0'; // название класса
 		$_SESSION['selectionMode']['activeClass'] = "";
 		$_SESSION['selectionMode']['models'] = array();

@@ -38,7 +38,7 @@ class GeneralController extends Controller
         }
 
         $access = isset( $_SESSION['access']) ? $_SESSION['access'] : false;
-        if( $access !== true || $_SESSION['assist']['update'] !== 7 ) header("location:". _glob_HTTP_ ."exit.php");
+        if( $access !== true || $_SESSION['assist']['update'] !== 8 ) header("location:". _glob_HTTP_ ."exit.php");
     }
 
     protected function navBarController()
