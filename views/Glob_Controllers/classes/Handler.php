@@ -951,15 +951,26 @@ class Handler extends General { // общий класс, для манипул�
     }
 
     /**
-    * Пакетное удаление
-    */
+     * Пакетное удаление
+     *
+     * @param $toRemove
+     * @param $tableName
+     * @return array|bool
+     * @throws Exception
+     */
     public function removeRows($toRemove, $tableName)
     {
     	if ( empty($toRemove) || !is_array($toRemove)) return [];
         if ( empty($tableName) || !is_string($tableName) ) throw new Exception("Error removeRows() table name might be a string!", 1);
         
         $ids = '';
-        foreach ( $toRemove as $id ) $ids .= $id . ',';
+        foreach ( $toRemove as $id )
+        {
+            if ( !empty($id) ) $ids .= $id . ',';
+        }
+
+        if (empty($ids)) return false;
+
         $ids = '(' . trim($ids,',') . ')';
 
         try {

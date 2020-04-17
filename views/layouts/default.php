@@ -31,14 +31,14 @@ JS;
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/iziModal.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/css/iziToast.min.css">
     <link rel="stylesheet" href="<?= _rootDIR_HTTP_ ?>web/fontawesome5.9.0/css/all.min.css">
-    <script src="<?=_webDIR_HTTP_?>js_lib/jquery-3.2.1.min.js"></script>
-    <script src="<?=_webDIR_HTTP_?>js_lib/bootstrap.min.js"></script>
     <script src="<?= _glob_HTTP_ ?>js/const.js?ver=<?=time()?>"></script>
-
     <script><?=$wsUserDataJS?></script>
     <script src="<?= _glob_HTTP_ ?>js/webSocketConnect.js?ver=<?=time()?>"></script>
+    <? $this->head() ?>
 </head>
+
 <body id="body" class="<?=$_SESSION['assist']['bodyImg']?>">
+<? $this->beginBody() ?>
 	<div class="wrapper" id="content"> <!-- нужен что бы скрывать все для показа 3Д -->
 
         <nav class="navbar navbar-default nav-bar-marg">
@@ -220,6 +220,8 @@ JS;
                 <? endif; ?>
                 <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="<?= _glob_HTTP_ ?>versions.php" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i>
             </div>
+            <script src="<?=_webDIR_HTTP_?>js_lib/jquery-3.2.1.min.js"></script>
+            <script src="<?=_webDIR_HTTP_?>js_lib/bootstrap.min.js"></script>
             <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziModal.min.js"></script>
             <script src="<?=_rootDIR_HTTP_?>web/js_lib/iziToast.min.js"></script>
 			<script defer src="<?=_glob_HTTP_ ?>js/NavBar.js?ver=<?=time()?>"></script>
@@ -234,5 +236,6 @@ JS;
     </div><!--content-->
 	<div id="pushNoticeWrapp" class="row"></div>
     <? if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
+    <? $this->endBody() ?>
 </body>
 </html>

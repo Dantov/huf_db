@@ -65,7 +65,7 @@ _init_();
         $strrr = '';
         if ( !empty($str) ) $strrr = $str . " = ";
 
-        echo '<pre style="display: inline-block !important;">';
+        echo '<pre style="display: inline-block !important; vertical-align: top;">';
         echo $strrr;
         print_r($arr);
         echo '</pre>';

@@ -12,7 +12,7 @@ if ( !$isRepairProto )
     ];
     $repairRow['which'] = $whichRepair ? 'repairsJew' : 'repairs3d';
     $repairRow['whichName'] = $whichRepair ? 'Ремонт Модельера-доработчика №' : '3Д Ремонт №';
-    $repairRow['panelColor'] = $whichRepair ? 'panel-success' : 'panel-info';
+    $repairRow['panelColor'] = $whichRepair ? 'panel-jewRepair' : 'panel-3dRepair';
     $repairRow['panelIcon'] = $whichRepair ? 'wrench' : 'cog';
     $repairRow['descrName'] = $whichRepair ? 'repairs[jew][description][]' : 'repairs[3d][description][]';
 
@@ -29,9 +29,9 @@ if ( !$isRepairProto )
     if ( isset($repair['cost']) ) $repairRow['cost'] = $repair['cost'];
 }
 ?>
-<div id="<?=$repairRow['idProto']?>" class="panel <?=$repairRow['panelColor']?> <?=$repairRow['isHidden']?> <?=$repairRow['which']?> " style="margin-top: 10px;">
+<div id="<?=$repairRow['idProto']?>" class="panel <?=$repairRow['panelColor']?> <?=$repairRow['isHidden']?> <?=$repairRow['which']?> <?=!$isView? 'mt-2':'mb-1'?>">
     <div class="panel-heading">
-        <span class="glyphicon glyphicon-<?=$repairRow['panelIcon']?>" style="color:green;"></span>
+        <span class="glyphicon glyphicon-<?=$repairRow['panelIcon']?>"></span>
         <strong>
             <span class="repairs_name"><?=$repairRow['whichName']?></span><span class="repairs_number"><?=$repairRow['number']?></span>
             от - <span class="repairs_date"><?=date_create( $repairRow['date'] )->Format('d.m.Y')?></span>

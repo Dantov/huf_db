@@ -361,10 +361,15 @@
 			return $covering;
 		}
 		*/
+        /**
+         * @param bool $row
+         * @return array|bool
+         * @throws Exception
+         */
 		public function getMaterials($row=false)
 		{
 			$materials = $this->findAsArray(" SELECT * FROM metal_covering WHERE pos_id='$this->id' ");
-			if ( isset($materials['error']) ) throw new Exception("Error in getMaterials(): " . $materials['error'], 500);
+			if ( isset($materials['error']) ) throw new Error("Error in getMaterials(): " . $materials['error'], 500);
 			if (!empty($materials)) return $materials;
 
 			if ( $row ) $this->row = $row;
@@ -419,7 +424,7 @@
 	                case "Белое":
 	                	if ( $hasDetail ) $i = 1;
 	                    $materials[$i]['metalColor'] = $value;
-	                    break;	               
+	                    break;
 	                case "Желтое(евро)":
 	                	if ( $hasDetail ) $i = 1;
 	                    $materials[$i]['metalColor'] = $value;
@@ -453,11 +458,11 @@
 	                    break;
 	            }
 	        }
-	        
+
 
 	        return $materials;
 		}
-		
+
 		public function getImages($sketch = false)
         {
 			$respArr = array();

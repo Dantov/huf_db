@@ -1348,3 +1348,48 @@ body {
 	font-size: 2.5rem;
 	cursor: pointer;
 }
+.imgPrev-thumbnail {
+	display:inline-block;
+	max-width:100%;
+	height:auto;
+	padding:4px;
+	line-height:1.42857143;
+	background-color:#fff;
+	border:1px solid #ddd;
+	border-radius:4px;
+}
+
+.panel-3dRepair>.panel-heading {
+	color: #4c4c4c;
+	background-color: #c5c3eb;
+	border-color: #847da3;
+}
+.panel-jewRepair>.panel-heading {
+	color: #ecfdec;
+	background-color: #f99a9a;
+	border-color: #bf7564;
+}
+.err-notice {
+	color: red;
+	font-weight: bold;
+}
+#metals_table>tr>td, #covers_table>tr>td
+{
+	padding: 5px 3px 5px 3px !important;
+}
+/* Collection Block ADD EDIT START*/
+#collectionBlockForm {
+	position: absolute;
+	width: 100%;
+	padding: 10px;
+	background-color: #ffffff;
+	border: 2px solid #dfdede;
+	left: 0px;
+	top: 62px;
+
+	z-index: 100;
+}
+#collectionBlockForm a {
+	cursor: pointer;
+}
+/* Collection Block ADD EDIT END*/

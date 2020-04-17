@@ -1,11 +1,14 @@
 <?php
-include( _globDIR_ . 'classes/General.php');
+if (!class_exists('General', false)) include( _globDIR_ . 'classes/General.php' );
 
 class ModelView extends General {
 	function __construct( $id=false, $server=false, $user=false ) {
 		parent::__construct($server);
 		if ( isset($id) ) $this->id = $id;
 		//if ( isset($user) ) $this->user = $user;
+
+        $this->connectToDB();
+        $this->dataQuery();
 	}
 	
 	private $id;
@@ -75,8 +78,23 @@ class ModelView extends General {
 		}
 		return false;
 	}
-	
-	public function getComplects() {
+
+    /**
+     * @param bool $forPdf
+     * @return array|string
+     */
+	public function getComplects($forPdf=false)
+    {
+        if ($forPdf)
+        {
+            $res = [];
+            while( $resQ = mysqli_fetch_assoc($this->complect_Query) ) {
+                if ( $resQ['id'] == $this->row['id'] ) continue;
+                $res[] = $resQ;
+            }
+            return $res;
+        }
+
 		$complStr = '';
 		$mass = [];
 		while( $complects = mysqli_fetch_assoc($this->complect_Query) ) {
@@ -277,7 +295,16 @@ class ModelView extends General {
 		}
 		return $result;
 	}
-	
+
+	public function getRepairs()
+    {
+        $repairs = [];
+        if ( $this->rep_Query )
+            while($repRow = mysqli_fetch_assoc($this->rep_Query)) $repairs[] = $repRow;
+
+        return $repairs;
+    }
+	/*
 	public function checklikePos() {
 		$ipsQuer = mysqli_query($this->connection, " SELECT * FROM ips WHERE ip='$this->IP_visiter' ");
 		if ( $ipsQuer->num_rows > 0 ) {
@@ -287,60 +314,66 @@ class ModelView extends General {
 		}
 		return false;
 	}
-        
-        public function getStatuses( $id = false, $status_name = '', $status_date = '' )
+	*/
+
+	public function getLabels($labelsStr=false)
+    {
+        return parent::getLabels($this->row['labels']);
+    }
+
+    public function getStatuses( $id = false, $status_name = '', $status_date = '' )
+    {
+        $statuses = $this->getStatLabArr('status');
+        $result = [];
+        $stats_quer = mysqli_query($this->connection, " SELECT status,name,date FROM statuses WHERE pos_id='{$this->id}' ");
+
+        if ( !mysqli_num_rows($stats_quer) )
         {
-            $statuses = $this->getStatLabArr('status');
-            $result = [];
-            $stats_quer = mysqli_query($this->connection, " SELECT status,name,date FROM statuses WHERE pos_id='{$this->id}' ");
-            
-            if ( !mysqli_num_rows($stats_quer) )
+            $statusT = [];
+            $statusT['pos_id'] = $this->id;
+            $statusT['status'] = $this->row['status'];
+            $statusT['creator_name'] = "";
+            $statusT['UPdate'] = $this->row['status_date'];
+            $this->addStatusesTable($statusT);
+            foreach ( $statuses?:[] as $status )
             {
-                $statusT = [];
-                $statusT['pos_id'] = $this->id;
-                $statusT['status'] = $this->row['status'];
-                $statusT['creator_name'] = "";
-                $statusT['UPdate'] = $this->row['status_date'];
-                $this->addStatusesTable($statusT);
-                foreach ( $statuses as $status )
+                if ( $statusT['status'] === $status['name_ru'] )
                 {
-                    if ( $statusT['status'] === $status['name_ru'] )
-                    {
-                        $result[0]['class'] = $status['class'];
-                        $result[0]['classMain'] = $status['name_en'];
-                        $result[0]['glyphi'] = $status['glyphi'];
-                        $result[0]['title'] = $status['title'];
-                        $result[0]['status'] = $status['name_ru'];
-                        $result[0]['name'] = $statusT['name'];
-                        $result[0]['date'] = ($statusT['date'] == "0000-00-00") ? "" : date_create( $statusT['UPdate'] )->Format('d.m.Y')."&#160;";
-                        break;
-                    }
+                    $result[0]['class'] = $status['class'];
+                    $result[0]['classMain'] = $status['name_en'];
+                    $result[0]['glyphi'] = $status['glyphi'];
+                    $result[0]['title'] = $status['title'];
+                    $result[0]['status'] = $status['name_ru'];
+                    $result[0]['name'] = $statusT['name'];
+                    $result[0]['date'] = ($statusT['date'] == "0000-00-00") ? "" : date_create( $statusT['UPdate'] )->Format('d.m.Y')."&#160;";
+                    break;
                 }
-
-                //debug($result,'$result',1);
-                return $result;
             }
-            
-            $c = 0;
-            while( $statuses_row = mysqli_fetch_assoc($stats_quer) ) 
-            {
-                foreach ( $statuses as $status )
-                {
-                    if ( $statuses_row['status'] === $status['id'] )
-                    {
-                        $result[$c]['class'] = $status['class'];
-                        $result[$c]['classMain'] = $status['name_en'];
-                        $result[$c]['glyphi'] = $status['glyphi'];
-                        $result[$c]['title'] = $status['title'];
-                        $result[$c]['status'] = $status['name_ru'];
-                        $result[$c]['name'] = $statuses_row['name'];
-                        $result[$c]['date'] = ($statuses_row['date'] == "0000-00-00") ? "" : date_create( $statuses_row['date'] )->Format('d.m.Y')."&#160;";
-                        $c++;
-                        break;
-                    }
-                }
 
-            }
+            //debug($result,'$result',1);
             return $result;
         }
+
+        $c = 0;
+        while( $statuses_row = mysqli_fetch_assoc($stats_quer) )
+        {
+            foreach ( $statuses as $status )
+            {
+                if ( $statuses_row['status'] === $status['id'] )
+                {
+                    $result[$c]['class'] = $status['class'];
+                    $result[$c]['classMain'] = $status['name_en'];
+                    $result[$c]['glyphi'] = $status['glyphi'];
+                    $result[$c]['title'] = $status['title'];
+                    $result[$c]['status'] = $status['name_ru'];
+                    $result[$c]['name'] = $statuses_row['name'];
+                    $result[$c]['date'] = ($statuses_row['date'] == "0000-00-00") ? "" : date_create( $statuses_row['date'] )->Format('d.m.Y')."&#160;";
+                    $c++;
+                    break;
+                }
+            }
+
+        }
+        return $result;
+    }
 }

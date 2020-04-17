@@ -1,7 +1,3 @@
-<?
-$this->title .= $row['number_3d'] ." ". $row['model_type'];
-$imgEncode = json_encode($images,JSON_UNESCAPED_UNICODE);
-?>
 <div class="row" id="middleRow">
 
     <!-- images block start-->
@@ -26,7 +22,7 @@ $imgEncode = json_encode($images,JSON_UNESCAPED_UNICODE);
                 <div class="row">
                     <div class="col-xs-12 pl-0">
                         <div class="panel mb-1">
-                            <div class="mainImage cursorLoupe" data-id="<?=$mainImg['id']?>" style="background-image: url(<?=$mainImg['src']?>);"></div>
+                            <div class="mainImage cursorLoupe border-primary-1" data-id="<?=$mainImg['id']?>" style="background-image: url(<?=$mainImg['src']?>);"></div>
                         </div>
                     </div>
                 </div>
@@ -67,7 +63,7 @@ $imgEncode = json_encode($images,JSON_UNESCAPED_UNICODE);
                             <i class="fas fa-industry"></i> Фабричный Артикул:
                         </li>
                         <li class="list-group-item">
-                            <span class="badge badge-lg" id="complects"><?=$complStr?></span>
+                            <span class="badge badge-lg" id="complects"><?=$complectedStr?></span>
                             <i class="fas fa-object-group"></i> В Комплекте:
                         </li>
                         <li class="list-group-item">
@@ -253,19 +249,14 @@ $imgEncode = json_encode($images,JSON_UNESCAPED_UNICODE);
             </div>
         </div>
     <?php endif; ?>
-</div><!-- end Middle Row-->
-<?= $repairs3D ?>
-<?= $repairsJew ?>
-
-<script defer id="imageViewerJs" src="<?=_views_HTTP_.$this->controllerName?>/js/imageViewer.js?ver=<?=time()?>"></script>
-<script><?=
-    <<<JS
-    document.getElementById('imageViewerJs').onload = function() {
-        new ImageViewer($imgEncode).init();
-    };
-JS;
-?></script>
-<script defer src="<?=_views_HTTP_.$this->controllerName?>/js/show_pos_scrpt.js?ver=<?=time()?>"></script>
+    <? $isView = true; ?>
+    <?php foreach ( $repairs as $repair ): ?>
+        <? $whichRepair = $repair['which'] ? true : false ?>
+        <div class="col-xs-12 col-sm-12 col-lg-6 pl-1 pr-0">
+            <?require _viewsDIR_ . "AddEdit/includes/protoRepair.php"?>
+        </div>
+    <? endforeach; ?>
+</div>
 
 <? if($dopBottomScripts): ?>
     <script src="<?= _webDIR_HTTP_ ?>js_lib/three.min.js"></script>
@@ -282,7 +273,7 @@ JS;
 
 <!-- lond cut div -->
 <div id="longTD" class="longTD hidden"></div>
-<img id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="img-thumbnail hidden"/>
+<img id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="imgPrev-thumbnail hidden"/>
 
-<? include_once _viewsDIR_.$this->controllerName."/includes/imageWrapper.php" ?>
+
 <? include_once _globDIR_. 'includes/progressModal.php' ?>

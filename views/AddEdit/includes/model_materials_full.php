@@ -9,7 +9,7 @@
     <table class="table <?= !count($materials?:[])?'hidden':'' ?>">
         <thead>
             <tr class="thead11">
-                <th>Деталь</th><th>Метал</th><th>Проба</th><th>Цвет Метала</th><th>Покрытие</th><th>Площадь</th><th>Цвет Покрытия</th><th>Обработка</th><th></th>
+                <th>Деталь</th><th>Метал</th><th>Проба</th><th>Цвет Метала</th><th>Обработка</th><th title="Место куда будет нанесено покрытие"><abbr>Место</abbr></th><th title="Тип покрытия">Покрытие</th><th>Цвет Покрытия</th><th></th>
             </tr>
         </thead>
         <tbody id="metals_table" <?php $switchTableRow = "materialsFull"?>>

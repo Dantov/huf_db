@@ -18,6 +18,14 @@ class Controller
      * */
     public $layout = '';
 
+    public $phpFilesPack = [];
+    public $jsPack = [];
+    public $jsFilesPack = [];
+
+    public $HEAD = 'head';
+    public $BEGINBody = 'beginBody';
+    public $ENDBody = 'endBody';
+
     /**
      * @string $layoutPath
      * дефолтный путь к шаблону
@@ -119,4 +127,125 @@ class Controller
 
     }
 
+
+    public function includePHPFile($fileName, $position='')
+    {
+        if ( empty($fileName) || !is_string($fileName) ) return;
+        if ( !$position ) $position = $this->ENDBody;
+
+        $primalDir = _viewsDIR_ . $this->controllerName . '/includes/';
+        if ( !file_exists($primalDir.$fileName) )
+            throw new Error('Файл "' . $fileName . '" не найден в папе подключений текущего контроллера.',3);
+
+        $php['position'] = $position;
+        $php['php'] = $primalDir.$fileName;
+        $this->phpFilesPack[] = $php;
+    }
+
+    /**
+     * @param $js
+     * @param array $options
+     * @param string $position
+     */
+    public function includeJS($js, $options=[], $position='')
+    {
+        if ( empty($js) || !is_string($js) ) return;
+        if ( !is_array($options) )
+            throw new Error('Опции должен быть массивом - ',2);
+        if ( !$position ) $position = $this->ENDBody;
+
+        $script['js'] = $js;
+        $script['position'] = $position;
+
+        $optionsStr = '';
+        foreach ($options as $key => $option) {
+            if ( $key === 'id' ) $optionsStr .= ' id="'.$option.'" ';
+            switch ($option)
+            {
+                case 'defer':
+                    $optionsStr .= 'defer ';
+                    break;
+                case 'async':
+                    $optionsStr .= 'async ';
+                    break;
+            }
+        }
+        $script['options'] = $optionsStr;
+
+        $this->jsPack[] = $script;
+    }
+    /**
+     * @param $fileName
+     * @param array $options
+     * @param string $position
+     * @throws Error
+     */
+    public function includeJSFile($fileName, $options=[], $position='')
+    {
+        if ( empty($fileName) ) return;
+        if ( !$position ) $position = $this->ENDBody;
+        if ( !is_array($options) )
+            throw new Error('Опции должен быть массивом - ',2);
+
+        $primalDir = _viewsDIR_ . $this->controllerName . '/js/';
+        $httpPath = _views_HTTP_ . $this->controllerName . '/js/';
+
+        if ( !file_exists($primalDir.$fileName) )
+            throw new Error('Файл "' . $fileName . '" не найден в папе скриптов текущего контроллера.',3);
+
+        $script['position'] = $position;
+        $script['src'] = $httpPath.$fileName;
+
+        $optionsStr = '';
+        foreach ($options as $key => $option) {
+            if ( $key === 'id' ) $optionsStr .= ' id="'.$option.'" ';
+            switch ($option)
+            {
+                case 'defer':
+                    $optionsStr .= 'defer ';
+                    break;
+                case 'async':
+                    $optionsStr .= 'async ';
+                    break;
+                case 'timestamp':
+                    $script['src'] .= "?v=" . time();
+                    break;
+            }
+        }
+        $script['options'] = $optionsStr;
+
+        $this->jsFilesPack[] = $script;
+    }
+
+    public function head() {
+        $method = explode('::',__METHOD__)[1];
+
+    }
+    public function beginBody() {
+        $method = explode('::',__METHOD__)[1];
+
+    }
+    public function endBody()
+    {
+        $method = explode('::',__METHOD__)[1];
+
+
+        foreach ($this->phpFilesPack as $pack)
+        {
+            if ( $method !== $pack['position'] ) continue;
+            require $pack['php'];
+        }
+
+        foreach ($this->jsPack as $pack)
+        {
+            if ( $method !== $pack['position'] ) continue;
+            echo '<script '.$pack['options'].'>'.$pack['js'].'</script>';
+        }
+
+        foreach ($this->jsFilesPack as $pack)
+        {
+            if ( $method !== $pack['position'] ) continue;
+            echo '<script '.$pack['options'].' src="'.$pack['src'].'"></script>';
+        }
+    }
 }

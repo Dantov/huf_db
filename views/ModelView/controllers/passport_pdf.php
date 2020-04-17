@@ -1,6 +1,6 @@
 <?php
     $id = (int)$_GET['id'];
-	if ( $id < 0 || $id > 999999 ) exit('No ID');
+	if ( $id < 0 || $id > 999999 ) exit('wrong ID');
 
 	date_default_timezone_set('Europe/Kiev');
 	ini_set('max_execution_time',600); // макс. время выполнения скрипта в секундах
@@ -21,26 +21,36 @@
     $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
     $progress->progressCount( $overallProgress );
 
+    /*
     require_once _globDIR_ .'db.php';
-    require_once _vendorDIR_.'TCPDF/tcpdf.php';
-
 	$uploaddir = _stockDIR_;
-
 	$result = mysqli_query($connection, "  SELECT * FROM stock WHERE id='$id' ");
 	$img = mysqli_query($connection, "  SELECT * FROM images WHERE pos_id='$id' ");
 	$gems = mysqli_query($connection, "  SELECT * FROM gems WHERE pos_id='$id' ");
 	$dop_vc = mysqli_query($connection, "  SELECT * FROM vc_links WHERE pos_id='$id' ");
 	$repair_que = mysqli_query($connection, "  SELECT * FROM repairs WHERE pos_id='$id' ");
 	$repQuer = mysqli_query($connection, " SELECT * FROM repairs WHERE pos_id='$id' ");
-	
 	$row = mysqli_fetch_assoc($result);
-	$thisNum = $row['number_3d'];	
-	
+	$thisNum = $row['number_3d'];
 	$complect = mysqli_query($connection, " SELECT model_type FROM stock WHERE number_3d='$thisNum' ");
-	
+	*/
+
+    require(_viewsDIR_ . 'ModelView/classes/ModelView.php');
+    $modelView = new ModelView($id, $_SERVER);
+
+    $row = $modelView->row;
+    $coll_id = $modelView->getCollections();
+    $matsCovers = $modelView->getModelMaterials();
+    $complected = $modelView->getComplects();
+    $images = $modelView->getImages();
+    $gems = $modelView->getGems();
+    $dopVC = $modelView->getDopVC();
+    $repairs = $modelView->getRepairs();
+
 	$date = date_create( $row['date'] )->Format('d.m.Y');
 	
 	// create new PDF document
+    require_once _vendorDIR_.'TCPDF/tcpdf.php';
 	$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 	
 	$pdf->setPrintHeader(false);
@@ -84,28 +94,15 @@
     $progress->progressCount( $overallProgress );
 
 	//------------исходные данные----------------//
-	$size_range = trim($row['size_range']);
 	
 	$W_IMG = 60; // ширина картинки
 	$H_IMG = 60; // высота картинки
 	$style = array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(121,121,121));
+
+
 	// ---- //
-    $mass = [];
-	while( $complects = mysqli_fetch_array($complect) ) {
-				  
-		if ( $complects['model_type'] == $row['model_type'] ) {
-			continue;
-		}
-		$mass[] = $complects['model_type'];
-	}
-	
-	$arr_length = count($mass);
-	if ( $arr_length !== 0 ) {
-		$str_compl = implode(', ',$mass);
-	} else {
-		$str_compl = 'Нет';
-	}
-	// ---- //
+
+/*
 	$str_mod_cov_arr = explode(";",$row['model_covering']);
 	foreach ( $str_mod_cov_arr as &$value ) {
 		if ( "Родирование" == $value )     { $g1 = $value;}
@@ -116,7 +113,6 @@
 		if ( "По крапанам" == $value )     { $fill_prongs = $value; }
 		if ( "Отдельные части" == $value ) { $among_parts = "Отд.Части"; }
 	}
-	
 	$coma = $fill_prongs ? ", " : "";
 	$coma1 = $g2 ? ", " : "";
 	$coma2 = $g3 ? ", " : "";
@@ -138,7 +134,10 @@
 		if ( "Желтое(евро)" == $value ) { $colorG3 = ', <span style="background-color:gold;">'.$value.'</span>';}
 	}
 	$str_mat = $g.$g750.$g585.$colorG1.$colorG2.$colorG3;
-	
+	*/
+
+
+
 	//============= counter point ==============//
     $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
     $progress->progressCount( $overallProgress );
@@ -194,7 +193,7 @@
 				</tr>
 				<tr>
 					<td style="text-align:left;">Номер 3Д: <b>'.$row['number_3d'].'-'.$row['model_type'].'</b></td>
-					<td style="text-align:right;">В комплекте: <b>'.$str_compl.'</b></td>
+					<td style="text-align:right;">В комплекте: <b>'.$complected.'</b></td>
 				</tr>
 			</tbody>
 		</table>
@@ -209,25 +208,29 @@
     $progress->progressCount( $overallProgress );
 
 	$rowspans = 5;
-	
+
+
 	$gems_tr = '';
-	if ( !empty(mysqli_num_rows($gems)) ) {
-		$gCountTot = mysqli_num_rows($gems);
+	if ( !empty($gems) ) {
+		$gCountTot = count($gems);
 		$rowspans += $gCountTot;
-		while( $row_gems = mysqli_fetch_array($gems) ) {
+		foreach ( $gems as $row_gems )
+		{
 			$diam = '';
-			if ( is_numeric($row_gems['gems_sizes']) ) $diam = 'Ø';
+			if ( is_numeric($row_gems['gem_size']) ) $diam = 'Ø';
 			$gems_tr .= '
 			<tr>
-				<td><b>'.$diam.$row_gems['gems_sizes'].'мм - '.$row_gems['value'].' шт.</b></td>
-				<td><b>'.$row_gems['gems_names'].' '.$row_gems['gems_cut'].'</b></td>
-				<td><b>'.$row_gems['gems_color'].'</b></td>
+				<td><b>'.$diam.$row_gems['gem_size'].' - '.$row_gems['gem_value'].'</b></td>
+				<td><b>'.$row_gems['gem_name'].' '.$row_gems['gem_cut'].'</b></td>
+				<td><b>'.$row_gems['gem_color'].'</b></td>
 			</tr>
 			';
 		}
 	}
+
+
+    $size_range = trim($row['size_range']);
 	$size_rangeTR = '';
-	
 	if ( !empty($size_range) ) {
 		$size_rangeTR = '
 			<tr >
@@ -238,17 +241,23 @@
 		';
 		$rowspans++;
 	}
-	
+
+
+
+
 	// -- создание картинок -- //
 	$sketchimg = '';
 	$mainimg = '';
 	$onbodyimg = '';
-	while ($img_str = mysqli_fetch_assoc($img)) {
-		if ( $img_str['sketch'] == 1 ) $sketchimg = $uploaddir.$row['number_3d'].'/'.$id.'/images/'.$img_str['img_name'];
-		if ( $img_str['main'] == 1 )   $mainimg = $uploaddir.$row['number_3d'].'/'.$id.'/images/'.$img_str['img_name'];
-		if ( $img_str['onbody'] == 1 ) $onbodyimg = $uploaddir.$row['number_3d'].'/'.$id.'/images/'.$img_str['img_name'];
+	$imgPath = _stockDIR_ . $row['number_3d'].'/'.$id.'/images/';
+	foreach ( $images as $img_str )
+	{
+        $imgPath = _stockDIR_ . explode('Stock/',$img_str['img_name'])[1];
+		if ( $img_str['sketch'] == 1 ) $sketchimg = $imgPath;
+		if ( $img_str['main'] == 1 )   $mainimg =   $imgPath;
+		if ( $img_str['onbody'] == 1 ) $onbodyimg = $imgPath;
 	}
-	$realImgHeight = 100; // если нет эскиза - высота блока =100пикс
+	$realImgHeight = 100; // если нет эскиза - высота блока = 100пикс
 	if ( !empty($sketchimg) ) {
 		$befImgY = $pdf->GetY();
 		$pdf->Image($sketchimg, 11, 21, 57, 50, '', '', '', true, 150, '', false, false, 0, 'CM', false, false);
@@ -259,6 +268,23 @@
 	//============= counter point ==============//
     $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
     $progress->progressCount( $overallProgress );
+
+
+    $matsCoversStr = '';
+    foreach ( $matsCovers as $material )
+    {
+        $part = $material['part'] ? $material['part'] . ': ' : '';
+        $handling = $material['handling'] ? ' - ' . $material['handling'] : '' ;
+
+        $area = $material['area'] ? $material['area'] . ': ' : '';
+        $covColor = $material['covColor'] ? ' - ' . $material['covColor']  : '' ;
+        $matsCoversStr .= '
+        <tr>
+            <td colspan="2"><i>'.$part.'</i><b>'.$material['type'].' '.$material['probe'].' '.$material['metalColor'].'</b>'.$handling.'</td>
+            <td><i>'.$area.'</i><b>'.$material['covering'].'</b>'.$covColor.'</td>
+        </tr>
+        ';
+    }
 
 	//--table 1--//
 	$table1 = '
@@ -274,7 +300,7 @@
 			<tbody>
 				<tr>
 					<td width="30%" style="text-align:left;">Эскиз</td>
-					<td width="70%" colspan="3" style="text-align:center;">Коллекция <b>&laquo;'.$row['collections'].'&raquo;</b></td>
+					<td width="70%" colspan="3" style="text-align:center;">Коллекции <b>&laquo;'.$row['collections'].'&raquo;</b></td>
 				</tr>
 				<tr>
 					<td rowspan="'.$rowspans.'" style="text-align:center;"><img height="'.$realImgHeight.'" src="'.$pictsDir.'10x10.png"></td>
@@ -282,12 +308,8 @@
 					<td width="35%" style="text-align:center;">Цвет</td>
 				</tr>
 				'.$gems_tr.'
-				<tr><td colspan="3" style="text-align:center;">Общие Данные</td></tr>
-				<tr>
-					<td>Материал</td>
-					<td style="background-color: '.$tdcolor.';"><b>'.$str_mat.'</b></td>
-					<td>'.$str_cov.'</td>
-				</tr>
+				<tr><td colspan="3" style="text-align:center;">Материалы</td></tr>
+				'.$matsCoversStr.'
 				<tr>
 					<td>Вид модели</td>
 					<td ><b>'.$row['model_type'].'</b></td>
@@ -388,14 +410,14 @@
 			</table>
 	';
 	$row_dop_vc_str = '';
-	if (!empty(mysqli_num_rows($dop_vc))) {
-		
-		while( $row_dop_vc = mysqli_fetch_assoc($dop_vc) ) {
-			
+	if ( !empty($dopVC) )
+	{
+		foreach ( $dopVC as $row_dop_vc )
+		{
 		$row_dop_vc_str .= '
 			<tr style="">
 				<td width="35%" style="background-color: AQUA;border-right: 1px solid grey;border-bottom: 1px solid grey;">'.$row_dop_vc['vc_names'].'</td>
-				<td width="65%" style="text-align:left;border-bottom: 1px solid grey;" ><b>'.$row_dop_vc['vc_3dnum'].'</b> '.$row_dop_vc['descript'].'</td>
+				<td width="65%" style="text-align:left;border-bottom: 1px solid grey;" ><b>'.$row_dop_vc['vc_link'].'</b> '.$row_dop_vc['vc_descript'].'</td>
 			</tr>
 		';
 		}
@@ -451,19 +473,25 @@
 		</table>
 	';
 	$pdf->writeHTMLCell(195, '', '', '', $descr_table, 0, 1, 0, true, 'L', true);
-	
+
+
 	$repairsTR = '';
-	if ( mysqli_num_rows($repQuer) ) {
-		while($repRow = mysqli_fetch_assoc($repQuer)){
+	if ( $repairs )
+	{
+		foreach ( $repairs as $repRow )
+        {
+            $repName = '3D';
+            if ( $repRow['which'] == 1 ) $repName = 'Моднльера-доработчика';
 			$repairsTR .= '
 				<tr >
 					<td colspan="2" style="text-align:left;">
-						<span style="background-color: BISQUE;">Ремонт №'.$repRow['rep_num'].' от - '.date_create( $repRow['date'] )->Format('d.m.Y').': </span>
+						<span style="background-color: BISQUE;">Ремонт '. $repName. ' №'.$repRow['rep_num'].' от - '.date_create( $repRow['date'] )->Format('d.m.Y').': </span>
 						<span>'.$repRow['repair_descr'].'</span>
 					</td>
 				</tr>	
 			';	
 		}
+
 		$rep_table='
 			<style>
 				table {

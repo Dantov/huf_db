@@ -602,20 +602,47 @@ ImageViewer.prototype.mainImageSetter = function()
  */
 ImageViewer.prototype.mainImageLoupe = function()
 {
+    let imageViewer = this;
     let overImage = false;
     let realClientX, realClientY, loupeDelayID, coordinates;
+    let naturalWidth, naturalHeight, realW, realH;
 
     this.mainImage.addEventListener('mouseover',function () {
         let that = this;
+
+        let img = new Image(); // создаем картинку
+        img.src = imageViewer.images[ this.getAttribute('data-id') ]['img_name'];
+        img.onload = function() {
+
+            naturalWidth = this.naturalWidth;
+            naturalHeight = this.naturalHeight;
+
+            // изначально реальные размеры равны натуральным
+            realW = this.naturalWidth;
+            realH = this.naturalHeight;
+
+            //debug(naturalWidth + 'x' + naturalHeight);
+        };
+
         loupeDelayID = setTimeout(function () {
             overImage = true;
             coordinates = that.getBoundingClientRect();
+            //debug(coordinates);
+            //that.style.backgroundSize = realW * 2 + 'px ' + realH * 2 + 'px';//200 + "%";
             that.style.backgroundSize = 200 + "%";
+            //realW = realW * 2;
+            //realH = realH * 2;
+            //debug('realW: ' + realW + 'x realH: ' + realH);
             moveImage(that);
-        }, 300);
 
-        //debug(coordinates.left,"left");
-        //debug(coordinates.top,"top");
+            // debug(coordinates.left,"left");
+            // debug(coordinates.top,"top");
+            // debug(coordinates.right,"right");
+            // debug(coordinates.bottom,"bottom");
+            // debug(coordinates.width,"width");
+            // debug(coordinates.height,"height");
+
+        }, 300);
 
         // ширина высота
         // debug(this.offsetHeight,"offsetHeight");
@@ -632,15 +659,35 @@ ImageViewer.prototype.mainImageLoupe = function()
         realClientX = event.clientX;
         realClientY = event.clientY;
         if ( coordinates === null || overImage === false ) return;
-        //debug(event.clientX - coordinates.left,"X");
-        //debug(event.clientY - coordinates.top,"Y");
+        //debug(event.clientX,"realClientX");
+        //debug(event.clientY,"realClientY");
         moveImage(this);
     });
 
     function moveImage(mainImage)
     {
-        let x = -( (realClientX - coordinates.left)-200 ) * 2;
-        let y = -( (realClientY - coordinates.top) ) * 2;
+         let x = -( (realClientX - coordinates.left)-150 ) * 2;
+         let y = -( (realClientY - coordinates.top) ) * 2;
+
+        //let per = realW / coordinates.width; //%
+        //let x = - (realClientX-coordinates.left) / 3.9;
+        //let y = -( (realClientY - coordinates.top) ) * ( realH / coordinates.height );
+
+        if ( x > coordinates.x ) x = coordinates.x;
+        if ( x < -coordinates.width ) x = -coordinates.width;
+
+        if ( y > coordinates.y ) y = coordinates.y;
+        if ( y < -coordinates.height ) y = -coordinates.height;
+
+        //if ( x > coordinates.right ) x = coordinates.right;
+        // debug(y,"bgY");
+        // debug(x,"bgX");
+        // debug(coordinates.bottom,"bottom");
+        // debug(coordinates.right,"Right");
+        //if ( (y + realH) < coordinates.bottom ) y = coordinates.bottom;
+        // debug(event.clientX - coordinates.left,"X");
+        // debug(event.clientY - coordinates.top,"Y");
+
         mainImage.style.backgroundPositionX = x + "px";
         mainImage.style.backgroundPositionY = y + "px";
     }

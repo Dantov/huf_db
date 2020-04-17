@@ -19,22 +19,15 @@ class ModelViewController extends GeneralController
             $id = (int)$_GET['id'];
         } else {
             header("location: "._views_HTTP_."index.php");
+            exit;
         }
-
-        if ( isset($_SESSION['id_progr']) ) unset($_SESSION['id_progr']); // сессия id пдф прогресс бара
-
-        //$this->varBlock['activeMenu'] = 'active';
 
         require(_viewsDIR_ . $this->controllerName.'/classes/ModelView.php');
 
         $modelView = new ModelView($id, $_SERVER, $_SESSION['user']);
-        $modelView->connectToDB();
-
-        $modelView->unsetSessions();
-
-        $modelView->dataQuery();
 
         $row = $modelView->row;
+
         $coll_id = $modelView->getCollections();
 
         $getStl = $modelView->getStl();
@@ -43,8 +36,9 @@ class ModelViewController extends GeneralController
 
         $matsCovers = $modelView->getModelMaterials();
 
-        $complStr = $modelView->getComplects();
+        $complectedStr = $modelView->getComplects();
         $images = $modelView->getImages();
+
         $mainImg = [];
         foreach ( $images as $image )
         {
@@ -56,35 +50,30 @@ class ModelViewController extends GeneralController
             }
         }
 
-        $labels = $modelView->getLabels($row['labels']);
-        //$str_mat = $modelView->getModelMaterial();
-        //$str_Covering = $modelView->getModelCovering();
+        $labels = $modelView->getLabels();
         $gemsTR = $modelView->getGems();
         $dopVCTr = $modelView->getDopVC();
 
 
-        $rep_Query = $modelView->rep_Query;
-        $repairs = [];
-        if ( $rep_Query->num_rows > 0 ) while($repRow = mysqli_fetch_assoc($rep_Query)) $repairs[] = $repRow;
-        $isView = true;
-        $isRepairProto = false;
-        $repairs3D = '';
-        $repairsJew = '';
-        ob_start();
-        foreach ( $repairs as $repair )
-        {
-            if ( !$whichRepair = $repair['which'] ? true : false )
-            {
-                require _viewsDIR_ . "AddEdit/includes/protoRepair.php";
-                $repairs3D .= ob_get_contents();
-                ob_clean();
-            } else {
-                require _viewsDIR_ . "AddEdit/includes/protoRepair.php";
-                $repairsJew .= ob_get_contents();
-                ob_clean();
-            }
-        }
-        ob_end_clean();
+        $repairs = $modelView->getRepairs();
+//        $repairs3D = '';
+//        $repairsJew = '';
+//        $isView = true;
+//        ob_start();
+//        foreach ( $repairs as $repair )
+//        {
+//            if ( !$whichRepair = $repair['which'] ? true : false )
+//            {
+//                require _viewsDIR_ . "AddEdit/includes/protoRepair.php";
+//                $repairs3D .= ob_get_contents();
+//                ob_clean();
+//            } else {
+//                require _viewsDIR_ . "AddEdit/includes/protoRepair.php";
+//                $repairsJew .= ob_get_contents();
+//                ob_clean();
+//            }
+//        }
+//        ob_end_clean();
 
 
         $stts = $modelView->getStatus($row);
@@ -149,13 +138,24 @@ class ModelViewController extends GeneralController
             ) $editBtn = true;
         }
 
-        $btnlikes = 'btnlikes';
-        if ( $modelView->checklikePos() ) $btnlikes = 'btnlikesoff';
+        $this->title .= $row['number_3d'] ." ". $row['model_type'];
+
+        $this->includeJSFile('show_pos_scrpt.js', ['defer','timestamp'] );
+        $this->includeJSFile('imageViewer.js', ['timestamp'] );
+        $imgEncode = json_encode($images,JSON_UNESCAPED_UNICODE);
+        $js = <<<JS
+        window.addEventListener('load',function() {
+          new ImageViewer($imgEncode).init();
+        }, false);
+JS;
+        $this->includeJS($js);
+
+        $this->includePHPFile('imageWrapper.php');
 
         $compacted = compact([
-            'id','row','coll_id','getStl','button3D','dopBottomScripts','complStr','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
+            'id','row','coll_id','getStl','button3D','dopBottomScripts','complectedStr','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
             'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','stillNo','ai_file','thisPage','editBtn',
-            'btnlikes','repairs3D','repairsJew', 'matsCovers']);
+            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers']);
 
         return $this->render('modelView', $compacted);
     }

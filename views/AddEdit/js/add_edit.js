@@ -3,7 +3,9 @@
 // ----- Обработчик кликов на контейнер 25,02,18 ----- //
 document.querySelector('.content').addEventListener('click', function(event) {
 		let click = event.target;
+
 		if ( !click.hasAttribute('elemToAdd') ) return;
+		if ( click.hasAttribute('coll') ) return;
 		if ( click.hasAttribute('VCTelem') ) {
 			let target = click.parentElement.parentElement.parentElement.parentElement.parentElement.nextElementSibling;
 
@@ -12,7 +14,8 @@ document.querySelector('.content').addEventListener('click', function(event) {
 		}
 
 		// всиавим номер для инрута картинки
-		if ( click.hasAttribute('data-imgFor') ) {
+		if ( click.hasAttribute('data-imgFor') )
+		{
 			let target = click.parentElement.parentElement.parentElement.parentElement.firstElementChild;
 			//console.log(target);
 
@@ -32,25 +35,6 @@ document.querySelector('.content').addEventListener('click', function(event) {
 			target.setAttribute('value', click.getAttribute('data-imgFor') );
 		}
 
-        //если выбираем коллекцию "зол накладки", отобразим Ai блок
-		if ( click.hasAttribute('coll') )
-		{
-			let aIBlock = document.querySelector('.AIBlock');
-			let aIBlockHR = document.querySelector('.AIBlockHR');
-			if ( click.hasAttribute('aiblock') )
-			{
-				aIBlock.classList.remove('hidden');
-				aIBlockHR.classList.remove('hidden');
-				console.log('show ai block');
-			} else {
-				aIBlock.classList.add('hidden');
-				aIBlockHR.classList.add('hidden');
-				console.log('hide ai block');
-			}
-
-            //если выбираем коллекцию то в value попадет её ID
-
-		}
 
 		let inputToAddSomethig = click.parentElement.parentElement.parentElement.previousElementSibling;
             inputToAddSomethig.value = click.innerHTML;
@@ -65,7 +49,7 @@ function getVCmenu( mType_name, targetEl ) {
 		   modelType_quer: mType_name                    
 		},
 		dataType:"json",
-		success:function(dataLi) { //функция обратного вызова, выполняется в случае успешной отработки скрипта
+		success:function(dataLi) {
 			let num3dVC_new = document.getElementById('num3dVC_proto').cloneNode(true);
 				num3dVC_new.removeAttribute('id');
 				num3dVC_new.classList.remove('hidden');
@@ -75,7 +59,6 @@ function getVCmenu( mType_name, targetEl ) {
 				ul.innerHTML += dataLi[i];
 			}
 			addPrevImg( num3dVC_new, 'bottom', 'feft' ); // насаживаем события на показ картинки при наведении
-			//addPrevToDopVC(num3dVC_new); // насаживаем события на показ картинки при наведении
 			targetEl.children[0].remove();
 			targetEl.appendChild(num3dVC_new);
 			dataLi = null;
@@ -93,7 +76,6 @@ function getVCmenu( mType_name, targetEl ) {
 //-----  Добавляем STL и Ai файлы  -------//
 let stlSelect = document.getElementById('stlSelect');
 let aiSelect = document.getElementById('aiSelect');
-
 
 if ( aiSelect ) {
 	aiSelect.addEventListener('click',selectFilesAi,false);
@@ -134,7 +116,6 @@ if ( aiSelect ) {
 			fileAi_input.click();
 		}
 }
-
 
 if ( stlSelect ) {
 
@@ -182,46 +163,37 @@ if ( stlSelect ) {
 }
 //----- END STL файлы -------//
 
+document.getElementById('content').addEventListener('click',function (event) {
+	if ( event.target.getAttribute('id') === 'collectionBlockForm' ) return;
+    if ( !document.getElementById('collectionBlockForm').classList.contains('hidden') )
+        document.getElementById('collectionBlockForm').classList.add('hidden');
+},false);
 
+//открывает Блок коллекций
+function collectionDropDown(button)
+{
+    let collectionBlockForm = document.getElementById('collectionBlockForm');
+    button.addEventListener('click',function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
 
+        collectionBlockForm.classList.toggle('hidden');
+        collectionBlockForm.style.top = this.getBoundingClientRect().top-170 + 'px';
 
-
-
-//----- Добавляем WORD data -------//
-let docxFile = document.getElementById('docxFile');
-if ( docxFile ) {
-	docxFile.addEventListener('click',selectDocx,false);
-
-	let docxFileInpt = document.getElementById('docxFileInpt');
-		docxFileInpt.onchange = function() { // запускаем по событию change
-			//let submitDocxFile = document.getElementById('submitDocxFile');
-				//submitDocxFile.click();
-			$$f({
-				formid:'docxFileForm',
-				url: 'controllers/wordParser.php',
-				onstart:function () {
-					let progressStatus = document.getElementById('progressStatus');
-						progressStatus.innerHTML = 'Сканирование документа MSWord...';
-					//  let blackCover = document.getElementById('blackCover');
-					//	blackCover.classList.add('blackCover');
-					let saved_form_result = document.getElementById('saved_form_result');
-						saved_form_result.classList.toggle('hidethis');
-				},
-				onsend:function () {  //действие по окончании загрузки файла
-					//document.location.reload(true);
-				},
-				error: function() {
-					alert ("Ошибка отправки! Попробуйте снова.");
-				}
-			});
-		}
-	function selectDocx(){
-		docxFileInpt.click();
-	}
+        collectionDropDown.button = this;
+    },false);
 }
-//----- END WORD data -------//
+document.getElementById('collectionBlockForm').addEventListener('click', function(event) {
+    let click = event.target;
+    if ( !click.hasAttribute('coll') ) return;
 
+    let input = collectionDropDown.button.parentElement.previousElementSibling;
 
+    input.value = click.innerHTML;
+    input.setAttribute('value', click.innerHTML );
+
+    this.classList.add('hidden');
+},false);
 
 // ----- КАМНИ Dop VC Материалы-------//
 if ( document.getElementById('addGem') )
@@ -293,6 +265,10 @@ function addRow( self )
 		newRow.style.display = "table-row";
 		newRow.removeAttribute('id');
 		newRow.children[0].innerHTML = ++counter;
+	if ( protoRow === 'protoCollectionRow' )
+	{
+        collectionDropDown(newRow.querySelector('.collectionDropDown'));
+	}
 		
 	tBody.appendChild(newRow);
 	if ( tBody.parentElement.classList.contains('hidden') ) tBody.parentElement.classList.remove('hidden');
@@ -655,13 +631,103 @@ function addPrevImg( domEl, vert, horiz )
 
 
 
+$.each(document.querySelectorAll('.submitButton'), function (index, button) {
+    button.addEventListener('click',function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if ( validateForm() ) submitForm();
+    }, false);
+});
+//-------- ВАЛИДАЦИЯ ФОРМЫ ---------//
+function validateForm() {
+	
+	let collectionInputs = document.getElementById('collections_table').querySelectorAll('input');
+	if ( !collectionInputs.length ) {
+		alert( 'Нужно внести хоть одну коллекцию!' );
+		return false;
+    }
+    let collValid = true;
+    $.each(collectionInputs, function (index, input) {
+        if ( !input.value )
+		{
+            input.scrollIntoView();
+            alert( 'Выберите коллекцию!' );
+            return collValid=false;
+		}
+    });
+    if ( !collValid ) return false;
+
+    if ( document.getElementById('author') && !document.getElementById('author').value )
+    {
+        alert( 'Нужно указать Автора!' );
+        return false;
+    }
+    if ( document.getElementById('modeller3d') && !document.getElementById('modeller3d').value )
+    {
+        alert( 'Нужно указать 3D-моделлера!' );
+        return false;
+    }
+    if ( document.getElementById('modelType') && !document.getElementById('modelType').value )
+    {
+        alert( 'Нужно указать Тип модели!' );
+        return false;
+    }
+    let modelWeight = document.getElementById('modelWeight');
+    if ( document.getElementById('modelWeight') && !document.getElementById('modelWeight').value )
+    {
+        alert( 'Нужно указать Вес модели!' );
+        return false;
+    }
+    if ( modelWeight.value < 0 || modelWeight.value > 1000 )
+	{
+        alert( 'Вес модели указан не верно!' );
+        return false;
+	}
 
 
+	let materials = document.getElementById('metals_table').querySelectorAll('tr');
+    if ( !materials.length ) {
+        alert( 'Нужно внести хоть один материал!' );
+        return false;
+    }
+    //debug(materials);
+    if ( materials[0] )
+	{
+		let inputs = materials[0].querySelectorAll('input');
+        //debug(inputs);
+		let matsValid = false;
+        $.each(inputs, function (index, input) {
+            if ( input.value ) return matsValid=true;
+        });
+        //debug(matsValid,'matsValid');
+        if ( !matsValid ) {
+            materials[0].scrollIntoView();
+            alert( 'Заполните строку материала!' );
+        	return false;
+        }
+	}
+
+	let images = document.getElementById('picts').querySelectorAll('.image_row');
+    let imgFor = document.getElementById('imgFor');
+    if ( !images.length ) {
+        imgFor.innerHTML = 'Нужно внести хоть одну картинку!';
+        imgFor.classList.remove('hidden');
+        imgFor.scrollIntoView();
+        alert( 'Нужно внести хоть одну картинку!' );
+        return false;
+    } else {
+        imgFor.classList.add('hidden');
+	}
+
+	return true;
+}
 //-------- ОТПРАВКА ФОРМЫ ---------//
 function submitForm() {
 	
 	let addform = document.getElementById('addform');
 	if ( !addform.checkValidity() ) return;
+
 
 	let addedit = 'controllers/addEdit_handler.php';
 	let formData = new FormData(addform);

@@ -23,24 +23,22 @@
     $overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
     $progress->progressCount( (int)$overallProgress );
 
-	require_once(_vendorDIR_.'TCPDF/tcpdf.php');
-	$uploaddir = _stockDIR_;
-	
-	$id = $_GET['id'];
-	$result = mysqli_query($connection, "  SELECT * FROM stock WHERE id='$id' ");
-	$img = mysqli_query($connection, "  SELECT * FROM images WHERE pos_id='$id' ");
-	$gems = mysqli_query($connection, "  SELECT * FROM gems WHERE pos_id='$id' ");
-	$dop_vc = mysqli_query($connection, "  SELECT * FROM vc_links WHERE pos_id='$id' ");
-	$repair_que = mysqli_query($connection, "  SELECT * FROM repairs WHERE pos_id='$id' ");
-	$repQuer = mysqli_query($connection, " SELECT * FROM repairs WHERE pos_id='$id' ");
-	
-	$row = mysqli_fetch_assoc($result);
-	
-	$date = date_create( $row['date'] )->Format('d.m.Y');
-	$thisNum = $row['number_3d'];			  
-	$complect = mysqli_query($connection, " SELECT model_type FROM stock WHERE number_3d='$thisNum' ");
+    require(_viewsDIR_ . 'ModelView/classes/ModelView.php');
+    $modelView = new ModelView($id, $_SERVER);
+
+    $row = $modelView->row;
+    $coll_id = $modelView->getCollections();
+    $matsCovers = $modelView->getModelMaterials();
+    $complected = $modelView->getComplects();
+    $images = $modelView->getImages();
+    $gems = $modelView->getGems();
+    $dopVC = $modelView->getDopVC();
+    $repairs = $modelView->getRepairs();
+
+    $date = date_create( $row['date'] )->Format('d.m.Y');
 
 	// create new PDF document
+    require_once(_vendorDIR_.'TCPDF/tcpdf.php');
 	$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 	
 	$pdf->setPrintHeader(false);
@@ -97,24 +95,16 @@
 	$W_IMG = 60; // ширина картинки
 	$H_IMG = 60; // высота картинки
 	$style = array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(121,121,121));
-	// ---- //
-    $mass = [];
-	while( $complects = mysqli_fetch_array($complect) ) {
-				  
-		if ( $complects['model_type'] == $row['model_type'] ) {
-			continue;
-		}
-		$mass[] = $complects['model_type'];
-	}
-	
-	$arr_length = count($mass);
-	if ( $arr_length !== 0 ) {
-		$str_compl = implode(', ',$mass);
-	} else {
-		$str_compl = 'Нет';
-	}
+
+
 
 	// ---- //
+
+
+
+
+	// ---- //
+    /*
 	$str_mod_cov_arr = explode(";",$row['model_covering']);
 	foreach ( $str_mod_cov_arr as &$value ) {
 		if ( "Родирование" == $value )     { $g1 = $value;}
@@ -147,23 +137,24 @@
 		if ( "Желтое(евро)" == $value ) { $colorG3 = ', <span style="background-color:gold;">'.$value.'</span>';}
 	}
 	$str_mat = $g.$g750.$g585.$colorG1.$colorG2.$colorG3;
+	*/
+
+
 	// ---- //
-	$mainimg = false;
-	while ($img_str = mysqli_fetch_assoc($img)) {
-		if ( $img_str['main'] == 1 ) {
-			$mainimg = $uploaddir.$row['number_3d'].'/'.$id.'/images/'.$img_str['img_name'];
-		}
-		if ( $img_str['scheme'] == 1 ) {
-			$schemeImg = $uploaddir.$row['number_3d'].'/'.$id.'/images/'.$img_str['img_name'];
-		}
-	}
-	// ---- //
+    $mainimg = '';
+    $schemeImg = '';
+    foreach ( $images as $img_str )
+    {
+        $imgPath = _stockDIR_ . explode('Stock/',$img_str['img_name'])[1];
+        if ( $img_str['scheme'] == 1 ) $schemeImg = $imgPath;
+        if ( $img_str['main'] == 1 )   $mainimg =   $imgPath;
+    }
 
     $pictsDir = _webDIR_HTTP_ . 'picts';
 
-//============= counter point ==============//
-$overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
-$progress->progressCount( (int)$overallProgress );
+    //============= counter point ==============//
+    $overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( (int)$overallProgress );
 	
 	// ---- //
 	$labelImgDIV = '';
@@ -206,7 +197,7 @@ $progress->progressCount( (int)$overallProgress );
 				</tr>
 				<tr>
 					<td style="text-align:left;">Номер 3Д: <b>'.$row['number_3d'].'-'.$row['model_type'].'</b></td>
-					<td style="text-align:right;">В комплекте: <b>'.$str_compl.'</b></td>
+					<td style="text-align:right;">В комплекте: <b>'.$complected.'</b></td>
 				</tr>
 			</tbody>
 		</table>
@@ -220,8 +211,27 @@ $progress->progressCount( (int)$overallProgress );
 //============= counter point ==============//
 $overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
 $progress->progressCount( (int)$overallProgress );
+
+$rowspans = 3;
+
+    $matsCoversStr = '';
+    foreach ( $matsCovers as $material )
+    {
+        $part = $material['part'] ? $material['part'] . ': ' : 'Материал изделия: ';
+        $handling = $material['handling'] ? ' - ' . $material['handling'].', ' : '' ;
+
+        $area = $material['area'] ? $material['area'] . ': ' : '';
+        $covColor = $material['covColor'] ? ' - ' . $material['covColor']  : '' ;
+
+        $matsCoversStr .= '<tr>
+                        <td style="text-align:left;"><i>'.$part.'</i></td>
+                        <td style="text-align:right;"><b>'.$material['type'].' '.$material['probe'].' '.$material['metalColor'].',</b>'.$handling.'<i> </i><b>'.$material['covering'].' '.$material['area'].'</b>'.$covColor.'</td>
+                    </tr>';
+        $rowspans++;
+    }
+    //debug($matsCoversStr,'$matsCoversStr',1);
 	
-	$rowspans = 4;
+
 	$size_rangeTR = '';
 	if ( !empty($size_range) ) {
 		$size_rangeTR = '
@@ -232,37 +242,43 @@ $progress->progressCount( (int)$overallProgress );
 		';
 		$rowspans++;
 	}
+
 	$txt = '';
-	if ( !empty(mysqli_num_rows($gems)) ) {
-		$gCountTot = mysqli_num_rows($gems);
+	if ( !empty($gems) ) {
+		$gCountTot = count($gems);
 		$gCount = 0;
 		$txt = '<hr/>Вставки:<br>';
-		while( $row_gems = mysqli_fetch_array($gems) ) {
+        foreach ( $gems as $row_gems )
+        {
 			$diam = '';
 			$gCount++;
-			if ( is_numeric($row_gems['gems_sizes']) ) $diam = 'Ø';
+			if ( is_numeric($row_gems['gem_size']) ) $diam = 'Ø';
 			if ( $gCount < $gCountTot ) $br = '<br>';
-			$txt .= '<b>'.$diam.$row_gems['gems_sizes'].' мм'." - ".$row_gems['value']." шт. ".$row_gems['gems_cut']." - ".$row_gems['gems_names']." - ".$row_gems['gems_color']."</b>".$br;
+			$txt .= '<b>'.$diam.$row_gems['gem_size']." - ".$row_gems['gem_value']." ".$row_gems['gem_cut']." - ".$row_gems['gem_name']." - ".$row_gems['gem_color']."</b>".$br;
 			$br = '';
 		}
 	}
-	if (!empty(mysqli_num_rows($dop_vc))) {
-		$gCountTot = mysqli_num_rows($dop_vc);
+
+	if ( !empty($dopVC) ) {
+		$gCountTot = count($dopVC);
 		$gCount = 0;
 		$txt .= '<hr/>';
-		while( $row_dop_vc = mysqli_fetch_assoc($dop_vc) ) {
+        foreach ( $dopVC as $row_dop_vc )
+        {
 			$gCount++;
 			if ( $gCount < $gCountTot ) $br = '<br>';
-			$txt .= '<span style="background-color: AQUA;">'.$row_dop_vc['vc_names'].': <b>'.$row_dop_vc['vc_3dnum'].'</b> '.$row_dop_vc['descript'].'</span>'.$br;
+			$txt .= '<span style="background-color: AQUA;">'.$row_dop_vc['vc_names'].': <b>'.$row_dop_vc['vc_link'].'</b> '.$row_dop_vc['vc_descript'].'</span>'.$br;
 			$br = '';
 		}
 	}
+	
+
 	$descr = trim($row['description']);
 	if (!empty($descr)) {
 		$txt .= '<hr/>';
 		$txt .= '<span style="background-color: lime;">Примечания: </span><b>'.$row['description'].'</b>';
 	}
-	if ( !empty($descr) || !empty(mysqli_num_rows($dop_vc)) || !empty(mysqli_num_rows($gems)) ) {
+	if ( !empty($descr) || !empty($dopVC) || !empty($gems) ) {
 		$gemsTR = '
 			<tr >
 				<td colspan="2" style="text-align:left;">'.$txt.'</td>
@@ -270,9 +286,12 @@ $progress->progressCount( (int)$overallProgress );
 		';
 		$rowspans++;
 	}
+
+
 	$repairsTR = '';
-	if ( mysqli_num_rows($repQuer) ) {
-		while($repRow = mysqli_fetch_assoc($repQuer)){
+	if ( !empty($repairs) ) {
+        foreach ( $repairs as $repRow )
+        {
 			$repairsTR .= '
 				<tr >
 					<td colspan="2" style="text-align:left;">
@@ -291,9 +310,10 @@ $progress->progressCount( (int)$overallProgress );
 	$afterImgY = $pdf->getImageRBY();
 	$realImgHeight = ($afterImgY - $befImgY)*3.4;
 
-//============= counter point ==============//
-$overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
-$progress->progressCount( (int)$overallProgress );
+    //============= counter point ==============//
+    $overallProgress = floor(( ++$complectCounter * 100 ) / $complects_lenght);
+    $progress->progressCount( (int)$overallProgress );
+
 	
 	$top_txt = '
 		<style>
@@ -315,14 +335,9 @@ $progress->progressCount( (int)$overallProgress );
 					<td style="text-align:right;"><b>&laquo;'.$row['collections'].'&raquo;</b></td>
 				</tr>
 				<tr>
-					<td style="text-align:left;">Материал изделия:</td>
-					<td style="text-align:right;"><b>'.$str_mat.'</b> (Вес:'.$row['model_weight'].'гр.)</td>
-				</tr>
-				<tr>
-					<td style="text-align:left;">Покрытие:</td>
-					<td style="text-align:right;"><b>'.$str_cov.'</b></td>
-				</tr>
-				'.$size_rangeTR.$gemsTR.$repairsTR.'
+					<td style="text-align:left;">Вес изделия:</td>
+					<td style="text-align:right;"><b>'.$row['model_weight'].' гр.</b></td>
+				</tr>'.$matsCoversStr.$size_rangeTR.$gemsTR.$repairsTR.'
 			</tbody>
 		</table>
 	';

@@ -22,7 +22,7 @@ function cutLongNames( table, numCut ) {
 			td_arr[i].innerHTML = str;
 			td_arr[i].addEventListener('mouseover',function(){
 				this.setAttribute('cutstr',this.innerHTML);
-				let coords = getCoords(this);
+				let coords = main.getCoords(this);
 				let longTD = document.querySelector('#longTD');
 					longTD.innerHTML = this.getAttribute('realstr');
 					longTD.classList.remove('hidden');
@@ -86,17 +86,28 @@ function addPrevImg(domEl) {
 				imageBoxPrev.style.left = 0 + 'px';
 			
 			let src = hover.getAttribute('imgtoshow');
-			
-			imageBoxPrev.style.top = mouseY + 15 + 'px';
-			imageBoxPrev.style.left = mouseX - 208 + 'px';
-			imageBoxPrev.setAttribute('src',src);
-			imageBoxPrev.classList.remove('hidden');
+
+			imageBoxPrev.style.left = mouseX - 215 + 'px';
+
+            imageBoxPrev.setAttribute('src',src);
+            imageBoxPrev.onload = function(){
+                imageBoxPrev.classList.remove('hidden');
+
+                if ( domEl.classList.contains('table_vc_links') ){
+                    imageBoxPrev.style.top = mouseY - 15 - imageBoxPrev.height + 'px';
+				} else {
+                    imageBoxPrev.style.top = mouseY + 15 + 'px';
+				}
+
+			};
+
 		},false);
 		
 		complects[i].addEventListener('mouseout',function(event) {
 			
 			let imageBoxPrev = document.getElementById('imageBoxPrev');
 			imageBoxPrev.classList.add('hidden');
+            imageBoxPrev.removeAttribute('src');
 			
 		},false);
 

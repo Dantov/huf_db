@@ -14,7 +14,7 @@
         <h4 class="text-warning text-center" id="topName" style="margin: 5px 0 0 0;">
             <? if ( $component === 1 ): ?>
                 <strong>
-                    <span>&#160;Добавить новую модель</span>
+                    <span><i class="far fa-file-alt"></i>&#160;&#160;Добавить новую модель</span>
                 </strong>
             <? else: ?>
                 <?=$header;?>
@@ -69,8 +69,7 @@
 
     <?php if ( $permittedFields['collections'] ): ?>
         <div class="form-group">
-
-            <div class="panel panel-default">
+            <div class="panel panel-default" style="position: relative;">
                 <div class="panel-heading" title="Коллекции к которым будет принадлежать данное изделие">
                     <i class="fas fa-gem"></i>
                     <strong> Коллекции:</strong>
@@ -99,7 +98,8 @@
                     <?php endforeach; ?>
                     </tbody>
                 </table>
-            </div><!-- end panel gems-->
+                <?php include _viewsDIR_.'AddEdit/includes/collectionsBlock.php'?>
+            </div>
         </div>
     <?php endif; ?>
 
@@ -109,7 +109,7 @@
             <div class="col-sm-4 ">
                 <label for="author"><span class="glyphicon glyphicon-user"></span> Автор:</label>
                 <div class="input-group">
-                    <input required type="text" class="form-control" aria-label="..." name="author" value="<?=$_SESSION['general_data']['author'], $_SESSION['fromWord_data']['author'];?>" >
+                    <input required type="text" class="form-control" aria-label="..." name="author" id="author" value="<?=$_SESSION['general_data']['author'], $_SESSION['fromWord_data']['author'];?>" >
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
@@ -127,7 +127,7 @@
             <div class="col-sm-4 ">
                 <label for="modeller3d"><span class="glyphicon glyphicon-user"></span> 3Д модельер:</label>
                 <div class="input-group">
-                    <input required type="text" class="form-control" aria-label="..." name="modeller3d" value="<?=$_SESSION['general_data']['modeller3d'], $_SESSION['fromWord_data']['mod3D']; ?>">
+                    <input required type="text" class="form-control" aria-label="..." name="modeller3d" id="modeller3d" value="<?=$_SESSION['general_data']['modeller3d'], $_SESSION['fromWord_data']['mod3D']; ?>">
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
@@ -188,7 +188,7 @@
         <?php if ( $permittedFields['model_weight'] ): ?>
             <div class="col-xs-2 ">
                 <label for="model_weight"><span class="glyphicon glyphicon-scale"></span> Вес 3D:</label>
-                <input step="0.01" type="number" class="form-control" aria-label="..." required name="model_weight" value="<?=$_SESSION['general_data']['model_weight'], $_SESSION['fromWord_data']['weight']; ?>">
+                <input step="0.01" type="number" class="form-control" required id="modelWeight" name="model_weight" value="<?=$_SESSION['general_data']['model_weight'], $_SESSION['fromWord_data']['weight']; ?>">
             </div>
         <?php endif; ?>
 
@@ -210,7 +210,6 @@
         <? $materialsData = $dataArrays['materialsData']['materials']; ?>
         <? $coveringsData = $dataArrays['materialsData']['coverings']; ?>
         <? $handlingsData = $dataArrays['materialsData']['handlings']; ?>
-
         <?php if ( $permittedFields['material'] ): ?>
             <div class="col-xs-12" id="material">
                 <?php require _viewsDIR_."AddEdit/includes/model_materials_full.php" ?>
@@ -251,7 +250,7 @@
 
     <?php if ( $permittedFields['ai'] ): ?>
         <!-- AI Block -->
-        <div class="row AIBlock <?=$ai_hide;?>">
+        <div class="row AIBlock ">
             <div class="col-xs-12">
                 <div class="haveStl <?=$haveAi;?>">
                     <span><b>Накладка:&nbsp;&nbsp;</b><?=$ai_file['name'];?></span>
@@ -269,7 +268,7 @@
                 </div>
             </div>
         </div><!-- /.row -->
-        <hr class=" AIBlockHR <?=$ai_hide;?>"/>
+        <hr class=" AIBlockHR"/>
         <!-- Ai Block END -->
     <?php endif; ?>
 
@@ -541,13 +540,11 @@
                 Назад
             </a>
         </div><!--end col-xs-6-->
-        <div class="col-xs-4">
-            <center id="tosubmt">
-                <button class="btn btn-default"  onclick="submitForm();" >
+        <div class="col-xs-4 text-center">
+                <button class="btn btn-default submitButton">
                     <span class="glyphicon glyphicon-floppy-disk"></span>
                     Сохранить
                 </button>
-            </center>
         </div><!--end col-xs-6-->
         <div class="col-xs-4">
             <? if ( $component === 2 && $_SESSION['user']['access'] < 3 ): ?>
@@ -583,7 +580,7 @@
 <div class="AddEditSideButtons" id="AddEditSideButtons">
     <div class="btn-group-vertical" role="group" aria-label="...">
         <button type="button" class="btn btn-info hidden" title="Вверх" onclick="pageUp();"><span class="glyphicon glyphicon-chevron-up"></span></button>
-        <button type="button" class="btn btn-success" title="Сохранить" onclick="submitForm();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
+        <button type="button" class="btn btn-success submitButton" title="Сохранить"><span class="glyphicon glyphicon-floppy-disk"></span></button>
         <button type="button" class="btn btn-info" title="Вниз" onclick="pageDown();"><span class="glyphicon glyphicon-chevron-down"></span></button>
     </div>
 </div>

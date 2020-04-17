@@ -19,6 +19,8 @@ function ProgressModal()
         xhr: '',
         switch:'',
     };
+
+    this.openPDFListen = false; // сообщим о том что накинули обработчик
     
     this.init();
     
@@ -34,7 +36,7 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
     let doc = this.doc;
     doc.switch = docSwitch;
 
-	if ( docSwitch !== 'pdf' )
+	if ( docSwitch === 'xls' || docSwitch === 'getXlsxFwc' || docSwitch === 'getXlsxExpired' )
 	{
 		doc.doc = 'Excel';
 		doc.icon = 'far fa-file-excel';
@@ -110,7 +112,7 @@ ProgressModal.prototype.onModalOpen = function(that, event)
             cancel.classList.remove('hidden');
             modal.iziModal('setTitle', 'Идёт создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b>');
 
-            if ( doc.switch !== 'pdf' )
+            if ( doc.switch === 'xls' || doc.switch === 'getXlsxFwc' || doc.switch === 'getXlsxExpired' )
             {
                 // вторым запросом добудем имя файла
                 $.ajax({
@@ -134,7 +136,7 @@ ProgressModal.prototype.onModalOpen = function(that, event)
             if ( doc.switch === 'passport' || doc.switch === 'runner' ) doc.fileName = docStr = fileName;
             modal.iziModal('setTitle', 'Создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
 
-            if ( doc.switch !== 'pdf' )
+            if ( doc.switch === 'xls' || doc.switch === 'getXlsxFwc' || doc.switch === 'getXlsxExpired' )
             {
                 let int = setInterval(function () {
                     if ( doc.fileName )
@@ -154,9 +156,13 @@ ProgressModal.prototype.onModalOpen = function(that, event)
                 download.classList.remove('hidden');
                 open.classList.remove('hidden');
 
-                open.addEventListener('click',function () {
-                    that.openPDF(fileName);
-                });
+                if ( !that.openPDFListen ) {
+                    open.addEventListener('click',function () {
+                        that.openPDF(doc.fileName);
+                        that.openPDFListen = true;
+                    });
+                }
+
                 download.setAttribute('href', _ROOT_ + 'Pdfs/' + fileName );
             }
         }
@@ -307,9 +313,11 @@ ProgressModal.prototype.openPDF = function(filename) {
     window.open( _ROOT_ + 'Pdfs/' + filename );
 };
 
+
+
 let progressModal = new ProgressModal();
 
-function sendPDF() {
+function sendPDF() { // коллекции
     progressModal.sendPDF();
 }
 function sendXLS(drawBy)
@@ -321,7 +329,7 @@ function sendXLS(drawBy)
 		
     progressModal.sendXLS(doc);
 }
-function getPDF(doc)
+function getPDF(doc) // пасспорт бегун
 {
 	progressModal.getPDF(doc);
 }
