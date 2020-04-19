@@ -2,11 +2,6 @@
 if (!class_exists('General', false)) include( _globDIR_ . 'classes/General.php' );
 
 class Handler extends General { // общий класс, для манипуляций с базой данных MYSQL, и файлами на сервере
-
-	function __construct( $id=false, $server=false ) {
-		parent::__construct($server);
-		if ( $id ) $this->id = $id;
-	}
 	
 	private $id;
 	private $number_3d;
@@ -15,6 +10,14 @@ class Handler extends General { // общий класс, для манипул�
 	private $model_typeEn;
 	public  $date;
 	private $isEdit;
+	public  $forbiddenSymbols;
+
+	function __construct( $id=false, $server=false ) {
+		parent::__construct($server);
+		if ( $id ) $this->id = $id;
+
+		$this->forbiddenSymbols = ['/','\\',"'",'"','?',':','*','|','>','<',',','.'];
+	}
 	
 	public function tities($str='')
     {
@@ -26,16 +29,28 @@ class Handler extends General { // общий класс, для манипул�
 	public function setId($id) {
 		if ( isset($id) ) $this->id = $id;
 	}
-	public function setNumber_3d($number_3d)
-    {
-		if ( isset($number_3d) )
-		{
-		    $needles = ['/','\\',"'",'"','?',':','*','|','>','<',',','.'];
 
-			$this->number_3d = $this->add000( $this->checkCyrillic( str_replace($needles,'_',$number_3d) ) );
+	/**
+	 * 
+	 */
+	public function setNumber_3d($number_3d='')
+    {
+		if ( !empty($number_3d) )
+		{
+			$this->number_3d = $this->add000( $this->checkCyrillic( str_replace($this->forbiddenSymbols,'_',$number_3d) ) );
 			return $this->number_3d;
 		}
+
+		$query = $this->baseSql(' SELECT max(number_3d) largestNum FROM stock ');
+		//if ( isset($query['error']) ) throw new Error("Error finding last 3d number" . $query['error'], 1);
+		
+		$row = mysqli_fetch_assoc($query);
+		$newNum = intval($row['largestNum']);
+
+		return $this->number_3d = "000" . ++$newNum;
 	}
+
+
 	public function setVendor_code($vendor_code) {
 		if ( isset($vendor_code) ) $this->vendor_code = $vendor_code;
 	}
@@ -263,9 +278,10 @@ class Handler extends General { // общий класс, для манипул�
 	
 	public function updateDataModel($datas, $id=false) {
 		if (!$id) $id = $this->id;
-		
+		if ( !trim($datas) ) return true; // в некоторых случаях в стоке обновлять нечего, только статус
+
 		$where = " WHERE id='$id' ";
-		$queryStr = $datas.$where;
+		$queryStr = "UPDATE stock SET ".$datas.$where;
 		//debug($queryStr,'$queryStr');
 		$addEdit = mysqli_query($this->connection, $queryStr);
 		if ( !$addEdit ) {
@@ -737,6 +753,7 @@ class Handler extends General { // общий класс, для манипул�
     {
 		$selQuery = mysqli_query($this->connection, " SELECT number_3d,vendor_code,model_type FROM stock WHERE id='$this->id' ");
 		$row = mysqli_fetch_assoc($selQuery);
+
 		$result = [
 		    'number_3d'   => $row['number_3d'],
 		    'vendor_code' => $row['vendor_code'],
@@ -744,12 +761,13 @@ class Handler extends General { // общий класс, для манипул�
             'dell' => $row['number_3d']." / ".$row['vendor_code']." - ".$row['model_type'],
         ];
 
-		mysqli_query($this->connection, " DELETE FROM stock      WHERE     id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM images     WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM gems       WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM vc_links   WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM statuses   WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM pushnotice WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM stock          WHERE     id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM model_material WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM images         WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM gems           WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM vc_links       WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM statuses       WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM pushnotice     WHERE pos_id='$this->id' ");
 		$path = $row['number_3d'].'/'.$this->id;
 		
 		if ( file_exists($path) ) $this->rrmdir($path);

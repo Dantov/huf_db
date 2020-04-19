@@ -667,17 +667,17 @@ ImageViewer.prototype.mainImageLoupe = function()
     function moveImage(mainImage)
     {
          let x = -( (realClientX - coordinates.left)-150 ) * 2;
-         let y = -( (realClientY - coordinates.top) ) * 2;
+         let y = -( (realClientY - coordinates.top)-75 ) * 2;
 
         //let per = realW / coordinates.width; //%
         //let x = - (realClientX-coordinates.left) / 3.9;
         //let y = -( (realClientY - coordinates.top) ) * ( realH / coordinates.height );
 
-        if ( x > coordinates.x ) x = coordinates.x;
-        if ( x < -coordinates.width ) x = -coordinates.width;
+        // if ( x > coordinates.x ) x = coordinates.x;
+        // if ( x < -coordinates.width ) x = -coordinates.width;
 
-        if ( y > coordinates.y ) y = coordinates.y;
-        if ( y < -coordinates.height ) y = -coordinates.height;
+        // if ( y > coordinates.y ) y = coordinates.y;
+        // if ( y < -coordinates.height ) y = -coordinates.height;
 
         //if ( x > coordinates.right ) x = coordinates.right;
         // debug(y,"bgY");

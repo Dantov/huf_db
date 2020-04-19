@@ -78,7 +78,7 @@
                 <td>
                     <div class="input-group input-group-sm">
                         <input type="hidden" class="rowID" name="mats[id][]" value="<?=$materialRow['id']?>">
-                        <input required type="text" class="form-control" name="mats[part][]" value="<?=$materialRow['part']?>">
+                        <input type="text" class="form-control" name="mats[part][]" value="<?=$materialRow['part']?>">
                         <div class="input-group-btn">
                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="caret"></span>
@@ -129,7 +129,7 @@
                         </div>
                     </div>
                 </td>
-                <td>
+                <td class="brr-2-secondary">
                     <div class="input-group input-group-sm">
                         <input type="text" class="form-control" name="mats[metalColor][]" value="<?=$materialRow['metalColor']?>">
                         <div class="input-group-btn">
@@ -140,40 +140,6 @@
                                 <?php foreach ( $materialsData['colors']?:[] as $color ) : ?>
                                     <li style="position:relative;">
                                         <a elemToAdd><?=$color?></a>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
-                    </div>
-                </td>
-                <td class="brr-2-secondary">
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" name="mats[handling][]" value="<?=$materialRow['handling']?>">
-                        <div class="input-group-btn">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-right">
-                                <?php foreach ( $handlingsData?:[] as $type ) : ?>
-                                    <li style="position:relative;">
-                                        <a elemToAdd><?=$type['name']?></a>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" name="mats[area][]" value="<?=$materialRow['area']?>">
-                        <div class="input-group-btn">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-right">
-                                <?php foreach ( $coveringsData['areas']?:[] as $area ) : ?>
-                                    <li style="position:relative;">
-                                        <a elemToAdd><?=$area?></a>
                                     </li>
                                 <?php endforeach; ?>
                             </ul>
@@ -199,6 +165,23 @@
                 </td>
                 <td>
                     <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" name="mats[area][]" value="<?=$materialRow['area']?>">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                <?php foreach ( $coveringsData['areas']?:[] as $area ) : ?>
+                                    <li style="position:relative;">
+                                        <a elemToAdd><?=$area?></a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group input-group-sm">
                         <input type="text" class="form-control" name="mats[covColor][]" value="<?=$materialRow['covColor']?>">
                         <div class="input-group-btn">
                             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -214,8 +197,25 @@
                         </div>
                     </div>
                 </td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" name="mats[handling][]" value="<?=$materialRow['handling']?>">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                <?php foreach ( $handlingsData?:[] as $type ) : ?>
+                                    <li style="position:relative;">
+                                        <a elemToAdd><?=$type['name']?></a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </div>
+                </td>
 
-                <td style="width:100px;">
+                <td style="width:80px;">
                     <button class="btn btn-sm btn-default" type="button" onclick="duplicateRowNew(this);" title="дублировать строку">
                         <span class="glyphicon glyphicon-duplicate"></span>
                     </button>

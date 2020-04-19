@@ -6,18 +6,35 @@ function Selects() {
     this.selectedElements = []; //здесь хранятся выделенные модели
     this.selectionMode = false;
 
-}
+    let that = this;
+
+    this.sgUL.querySelector('.selectsCheckAll').addEventListener('click', function(event){
+        event.preventDefault();
+        that.selectAllBoxes();
+    },false);
+    this.sgUL.querySelector('.selectsUncheckAll').addEventListener('click', function(event){
+        event.preventDefault();
+        that.unselectAllBoxes();
+    },false);
+
+    this.checkSelectionMode();
+};
+
 Selects.prototype.checkSelectionMode = function() {
     this.selectionMode = document.querySelector('#selectMode').classList.contains('btnDefActive');
 
     var that = this;
     this.lc.addEventListener('click', function(event){
-        //Достает из замыкания this, теперь === Select а не lc.
-        that.selectBox(event);
+
+        let click = event.target;
+        if ( !click.hasAttribute('checkBoxId') ) return;
+
+        that.selectBox(click);
     }, false);
 
     if ( this.selectionMode ) this.checkSelectedModels();
 };
+
 Selects.prototype.checkSelectedModels = function() {
 
     var that = this;
@@ -36,6 +53,7 @@ Selects.prototype.checkSelectedModels = function() {
         }
     })
 };
+
 Selects.prototype.toggleSelectionMode = function(self) {
     var activateClass = 1;  // 1 - мы включаем режим выделения. 2 - выключаем
 
@@ -93,11 +111,39 @@ Selects.prototype.toggleBoxes = function() {
         }
     }
 };
+/**
+*  Выбрать все модели на странице
+*/
+Selects.prototype.selectAllBoxes = function(click) {
+    let checkIdBoxes = this.lc.querySelectorAll('input');
+    let that = this;
 
-Selects.prototype.selectBox = function(event) {
+    $.each(checkIdBoxes, function(i, checkbox){
+        if ( checkbox.checked ) return;
+        checkbox.click();
+        //that.selectBox(checkbox);
+    });
 
-    var click = event.target;
-    if ( !click.hasAttribute('checkBoxId') ) return;
+    //debug(this.lc);
+    //debug(checkIdBoxes);
+};
+/**
+*  Убрать выделения со всех моделей
+*/
+Selects.prototype.unselectAllBoxes = function(click) {
+    let checkIdBoxes = this.lc.querySelectorAll('input');
+    let that = this;
+
+    $.each(checkIdBoxes, function(i, checkbox){
+        if ( !checkbox.checked ) return;
+        checkbox.click();
+        //that.selectBox(checkbox);
+    });
+
+    //debug(this.lc);
+    //debug(checkIdBoxes);
+};
+Selects.prototype.selectBox = function(click) {
 
     //console.log(click);
     
@@ -136,16 +182,19 @@ Selects.prototype.selectBox = function(event) {
             }
 
             if ( checked === 2 ) { // удаляем
-                let li_arr = that.sgUL.querySelectorAll('li');
-                console.log(li_arr);
+                let li_arr = that.sgUL.querySelectorAll('li[data-id]');
+                // console.log(li_arr);
+                // console.log('obj.id=' + obj.id);
+                // debug(models,'selectedElements');
+                
+                let dellIndex;
+                $.each(models, function(i, model) {
+                    debug(i);
+                    if ( obj.id == li_arr[i].getAttribute('data-id') ) li_arr[i].remove();
+                    if ( obj.id == models[i].id ) dellIndex = i;
+                });
+                models.splice(dellIndex, 1);
 
-                for( var i = 0; i < models.length; i++ ) {
-                    //console.log('obj.id=' + obj.id);
-                    //console.log('models[i].id=' + models[i].id);
-                    var j = i+2;
-                    if ( obj.id == li_arr[j].getAttribute('data-id') ) li_arr[j].remove();
-                    if ( models[i].id == obj.id ) models.splice(i, 1);
-                }
 				var span = click.previousElementSibling.children[0];
 				span.classList.remove('glyphicon-check');
 				span.classList.add('glyphicon-unchecked');
@@ -155,5 +204,4 @@ Selects.prototype.selectBox = function(event) {
     })
 };
 
-var selects = new Selects();
-selects.checkSelectionMode();
+let selects = new Selects();

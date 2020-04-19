@@ -12,9 +12,9 @@ $coll_other = $navBar['collectionList']['other'];
                 <a class="list-group-item active text-bold">
                     Серебро <span class="badge"><?= count($coll_silver) ?></span>
                 </a>
-                <?php foreach ( $coll_silver as $id => $name ) :?>
-                    <? $goldAI = ''; if ( (int)$id === 22 || (int)$id === 53 )  $goldAI = 'aiblock'; ?>
-                    <a class="list-group-item cursorPointer" data-izimodal-close="#collectionsModal" elemToAdd="" coll="" <?=$goldAI?> collid="<?=$id?>"><?=$name?></a>
+                <?php foreach ( $coll_silver as $collID => $name ) :?>
+                    <? $goldAI = ''; if ( (int)$collID === 22 || (int)$collID === 53 )  $goldAI = 'aiblock'; ?>
+                    <a class="list-group-item cursorPointer" data-izimodal-close="#collectionsModal" elemToAdd="" coll="" <?=$goldAI?> collid="<?=$collID?>"><?=$name?></a>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -23,9 +23,9 @@ $coll_other = $navBar['collectionList']['other'];
                 <a class="list-group-item list-group-item-warning text-bold">
                     Золото <span class="badge"><?= count($coll_gold) ?></span>
                 </a>
-                <?php foreach ( $coll_gold as $id => $name ) :?>
-                    <? $goldAI = ''; if ( (int)$id === 22 || (int)$id === 53 )  $goldAI = 'aiblock'; ?>
-                    <a class="list-group-item cursorPointer" data-izimodal-close="#collectionsModal" elemToAdd="" coll="" <?=$goldAI?> collid="<?=$id?>"><?=$name?></a>
+                <?php foreach ( $coll_gold as $collID => $name ) :?>
+                    <? $goldAI = ''; if ( (int)$collID === 22 || (int)$collID === 53 )  $goldAI = 'aiblock'; ?>
+                    <a class="list-group-item cursorPointer" data-izimodal-close="#collectionsModal" elemToAdd="" coll="" <?=$goldAI?> collid="<?=$collID?>"><?=$name?></a>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -34,9 +34,9 @@ $coll_other = $navBar['collectionList']['other'];
                 <a class="list-group-item list-group-item-info text-bold">
                     Бриллианты <span class="badge"><?= count($coll_diamond) ?></span>
                 </a>
-                <?php foreach ( $coll_diamond as $id => $name ) :?>
-                    <? $goldAI = ''; if ( (int)$id === 22 || (int)$id === 53 )  $goldAI = 'aiblock'; ?>
-                    <a class="list-group-item cursorPointer" data-izimodal-close="#collectionsModal" elemToAdd="" coll="" <?=$goldAI?> collid="<?=$id?>"><?=$name?></a>
+                <?php foreach ( $coll_diamond as $collID => $name ) :?>
+                    <? $goldAI = ''; if ( (int)$collID === 22 || (int)$collID === 53 )  $goldAI = 'aiblock'; ?>
+                    <a class="list-group-item cursorPointer" data-izimodal-close="#collectionsModal" elemToAdd="" coll="" <?=$goldAI?> collid="<?=$collID?>"><?=$name?></a>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -45,9 +45,9 @@ $coll_other = $navBar['collectionList']['other'];
                 <a class="list-group-item list-group-item-danger text-bold">
                     Разное <span class="badge"><?= count($coll_other) ?></span>
                 </a>
-                <?php foreach ( $coll_other as $id => $name ) :?>
-                    <? $goldAI = ''; if ( (int)$id === 22 || (int)$id === 53 )  $goldAI = 'aiblock'; ?>
-                    <a class="list-group-item cursorPointer" data-izimodal-close="#collectionsModal" elemToAdd="" coll="" <?=$goldAI?> collid="<?=$id?>"><?=$name?></a>
+                <?php foreach ( $coll_other as $collID => $name ) :?>
+                    <? $goldAI = ''; if ( (int)$collID === 22 || (int)$collID === 53 )  $goldAI = 'aiblock'; ?>
+                    <a class="list-group-item cursorPointer" data-izimodal-close="#collectionsModal" elemToAdd="" coll="" <?=$goldAI?> collid="<?=$collID?>"><?=$name?></a>
                 <?php endforeach; ?>
             </div>
         </div>

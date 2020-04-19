@@ -13,18 +13,19 @@ class EditController extends GeneralController
         $edit = new Edit(false, $_SERVER);
         $edit->connectToDB();
 
+        $permittedFields = $edit->permittedFields();
         $prevPage = $edit->setPrevPage();
 
         $status = $edit->getStatus();
 
         $header = "Проставить статус для моделей: ";
 
-        $strModels = $edit->createlinks();
-
+        $models = $edit->modelsData();
 
         $compact = compact([
-            'prevPage','status','header','strModels'
+            'prevPage','status','header','models'
         ]);
+        
         return $this->render('edit', $compact);
     }
 

@@ -6,22 +6,34 @@
             Назад
         </a>
     </div><!--end col -->
-    <div class="col-xs-12 col-sm-8">
-        <center>
-            <h4 class="text-warning" id="topName" style="margin: 5px 0 0 0;"><?=$header;?></h4>
-        </center>
-    </div><!--end col -->
-    <div class="col-xs-12 text-right">
-        <p id="complects">
-            <?=$strModels;?>
-        </p>
+    <div class="col-xs-12 col-sm-8 text-center">
+        <h4 class="text-warning" id="topName" style="margin: 5px 0 0 0;"><?=$header;?></h4>
     </div><!--end col -->
 </div><!--end row-->
 <!-- конец заголовка -->
 
-
 <hr />
 
+<div class="row">
+    <? foreach( $models as $model ): ?>
+    <div class="col-sm-3 col-md-2 col-lg-1 pl-1 pr-0" style="height: 200px; overflow: hidden;">
+        <a href="<?=_views_HTTP_ ?>ModelView/index.php?id=<?=$model['id'] ?>">
+            <div class="thumbnail text-center">
+              <small class="text-bold"><?=$model['number_3d'] ." ". $model['model_type'] ?></small><br>
+              <img src="<?= _stockDIR_HTTP_ . $model['number_3d']."/".$model['id']."/images/".$model['img_name'] ?>" alt="">
+              <div class="caption relative">
+                <p class="text-left">
+                    <small><?=$model['vendor_code']?"Арт. " . $model['vendor_code']:"" ?></small>
+                </p>
+                <div class="<?=$model['status']['class'] ?> main_status pull-right" title="<?=$model['status']['title'] ?>" style="top:0!important;">
+                    <span class="glyphicon glyphicon-<?=$model['status']['glyphi'] ?>"></span>
+                </div>
+              </div>
+          </a>
+        </div>
+    </div>
+    <? endforeach; ?>
+</div>
 <!--MAIN FORM-->
 <form method="post" id="editform" enctype = "multipart/form-data">
 
@@ -112,7 +124,7 @@
 </div><!--end row-->
 <p></p>
 
-<img id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
+<img id="complects" width="200px" class="img-thumbnail hidden"/>
 
 <?php include('../AddEdit/includes/resultModal.php');?>
 <script defer src="<?= _views_HTTP_ ?>AddEdit/js/ResultModal.js?ver=<?=time() ?>"> </script>

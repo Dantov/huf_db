@@ -41,12 +41,5 @@ CollectionsModal.prototype.init = function()
     */
 };
 
-CollectionsModal.prototype.setCurrentInput = function(input)
-{
-	this.currentInput = input;
-};
 
 let collectionsModal = new CollectionsModal();
-function triggerCollectionSelect(self) {
-    collectionsModal.setCurrentInput(self.parentElement.previousElementSibling);
-}

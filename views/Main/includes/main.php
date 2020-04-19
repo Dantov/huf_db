@@ -120,9 +120,13 @@
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
 					<li role="presentation">
-						<a href="controllers/selectionController.php?selectedModels=show">Показать</a></li>
+						<a title="Выделить все модели на странице" class="selectsCheckAll">Выделить все</a></li>
 					<li role="presentation">
-						<a href="../Edit">Проставить статус</a></li>
+						<a title="Снять выделение со всех моделей" class="selectsUncheckAll">Снять выделение</a></li>
+					<li role="presentation">
+						<a title="Отобразить только выделенные модели" href="controllers/selectionController.php?selectedModels=show">Показать</a></li>
+					<li role="presentation">
+						<a title="Изменить статус для всех выделенных моделей" href="../Edit">Проставить статус</a></li>
 					<li role="presentation" class="divider"></li>
 					<?=$selectedModelsByLi; ?>
 				</ul>

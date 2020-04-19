@@ -65,19 +65,24 @@
 
 	chdir(_stockDIR_);
 
-	$date        = trim($_POST['date']);
-	$number_3d   = strip_tags(trim($_POST['number_3d']));
-	$vendor_code = strip_tags(trim($_POST['vendor_code']));
-	$model_type  = strip_tags(trim($_POST['model_type']));
+
 	
 	$handler = new Handler($id, $_SERVER);
 	
 	if ( !$handler -> connectToDB() ) exit;
 
-
+	$date = trim($_POST['date']);
+	if ( $isEdit === true ) {
+		$number_3d = $handler->setNumber_3d( strip_tags(trim($_POST['number_3d'])) );
+	} else {
+		$number_3d = $handler->setNumber_3d();
+	}
+	
 	$permissions = $handler->permittedFields();
 
-	$number_3d = $handler->setNumber_3d($number_3d);
+	$vendor_code = strip_tags(trim($_POST['vendor_code']));
+	$model_type  = strip_tags(trim($_POST['model_type']));
+
 	$handler -> setVendor_code($vendor_code);
 	$handler -> setModel_typeEn($model_type);
 	$handler -> setModel_type($model_type);
@@ -116,7 +121,7 @@
 	$creator_name    = $_SESSION['user']['fio'];
     $status = $_POST['status']; // число
 	
-	$datas = "UPDATE stock SET ";
+	$datas = "";
 
 	if ( !empty($number_3d) && $permissions['number_3d'] ) $datas .= "number_3d='$number_3d',";
 
@@ -170,7 +175,7 @@
 		$updateModelData = $handler->updateDataModel($datas, $id);
 	} else {
 	    // редактирование старой
-		$updateModelData = $handler -> updateDataModel($datas);
+		$updateModelData = $handler->updateDataModel($datas);
 		$handler->updateCreater($creator_name);    // добавим создателя, если его не было
 		$handler->updateStatus($status, $creator_name); // обновляем статус
 	}

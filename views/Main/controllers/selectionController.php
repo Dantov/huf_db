@@ -53,13 +53,19 @@
 
 	if ( isset($_POST['checkSelectedModels']) ) {
 		echo json_encode($_SESSION['selectionMode']['models']);
+		exit;
 	}
 
 
 	if ( isset($_GET['selectedModels']) && $_GET['selectedModels'] === 'show' )
 	{
-		if ( !$selectedModels = $_SESSION['selectionMode']['models']?:[]) return;
+		if ( !$selectedModels = $_SESSION['selectionMode']['models']?:[]) 
+		{
+			header("location: ../index.php");
+			exit;
+		}
         unset($_SESSION['foundRow']);
+        require_once _globDIR_ . '/classes/General.php';
 
         $orderBy = $_SESSION['assist']['reg'];
         $sortDirect = $_SESSION['assist']['sortDirect'];
@@ -71,24 +77,25 @@
 			$statQuery = "AND status='$regStat'";
 		}
 
-		require_once('../../Glob_Controllers/db.php');
-
         $modelIds = '(';
         foreach( $selectedModels as $model ) $modelIds .= $model['id'] .',';
         $modelIds = trim($modelIds,',') . ')';
-
         $selectRow = "SELECT * FROM stock WHERE id IN $modelIds $statQuery ORDER BY $orderBy $sortDirect";
         //debug($selectRow);
 
-		$resultQuery = mysqli_query($connection, $selectRow);
-		mysqli_close($connection);
+        $general = new General();
+		$general->connectToDB();
+
+        $_SESSION['foundRow'] = $general->findAsArray($selectRow);
+		//$resultQuery = mysqli_query($connection, $selectRow);
+		//mysqli_close($connection);
 		
-		if ( !$resultQuery )
-		{
-			header("location: ../index.php");
-			exit;
-		}
-		while( $foundRow = mysqli_fetch_assoc($resultQuery) ) $_SESSION['foundRow'][] = $foundRow;
+		// if ( !$_SESSION['foundRow'] )
+		// {
+		// 	header("location: ../index.php");
+		// 	exit;
+		// }
+		//while( $foundRow = mysqli_fetch_assoc($resultQuery) ) $_SESSION['foundRow'][] = $foundRow;
 
 		//debug($_SESSION['foundRow'],'foundRow=',1);
 
@@ -99,4 +106,5 @@
 		//$_SESSION['assist']['collection_id'] = -1;
 		
 		header("location: ../index.php");
+		exit;
 	}

@@ -191,7 +191,7 @@ class AddEditController extends GeneralController
         $compact = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi',
             'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','ai_hide','status','haveAi','noAi','vc_Len','collections_len',
-            'stonesScript','row','stl_file','haveStl','noStl','ai_file','repairs', 'images','materials',
+            'row','stl_file','haveStl','noStl','ai_file','repairs', 'images','materials',
             'gs_len','row_gems','row_dop_vc','num3DVC_LI', 'dataArrays',
             'rowStatus','material','covering','labels','header',
         ]);

@@ -105,8 +105,8 @@ setInterval(function() {
 
     if ( ws.readyState === 3 )
     {
-        console.log('Trying to reconnect...');
-        wsConnect();
+        // console.log('Trying to reconnect...');
+        // wsConnect();
     }
 
 }, 5000);

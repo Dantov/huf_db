@@ -32,8 +32,6 @@
     </div><!--end col -->
 </div><!--end row-->
 <!-- конец заголовка -->
-
-
 <hr />
 
 
@@ -45,10 +43,10 @@
             <div class="col-sm-6">
                 <div class="form-group" title="По нему формируются комплекты. '000' вводить не обязательно.">
                     <label for="number_3d">
-                        <span class="glyphicon glyphicon-question-sign"></span>
-                        номер 3D:
+                        <i class="fas fa-hashtag"></i>
+                        номер 3D: <?=$component === 1?' Вносится автоматически. Можно изменить при редактировании.':''?>
                     </label>
-                    <input required id="num3d" type="text" name="number_3d" class="form-control" value="<?=$_SESSION['general_data']['number_3d'], $_SESSION['fromWord_data']['number3D'];?>">
+                    <input <?=$component === 1?'readonly':''?> id="num3d" type="text" name="number_3d" class="form-control" value="<?=$_SESSION['general_data']['number_3d'], $_SESSION['fromWord_data']['number3D'];?>">
                 </div>
             </div>
         <?php endif; ?>
@@ -57,7 +55,7 @@
             <div class="col-sm-6">
                 <div class="form-group" title="Добавляется во все изделия в комплекте (если там было пусто)">
                     <label for="shortName">
-                        <span class="glyphicon glyphicon-question-sign" ></span>
+                        <i class="fas fa-industry"></i>
                         Фабричный артикул:
                     </label>
                     <input id="vendor_code" type="text" name="vendor_code" class="form-control" value="<?=$_SESSION['general_data']['vendor_code'];?>" />
@@ -102,7 +100,6 @@
             </div>
         </div>
     <?php endif; ?>
-
 
     <div class="row">
         <?php if ( $permittedFields['author'] ): ?>
@@ -527,7 +524,13 @@
 
     <input type="hidden" name="save" value="1"/>
     <?php if ( !$permittedFields['number_3d'] ): ?>
-        <input type="hidden" name="number_3d" value="<?=$_SESSION['general_data']['number_3d'];?>"/>
+        <input type="hidden" id="num3d" name="number_3d" value="<?=$_SESSION['general_data']['number_3d'];?>"/>
+    <?php endif;?>
+    <?php if ( !$permittedFields['vendor_code'] ): ?>
+        <input type="hidden" id="vendor_code" value="<?=$_SESSION['general_data']['vendor_code'];?>"/>
+    <?php endif;?>
+    <?php if ( !$permittedFields['model_type'] ): ?>
+        <input type="hidden" id="modelType" value="<?=$_SESSION['general_data']['model_type'];?>"/>
     <?php endif;?>
     <input type="hidden" name="id" value="<?=$id?>"/>
     <input type="hidden" name="edit" id="edit" value="<?=$component;?>"/>
@@ -560,22 +563,21 @@
 
 
 
-<p><?//debug($this->navBar,'1',1)?></p>
-
 <img id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
 <?php include('includes/resultModal.php');?>
-<?php include('includes/collectionsModal.php');?>
 <?php include('includes/deleteModal.php');?>
 <?php include('includes/num3dVC_input_Proto.php');?>
 <?php include('includes/protoGemsVC_Rows.php');?>
 <? $isRepairProto = true; include('includes/protoRepair.php') ?>
 
 <script defer src="<?=_views_HTTP_?>AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
-<script defer src="<?=_views_HTTP_?>AddEdit/js/CollectionsModal.js?ver=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
+<?php if ( $permittedFields['images'] ): ?>
 <script defer src="<?=_views_HTTP_?>AddEdit/js/HandlerFiles.js?ver=<?=time();?>"></script>
-<?=$stonesScript;?>
+<?php else: ?>
+<script>let handlerFiles;</script>
+<? endif;?>
 
 <div class="AddEditSideButtons" id="AddEditSideButtons">
     <div class="btn-group-vertical" role="group" aria-label="...">

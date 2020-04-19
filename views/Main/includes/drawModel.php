@@ -48,6 +48,7 @@
 				</label>
 				<input class="hidden checkIdBox" <?=$checkedSM['inptAttr'] ?> checkBoxId modelId="<?=$row['id'] ?>" modelName="<?= $row['number_3d'].$vc_show ?>" modelType="<?=$row['model_type'] ?>" type="checkbox" id="checkId_<?=$row['id'] ?>">
 			</div>
+			<?= $columnsLG===1?"<br>":"" ?>
 			<b class="pull-right" title="<?=$row['model_type'] ?>"> <?=$modTypeStr ?></b>
 		</div>
 		<div class="clearfix"></div>

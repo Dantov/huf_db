@@ -64,7 +64,7 @@ JS;
                             </div>
                             <?endif;?>
                         <li role="presentation">
-                            <button id="collSelect" onclick="navbar.collectionSelect(this);" type="button" title="Выбрать Коллекцию" style="font-size: 18px; padding: 5px 8px 0 8px;" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            <button id="collSelect" data-izimodal-open="#collectionsModal" type="button" title="Выбрать Коллекцию" style="font-size: 18px; padding: 5px 8px 0 8px;" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-gem"></i>
                             </button>
                         </li>
@@ -92,19 +92,18 @@ JS;
 
                     <form class="navbar-form topuserform navbar-right">
 						<div class="btn-group" id="noticesBadge">
-							<button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							<button title="Текущие Уведомления" type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								<span class="badge pushNoticeBadge"></span>
 							</button>
 							<ul class="dropdown-menu">
 								<li>
-									<a class="noticeShow"><span class="glyphicon glyphicon-eye-open"></span>&#160; Показать</a>
+									<a title="Показать все уведомления" class="noticeShow"><span class="glyphicon glyphicon-eye-open"></span>&#160; Показать</a>
 								</li>
 								<li>
-									<a class="noticeHide"><span class="glyphicon glyphicon-eye-close"></span>&#160; Спрятать</a>
+									<a title="Спрятать все уведомления" class="noticeHide"><span class="glyphicon glyphicon-eye-close"></span>&#160; Спрятать</a>
 								</li>
 								<li>
-									<a class="noticeCloseAll">
-											<span class="glyphicon glyphicon-remove"></span>&#160; Убрать все</a>
+									<a title="" class="noticeCloseAll"><span class="glyphicon glyphicon-remove"></span>&#160; Убрать все</a>
 								</li>
 							</ul>
 						</div>
@@ -230,12 +229,14 @@ JS;
 			<? endif; ?>
             <script defer src="<?=_views_HTTP_?>Main/js/main.js?ver=<?=time()?>"></script>
             <script defer src="<?=_views_HTTP_?>Main/js/ProgressModal.js?ver=<?=time()?>"></script>
-			
+            
         </footer>
 
     </div><!--content-->
 	<div id="pushNoticeWrapp" class="row"></div>
     <? if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
+    <? require _globDIR_."includes/CollectionsModal.php" ?>
+    <script defer src="<?=_glob_HTTP_?>/js/CollectionsModal.js?ver=<?=time()?>"></script>
     <? $this->endBody() ?>
 </body>
 </html>

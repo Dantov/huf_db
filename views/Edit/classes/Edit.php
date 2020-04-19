@@ -18,22 +18,45 @@ class Edit extends AddEdit
         return parent::getStatus($row, 'selectionMode');
     }
 
-    public function createlinks()
+    public function modelsData()
     {
-        $models = !isset($_SESSION['selectionMode']['models']) ? [] : $_SESSION['selectionMode']['models'];
+        $selectedModels = !isset($_SESSION['selectionMode']['models']) ? [] : $_SESSION['selectionMode']['models'];
         
-        $strModels = '';
-        foreach ($models as $model )
+        // debug($selectedModels,'models');
+        $ids = '(';
+        foreach ($selectedModels as $model ) $ids .= $model['id'] . ',';
+        $ids = trim($ids,',') . ')';
+
+        $images = $this->findAsArray(" SELECT img_name,pos_id FROM images WHERE main='1' AND pos_id IN $ids ");
+        $stockModels = $this->findAsArray(" SELECT * FROM stock WHERE id IN $ids ");
+
+        // debug($images,'images');
+        // debug($stockModels,'stockModels');
+
+        foreach ($stockModels as &$stockModel )
         {
-            $quer = mysqli_query($this->connection, " SELECT img_name FROM images WHERE pos_id='{$model['id']}' AND main='1' ");
-            $img = mysqli_fetch_assoc($quer);
-            $number_3d = explode(' | ', $model['name'])[0];
-            $strModels .= '<a imgtoshow="' . _stockDIR_HTTP_ . $number_3d.'/'.$model['id'].'/images/'.$img['img_name'].'" href="../ModelView/index.php?id='.$model['id'].'">'.$model['name'].'</a>' . " :: ";
+            $modelID = $stockModel['id'];
+            $statusID = $stockModel['status'];
+            foreach ($images as $image )
+            {
+                if ( $image['pos_id'] === $modelID ) {
+                    $stockModel['img_name'] = $image['img_name'];
+                    //continue 2;
+                }
+            }
+            foreach ($this->statuses as $status )
+            {
+                if ( $status['id'] === $statusID ) {
+                    $stockModel['status'] = $status;
+                    continue 2;
+                }
+            }
         }
-        $strModels = trim($strModels," :: ");
-        
-        
-        return $strModels;
+
+        //debug($this->statuses,'statuses');
+        //debug($stockModels,'stockModels',1);
+ 
+        return $stockModels;
     }
 
 }

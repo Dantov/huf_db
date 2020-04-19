@@ -163,37 +163,57 @@ if ( stlSelect ) {
 }
 //----- END STL файлы -------//
 
-document.getElementById('content').addEventListener('click',function (event) {
-	if ( event.target.getAttribute('id') === 'collectionBlockForm' ) return;
-    if ( !document.getElementById('collectionBlockForm').classList.contains('hidden') )
-        document.getElementById('collectionBlockForm').classList.add('hidden');
-},false);
 
-//открывает Блок коллекций
-function collectionDropDown(button)
-{
-    let collectionBlockForm = document.getElementById('collectionBlockForm');
-    button.addEventListener('click',function (ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
 
-        collectionBlockForm.classList.toggle('hidden');
-        collectionBlockForm.style.top = this.getBoundingClientRect().top-170 + 'px';
 
-        collectionDropDown.button = this;
-    },false);
+
+/**
+ *  Накидываем существующие
+ */
+ if ( document.getElementById('collections_table') )
+ {
+	let dropDowns = document.getElementById('collections_table').querySelectorAll('.collectionDropDown');
+	$.each(dropDowns, function(i, button){
+		collectionDropDown(button);
+	});
+
+	/**
+	 *  открывает Блок коллекций
+	 */
+	document.getElementById('collectionBlockForm').addEventListener('click', function(event) {
+	    let click = event.target;
+	    if ( !click.hasAttribute('coll') ) return;
+
+	    let input = collectionDropDown.button.parentElement.previousElementSibling;
+
+	    input.value = click.innerHTML;
+	    input.setAttribute('value', click.innerHTML );
+
+	    this.classList.add('hidden');
+	},false);
+	function collectionDropDown(button)
+	{
+	    let collectionBlockForm = document.getElementById('collectionBlockForm');
+	    button.addEventListener('click',function (ev) {
+	        ev.preventDefault();
+	        ev.stopPropagation();
+
+	        collectionBlockForm.classList.toggle('hidden');
+	        collectionBlockForm.style.top = this.getBoundingClientRect().top - 170 + window.pageYOffset + 'px';
+
+	        collectionDropDown.button = this;
+	    },false);
+	}
+	document.getElementById('content').addEventListener('click',function (event) {
+		if ( event.target.getAttribute('id') === 'collectionBlockForm' ) return;
+	    if ( !document.getElementById('collectionBlockForm').classList.contains('hidden') )
+	        document.getElementById('collectionBlockForm').classList.add('hidden');
+	},false);
 }
-document.getElementById('collectionBlockForm').addEventListener('click', function(event) {
-    let click = event.target;
-    if ( !click.hasAttribute('coll') ) return;
 
-    let input = collectionDropDown.button.parentElement.previousElementSibling;
 
-    input.value = click.innerHTML;
-    input.setAttribute('value', click.innerHTML );
 
-    this.classList.add('hidden');
-},false);
+
 
 // ----- КАМНИ Dop VC Материалы-------//
 if ( document.getElementById('addGem') )
@@ -317,7 +337,7 @@ function setNum(table) {
 }
 // -----END КАМНИ ДОП АРТИКУЛЫ-------//
 
-// для доп вставки элементов addElemMore
+// для доп вставки элементов addElemMore +
 let gems_table = document.getElementById('gems_table');
 if ( gems_table )
 {
@@ -344,155 +364,161 @@ if ( gems_table )
 }
 
 
+
+
+
 // ----- РЕМОНТЫ -------//
-document.getElementById('repairsBlock').querySelectorAll('.addRepairs').forEach( button => {
+if ( document.getElementById('repairsBlock') )
+{
+	let addRepairs = document.getElementById('repairsBlock').querySelectorAll('.addRepairs');
+	$.each(addRepairs, function(i, button) {
+		button.addEventListener('click', function (event) {
+	        event.preventDefault();
+	        event.stopPropagation();
 
-    button.addEventListener('click',function (event) {
-        event.preventDefault();
-        event.stopPropagation();
+	        let lastRepNum = 0, repairsCount = 0;
+	        let repairsBlock = document.getElementById('repairsBlock');
 
-        let lastRepNum = 0, repairsCount = 0;
-        let repairsBlock = document.getElementById('repairsBlock');
+	        let today = new Date();
 
-        let today = new Date();
+	        let dataRepair = this.getAttribute('data-repair');
+	        let newRepairs = document.getElementById('protoRepairs').cloneNode(true);
 
-        let dataRepair = this.getAttribute('data-repair');
-        let newRepairs = document.getElementById('protoRepairs').cloneNode(true);
+	        switch (dataRepair) {
+	            case '3d':
+	                repairsCount = repairsBlock.querySelectorAll('.repairs3d');
+	                if ( repairsCount.length ) {
+	                    lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
+	                }
 
-        switch (dataRepair) {
-            case '3d':
-                repairsCount = repairsBlock.querySelectorAll('.repairs3d');
-                if ( repairsCount.length ) {
-                    lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
-                }
+	                newRepairs.removeAttribute('id');
+	                newRepairs.classList.remove('hidden');
+	                newRepairs.classList.add('repairs3d');
+	                newRepairs.classList.add('panel-info');
+	                newRepairs.querySelector('.repairs_name').innerHTML = '3Д Ремонт №';
+	                newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
+	                newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
+	                newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[3d][num][]');
+	                newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[3d][id][]');
+	                newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[3d][description][]');
+	                newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[3d][which][]');
+	                newRepairs.querySelector('.repairs_which').setAttribute('value','0');
+	                newRepairs.querySelector('.repairCost').setAttribute('name','repairs[3d][cost][]');
+	                newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
+	                break;
+	            case 'jeweler':
+	                repairsCount = repairsBlock.querySelectorAll('.repairsJew');
+	                if ( repairsCount.length ) {
+	                    lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
+	                }
 
-                newRepairs.removeAttribute('id');
-                newRepairs.classList.remove('hidden');
-                newRepairs.classList.add('repairs3d');
-                newRepairs.classList.add('panel-info');
-                newRepairs.querySelector('.repairs_name').innerHTML = '3Д Ремонт №';
-                newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
-                newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
-                newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[3d][num][]');
-                newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[3d][id][]');
-                newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[3d][description][]');
-                newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[3d][which][]');
-                newRepairs.querySelector('.repairs_which').setAttribute('value','0');
-                newRepairs.querySelector('.repairCost').setAttribute('name','repairs[3d][cost][]');
-                newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
-                break;
-            case 'jeweler':
-                repairsCount = repairsBlock.querySelectorAll('.repairsJew');
-                if ( repairsCount.length ) {
-                    lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
-                }
+	                newRepairs.removeAttribute('id');
+	                newRepairs.classList.remove('hidden');
+	                newRepairs.classList.add('repairsJew');
+	                newRepairs.classList.add('panel-success');
+	                newRepairs.querySelector('.repairs_name').innerHTML = 'Ремонт Модельера-доработчика №';
+	                newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
+	                newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
+	                newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[jew][num][]');
+	                newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[jew][id][]');
+	                newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[jew][description][]');
+	                newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[jew][which][]');
+	                newRepairs.querySelector('.repairs_which').setAttribute('value','1');
+	                newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
 
-                newRepairs.removeAttribute('id');
-                newRepairs.classList.remove('hidden');
-                newRepairs.classList.add('repairsJew');
-                newRepairs.classList.add('panel-success');
-                newRepairs.querySelector('.repairs_name').innerHTML = 'Ремонт Модельера-доработчика №';
-                newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
-                newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
-                newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[jew][num][]');
-                newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[jew][id][]');
-                newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[jew][description][]');
-                newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[jew][which][]');
-                newRepairs.querySelector('.repairs_which').setAttribute('value','1');
-                newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
+	                newRepairs.querySelector('.repairCost').setAttribute('name','repairs[jew][cost][]');
+	                newRepairs.querySelector('.repairsPayment').classList.remove('hidden');
 
-                newRepairs.querySelector('.repairCost').setAttribute('name','repairs[jew][cost][]');
-                newRepairs.querySelector('.repairsPayment').classList.remove('hidden');
+	                break;
+	        }
 
-                break;
-        }
+	        repairsBlock.insertBefore(newRepairs, this);
+	    });
+	});
 
-        repairsBlock.insertBefore(newRepairs, this);
-    });
+	function initPaidModal() {
 
-});
-function initPaidModal() {
+	    $('#modalPaid').iziModal({
+	        title: 'Пометить ремонт оплаченным?',
+	        headerColor: '#56a66e',
+	        icon: 'far fa-credit-card',
+	        transitionIn: 'comingIn',
+	        transitionOut: 'comingOut',
+	        overlayClose: false,
+	        closeButton: true,
+	        afterRender: function () {
+	            document.getElementById('modalPaidContent').classList.remove('hidden');
+	        }
+	    });
 
-    $('#modalPaid').iziModal({
-        title: 'Пометить ремонт оплаченным?',
-        headerColor: '#56a66e',
-        icon: 'far fa-credit-card',
-        transitionIn: 'comingIn',
-        transitionOut: 'comingOut',
-        overlayClose: false,
-        closeButton: true,
-        afterRender: function () {
-            document.getElementById('modalPaidContent').classList.remove('hidden');
-        }
-    });
+	    // начало открытия
+	    $(document).on('opening', '#modalDelete', function () {
 
-    // начало открытия
-    $(document).on('opening', '#modalDelete', function () {
+	    } );
+	    // Начало закрытия
+	    $(document).on('closing', '#modalDelete', function () {
 
-    } );
-    // Начало закрытия
-    $(document).on('closing', '#modalDelete', function () {
+	    });
+	    // исчезло
+	    $(document).on('closed', '#modalDelete', function () {
 
-    });
-    // исчезло
-    $(document).on('closed', '#modalDelete', function () {
+	    } );
 
-    } );
+	    //обработчики на кнопки
+	    let buttons = document.getElementById('modalPaidContent').querySelectorAll('a');
+	    let cancel = buttons[0];
+	    let ok = buttons[1];
+	    let paid = buttons[2];
 
-    //обработчики на кнопки
-    let buttons = document.getElementById('modalPaidContent').querySelectorAll('a');
-    let cancel = buttons[0];
-    let ok = buttons[1];
-    let paid = buttons[2];
+	    cancel.classList.remove('hidden');
+	    paid.classList.remove('hidden');
 
-    cancel.classList.remove('hidden');
-    paid.classList.remove('hidden');
+	    paid.addEventListener('click', function () {
 
-    paid.addEventListener('click', function () {
+	    	let data = paidRepair.data;
+	        if ( data.paid !== 1 ) return;
+	    	debug(data);
 
-    	let data = paidRepair.data;
-        if ( data.paid !== 1 ) return;
-    	debug(data);
+	        $.ajax({
+	            type: 'POST',
+	            url: 'controllers/repairsPayment.php',
+	            data: data,
+	            dataType:"json",
+	            success:function(response) {
+	                debug(response,'response');
 
-        $.ajax({
-            type: 'POST',
-            url: 'controllers/repairsPayment.php',
-            data: data,
-            dataType:"json",
-            success:function(response) {
-                debug(response,'response');
+	                if (response.error)
+					{
+						debug(response.error);
+						return;
+					}
+					if (response.done !== true)
+					{
+						alert('Ошибка на стороне сервера! Попробуйте позже.');
+	                    debug(response.done);
+						return;
+					}
+	                let modal = $('#modalPaid');
 
-                if (response.error)
-				{
-					debug(response.error);
-					return;
-				}
-				if (response.done !== true)
-				{
-					alert('Ошибка на стороне сервера! Попробуйте позже.');
-                    debug(response.done);
-					return;
-				}
-                let modal = $('#modalPaid');
+	                modal.iziModal('setTitle', 'Ремонт отмечен оплаченным.');
+	                modal.iziModal('setSubtitle', '');
+	                modal.iziModal('setHeaderColor', '#66d246');
+	                modal.iziModal('setIcon', 'glyphicon glyphicon-ok');
 
-                modal.iziModal('setTitle', 'Ремонт отмечен оплаченным.');
-                modal.iziModal('setSubtitle', '');
-                modal.iziModal('setHeaderColor', '#66d246');
-                modal.iziModal('setIcon', 'glyphicon glyphicon-ok');
+	                ok.onclick = function() {
+	                    document.location.reload(true);
+	                };
+	                cancel.classList.add('hidden');
+	                paid.classList.add('hidden');
+	                ok.classList.remove('hidden');
+	            }
+	        });
 
-                ok.onclick = function() {
-                    document.location.reload(true);
-                };
-                cancel.classList.add('hidden');
-                paid.classList.add('hidden');
-                ok.classList.remove('hidden');
-            }
-        });
+	    } );
 
-    } );
-
-	debug('Paid modal init');
-}(initPaidModal());
+		debug('Paid modal init');
+	}(initPaidModal());
+}
 function paidRepair(self) {
     event.preventDefault();
     event.stopPropagation();
@@ -523,17 +549,6 @@ function removeRepairs(self) {
     toDell.classList.add('hidden');
     toDell.querySelector('.repairs_descr').innerHTML = -1;
 }
-function formatDate(date) {
-	let dd = date.getDate();
-	if (dd < 10) dd = '0' + dd;
-
-	let mm = date.getMonth() + 1;
-	if (mm < 10) mm = '0' + mm;
-
-	let yy = date.getFullYear();
-
-	return dd + '.' + mm + '.' + yy;
-}
 // ----- END РЕМОНТЫ -------//
 
 
@@ -547,7 +562,6 @@ function dellImgPrew(self){
     todell.remove();
     uplF_count--;
 }
-//----- END удаление превьюшек  -------//
 //----- удаление с сервера картинок, стл, модели целиком -------//
 function dell_fromServ( id, imgname, isSTL, dellpos, element )
 {
@@ -580,7 +594,6 @@ function dell_fromServ( id, imgname, isSTL, dellpos, element )
 //--------- отображаем превью при наведении ----------//
 addPrevImg( document.getElementById('topName'), 'top', 'right' );
 addPrevImg( document.getElementById('dop_vc_table'), 'bottom', 'right' );
-
 function addPrevImg( domEl, vert, horiz )
 {
 	if ( domEl == null ) return;
@@ -635,28 +648,32 @@ $.each(document.querySelectorAll('.submitButton'), function (index, button) {
     button.addEventListener('click',function (event) {
         event.preventDefault();
         event.stopPropagation();
-
+        
         if ( validateForm() ) submitForm();
     }, false);
 });
 //-------- ВАЛИДАЦИЯ ФОРМЫ ---------//
 function validateForm() {
 	
-	let collectionInputs = document.getElementById('collections_table').querySelectorAll('input');
-	if ( !collectionInputs.length ) {
-		alert( 'Нужно внести хоть одну коллекцию!' );
-		return false;
-    }
-    let collValid = true;
-    $.each(collectionInputs, function (index, input) {
-        if ( !input.value )
-		{
-            input.scrollIntoView();
-            alert( 'Выберите коллекцию!' );
-            return collValid=false;
-		}
-    });
-    if ( !collValid ) return false;
+	if ( document.getElementById('collections_table') )
+	{
+		let collectionInputs = document.getElementById('collections_table').querySelectorAll('input');
+		if ( !collectionInputs.length ) {
+			alert( 'Нужно внести хоть одну коллекцию!' );
+			return false;
+	    }
+	    let collValid = true;
+	    $.each(collectionInputs, function (index, input) {
+	        if ( !input.value )
+			{
+	            input.scrollIntoView();
+	            alert( 'Выберите коллекцию!' );
+	            return collValid=false;
+			}
+	    });
+	    if ( !collValid ) return false;
+	}
+
 
     if ( document.getElementById('author') && !document.getElementById('author').value )
     {
@@ -673,60 +690,74 @@ function validateForm() {
         alert( 'Нужно указать Тип модели!' );
         return false;
     }
+
     let modelWeight = document.getElementById('modelWeight');
-    if ( document.getElementById('modelWeight') && !document.getElementById('modelWeight').value )
+    if ( modelWeight )
     {
-        alert( 'Нужно указать Вес модели!' );
-        return false;
+    	if ( document.getElementById('modelWeight') && !document.getElementById('modelWeight').value )
+	    {
+	        alert( 'Нужно указать Вес модели!' );
+	        return false;
+	    }
+	    if ( modelWeight.value < 0 || modelWeight.value > 1000 )
+		{
+	        alert( 'Вес модели указан не верно!' );
+	        return false;
+		}
     }
-    if ( modelWeight.value < 0 || modelWeight.value > 1000 )
+
+	if ( document.getElementById('metals_table') )
 	{
-        alert( 'Вес модели указан не верно!' );
-        return false;
+		let materials = document.getElementById('metals_table').querySelectorAll('tr');
+		let matsArr = [];
+		$.each(materials, function (i, tr) {
+	    	if ( !tr.classList.contains('hidden') ) matsArr.push(tr);
+	    });
+
+	    if ( !matsArr.length ) {
+	        alert( 'Нужно внести хоть один материал!' );
+	        return false;
+	    }
+	    if ( matsArr[0] )
+		{
+			let inputs = matsArr[0].querySelectorAll('input');
+			let matsValid = false;
+	        $.each(inputs, function (index, input) {
+	            if ( input.value ) return matsValid=true;
+	        });
+	        if ( !matsValid ) {
+	            matsArr[0].scrollIntoView();
+	            alert( 'Заполните строку материала!' );
+	        	return false;
+	        }
+		}
 	}
-
-
-	let materials = document.getElementById('metals_table').querySelectorAll('tr');
-    if ( !materials.length ) {
-        alert( 'Нужно внести хоть один материал!' );
-        return false;
-    }
-    //debug(materials);
-    if ( materials[0] )
+	
+	if ( document.getElementById('picts') )
 	{
-		let inputs = materials[0].querySelectorAll('input');
-        //debug(inputs);
-		let matsValid = false;
-        $.each(inputs, function (index, input) {
-            if ( input.value ) return matsValid=true;
-        });
-        //debug(matsValid,'matsValid');
-        if ( !matsValid ) {
-            materials[0].scrollIntoView();
-            alert( 'Заполните строку материала!' );
-        	return false;
-        }
+		let images = document.getElementById('picts').querySelectorAll('.image_row');
+	    let imgFor = document.getElementById('imgFor');
+	    if ( !images.length ) {
+	        imgFor.innerHTML = 'Нужно внести хоть одну картинку!';
+	        imgFor.classList.remove('hidden');
+	        imgFor.scrollIntoView();
+	        alert( 'Нужно внести хоть одну картинку!' );
+	        return false;
+	    } else {
+	        imgFor.classList.add('hidden');
+		}
 	}
-
-	let images = document.getElementById('picts').querySelectorAll('.image_row');
-    let imgFor = document.getElementById('imgFor');
-    if ( !images.length ) {
-        imgFor.innerHTML = 'Нужно внести хоть одну картинку!';
-        imgFor.classList.remove('hidden');
-        imgFor.scrollIntoView();
-        alert( 'Нужно внести хоть одну картинку!' );
-        return false;
-    } else {
-        imgFor.classList.add('hidden');
-	}
+	
 
 	return true;
 }
+
+
 //-------- ОТПРАВКА ФОРМЫ ---------//
 function submitForm() {
 	
 	let addform = document.getElementById('addform');
-	if ( !addform.checkValidity() ) return;
+	//if ( !addform.checkValidity() ) return;
 
 
 	let addedit = 'controllers/addEdit_handler.php';
@@ -734,10 +765,13 @@ function submitForm() {
 		formData.append('userName',userName);
 		formData.append('tabID',tabName);
 
-    handlerFiles.getFiles().forEach(function (file) {
-        formData.append('UploadImages[]',file);
-    });
-
+	if ( handlerFiles )
+	{
+		handlerFiles.getFiles().forEach(function (file) {
+	        formData.append('UploadImages[]',file);
+	    });
+	}
+    
     let modal = $('#modalResult');
     let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
     let status = document.querySelector('#modalResultStatus');
@@ -807,18 +841,17 @@ function submitForm() {
 			debug(error);
 		}
 	});
-
-
 }
 //-------- END ОТПРАВКА ФОРМЫ ---------//
 
 
+
+
 //-------- Side buttons ---------//
 let addEditSideButtons = [];
-window.onload = function f()
-{
-    addEditSideButtons = document.getElementById('AddEditSideButtons').querySelectorAll('button');
-};
+window.addEventListener('load',function(){
+	addEditSideButtons = document.getElementById('AddEditSideButtons').querySelectorAll('button');
+},false);
 
 function pageUp()
 {

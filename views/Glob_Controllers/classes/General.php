@@ -3,7 +3,7 @@
 class General {
 	
 	public function __construct( $server=false ) {
-		if ( isset($server) ) {
+		if ( isset($server) && is_array($server) ) {
 			$this->server = $server;
 			$this->setDirs();
 			//$this->IP_visiter = $_SERVER['HTTP_X_REAL_IP'];
@@ -602,7 +602,8 @@ class General {
         $result = [];
 
         $query = mysqli_query($this->connection, $sqlStr );
-        if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];
+        //if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];
+        if ( !$query ) throw new Error("Error in baseSql() " . mysqli_error($this->connection), 1);
 
         return $query;
     }

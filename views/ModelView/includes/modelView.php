@@ -22,7 +22,7 @@
                 <div class="row">
                     <div class="col-xs-12 pl-0">
                         <div class="panel mb-1">
-                            <div class="mainImage cursorLoupe border-primary-1" data-id="<?=$mainImg['id']?>" style="background-image: url(<?=$mainImg['src']?>);"></div>
+                            <div class="mainImage cursorLoupe" data-id="<?=$mainImg['id']?>" style="background-image: url(<?=$mainImg['src']?>);"></div>
                         </div>
                     </div>
                 </div>

@@ -159,3 +159,11 @@
 .cursorGrabbing {
     cursor: url('../picts/pun22.cur'), grabbing;
 }
+
+/* POSITIONS */
+.relative {
+    position: relative!important;
+}
+.absolute {
+    position: absolute!important;
+}
