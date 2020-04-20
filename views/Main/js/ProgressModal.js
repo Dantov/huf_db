@@ -66,13 +66,21 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
 			break;
         case 'passport':
             doc.doc = 'PDF';
-            doc.url = 'controllers/passport_pdf.php';
+            doc.url = 'controllers/docPdfController.php';
             doc.data.id = main.getQueryParam('id');
+            doc.data.document = 'passport';
             break;
         case 'runner':
             doc.doc = 'PDF';
-            doc.url = 'controllers/runner_pdf.php';
+            doc.url = 'controllers/docPdfController.php';
             doc.data.id = main.getQueryParam('id');
+            doc.data.document = 'runner';
+            break;
+        case 'both':
+            doc.doc = 'PDF';
+            doc.url = 'controllers/docPdfController.php';
+            doc.data.id = main.getQueryParam('id');
+            doc.data.document = 'both';
             break;
     }
 
@@ -101,6 +109,7 @@ ProgressModal.prototype.onModalOpen = function(that, event)
 
     if ( doc.switch === 'passport' ) docStr = 'Пасспорт';
     if ( doc.switch === 'runner' ) docStr = 'Бегунок';
+    if ( doc.switch === 'both' ) docStr = 'Пасспорт + Бегунок';
 
     that.xhr = $.ajax({
         url: doc.url,

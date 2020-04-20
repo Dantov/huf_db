@@ -68,7 +68,7 @@
                         </li>
                         <li class="list-group-item">
                             <?php foreach ( $coll_id as $coll ) : ?>
-                                <span class="badge badge-lg"><i><a href="<?=_views_HTTP_?>Main/controllers/setSort.php?sCollId=<?=$coll['id']?>" id="collection"><?=$coll['name']?></a></i></span>
+                                <span class="badge badge-lg" ><i><a style="color:white;" href="<?=_views_HTTP_?>Main/controllers/setSort.php?sCollId=<?=$coll['id']?>" id="collection"><?=$coll['name']?></a></i></span>
                             <?php endforeach;?>
                             <i class="fas fa-gem"></i> Коллекции:
                         </li>
@@ -133,24 +133,26 @@
                             <span title="Дата создания" class="badge"><?=date_create( $row['date'] )->Format('d.m.Y');?></span>
                             <div class="clearfix"></div>
                         </li>
-                        <? if ( $editBtn ): ?>
-                            <li class="list-group-item">
-                                <span ><span class="glyphicon glyphicon-print"></span>&nbsp;&nbsp;Печать:</span>
-                                <span>
-                                    <a class="btn btn-sm btn-info" onclick="getPDF('passport');" role="button">
-                                        <span> Пасспорт</span>
-                                    </a>
-                                    <a class="btn btn-sm btn-info" onclick="getPDF('runner');" role="button">
-                                        <span> Бегунок</span>
-                                    </a>
-                                </span>
-                                <a href="<?=_views_HTTP_?>AddEdit/index.php?id=<?=$id?>&component=2" class="btn btn-default pull-right" style="color: #0f0f0f!important;">
-                                    <span class="glyphicon glyphicon-pencil"></span>
-                                    Редактировать
-                                </a>
-                                <div class="clearfix"></div>
-                            </li>
-                        <?endif;?>
+                        <li class="list-group-item">
+                            <div class="btn-group">
+                              <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span ><span class="glyphicon glyphicon-print"></span>&nbsp;Печать <span class="caret"></span>
+                              </button>
+                              <ul class="dropdown-menu text-black">
+                                <li><a onclick="getPDF('passport');" title="">Пасспорт</a></li>
+                                <li><a onclick="getPDF('runner');" title="">Бегунок</a></li>
+                                <li><a onclick="getPDF('both');" title="Пасспорт и Бегунок">П+Б</a></li>
+                                <li><a title="Печать текущей картинки">Картинка</a></li>
+                              </ul>
+                            </div>
+                            <? if ( $editBtn ): ?>
+                            <a href="<?=_views_HTTP_?>AddEdit/index.php?id=<?=$id?>&component=2" class="btn btn-sm btn-default pull-right" style="color: #0f0f0f!important;">
+                                <span class="glyphicon glyphicon-pencil"></span>
+                                Редактировать
+                            </a>
+                            <?endif;?>
+                            <div class="clearfix"></div>
+                        </li>
                     </ul>
                 </div>
             </div>

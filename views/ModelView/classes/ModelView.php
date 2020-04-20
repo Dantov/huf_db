@@ -106,7 +106,7 @@ class ModelView extends General {
             $fileImg = $this->number_3d.'/'.$complects['id'].'/images/'.$compl_row['img_name'];
             $img = _stockDIR_HTTP_ .$this->number_3d.'/'.$complects['id'].'/images/'.$compl_row['img_name'];
             if ( !file_exists(_stockDIR_.$fileImg) ) $img = _stockDIR_HTTP_."default.jpg";
-                $complStr .= '<a imgtoshow="'. $img .'" href="index.php?id='.$complects['id'].'">'.$complects['model_type'].' </a>';
+                $complStr .= '<a style="color:white!important;" imgtoshow="'. $img .'" href="index.php?id='.$complects['id'].'">'.$complects['model_type'].' </a>';
 		}
 		if ( count($mass) == 0 ) $complStr = "Нет";
 		return $complStr;

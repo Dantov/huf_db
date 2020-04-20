@@ -21,20 +21,6 @@
     $overallProgress = ceil(( ++$complectCounter * 100 ) / $complects_lenght);
     $progress->progressCount( $overallProgress );
 
-    /*
-    require_once _globDIR_ .'db.php';
-	$uploaddir = _stockDIR_;
-	$result = mysqli_query($connection, "  SELECT * FROM stock WHERE id='$id' ");
-	$img = mysqli_query($connection, "  SELECT * FROM images WHERE pos_id='$id' ");
-	$gems = mysqli_query($connection, "  SELECT * FROM gems WHERE pos_id='$id' ");
-	$dop_vc = mysqli_query($connection, "  SELECT * FROM vc_links WHERE pos_id='$id' ");
-	$repair_que = mysqli_query($connection, "  SELECT * FROM repairs WHERE pos_id='$id' ");
-	$repQuer = mysqli_query($connection, " SELECT * FROM repairs WHERE pos_id='$id' ");
-	$row = mysqli_fetch_assoc($result);
-	$thisNum = $row['number_3d'];
-	$complect = mysqli_query($connection, " SELECT model_type FROM stock WHERE number_3d='$thisNum' ");
-	*/
-
     require(_viewsDIR_ . 'ModelView/classes/ModelView.php');
     $modelView = new ModelView($id, $_SERVER);
 
@@ -46,7 +32,6 @@
     $gems = $modelView->getGems();
     $dopVC = $modelView->getDopVC();
     $repairs = $modelView->getRepairs();
-
 	$date = date_create( $row['date'] )->Format('d.m.Y');
 	
 	// create new PDF document
@@ -95,9 +80,9 @@
 
 	//------------исходные данные----------------//
 	
-	$W_IMG = 60; // ширина картинки
-	$H_IMG = 60; // высота картинки
-	$style = array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(121,121,121));
+	// $W_IMG = 60; // ширина картинки
+	// $H_IMG = 60; // высота картинки
+	// $style = array('width' => 0.3, 'cap' => 'butt', 'join' => 'miter', 'dash' => 0, 'color' => array(121,121,121));
 
 
 	// ---- //
@@ -208,7 +193,6 @@
     $progress->progressCount( $overallProgress );
 
 	$rowspans = 5;
-
 
 	$gems_tr = '';
 	if ( !empty($gems) ) {
@@ -593,6 +577,9 @@
 	//$pdf->Output($path, 'F');
 	
 	$pdf_string = $pdf->Output('pdfname.pdf', 'S');
+
+	if ( !file_exists( _rootDIR_.'Pdfs/') ) mkdir( _rootDIR_.'Pdfs/', 0777, true);
+
 	file_put_contents(_rootDIR_.'Pdfs/'.$pdfname, $pdf_string);
 
     //============= counter point ==============//

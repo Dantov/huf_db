@@ -133,6 +133,12 @@
 }
 
 /* TEXT */
+.text-white {
+    color: white!important;
+}
+.text-black {
+    color: black!important;
+}
 .text-bold {
     font-weight: bold;
 }

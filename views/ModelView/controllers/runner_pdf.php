@@ -1,6 +1,6 @@
 <?php
     $id = $_GET['id'];
-    if ( $id < 0 || $id > 999999 ) exit('No ID');
+    if ( $id < 0 || $id > 99999 ) exit('No ID');
 
 	date_default_timezone_set('Europe/Kiev');
 	ini_set('max_execution_time',600); // макс. время выполнения скрипта в секундах
@@ -98,10 +98,6 @@
 
 
 
-	// ---- //
-
-
-
 
 	// ---- //
     /*
@@ -138,6 +134,8 @@
 	}
 	$str_mat = $g.$g750.$g585.$colorG1.$colorG2.$colorG3;
 	*/
+
+
 
 
 	// ---- //
@@ -183,6 +181,8 @@
 		$labelImgDIV .= '</div>';
 	}
 	//------------конец исходные данные----------------//
+
+	
 	$header='
 		<style>
 			td {
@@ -491,15 +491,16 @@ $progress->progressCount( (int)$overallProgress );
 	$pdf->SetFont('dejavusans', '', 8, '', true);
 	$pdf->writeHTMLCell(195, '', '', '', $table1, 0, 1, 0, true, 'L', true);
 	
+	/*
 	if ( $schemeImg ) {
 		$pdf->AddPage();
 		$pdf->Image($schemeImg, 3, 10, 204, '', 'JPG', '', '', true, 150, '', false, false, 0, false, false, false);
 		//$pdf->writeHTMLCell(195, '', '', '', $top_txt, 0, 1, 0, true, 'L', true);
-	}
+	}*/
 	
 	// Image($file, $x='', $y='', $w=0, $h=0, $type='', $link='', $align='', $resize=false, $dpi=300, $palign='', $ismask=false, $imgmask=false, $border=0, $fitbox=false, $hidden=false, $fitonpage=false)
 	$pdf_string = $pdf->Output('pdfname.pdf', 'S');
-	//echo _rootDIR_.'Pdfs/'.$pdfname;
+	if ( !file_exists( _rootDIR_.'Pdfs/') ) mkdir( _rootDIR_.'Pdfs/', 0777, true);
 	file_put_contents(_rootDIR_.'Pdfs/'.$pdfname, $pdf_string);
 
     //============= counter point ==============//
