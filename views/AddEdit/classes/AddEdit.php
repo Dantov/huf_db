@@ -1,11 +1,15 @@
 <?php
-	require_once( _globDIR_ . 'classes/General.php');
+namespace Views\AddEdit\classes;
+use Views\Glob_Controllers\classes\General;
+
 	class AddEdit extends General
     {
 		
 		function __construct( $id=false, $server ) {
 			parent::__construct($server);
 			if ( $id ) $this->id = $id;
+
+            $this->connectToDB();
 		}
 
 		public function connectToDB()
@@ -73,17 +77,6 @@
 
 			return $tables;
 		}
-
-
-        /**
-         *  Проверим на существование этой модели
-         */
-        public function checkID()
-        {
-            $query = mysqli_query($this->connection, " select 1 from stock where id='$this->id' limit 1 ");
-            if ( $query->num_rows ) return true;
-            return false;
-        }
 
 		public function getAllUsers()
         {

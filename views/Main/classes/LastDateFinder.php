@@ -1,10 +1,11 @@
 <?php
+namespace Views\Main\classes;
+
 /**
  * User: BVA
  * Date: 03.10.2019
  * Time: 12:51
  */
-
 class LastDateFinder
 {
     /*

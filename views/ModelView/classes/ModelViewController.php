@@ -1,30 +1,29 @@
 <?php
-require _globDIR_ . "classes/GeneralController.php";
-/**
- */
+namespace Views\ModelView\classes;
+use Views\Glob_Controllers\classes\GeneralController;
+//require _globDIR_ . "classes/GeneralController.php";
+
 
 class ModelViewController extends GeneralController
 {
 
     public $title = 'ХЮФ 3Д Модель - ';
+    public $stockID = null;
+
 
     public function beforeAction()
     {
-
+        $id = (int)$this->getQueryParam('id');
+        if ( $id <= 0 || $id >= 99999 ) $this->redirect('/');
+        $this->stockID = $id;
     }
 
     public function action()
     {
-        if ( filter_has_var(INPUT_GET, 'id') ) {
-            $id = (int)$_GET['id'];
-        } else {
-            header("location: "._views_HTTP_."index.php");
-            exit;
-        }
-
-        require(_viewsDIR_ . $this->controllerName.'/classes/ModelView.php');
+        $id = $this->stockID;
 
         $modelView = new ModelView($id, $_SERVER, $_SESSION['user']);
+        if (!$modelView->checkID($id)) $this->redirect('/');
 
         $row = $modelView->row;
 
@@ -34,10 +33,12 @@ class ModelViewController extends GeneralController
         $button3D = $getStl['button3D'];
         $dopBottomScripts = $getStl['dopBottomScripts'];
 
+
         $matsCovers = $modelView->getModelMaterials();
 
         $complectedStr = $modelView->getComplects();
         $images = $modelView->getImages();
+
 
         $mainImg = [];
         foreach ( $images as $image )
@@ -49,6 +50,7 @@ class ModelViewController extends GeneralController
                 break;
             }
         }
+
 
         $labels = $modelView->getLabels();
         $gemsTR = $modelView->getGems();
@@ -76,6 +78,7 @@ class ModelViewController extends GeneralController
 //        ob_end_clean();
 
 
+
         $stts = $modelView->getStatus($row);
         $stat_name = $stts['stat_name'];
         $stat_date = $stts['stat_date'];
@@ -84,6 +87,7 @@ class ModelViewController extends GeneralController
         $stat_glyphi = 'glyphicon glyphicon-' . $stts['glyphi'];
 
         //debug($stts);
+
 
         $statuses = $modelView->getStatuses();
 
@@ -108,6 +112,7 @@ class ModelViewController extends GeneralController
                     break;
             }
         }
+
 
         $thisPage = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
         if ( $thisPage !== $_SERVER["HTTP_REFERER"] ) {
@@ -142,6 +147,7 @@ class ModelViewController extends GeneralController
 
         $this->includeJSFile('show_pos_scrpt.js', ['defer','timestamp'] );
         $this->includeJSFile('imageViewer.js', ['timestamp'] );
+
         $imgEncode = json_encode($images,JSON_UNESCAPED_UNICODE);
         $js = <<<JS
         window.addEventListener('load',function() {

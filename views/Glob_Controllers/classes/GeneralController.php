@@ -1,7 +1,9 @@
 <?php
-require_once "Controller.php";
-/**
- */
+namespace Views\Glob_Controllers\classes;
+use Views\vendor\core\Controller;
+use Views\vendor\core\Cookies;
+
+
 
 class GeneralController extends Controller
 {
@@ -10,6 +12,8 @@ class GeneralController extends Controller
 
     public function __construct($controllerName='')
     {
+        parent::__construct();
+
         $this->accessControl();
         $this->navBarController();
 
@@ -18,27 +22,39 @@ class GeneralController extends Controller
 
     protected function accessControl()
     {
-        session_start();
-        if ( isset( $_COOKIE['meme_sessA'] ) )
+        $session = $this->session;
+        //debug($session,'$session');
+
+        if (  Cookies::getOne('meme_sessA') )
         {
-            if ( !isset($_SESSION['access']) || empty($_SESSION['access']) ) {
-
-                $_SESSION['access'] = $_COOKIE['meme_sessA'];
-
-                foreach ($_COOKIE['assist'] as $key => $value) {
-                    $_SESSION['assist'][$key] = $value;
+            if ( !$session->getKey('access') )
+            {
+                $session->setKey('access', Cookies::getOne('meme_sessA') );
+                if ( $assistCookies = Cookies::getOne('assist') )
+                {
+                    $assist = [];
+                    foreach ( $assistCookies?:[] as $key => $value) $assist[$key] = $value;
+                    $session->setKey('assist', $assist);
                 }
             }
-            if ( !isset($_SESSION['user']) || empty($_SESSION['user']) ) {
-
-                foreach ($_COOKIE['user'] as $key => $value) {
-                    $_SESSION['user'][$key] = $value;
+            if ( !$session->getKey('user') )
+            {
+                if ( $userCookies = Cookies::getOne('user') )
+                {
+                    $user = [];
+                    foreach ($userCookies?:[] as $key => $value) $user[$key] = $value;
+                    $session->setKey('user', $user);
                 }
             }
         }
 
-        $access = isset( $_SESSION['access']) ? $_SESSION['access'] : false;
-        if( $access !== true || $_SESSION['assist']['update'] !== 7 ) header("location:". _glob_HTTP_ ."exit.php");
+        //debug($_SESSION,'Session');
+        $access = $session->getKey('access');
+        $assist = $session->getKey('assist');
+        //debug($access,'$access');
+        //debug($assist,'$assist',1);
+
+        if( $access !== true || $assist['update'] !== 7 ) $this->redirect('auth/?a=exit');//header("location:". _glob_HTTP_ ."exit.php");
     }
 
     protected function navBarController()
@@ -69,7 +85,7 @@ class GeneralController extends Controller
         {
             $navBar['searchStyle'] = '';
             $navBar['topAddModel'] = '';
-            $navBar['navbarStatsUrl'] = _views_HTTP_ . "Statistic/index.php";
+            $navBar['navbarStatsUrl'] = _rootDIR_HTTP_ . "Statistic/";
             $navBar['navbarStatsShow'] = "";
         }
 

@@ -1,5 +1,7 @@
 <?php
 
+namespace Views\Glob_Controllers\classes;
+
 class General {
 	
 	public function __construct( $server=false ) {
@@ -79,12 +81,16 @@ class General {
 		$this->rootDir = _rootDIR_; //'/HUF_DB';
 		$this->stockDir = $this->rootDir.'Stock';
 	}
+
+    /**
+     * @return mixed
+     */
     public function getUser()
     {
         if ( isset($this->user) ) return $this->user;
         session_start();
         $userQuery = mysqli_query($this->connection, " SELECT id,fio,fullFio,location,access FROM users WHERE id='{$_SESSION['user']['id']}' ");
-        if ( !$userQuery->num_rows ) new ErrorException('Пользователь не найден!',404);
+        if ( !$userQuery->num_rows ) new \Exception('Пользователь не найден!',404);
 
         $user = mysqli_fetch_assoc($userQuery);
         foreach ( $user as $key => $value ) $this->user[$key] = $value;
@@ -92,12 +98,16 @@ class General {
         return $this->user;
     }
 
+
+    /**
+     * @return mixed
+     */
     public function getUsers()
     {
         if ( isset($this->users) ) return $this->users;
 
         $usersQuery = mysqli_query($this->connection, " SELECT id,fio,fullFio,location,access FROM users ");
-        if ( !$usersQuery->num_rows ) new ErrorException('Users not found at all!',500);
+        if ( !$usersQuery->num_rows ) new \Exception('Users not found at all!',500);
         while( $user = mysqli_fetch_assoc($usersQuery) )
         {
             $this->users[] = $user;
@@ -239,22 +249,28 @@ class General {
         return $this->workingCentersSorted;
     }
 
-	public function connectToDB()
+    public function connectDBLite()
     {
         if ( $this->connection ) return $this->connection;
-		$dbConfig = require _globDIR_ . "db_config.php";
-		$connection = mysqli_connect($dbConfig['host'], $dbConfig['username'], $dbConfig['password'], $dbConfig['dbname']);
+        $dbConfig = require _globDIR_ . "db_config.php";
+        $connection = mysqli_connect($dbConfig['host'], $dbConfig['username'], $dbConfig['password'], $dbConfig['dbname']);
 
-		if (!$connection) {
-			$errno = mysqli_connect_errno();
-			$errtext = mysqli_connect_error();
-			header("location: " . _views_HTTP_ . "errors/errMysqlConn.php?errno=$errno&errtext=$errtext");
-			return false;
-		}
-		mysqli_set_charset($connection, $dbConfig['charset']);
+        if (!$connection) {
+            $errno = mysqli_connect_errno();
+            $errtext = mysqli_connect_error();
+            header("location: " . _views_HTTP_ . "errors/errMysqlConn.php?errno=$errno&errtext=$errtext");
+            return false;
+        }
+        mysqli_set_charset($connection, $dbConfig['charset']);
 
         self::$connectObj = $connection;
-		$this->connection = $connection;
+        $this->connection = $connection;
+        return $connection;
+    }
+
+	public function connectToDB()
+    {
+        $connection = $this->connectDBLite();
         $this->getUser();
 
         if ( !isset(self::$serviceArr) ) self::$serviceArr = self::getServiceArr();
@@ -541,7 +557,6 @@ class General {
 		
 		if ( strtotime($lastDate) < strtotime($today)  )
 		{
-			include_once 'myphp-backup.php';
 			$backupDatabase = new Backup_Database(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, CHARSET);
 			
 			$this->checkBackupFiles( (int)$maxAllowedFiles, BACKUP_DIR);
@@ -551,7 +566,7 @@ class General {
 
 			if ( $backupDatabase->done === true )
 			{
-				$ddddate = new DateTime('+1 hour');
+				$ddddate = new \DateTime('+1 hour');
 				$ddmmii = $ddddate->format('Y-m-d H:i:s');
 
 				mysqli_query($this->connection, " UPDATE backup SET lastdate='$ddmmii' ");
@@ -596,24 +611,42 @@ class General {
 	}
 
 
+    /**
+     *  Проверим на существование конкретной модели
+     */
+    public function checkID($id)
+    {
+        if ( empty($id) || !is_int($id) ) return false;
+        $query = mysqli_query($this->connection, " select 1 from stock where id='$id' limit 1 ");
+        if ( $query->num_rows ) return true;
+        return false;
+    }
+
+
+    /**
+     * @param $sqlStr
+     * @return bool|\mysqli_result
+     */
     public function baseSql($sqlStr)
     {
         if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
-        $result = [];
-
         $query = mysqli_query($this->connection, $sqlStr );
-        //if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];
-        if ( !$query ) throw new Error("Error in baseSql() " . mysqli_error($this->connection), 1);
+        if ( !$query ) throw new \Error("Error in baseSql() " . mysqli_error($this->connection), 1);
 
         return $query;
     }
-	public function sql($sqlStr)
+
+    /**
+     * @param $sqlStr
+     * @return bool
+     * @throws \Exception
+     */
+    public function sql($sqlStr)
     {
         if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
-        $result = [];
 
         $query = mysqli_query($this->connection, $sqlStr );
-        if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];
+        if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
 
         return $this->connection->insert_id;
     }
@@ -629,6 +662,24 @@ class General {
 
         while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;
         return $result;
+    }
+
+    /**
+     * @param $sqlStr
+     * @return array|bool
+     * @throws \Exception
+     */
+    public function findOne($sqlStr)
+    {
+        if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
+
+        $result = [];
+
+        $query = $this->baseSql($sqlStr . " LIMIT 1");
+        if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
+
+        while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;
+        return $result[0];
     }
 
     public function getTableSchema($tableName)

@@ -1,27 +1,33 @@
 <?php
-
-require_once _globDIR_ . "classes/GeneralController.php";
+namespace Views\AddEdit\classes;
+use Views\Glob_Controllers\classes\GeneralController;
 
 class AddEditController extends GeneralController
 {
 
+    public $stockID = null;
+    public $component = null;
 
+    public function beforeAction()
+    {
+        $id = (int)$this->getQueryParam('id');
+        if ( $id < 0 || $id >= 99999 ) $this->redirect('/');
+        $component = (int)$this->getQueryParam('component');
+        if ( $component < 1 || $component > 3 ) $this->redirect('/');
+
+        $this->stockID = $id;
+        $this->component = $component;
+    }
+
+    /**
+     * @throws \Exception
+     */
     public function action()
     {
-        if ( filter_has_var(INPUT_GET, 'id') ) {
-            $id = (int)$_GET['id'];
-        } else {
-            header("location:" . _views_HTTP_ . "index.php");
-            exit;
-        }
-
-        $component = filter_has_var(INPUT_GET, 'component') ? (int)$_GET['component'] : false;
-        if ( $component < 1 || $component > 3 )  header("location:" . _views_HTTP_ . "index.php");
-
-        require_once _viewsDIR_.'AddEdit/classes/AddEdit.php';
+        $id = $this->stockID;
+        $component = $this->component;
         $addEdit = new AddEdit($id, $_SERVER);
-        $addEdit->connectToDB();
-        if ( $id > 0 && !$addEdit->checkID() )  header("location:" . _views_HTTP_ . "index.php");
+        if ( !$addEdit->checkID($id) )  $this->redirect('/');
 
         // список разрешенных для ред полей
         $permittedFields = $addEdit->permittedFields();
@@ -143,27 +149,6 @@ class AddEditController extends GeneralController
             $haveAi = 'hidden';
             $ai_hide = 'hidden';
 
-            $collections_len = $_SESSION['general_data']['collection'] = explode(';',$row['collections']);
-
-            // откроем блок для внесения ai файла, если коллекции соответствуют нижеперечисленным
-            foreach ( $collections_len?:[] as $coll_len )
-            {
-                switch ( $coll_len )
-                {
-                    case "Серебро с Золотыми накладками":
-                        $ai_hide = '';
-                        $noAi = '';
-                        break;
-                    case "Серебро с бриллиантами":
-                        $ai_hide = '';
-                        $noAi = '';
-                        break;
-                    case "Золото ЗВ":
-                        $ai_hide = '';
-                        $noAi = '';
-                        break;
-                }
-            }
 
             $gems  = $addEdit->getGems();
             $gs_len = $gems['gs_len'];

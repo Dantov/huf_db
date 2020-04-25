@@ -1,8 +1,6 @@
 <?php
-
-require _globDIR_ . "classes/GeneralController.php";
-/**
-*/
+namespace Views\Main\classes;
+use Views\Glob_Controllers\classes\GeneralController;
 
 class MainController extends GeneralController
 {
@@ -16,17 +14,19 @@ class MainController extends GeneralController
 		if ( !empty($controllerName) )
 			$this->controllerName = $controllerName;
 	}
-	
-	public function action()
+
+
+    /**
+     * @throws \Exception
+     */
+    public function action()
 	{
 		// означает что в поиске что-то найдено, и он нуждается в обновлении
 		if ( $_SESSION['countAmount'] && $_SESSION['re_search'] ) {
 			header("location:". _glob_HTTP_ ."search.php?searchFor={$_SESSION['searchFor']}");
 		}
 		$_SESSION['id_notice'] = 0;
-		require_once _viewsDIR_ . 'Main/classes/Main.php';
 		$main = new Main($_SERVER, $_SESSION['assist'], $_SESSION['user'], $_SESSION['foundRow']);
-		$main->connectToDB();
 		
 		$main->unsetSessions();
 
@@ -57,8 +57,7 @@ class MainController extends GeneralController
 		// почистим старые уведомления
 		if ( $_SESSION['user']['id'] == 1 ) 
 		{
-			require( _globDIR_ . 'classes/PushNotice.php');
-			$pn = new PushNotice();
+			$pn = new \Views\Glob_Controllers\classes\PushNotice();
 			$pn->clearOldNotices();
 		}
 
@@ -70,6 +69,7 @@ class MainController extends GeneralController
 		if ( !isset($_SESSION['nothing']) ) {
 			$showModels = '';
 			$drawBy_ = (int)$_SESSION['assist']['drawBy_']?:false;
+
 
 			// **************=================*****************//
 			// Плиткой

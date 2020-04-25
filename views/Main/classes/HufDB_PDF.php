@@ -1,4 +1,6 @@
 <?php
+namespace Views\Main\classes;
+use vendor\TCPDF\TCPDF;
 /**
  * Created by PhpStorm.
  * User: Dant
@@ -6,7 +8,7 @@
  * Time: 16:24
  */
 session_start();
-require_once( _vendorDIR_.'TCPDF/tcpdf.php');
+//require_once( _vendorDIR_.'TCPDF/tcpdf.php');
 class HufDB_PDF extends TCPDF
 {
     public $headerName;

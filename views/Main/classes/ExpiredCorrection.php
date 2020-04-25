@@ -1,4 +1,5 @@
 <?php
+namespace Views\Main\classes;
 
 class ExpiredCorrection
 {

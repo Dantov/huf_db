@@ -1,4 +1,5 @@
-<?php 
+<?php
+namespace Views\Glob_Controllers\classes;
 /**
  * This file contains the Backup_Database class wich performs
  * a partial or complete backup of any given MySQL database
@@ -92,7 +93,7 @@ class Backup_Database {
         $this->conn            = $this->initializeDatabase();
         $this->backupDir       = BACKUP_DIR ? BACKUP_DIR : '.';
 		
-		$ddddate = new DateTime('+1 hour');
+		$ddddate = new \DateTime('+1 hour');
         $ddmmii = $ddddate->format('d.m.Y H-i');
         
         $this->backupFile      = 'SQLBackup_'.$this->dbName.'_'.$ddmmii.'.sql';
@@ -107,13 +108,13 @@ class Backup_Database {
         try {
             $conn = mysqli_connect($this->host, $this->username, $this->passwd, $this->dbName);
             if (mysqli_connect_errno()) {
-                throw new Exception('ERROR connecting database: ' . mysqli_connect_error());
+                throw new \Exception('ERROR connecting database: ' . mysqli_connect_error());
                 die();
             }
             if (!mysqli_set_charset($conn, $this->charset)) {
                 mysqli_query($conn, 'SET NAMES '.$this->charset);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             print_r($e->getMessage());
             die();
         }
@@ -249,7 +250,7 @@ class Backup_Database {
                 $this->obfPrint('Backup file succesfully saved to ' . $this->backupDir.'/'.$this->backupFile, 1, 1);
                 $this->done = true;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             print_r($e->getMessage());
             return false;
         }
@@ -274,7 +275,7 @@ class Backup_Database {
 
             file_put_contents($this->backupDir.'/'.$this->backupFile, $sql, FILE_APPEND | LOCK_EX);
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             print_r($e->getMessage());
             return false;
         }

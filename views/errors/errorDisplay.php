@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
 
-    <link href="<?= _rootDIR_HTTP_ ?>\css\bootstrap.min.css" rel="stylesheet">
-    <link href="<?= _rootDIR_HTTP_ ?>\css\bootstrap-theme.min.css" rel="stylesheet">
+    <link href="/web/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/web/css/bootstrap-theme.min.css" rel="stylesheet">
 </head>
 
 <body style="">
@@ -65,8 +65,8 @@
     </div>
 
 </div>
-<script src="<?= _views_HTTP_ ?>\js_lib\jquery-3.2.1.min.js"></script>
-<script src="<?= _views_HTTP_ ?>\js_lib\bootstrap.min.js"></script>
+<script src="/web/js_lib/jquery-3.2.1.min.js"></script>
+<script src="/web/js_lib/bootstrap.min.js"></script>
 </body>
 
 </html>

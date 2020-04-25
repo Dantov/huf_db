@@ -146,7 +146,7 @@
                               </ul>
                             </div>
                             <? if ( $editBtn ): ?>
-                            <a href="<?=_views_HTTP_?>AddEdit/index.php?id=<?=$id?>&component=2" class="btn btn-sm btn-default pull-right" style="color: #0f0f0f!important;">
+                            <a href="/add-edit/?id=<?=$id?>&component=2" class="btn btn-sm btn-default pull-right" style="color: #0f0f0f!important;">
                                 <span class="glyphicon glyphicon-pencil"></span>
                                 Редактировать
                             </a>
@@ -275,7 +275,7 @@
 
 <!-- lond cut div -->
 <div id="longTD" class="longTD hidden"></div>
-<img id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="imgPrev-thumbnail hidden"/>
+<img src="" id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="imgPrev-thumbnail hidden"/>
 
 
 <? include_once _globDIR_. 'includes/progressModal.php' ?>

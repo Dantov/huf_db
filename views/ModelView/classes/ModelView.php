@@ -1,5 +1,7 @@
 <?php
-if (!class_exists('General', false)) include( _globDIR_ . 'classes/General.php' );
+namespace Views\ModelView\classes;
+use Views\Glob_Controllers\classes\General;
+
 
 class ModelView extends General {
 	function __construct( $id=false, $server=false, $user=false ) {
@@ -9,6 +11,7 @@ class ModelView extends General {
 
         $this->connectToDB();
         $this->dataQuery();
+
 	}
 	
 	private $id;
@@ -131,8 +134,9 @@ class ModelView extends General {
 
 	public function getModelMaterials() 
 	{
-		require _viewsDIR_ . "AddEdit/classes/AddEdit.php";
-		$addEdit = new AddEdit($this->id, $_SERVER);
+		//require _viewsDIR_ . "AddEdit/classes/AddEdit.php";
+		$addEdit = new \Views\AddEdit\classes\AddEdit($this->id, $_SERVER);
+
         $addEdit->connectToDB();
         $mats = $addEdit->getMaterials($this->row);
         $addEdit->closeDB();

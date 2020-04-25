@@ -1,5 +1,6 @@
 <?php
-namespace Views\Glob_Controllers\classes;
+namespace Views\vendor\core;
+
 
 class Controller
 {
@@ -49,11 +50,94 @@ class Controller
      * @string - имя контроллера
      */
     public $controllerName;
+    protected $queryParams = [];
 
+    /**
+     * содержит методы для работы с сессиями
+     * @var null|Sessions
+     */
+    public $session = null;
 
-    public function action()
+    /**
+     * @var array - массив заголовков
+     */
+    public $headers = [];
+
+    public function __construct()
     {
+
+        $this->getHeaders();
+        $this->session = new Sessions();
+        //debug($this->session);
+        //$this->post();
+        //$this->isFiles();
+
+        //self::$Model = $this->getModel();
     }
+
+    public function setQueryParams($params)
+    {
+        if ( is_array($params) ) $this->queryParams = $params;
+    }
+    public function getQueryParams()
+    {
+        return $this->queryParams;
+    }
+    public function getQueryParam($param)
+    {
+        if ( !is_string($param) || empty($param) ) return null;
+        if ( array_key_exists($param, $this->queryParams) ) return $this->queryParams[$param];
+        return null;
+    }
+
+    /**
+     * Заполняет массив заголовков
+     * @return array - массив заголовков
+     */
+    public function getHeaders()
+    {
+        if ($this->headers === null) {
+
+            if (function_exists('getallheaders')) {
+                $headers = getallheaders();
+                foreach ($headers as $name => $value) {
+                    $this->headers[$name] = $value;
+                }
+            } elseif (function_exists('http_get_request_headers')) {
+                $headers = http_get_request_headers();
+                foreach ($headers as $name => $value) {
+                    $this->headers[$name] = $value;
+                }
+            } else {
+                foreach ($_SERVER as $name => $value) {
+                    if (strncmp($name, 'HTTP_', 5) === 0) {
+                        $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+                        $this->headers[$name] = $value;
+                    }
+                }
+            }
+        }
+        return $this->headers;
+    }
+
+
+    /**
+     * Проверяет если данные из Ajax
+     * @return bool
+     */
+    public function isAjax()
+    {
+        foreach ( $this->headers as $name => $val ) {
+            if ( $name === 'X-Requested-With' && $val === 'XMLHttpRequest'  ) return true;
+        }
+        return false;
+    }
+
+
+    public function beforeAction(){}
+    public function action(){}
+    public function afterAction(){}
+
 
     public function setTitle()
     {
@@ -73,6 +157,12 @@ class Controller
         if ( empty( $this->layout ) ) $this->layout = 'default';
     }
 
+    /**
+     * @param $filename
+     * @param array $vars
+     * @return mixed
+     * @throws \Exception
+     */
     public function render($filename, $vars=[])
     {
         if ( !empty($vars) && is_array($vars) ) extract($vars);
@@ -85,6 +175,49 @@ class Controller
         ob_end_clean();
 
         return $this->renderLayout($content);
+    }
+
+
+    /**
+     * обновить текущую старницу
+     */
+    public function refresh()
+    {
+        $params = '';
+        if ( !empty($this->queryParams) )
+        {
+            $params = '?';
+            foreach ( $this->queryParams as $paramName => $value )
+            {
+                $params .= $paramName . '=' . $value;
+            }
+        }
+        header('Location: ' . _rootDIR_HTTP_ . $this->controllerName . '/' . $params );
+        exit;
+    }
+
+
+    /**
+     * переход на др. страницу
+     * @param string $url
+     */
+    public function redirect($url='')
+    {
+        if ( !empty($url) ) {
+//            if ( $url === '/' ) {
+//                header("Location:" . _rootDIR_HTTP_ );
+//                exit;
+//            }
+            $first = substr($url, 0, 1);
+            if ( $first == '/' || $first == '\\' ) {
+                $url = ltrim($url,'/');
+                $url = _rootDIR_HTTP_ . $url;
+            } else {
+                $url = _rootDIR_HTTP_ . $url;
+            }
+            header("Location:" . $url);
+            exit;
+        }
     }
 
     /**
@@ -120,17 +253,12 @@ class Controller
         $this->blocks[$name] = ob_get_clean();
     }
 
-    public function beforeAction()
-    {
 
-    }
-
-    public function afterAction()
-    {
-
-    }
-
-
+    /**
+     * @param $fileName
+     * @param string $position
+     * @throws \Exception
+     */
     public function includePHPFile($fileName, $position='')
     {
         if ( empty($fileName) || !is_string($fileName) ) return;
@@ -138,7 +266,7 @@ class Controller
 
         $primalDir = _viewsDIR_ . $this->controllerName . '/includes/';
         if ( !file_exists($primalDir.$fileName) )
-            throw new Error('Файл "' . $fileName . '" не найден в папе подключений текущего контроллера.',3);
+            throw new \Exception('Файл "' . $fileName . '" не найден в папе подключений текущего контроллера.',3);
 
         $php['position'] = $position;
         $php['php'] = $primalDir.$fileName;
@@ -149,12 +277,13 @@ class Controller
      * @param $js
      * @param array $options
      * @param string $position
+     * @throws \Exception
      */
     public function includeJS($js, $options=[], $position='')
     {
         if ( empty($js) || !is_string($js) ) return;
         if ( !is_array($options) )
-            throw new Error('Опции должен быть массивом - ',2);
+            throw new \Exception('Опции должен быть массивом - ',2);
         if ( !$position ) $position = $this->ENDBody;
 
         $script['js'] = $js;
@@ -177,24 +306,26 @@ class Controller
 
         $this->jsPack[] = $script;
     }
+
     /**
      * @param $fileName
      * @param array $options
      * @param string $position
      * @throws \Error
+     * @throws \Exception
      */
     public function includeJSFile($fileName, $options=[], $position='')
     {
         if ( empty($fileName) ) return;
         if ( !$position ) $position = $this->ENDBody;
         if ( !is_array($options) )
-            throw new \Error('Опции должен быть массивом - ',2);
+            throw new \Exception('Опции должен быть массивом - ',2);
 
         $primalDir = _viewsDIR_ . $this->controllerName . '/js/';
         $httpPath = _views_HTTP_ . $this->controllerName . '/js/';
 
         if ( !file_exists($primalDir.$fileName) )
-            throw new \Error('Файл "' . $fileName . '" не найден в папе скриптов текущего контроллера.',3);
+            throw new \Exception('Файл "' . $fileName . '" не найден в папе скриптов текущего контроллера.',3);
 
         $script['position'] = $position;
         $script['src'] = $httpPath.$fileName;
@@ -251,4 +382,5 @@ class Controller
             echo '<script '.$pack['options'].' src="'.$pack['src'].'"></script>';
         }
     }
+
 }

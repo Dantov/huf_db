@@ -1,5 +1,6 @@
 <?php
-if (!class_exists('General', false)) include( _globDIR_ . 'classes/General.php' );
+namespace Views\Glob_Controllers\classes;
+//if (!class_exists('General', false)) include( _globDIR_ . 'classes/General.php' );
 
 class PushNotice extends General
 {
@@ -56,7 +57,7 @@ class PushNotice extends General
         if (!$id) return false;
         if (!$date)
         {
-            $dateTime = new DateTime();
+            $dateTime = new \DateTime();
             $date = $dateTime->format('Y-m-d');
         }
 
@@ -185,7 +186,7 @@ class PushNotice extends General
 
     public function clearOldNotices()
     { // удаляем записи которым больше 2х дней
-        $date = new DateTime('-2 days');
+        $date = new \DateTime('-2 days');
         $formDate = $date->format('Y-m-d');
         $dellQuery = mysqli_query($this->connection, " DELETE FROM pushnotice WHERE date<'$formDate' " );
         if ( $dellQuery ) return true;

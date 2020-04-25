@@ -1,7 +1,8 @@
 <?php
+namespace Views\Main\classes;
 session_start();
 
-require_once  _viewsDIR_ . 'Main/classes/Main.php';
+//require_once  _viewsDIR_ . 'Main/classes/Main.php';
 require_once _vendorDIR_ . "autoload.php";
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;

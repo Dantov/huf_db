@@ -19,7 +19,7 @@
 						<br/>
 					<?endfor; ?>
 				</div>
-				<a href="<?=_views_HTTP_ ?>ModelView/index.php?id=<?=$row['id'] ?>">
+				<a href="/model-view/?id=<?=$row['id'] ?>">
 					<div class="text-primary txt-art">
 						<? if ( $comlectIdent !== true ): ?>
 						<span><?= $row['number_3d'].$vc_show ?></span>
@@ -30,7 +30,7 @@
 				</a>
 			</div>
 			<? if ($editBtn): ?>
-				<a href="<?=_views_HTTP_ ?>AddEdit/index.php?id=<?=$row['id'] ?>&component=2" class="btn btn-sm btn-default editbtnshow">
+				<a href="/add-edit/?id=<?=$row['id'] ?>&component=2" class="btn btn-sm btn-default editbtnshow">
 					<span class="glyphicon glyphicon-pencil"></span>
 				</a>
 			<? endif; ?>

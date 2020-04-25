@@ -5,7 +5,7 @@
             Назад
         </a>
         <? if ( $component === 2 ): ?>
-            <a style="margin: 0 0 0 7px;" class="btn btn-sm btn-info pull-left" href="<?=_views_HTTP_?>ModelView/index.php?id=<?=$id;?>" role="button">
+            <a style="margin: 0 0 0 7px;" class="btn btn-sm btn-info pull-left" href="/model-view/?id=<?=$id;?>" role="button">
                 Просмотр
             </a>
         <? endif; ?>
@@ -24,7 +24,7 @@
     <div class="col-xs-12 col-sm-2">
         <? if ( $component === 2 ): ?>
             <? if ( $permittedFields['addComplect'] === true ): ?>
-                <a class="btn btn-sm btn-info pull-right" href="<?=_views_HTTP_?>AddEdit/index.php?id=<?=$id;?>&component=3" role="button">
+                <a class="btn btn-sm btn-info pull-right" href="?id=<?=$id;?>&component=3" role="button">
                     Добавить комплект
                 </a>
             <? endif; ?>
@@ -86,7 +86,7 @@
                     <?php $i = 0; foreach ( $collections_len?:[] as $collection ) : ?>
                         <tr>
                             <td style="width: 30px"><?=++$i?><?php --$i; ?></td>
-                            <td><?php include('includes/collections_input.php'); $i++?></td>
+                            <td><?php require _viewsDIR_. 'AddEdit/includes/collections_input.php'; $i++?></td>
                             <td style="width:100px;">
                                 <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
                                     <span class="glyphicon glyphicon-trash"></span>
@@ -276,7 +276,7 @@
             <?php //debug($images); ?>
             <?php $switchTableRow = "dropImage"; $protoImgRow = 0; ?>
             <?php foreach ( $images?:[] as $image ) : ?>
-                <?php require "includes/protoRows.php"?>
+                <?php require _viewsDIR_."AddEdit/includes/protoRows.php"?>
             <?php endforeach; ?>
             <div class="col-xs-12">
                 <div id="drop-area" title="Загрузить картинку">
@@ -285,7 +285,7 @@
                 </div>
             </div>
 
-            <?php $protoImgRow = 1; require 'includes/protoRows.php' // Прототип ?>
+            <?php $protoImgRow = 1; require _viewsDIR_."AddEdit/includes/protoRows.php" // Прототип ?>
         </div><!--Picts row-->
         <hr />
     <?php endif; ?>
@@ -314,11 +314,11 @@
                         <?php for ( $i = 0; $i < $gs_len; $i++ ): // автозаполнение если добавляем комплект или редакт модель?>
                             <tr>
                                 <td><?=$i+1;?></td>
-                                <td><?php include('includes/gems_diametr_input.php');?></td>
+                                <td><?php include(_viewsDIR_.'AddEdit/includes/gems_diametr_input.php');?></td>
                                 <td><input type="number" class="form-control gems_value_input" name="gemsVal[]" value="<?=$row_gems[$i]['value'];?>"></td>
-                                <td><?php include('includes/gems_cut_input.php'); ?></td>
-                                <td><?php include('includes/gems_input.php'); ?></td>
-                                <td><?php include('includes/gems_color_input.php'); ?></td>
+                                <td><?php include(_viewsDIR_.'AddEdit/includes/gems_cut_input.php'); ?></td>
+                                <td><?php include(_viewsDIR_.'AddEdit/includes/gems_input.php'); ?></td>
+                                <td><?php include(_viewsDIR_.'AddEdit/includes/gems_color_input.php'); ?></td>
                                 <td style="width:100px;">
                                     <button class="btn btn-sm btn-default " type="button" onclick="duplicateRow(this);" title="дублировать строку">
                                         <span class="glyphicon glyphicon-duplicate"></span>
@@ -357,8 +357,8 @@
                         <?php for ( $j = 0; $j < $vc_Len; $j++ ): ?>
                             <tr>
                                 <td><?=$j+1; ?></td>
-                                <td><?php include('includes/DopArticl_names_input.php'); ?></td>
-                                <td><?php include('includes/num3dVC_input.php'); ?></td>
+                                <td><?php include(_viewsDIR_.'AddEdit/includes/DopArticl_names_input.php'); ?></td>
+                                <td><?php include(_viewsDIR_.'AddEdit/includes/num3dVC_input.php'); ?></td>
                                 <td><input type="text" class="form-control" name="descr_dopvc_[]" value="<?=$row_dop_vc[$j]['descript'];?>"></td>
                                 <td>
                                     <button class="btn btn-sm btn-default " type="button" onclick="duplicateRow(this);" title="дублировать строку">
@@ -395,7 +395,7 @@
                     {
                         $repair = $repairs[$i];
                         if ( $whichRepair = $repair['which'] ? true : false ) continue; // пропустим ремонты модельеров, у них 1
-                        require "includes/protoRepair.php";
+                        require _viewsDIR_."AddEdit/includes/protoRepair.php";
                     }
                 ?>
                 <button data-repair="3d" style="margin-top:10px;" class="btn btn-info addRepairs"><span class="glyphicon glyphicon-cog"></span> Добавить ремонт 3Д</button>
@@ -407,7 +407,7 @@
                     {
                         $repair = $repairs[$i];
                         if ( !$whichRepair = $repair['which'] ? true : false ) continue; // пропустим ремонты 3д, у них 0
-                        require "includes/protoRepair.php";
+                        require _viewsDIR_."AddEdit/includes/protoRepair.php";
                     }
                     if (isset($whichRepair)) unset($whichRepair);
                 ?>
@@ -563,18 +563,18 @@
 
 
 
-<img id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
-<?php include('includes/resultModal.php');?>
-<?php include('includes/deleteModal.php');?>
-<?php include('includes/num3dVC_input_Proto.php');?>
-<?php include('includes/protoGemsVC_Rows.php');?>
-<? $isRepairProto = true; include('includes/protoRepair.php') ?>
+<img src="" id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
+<?php include(_viewsDIR_.'AddEdit/includes/resultModal.php');?>
+<?php include(_viewsDIR_.'AddEdit/includes/deleteModal.php');?>
+<?php include(_viewsDIR_.'AddEdit/includes/num3dVC_input_Proto.php');?>
+<?php include(_viewsDIR_.'AddEdit/includes/protoGemsVC_Rows.php');?>
+<? $isRepairProto = true; include(_viewsDIR_.'AddEdit/includes/protoRepair.php') ?>
 
-<script defer src="<?=_views_HTTP_?>AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
-<script defer src="<?=_views_HTTP_?>AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
-<script defer src="<?=_views_HTTP_?>AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
+<script defer src="../AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
+<script defer src="../AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
+<script defer src="../AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
 <?php if ( $permittedFields['images'] ): ?>
-<script defer src="<?=_views_HTTP_?>AddEdit/js/HandlerFiles.js?ver=<?=time();?>"></script>
+<script defer src="../AddEdit/js/HandlerFiles.js?ver=<?=time();?>"></script>
 <?php else: ?>
 <script>let handlerFiles;</script>
 <? endif;?>

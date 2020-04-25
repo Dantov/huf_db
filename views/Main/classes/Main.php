@@ -1,7 +1,6 @@
 <?php
-include( _globDIR_ . 'classes/General.php' );
-include( _viewsDIR_ . 'Main/classes/LastDateFinder.php' );
-include( _viewsDIR_ . 'Main/classes/ExpiredCorrection.php' );
+namespace Views\Main\classes;
+use Views\Glob_Controllers\classes\General;
 
 class Main extends General {
 
@@ -17,9 +16,8 @@ class Main extends General {
 		if ( isset($assist) ) $this->assist = $assist;
 
 		$this->row = !empty($foundRow) ? $foundRow : array();
-
 		$this->today = time();
-
+        $this->connectToDB();
 	}
 
     /**
