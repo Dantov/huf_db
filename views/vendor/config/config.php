@@ -6,7 +6,7 @@ return [
     'uploadPath' => '/uploads',
     'cachePath' => '/runtime/cache',
     'layout' => 'baseTheme',
-    'baseController' => 'base',
+    'baseController' => 'Main',
     'multiLanguage'=> [
         'enable' => true, // false - disable
         //'language' => require_once 'languages.php', // список доступных языков

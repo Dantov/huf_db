@@ -57,16 +57,23 @@ class Controller
      * @var null|Sessions
      */
     public $session = null;
+    
+    /**
+     * содержит методы для обработки запросов GET POST AJAX FILES
+     * @var type object
+     */
+    public $request = null;
 
     /**
      * @var array - массив заголовков
      */
     public $headers = [];
 
-    public function __construct()
+    public function __construct($controllerName)
     {
-
-        $this->getHeaders();
+        $this->controllerName = $controllerName;
+        //$this->getHeaders();
+        $this->request = new Request();
         $this->session = new Sessions();
         //debug($this->session);
         //$this->post();
@@ -89,50 +96,6 @@ class Controller
         if ( array_key_exists($param, $this->queryParams) ) return $this->queryParams[$param];
         return null;
     }
-
-    /**
-     * Заполняет массив заголовков
-     * @return array - массив заголовков
-     */
-    public function getHeaders()
-    {
-        if ($this->headers === null) {
-
-            if (function_exists('getallheaders')) {
-                $headers = getallheaders();
-                foreach ($headers as $name => $value) {
-                    $this->headers[$name] = $value;
-                }
-            } elseif (function_exists('http_get_request_headers')) {
-                $headers = http_get_request_headers();
-                foreach ($headers as $name => $value) {
-                    $this->headers[$name] = $value;
-                }
-            } else {
-                foreach ($_SERVER as $name => $value) {
-                    if (strncmp($name, 'HTTP_', 5) === 0) {
-                        $name = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
-                        $this->headers[$name] = $value;
-                    }
-                }
-            }
-        }
-        return $this->headers;
-    }
-
-
-    /**
-     * Проверяет если данные из Ajax
-     * @return bool
-     */
-    public function isAjax()
-    {
-        foreach ( $this->headers as $name => $val ) {
-            if ( $name === 'X-Requested-With' && $val === 'XMLHttpRequest'  ) return true;
-        }
-        return false;
-    }
-
 
     public function beforeAction(){}
     public function action(){}
@@ -169,7 +132,7 @@ class Controller
 
         ob_start();
         {
-            require_once _rootDIR_ . 'views/' . $this->controllerName . '/includes/'. $filename .'.php';
+            require_once _rootDIR_ . 'Views/' .'_'. $this->controllerName . '/includes/'. $filename .'.php';
             $content = ob_get_contents();
         }
         ob_end_clean();
@@ -196,18 +159,14 @@ class Controller
         exit;
     }
 
-
     /**
      * переход на др. страницу
      * @param string $url
      */
     public function redirect($url='')
     {
-        if ( !empty($url) ) {
-//            if ( $url === '/' ) {
-//                header("Location:" . _rootDIR_HTTP_ );
-//                exit;
-//            }
+        if ( !empty($url) ) 
+        {
             $first = substr($url, 0, 1);
             if ( $first == '/' || $first == '\\' ) {
                 $url = ltrim($url,'/');
@@ -264,7 +223,7 @@ class Controller
         if ( empty($fileName) || !is_string($fileName) ) return;
         if ( !$position ) $position = $this->ENDBody;
 
-        $primalDir = _viewsDIR_ . $this->controllerName . '/includes/';
+        $primalDir = _viewsDIR_ .'_'. $this->controllerName . '/includes/';
         if ( !file_exists($primalDir.$fileName) )
             throw new \Exception('Файл "' . $fileName . '" не найден в папе подключений текущего контроллера.',3);
 
@@ -321,8 +280,8 @@ class Controller
         if ( !is_array($options) )
             throw new \Exception('Опции должен быть массивом - ',2);
 
-        $primalDir = _viewsDIR_ . $this->controllerName . '/js/';
-        $httpPath = _views_HTTP_ . $this->controllerName . '/js/';
+        $primalDir = _viewsDIR_ .'_'. $this->controllerName . '/js/';
+        $httpPath = _views_HTTP_ .'_'. $this->controllerName . '/js/';
 
         if ( !file_exists($primalDir.$fileName) )
             throw new \Exception('Файл "' . $fileName . '" не найден в папе скриптов текущего контроллера.',3);

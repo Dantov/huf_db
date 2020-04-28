@@ -31,14 +31,14 @@ JS;
     <link rel="stylesheet" href="/web/css/iziModal.min.css">
     <link rel="stylesheet" href="/web/css/iziToast.min.css">
     <link rel="stylesheet" href="/web/fontawesome5.9.0/css/all.min.css">
-    <script src="../Glob_Controllers/js/const.js?ver=<?=time()?>"></script>
+    <script src="../_Globals/js/const.js?ver=<?=time()?>"></script>
     <script><?=$wsUserDataJS?></script>
-    <script src="../Glob_Controllers/js/webSocketConnect.js?ver=<?=time()?>"></script>
+    <script src="../_Globals/js/webSocketConnect.js?ver=<?=time()?>"></script>
     <? $this->head() ?>
 </head>
 
 <body id="body" class="<?=$_SESSION['assist']['bodyImg']?>">
-<? $this->beginBody() ?>
+<?php $this->beginBody() ?>
 	<div class="wrapper" id="content"> <!-- нужен что бы скрывать все для показа 3Д -->
 
         <nav class="navbar navbar-default nav-bar-marg">
@@ -51,18 +51,18 @@ JS;
                 <div class="navbar-collapse">
 
                     <ul class="nav nav-pills navbar-left inlblock" id="navnav">
-                        <li role="presentation" class="<?=$this->varBlock['activeMenu']?>"><a href="/">База</a></li>
-                            <? if ( $_SESSION['user']['access'] < 3 ): ?>
+                        <li role="presentation" class="<?=$this->varBlock['activeMenu']?>"><a href="/main">База</a></li>
+                            <?php if ( $_SESSION['user']['access'] < 3 ): ?>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-menu-hamburger"></span></button>
                                 <ul class="dropdown-menu">
                                     <li>
-                                        <a href="add-edit/?id=0&component=1"><span class="glyphicon glyphicon-file"></span>&#160; Добавить модель</a>
+                                        <a href="/add-edit/?id=0&component=1"><span class="glyphicon glyphicon-file"></span>&#160; Добавить модель</a>
                                     </li>
-                                    <li><a href="nomenclature/"><span class="glyphicon glyphicon-list-alt"></span>&#160; Номенклатура</a></li>
+                                    <li><a href="/nomenclature/"><span class="glyphicon glyphicon-list-alt"></span>&#160; Номенклатура</a></li>
                                 </ul>
                             </div>
-                            <?endif;?>
+                            <?php endif;?>
                         <li role="presentation">
                             <button id="collSelect" data-izimodal-open="#collectionsModal" type="button" title="Выбрать Коллекцию" style="font-size: 18px; padding: 5px 8px 0 8px;" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-gem"></i>
@@ -135,7 +135,7 @@ JS;
                     foreach ( $coll_silver as $id => $name )
                     {
                         ?>
-                        <a href="<?=_views_HTTP_?>Main/controllers/setSort.php?coll_show=<?=$id?>">
+                        <a href="/main/?coll_show=<?=$id?>">
                             <div coll_block class=" collItem"><?= $name ?></div>
                         </a>
                         <?php
@@ -150,7 +150,7 @@ JS;
                     foreach ( $coll_gold as $id => $name )
                     {
                         ?>
-                        <a href="<?=_views_HTTP_?>Main/controllers/setSort.php?coll_show=<?=$id?>">
+                        <a href="/main/?coll_show=<?=$id?>">
                             <div coll_block class=" collItem"><?= $name ?></div>
                         </a>
                         <?php
@@ -165,7 +165,7 @@ JS;
                     foreach ( $coll_diamond as $id => $name )
                     {
                         ?>
-                        <a href="<?=_views_HTTP_?>Main/controllers/setSort.php?coll_show=<?=$id?>">
+                        <a href="/main/?coll_show=<?=$id?>">
                             <div coll_block class=" collItem"><?= $name ?></div>
                         </a>
                         <?php
@@ -176,7 +176,7 @@ JS;
                     <div coll_block class=" collItem_TOP" >
                         Разные ( <?= count($coll_other) ?> )
                     </div>
-                    <a href="<?=_views_HTTP_?>Main/controllers/setSort.php?coll_show=-1">
+                    <a href="/main/?coll_show=-1">
                         <div coll_block class="collItem">
                             Все
                         </div>
@@ -185,7 +185,7 @@ JS;
                     foreach ( $coll_other as $id => $name )
                     {
                         ?>
-                        <a href="<?=_views_HTTP_?>Main/controllers/setSort.php?coll_show=<?=$id?>">
+                        <a href="/main/?coll_show=<?=$id?>">
                             <div coll_block class=" collItem"><?= $name ?></div>
                         </a>
                         <?php
@@ -196,7 +196,7 @@ JS;
         </div>
         <!-- END Блок коллекций -->
 
-        <?
+        <?php
             $container = 'container';
             if ( $this->varBlock['container'] === 2 )
             {
@@ -211,32 +211,32 @@ JS;
         </div><!--container-->
         <footer class="footer" style="box-shadow: 0 -1px 5px rgba(0,0,0,.075)">
             <div class="container">
-                <? if ( $_SESSION['user']['access'] == 1 || $_SESSION['user']['access'] == 2 ):?>
+                <?php if ( $_SESSION['user']['access'] == 1 || $_SESSION['user']['access'] == 2 ):?>
                     <a href="/add-edit/?id=0&component=1" class="btn btn-primary">
                         <span class="glyphicon glyphicon-file"></span>
                         <strong> Добавить модель</strong>
                     </a>
-                <? endif; ?>
+                <?php endif; ?>
                 <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="<?= _glob_HTTP_ ?>versions.php" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i>
             </div>
             <script src="/web/js_lib/jquery-3.2.1.min.js"></script>
             <script src="/web/js_lib/bootstrap.min.js"></script>
             <script src="/web/js_lib/iziModal.min.js"></script>
             <script src="/web/js_lib/iziToast.min.js"></script>
-			<script defer src="../Glob_Controllers/js/NavBar.js?ver=<?=time()?>"></script>
-			<? if ($_SESSION['assist']['PushNotice'] == 1): ?>
-				<script defer src="../Glob_Controllers/js/pushNotice.js?ver=<?=time() ?>"> </script>
-			<? endif; ?>
-            <script defer src="../Main/js/main.js?ver=<?=time()?>"></script>
-            <script defer src="../Main/js/ProgressModal.js?ver=<?=time()?>"></script>
+			<script defer src="../_Globals/js/NavBar.js?ver=<?=time()?>"></script>
+			<?php if ($_SESSION['assist']['PushNotice'] == 1): ?>
+				<script defer src="../_Globals/js/pushNotice.js?ver=<?=time() ?>"> </script>
+			<?php endif; ?>
+            <script defer src="../_Main/js/main.js?ver=<?=time()?>"></script>
+            <script defer src="../_Main/js/ProgressModal.js?ver=<?=time()?>"></script>
             
         </footer>
 
     </div><!--content-->
 	<div id="pushNoticeWrapp" class="row"></div>
-    <? if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
-    <? require _globDIR_."includes/CollectionsModal.php" ?>
-    <script defer src="../Glob_Controllers/js/CollectionsModal.js?ver=<?=time()?>"></script>
-    <? $this->endBody() ?>
+    <?php if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
+    <?php require _globDIR_."includes/CollectionsModal.php" ?>
+    <script defer src="../_Globals/js/CollectionsModal.js?ver=<?=time()?>"></script>
+    <?php $this->endBody() ?>
 </body>
 </html>

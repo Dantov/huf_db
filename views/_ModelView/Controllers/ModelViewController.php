@@ -1,0 +1,150 @@
+<?php
+namespace Views\_ModelView\Controllers;
+use Views\_ModelView\Models\ModelView;
+use Views\_Globals\Controllers\GeneralController;
+
+
+class ModelViewController extends GeneralController
+{
+
+    public $title = 'ХЮФ 3Д Модель - ';
+    public $stockID = null;
+
+
+    public function beforeAction()
+    {
+        //debug( $_GET,'$_GET '.__METHOD__ );
+        $id = (int)$this->getQueryParam('id');
+        if ( $id <= 0 || $id >= 99999 ) $this->redirect('/');
+        $this->stockID = $id;
+    }
+
+    public function action()
+    {
+        $id = $this->stockID;
+
+        $modelView = new ModelView($id, $_SERVER, $_SESSION['user']);
+        if (!$modelView->checkID($id)) $this->redirect('/');
+
+        $row = $modelView->row;
+
+        $coll_id = $modelView->getCollections();
+
+        $getStl = $modelView->getStl();
+        $button3D = $getStl['button3D'];
+        $dopBottomScripts = $getStl['dopBottomScripts'];
+
+
+        $matsCovers = $modelView->getModelMaterials();
+
+        $complectedStr = $modelView->getComplects();
+        $images = $modelView->getImages();
+
+
+        $mainImg = [];
+        foreach ( $images as $image )
+        {
+            if ( $image['main'] == 1 )
+            {
+                $mainImg['src'] = $image['img_name'];
+                $mainImg['id'] = $image['id'];
+                break;
+            }
+        }
+
+
+        $labels = $modelView->getLabels();
+        $gemsTR = $modelView->getGems();
+        $dopVCTr = $modelView->getDopVC();
+
+
+        $repairs = $modelView->getRepairs();
+
+        $stts = $modelView->getStatus($row);
+        $stat_name = $stts['stat_name'];
+        $stat_date = $stts['stat_date'];
+        $stat_class = $stts['class'];
+        $stat_title = $stts['title'];
+        $stat_glyphi = 'glyphicon glyphicon-' . $stts['glyphi'];
+
+        //debug($stts);
+
+
+        $statuses = $modelView->getStatuses();
+
+        $stillNo = !empty($row['vendor_code']) ? $row['vendor_code'] : "Нет";
+
+        $ai_file = '';
+        foreach ( $coll_id as $coll )
+        {
+            switch ( $coll['name'] )
+            {
+                case "Серебро с Золотыми накладками":
+                    $ai_file = $modelView->getAi();
+                    if (!$ai_file) $ai_file = 'Нет';
+                    break;
+                case "Серебро с бриллиантами":
+                    $ai_file = $modelView->getAi();
+                    if (!$ai_file) $ai_file = 'Нет';
+                    break;
+                case "Золото ЗВ":
+                    $ai_file = $modelView->getAi();
+                    if (!$ai_file) $ai_file = 'Нет';
+                    break;
+            }
+        }
+
+
+        $thisPage = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+        if ( $thisPage !== $_SERVER["HTTP_REFERER"] ) {
+            $_SESSION['prevPage'] = $_SERVER["HTTP_REFERER"];
+        }
+
+        $editBtn = false;
+        if ( isset($_SESSION['user']['access']) && $_SESSION['user']['access'] > 0 )
+        {
+            $userAccess = (int)$_SESSION['user']['access'];
+            if ( (int)$_SESSION['user']['access'] === 1 || (int)$_SESSION['user']['id'] === 33 ) { // весь доступ
+                $editBtn = true;
+            }
+            if ( (int)$_SESSION['user']['access'] === 2 )  // доступ только где юзер 3д моделлер или автор
+            {
+                $userRowFIO = $_SESSION['user']['fio'];
+                $authorFIO = $row['author'];
+                $modellerFIO = $row['modeller3D'];
+                if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE ) {
+                    $editBtn = true;
+                }
+            }
+
+            if ( (int)$_SESSION['user']['access'] === 3
+                || (int)$_SESSION['user']['access'] === 4
+                || (int)$_SESSION['user']['access'] === 5
+                || (int)$_SESSION['user']['access'] === 6
+            ) $editBtn = true;
+        }
+
+        $this->title .= $row['number_3d'] ." ". $row['model_type'];
+
+        $this->includeJSFile('show_pos_scrpt.js', ['defer','timestamp'] );
+        $this->includeJSFile('imageViewer.js', ['timestamp'] );
+
+        $imgEncode = json_encode($images,JSON_UNESCAPED_UNICODE);
+        $js = <<<JS
+        window.addEventListener('load',function() {
+          new ImageViewer($imgEncode).init();
+        }, false);
+JS;
+        $this->includeJS($js);
+
+        $this->includePHPFile('imageWrapper.php');
+
+        $compacted = compact([
+            'id','row','coll_id','getStl','button3D','dopBottomScripts','complectedStr','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
+            'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','stillNo','ai_file','thisPage','editBtn',
+            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers']);
+
+        return $this->render('modelView', $compacted);
+    }
+
+}

@@ -23,17 +23,26 @@ class Cookies
         return false;
     }
 
-    public static function dellAllCookies()
+
+    public static function dellAllCookies( $cookies=false, $cookieArrName=false )
     {
         $result = [];
-        foreach(self::getAll() as $cookie)
+        $cookiesArr = $cookies ?: self::getAll();
+        
+        foreach( $cookiesArr as $cookie => $value )
         {
-            if ( setcookie($cookie, '', 1, '/', $_SERVER['HTTP_HOST']) )
+            if (is_array($value) ) self::dellAllCookies($value, $cookie);
+
+            $cookieName = $cookie;
+            if ( is_string($cookieArrName) ) $cookieName = $cookieArrName . "[$cookie]";
+
+            if ( setcookie($cookieName, '', 1, '/', $_SERVER['HTTP_HOST']) )
             {
                 $result[] = true;
             } else {
                 $result[] = false;
             }
+
         }
         self::$cookies = [];
         foreach($result as $res)
@@ -44,14 +53,21 @@ class Cookies
         return true;
     }
 
-    public static function dellOne()
-    {
-
-    }
-
-    public static function getCookies()
-    {
-        return self::$cookies;
+    /**
+     * @param string $cookieName // user[id]
+     */
+    public static function dellOne($cookieName)
+    {   
+        if ( is_string($cookieName) )
+        {
+            if ( setcookie($cookieName, '', 1, '/', $_SERVER['HTTP_HOST']) )
+            {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     public static function getAll()

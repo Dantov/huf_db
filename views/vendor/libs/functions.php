@@ -4,7 +4,7 @@ function debug($arr, $str='', $die=false)
     $strrr = '';
     if ( !empty($str) ) $strrr = $str . " = ";
 
-    echo '<pre style="display: inline-block !important; vertical-align: top; margin-left: 5px; padding: 5px; border-left: 1px solid #0f0f0f">';
+    echo '<pre style="display: inline-block !important; vertical-align: top; margin-left: 5px; padding: 5px; border-bottom: 1px solid #0f0f0f; border-left: 1px solid #0f0f0f">';
     echo $strrr;
     print_r($arr);
     echo '</pre>';

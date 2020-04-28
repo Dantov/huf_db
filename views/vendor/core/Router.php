@@ -43,7 +43,8 @@ class Router
             self::$controllerName = 'Main';
         }
         //debug(self::$controllerName,'self::$controllerName');
-        self::$rout = "Views\\" .  self::$controllerName . "\classes\\" .  self::$controllerName . "Controller";
+        // _ добавляем для имени папки
+        self::$rout = "Views\\" . "_" . self::$controllerName . "\Controllers\\" .  self::$controllerName . "Controller";
         //debug(self::$rout,'self::$rout',1);
 
         if ( isset( $routs[1] ) ) self::parseParams($routs[1]);

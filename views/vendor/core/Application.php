@@ -1,6 +1,6 @@
 <?php
 namespace Views\vendor\core;
-use Views\vendor\core\error\ErrorHandler;
+use Views\vendor\core\Errors\ErrorHandler;
 
 class Application
 {
@@ -42,7 +42,16 @@ class Application
     {
 
         $class = $this->controllerPath;
-        if ( !file_exists( _rootDIR_ .'/'. str_replace('\\','/', $class) . '.php' ) ) throw new \Exception( "File " . $class . " not found!" , 333);
+        if ( !file_exists( _rootDIR_ .'/'. str_replace('\\','/', $class) . '.php' ) ) 
+        {
+            if ( !_DEV_MODE_ )
+            {
+                // header('Location: /');
+                // exit;    
+            }
+            
+            throw new \Exception( "Controller " . $class . " not found!" , 111);
+        }
 
         $controller = new $class($this->controllerName);
 
