@@ -13,41 +13,80 @@ class ModelViewController extends GeneralController
 
     public function beforeAction()
     {
-        //debug( $_GET,'$_GET '.__METHOD__ );
+        $request = $this->request;
+        if ( $request->isAjax() )
+        {
+            if ( (int)$request->post('zipExtract') === 1 )
+            {
+                $this->actionExtractStlFiles();
+            }
+            if ( (int)$request->post('zipDelete') === 1 )
+            {
+                $this->actionDellStlFiles();
+            }
+            exit;
+        }
+
         $id = (int)$this->getQueryParam('id');
-        if ( $id <= 0 || $id >= 99999 ) $this->redirect('/');
+        if ( $id <= 0 || $id >= 99999 ) $this->redirect('/main/');
         $this->stockID = $id;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function action()
     {
         $id = $this->stockID;
 
-        $modelView = new ModelView($id, $_SERVER, $_SESSION['user']);
+        $modelView = new ModelView($id);
         if (!$modelView->checkID($id)) $this->redirect('/');
 
         $row = $modelView->row;
+        $this->title .= $row['number_3d'] ." ". $row['model_type'];
 
         $coll_id = $modelView->getCollections();
 
-        $getStl = $modelView->getStl();
-        $button3D = $getStl['button3D'];
-        $dopBottomScripts = $getStl['dopBottomScripts'];
-
+        $button3D = '';
+        if ( $stl_file = $modelView->getStl() )
+        {
+            $button3D = $stl_file['stl_name'];
+            // ПРИМЕР!!
+            //$path = _webDIR_HTTP_ . 'js_lib/';
+            //$this->includeJSFile( 'three.min.js', ['path'=> $path] );
+            $this->includePHPFile('3DViewPanels.php');
+        }
+        $ai_file = $modelView->getAi();
 
         $matsCovers = $modelView->getModelMaterials();
-
         $complectedStr = $modelView->getComplects();
         $images = $modelView->getImages();
-
-
         $mainImg = [];
-        foreach ( $images as $image )
+        $mainIsset = false;
+        //debug($images,'$images',1);
+
+        $setMainImg = function($which) use (&$mainIsset, &$images, &$mainImg)
         {
-            if ( $image['main'] == 1 )
+            foreach ( $images as &$image )
+            {
+                if ($image[$which] == 1 ) {
+                    $mainImg['src'] = $image['img_name'];
+                    $mainImg['id'] = $image['id'];
+                    $image['active'] = 1;
+                    $mainIsset = true;
+                    break;
+                }
+            }
+        };
+        if ( !$mainIsset ) $setMainImg('main');
+        if ( !$mainIsset ) $setMainImg('sketch');
+        if ( !$mainIsset ) $setMainImg('onbody');
+        if ( !$mainIsset ) {
+            foreach ( $images as &$image )
             {
                 $mainImg['src'] = $image['img_name'];
                 $mainImg['id'] = $image['id'];
+                $image['active'] = 1;
                 break;
             }
         }
@@ -56,43 +95,15 @@ class ModelViewController extends GeneralController
         $labels = $modelView->getLabels();
         $gemsTR = $modelView->getGems();
         $dopVCTr = $modelView->getDopVC();
-
-
         $repairs = $modelView->getRepairs();
-
-        $stts = $modelView->getStatus($row);
-        $stat_name = $stts['stat_name'];
-        $stat_date = $stts['stat_date'];
-        $stat_class = $stts['class'];
-        $stat_title = $stts['title'];
-        $stat_glyphi = 'glyphicon glyphicon-' . $stts['glyphi'];
-
-        //debug($stts);
-
-
         $statuses = $modelView->getStatuses();
+        $currentStatus = $modelView->getStatus($row);
 
-        $stillNo = !empty($row['vendor_code']) ? $row['vendor_code'] : "Нет";
-
-        $ai_file = '';
-        foreach ( $coll_id as $coll )
-        {
-            switch ( $coll['name'] )
-            {
-                case "Серебро с Золотыми накладками":
-                    $ai_file = $modelView->getAi();
-                    if (!$ai_file) $ai_file = 'Нет';
-                    break;
-                case "Серебро с бриллиантами":
-                    $ai_file = $modelView->getAi();
-                    if (!$ai_file) $ai_file = 'Нет';
-                    break;
-                case "Золото ЗВ":
-                    $ai_file = $modelView->getAi();
-                    if (!$ai_file) $ai_file = 'Нет';
-                    break;
-            }
-        }
+        $stat_name = $currentStatus['stat_name'];
+        $stat_date = $currentStatus['stat_date'];
+        $stat_class = $currentStatus['class'];
+        $stat_title = $currentStatus['title'];
+        $stat_glyphi = 'glyphicon glyphicon-' . $currentStatus['glyphi'];
 
 
         $thisPage = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
@@ -124,8 +135,6 @@ class ModelViewController extends GeneralController
             ) $editBtn = true;
         }
 
-        $this->title .= $row['number_3d'] ." ". $row['model_type'];
-
         $this->includeJSFile('show_pos_scrpt.js', ['defer','timestamp'] );
         $this->includeJSFile('imageViewer.js', ['timestamp'] );
 
@@ -138,13 +147,87 @@ JS;
         $this->includeJS($js);
 
         $this->includePHPFile('imageWrapper.php');
+        $this->includePHPFile('progressModal.php','','',_globDIR_.'includes/');
 
         $compacted = compact([
             'id','row','coll_id','getStl','button3D','dopBottomScripts','complectedStr','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
-            'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','stillNo','ai_file','thisPage','editBtn',
+            'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','ai_file','stl_file','thisPage','editBtn',
             'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers']);
 
         return $this->render('modelView', $compacted);
+    }
+
+    protected function actionExtractStlFiles()
+    {
+        $request = $this->request;
+        $zip_name = $request->post('zip_name');
+        $zip_id = (int)$request->post('zip_id');
+        $zip_num3d = $request->post('zip_num3d');
+
+        $resp_arr['done'] = false;
+        if ( empty($zip_name) || empty($zip_id) || empty($zip_num3d) )
+        {
+            $resp_arr['errMessage'] = 'ExtractZip: Incoming data not valid.';
+            echo json_encode($resp_arr);
+            exit;
+        }
+//        debug($zip_name,'$zip_name');
+//        debug($zip_id,'$zip_id');
+//        debug($zip_num3d,'$zip_num3d',1);
+
+        $path = $zip_num3d .'/'.$zip_id.'/stl/';
+        $pathHTTP = _stockDIR_HTTP_.$path;
+        $pathAbsolute = _stockDIR_.$path;
+        $filePath = $pathAbsolute.$zip_name;
+        if ( !file_exists($filePath) )
+        {
+            $resp_arr['errMessage'] = 'ExtractZip: Zip archive '.$zip_name.' not found.';
+            echo json_encode($resp_arr);
+            exit;
+        }
+
+        $zip = new \ZipArchive();
+        $res = $zip->open($filePath);
+        if ( $res )
+        {
+            $zip->extractTo($pathAbsolute);
+
+            $names = [];
+            for ($i = 0; $i < $zip->numFiles; $i++) $names[$i] = $zip->getNameIndex($i);
+
+            $resp_arr['names'] = $names;
+            $resp_arr['zip_path'] = $pathHTTP;
+            $resp_arr['done'] = true;
+
+        } else {
+            $resp_arr['errMessage'] = 'ExtractZip: Can\'t open zip archive.';
+        }
+
+        echo json_encode($resp_arr);
+        exit;
+    }
+
+    protected function actionDellStlFiles()
+    {
+        $request = $this->request;
+        $dell_names = $request->post('dell_name');
+        if ( is_array($dell_names) && !empty($dell_names) )
+        {
+            foreach ( $dell_names as $name )
+            {
+                $stockPath = explode('/', $name);
+                unset($stockPath[0],$stockPath[1],$stockPath[2],$stockPath[3]);
+                $absPath = _stockDIR_ . implode('/',$stockPath);
+                $fileName = basename($name);
+                if ( file_exists($absPath) )
+                {
+                    unlink($absPath);
+                    $arr['files'][] = $fileName;
+                }
+            }
+            echo json_encode($arr);
+        }
+        exit;
     }
 
 }

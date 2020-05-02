@@ -44,7 +44,7 @@ document.querySelector('.content').addEventListener('click', function(event) {
 function getVCmenu( mType_name, targetEl ) 
 {
 	$.ajax({
-		url: "/add-edit/num3dVC", //"controllers/num3dVC_controller.php",
+		url: "/add-edit/num3dVC",
 		type: "POST",
 		data: {
 		   modelsTypeRequest: mType_name,
@@ -79,64 +79,70 @@ function getVCmenu( mType_name, targetEl )
 
 
 //-----  Добавляем STL и Ai файлы  -------//
-let stlSelect = document.getElementById('stlSelect');
 let aiSelect = document.getElementById('aiSelect');
-
 if ( aiSelect ) {
-	aiSelect.addEventListener('click',selectFilesAi,false);
-	let fileAi_input = document.getElementById('fileAi');
-	fileAi_input.onchange = function() { // запускаем по событию change
-		
-			aiSelect.classList.toggle('hidden');
-			let files = this.files;
-			let numfiles = files.length;
-			
-			let spanWrapp = document.createElement('span');
-				spanWrapp.setAttribute('id','spanWrappAi');
-			
-			for( let i = 0; i < numfiles; i++ ) {
-				let size = ( (files[i].size / 1024) ).toFixed(2);
-				let span = document.createElement('span');
-					span.style.backgroundColor = '#fff';
-					span.style.padding = '5px 8px 5px 8px';
-					span.style.marginRight = '5px';
-					span.style.borderRadius = '5px';
-					span.innerHTML = files[i].name + ' - (' + size + 'кб)';
-				spanWrapp.appendChild(span);
-			}
-			removeAi.parentElement.insertBefore(spanWrapp, removeAi);
-			removeAi.classList.toggle('hidden');
-		};
-		
-		let removeAi = document.getElementById('removeAi');
-			removeAi.addEventListener('click', clearAi_Inpt, false);
-			
-		function clearAi_Inpt(){
-			let spanWrapp = document.getElementById('spanWrappAi').remove();
-			fileAi_input.value = null;
-			this.classList.toggle('hidden');
-			aiSelect.classList.toggle('hidden');
-		}
-		function selectFilesAi() {
-			fileAi_input.click();
-		}
-}
+    let fileAi_input = document.getElementById('fileAi');
+    let removeAi = document.getElementById('removeAi');
 
+	aiSelect.addEventListener('click',function () {
+        fileAi_input.click();
+    },false);
+
+    removeAi.addEventListener('click', function () {
+        document.getElementById('spanWrappAi').remove();
+        fileAi_input.value = null;
+        this.classList.toggle('hidden');
+        aiSelect.classList.toggle('hidden');
+    }, false);
+
+	fileAi_input.onchange = function() {
+		aiSelect.classList.toggle('hidden');
+		let files = this.files;
+
+		let spanWrapper = document.createElement('span');
+        spanWrapper.setAttribute('id','spanWrappAi');
+
+		for( let i = 0; i < files.length; i++ ) {
+			let size = ( (files[i].size / 1024) ).toFixed(2);
+			let span = document.createElement('span');
+				span.style.backgroundColor = '#fff';
+				span.style.padding = '5px 8px 5px 8px';
+				span.style.marginRight = '5px';
+				span.style.borderRadius = '5px';
+				span.innerHTML = files[i].name + ' - (' + size + 'кб)';
+            spanWrapper.appendChild(span);
+		}
+		removeAi.parentElement.insertBefore(spanWrapper, removeAi);
+		removeAi.classList.toggle('hidden');
+	};
+
+}
+let stlSelect = document.getElementById('stlSelect');
 if ( stlSelect ) {
 
 	let fileSTL_input = document.getElementById('fileSTL');
     let removeStl = document.getElementById('removeStl');
 
-	fileSTL_input.onchange = function() // запускаем по событию change
+    stlSelect.addEventListener('click',function () {
+        fileSTL_input.click();
+    },false);
+
+    removeStl.addEventListener('click',function () {
+        document.getElementById('spanWrappSTl').remove();
+        fileSTL_input.value = null;
+        this.classList.toggle('hidden');
+        stlSelect.classList.toggle('hidden');
+    },false);
+
+	fileSTL_input.onchange = function()
 	{
 		stlSelect.classList.toggle('hidden');
 		let files = this.files;
-		let numfiles = files.length;
 
-		let spanWrapp = document.createElement('span');
-			spanWrapp.setAttribute('id','spanWrappSTl');
+		let spanWrapper = document.createElement('span');
+        spanWrapper.setAttribute('id','spanWrappSTl');
 
-		for( let i = 0; i < numfiles; i++ ) {
+		for( let i = 0; i < files.length; i++ ) {
 			let size = ( (files[i].size / 1024) / 1024 ).toFixed(2);
 			let span = document.createElement('span');
 				span.style.backgroundColor = '#fff';
@@ -144,26 +150,11 @@ if ( stlSelect ) {
 				span.style.marginRight = '5px';
 				span.style.borderRadius = '5px';
 				span.innerHTML = files[i].name + ' - (' + size + 'mb)';
-			spanWrapp.appendChild(span);
+            spanWrapper.appendChild(span);
 		}
-		removeStl.parentElement.insertBefore(spanWrapp, removeStl);
+		removeStl.parentElement.insertBefore(spanWrapper, removeStl);
 		removeStl.classList.toggle('hidden');
 	};
-
-    stlSelect.addEventListener('click',selectFilesSTL,false);
-	removeStl.addEventListener('click',clearStl_Inpt,false);
-		
-	function clearStl_Inpt()
-	{
-		let spanWrapp = document.getElementById('spanWrappSTl').remove();
-		fileSTL_input.value = null;
-		this.classList.toggle('hidden');
-		stlSelect.classList.toggle('hidden');
-	}
-    function selectFilesSTL()
-    {
-        fileSTL_input.click();
-    }
 
 }
 //----- END STL файлы -------//
@@ -316,10 +307,17 @@ function deleteRowNew( self ) {
 	if ( row.querySelector('.rowID').hasAttribute('value') )
 	{
         let inputs = row.querySelectorAll('input');
+        $.each(inputs, function(i, elem)
+        {
+            if (elem.className === 'rowID') return;
+            elem.setAttribute('value',-1);
+        });
+        /*
         inputs.forEach(function (elem) {
             if (elem.className === 'rowID') return;
             elem.setAttribute('value',-1);
         });
+        */
         row.setAttribute('class','hidden');
 	} else {
         row.remove();
@@ -572,20 +570,21 @@ function dellImgPrew(self){
     uplF_count--;
 }
 //----- удаление с сервера картинок, стл, модели целиком -------//
-function dell_fromServ( id, imgname, isSTL, dellpos, element )
+function dell_fromServ( id, fileName, fileType, dellPos, element )
 {
 
-    let imgtoDell;
+    let imageDOMElement;
     if (element)
     {
-        imgtoDell = element.parentElement.parentElement.parentElement;
+        imageDOMElement = element.parentElement.parentElement.parentElement;
     }
     let dellObj = {
-        id: id || false,
-        imgname: imgname || false,
-        isSTL: isSTL || false, // если == 2 значит это Ai файл
-        dellpos: dellpos || false,
-        element: imgtoDell || false,
+        id: id || 0,
+        fileName: fileName || '',
+        fileType: fileType || '', // 2 - Ai файл // 3 - картинка // 1 - stl
+        dellPosition: dellPos || '',
+        element: imageDOMElement || '',
+		deleteFile: fileName ? 1 : '',
     };
 
     dellModal.modalDataInit(dellObj);
@@ -612,8 +611,8 @@ function addPrevImg( domEl, vert, horiz )
 	let multMinTop = 10;
 	let multMinLeft = 15;
 	
-	if ( vert == 'bottom' ) multMinTop = - 185;
-	if ( horiz == 'right' ) multMinLeft = - 210;
+	if ( vert === 'bottom' ) multMinTop = - 185;
+	if ( horiz === 'right' ) multMinLeft = - 210;
 	
 	for ( let i = 0; i < complects.length; i++ ) {
 		if ( !complects[i].hasAttribute('imgtoshow') ) continue;
@@ -646,327 +645,3 @@ function addPrevImg( domEl, vert, horiz )
 	}
 }
 //---------END отображаем превью при наведении ----------//
-
-
-
-
-
-
-
-$.each(document.querySelectorAll('.submitButton'), function (index, button) {
-    button.addEventListener('click',function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        
-        if ( validateForm() ) submitForm();
-    }, false);
-});
-//-------- ВАЛИДАЦИЯ ФОРМЫ ---------//
-function validateForm() {
-	
-	if ( document.getElementById('collections_table') )
-	{
-		let collectionInputs = document.getElementById('collections_table').querySelectorAll('input');
-		if ( !collectionInputs.length ) {
-			alert( 'Нужно внести хоть одну коллекцию!' );
-			return false;
-	    }
-	    let collValid = true;
-	    $.each(collectionInputs, function (index, input) {
-	        if ( !input.value )
-			{
-	            input.scrollIntoView();
-	            alert( 'Выберите коллекцию!' );
-	            return collValid=false;
-			}
-	    });
-	    if ( !collValid ) return false;
-	}
-
-
-    if ( document.getElementById('author') && !document.getElementById('author').value )
-    {
-        alert( 'Нужно указать Автора!' );
-        return false;
-    }
-    if ( document.getElementById('modeller3d') && !document.getElementById('modeller3d').value )
-    {
-        alert( 'Нужно указать 3D-моделлера!' );
-        return false;
-    }
-    if ( document.getElementById('modelType') && !document.getElementById('modelType').value )
-    {
-        alert( 'Нужно указать Тип модели!' );
-        return false;
-    }
-
-    let modelWeight = document.getElementById('modelWeight');
-    if ( modelWeight )
-    {
-    	if ( document.getElementById('modelWeight') && !document.getElementById('modelWeight').value )
-	    {
-	        alert( 'Нужно указать Вес модели!' );
-	        return false;
-	    }
-	    if ( modelWeight.value < 0 || modelWeight.value > 1000 )
-		{
-	        alert( 'Вес модели указан не верно!' );
-	        return false;
-		}
-    }
-
-	if ( document.getElementById('metals_table') )
-	{
-		let materials = document.getElementById('metals_table').querySelectorAll('tr');
-		let matsArr = [];
-		$.each(materials, function (i, tr) {
-	    	if ( !tr.classList.contains('hidden') ) matsArr.push(tr);
-	    });
-
-	    if ( !matsArr.length ) {
-	        alert( 'Нужно внести хоть один материал!' );
-	        return false;
-	    }
-	    if ( matsArr[0] )
-		{
-			let inputs = matsArr[0].querySelectorAll('input');
-			let matsValid = false;
-	        $.each(inputs, function (index, input) {
-	            if ( input.value ) return matsValid=true;
-	        });
-	        if ( !matsValid ) {
-	            matsArr[0].scrollIntoView();
-	            alert( 'Заполните строку материала!' );
-	        	return false;
-	        }
-		}
-	}
-	
-	if ( document.getElementById('picts') )
-	{
-		let images = document.getElementById('picts').querySelectorAll('.image_row');
-	    let imgFor = document.getElementById('imgFor');
-	    if ( !images.length ) {
-	        imgFor.innerHTML = 'Нужно внести хоть одну картинку!';
-	        imgFor.classList.remove('hidden');
-	        imgFor.scrollIntoView();
-	        alert( 'Нужно внести хоть одну картинку!' );
-	        return false;
-	    } else {
-	        imgFor.classList.add('hidden');
-		}
-	}
-	
-
-	return true;
-}
-
-
-//-------- ОТПРАВКА ФОРМЫ ---------//
-function submitForm() {
-	
-	let addform = document.getElementById('addform');
-	//if ( !addform.checkValidity() ) return;
-
-
-	let addedit = '/add-edit/formdata';
-	let formData = new FormData(addform);
-		formData.append('userName',userName);
-		formData.append('tabID',tabName);
-
-	if ( handlerFiles )
-	{
-		handlerFiles.getFiles().forEach(function (file) {
-	        formData.append('UploadImages[]',file);
-	    });
-	}
-    
-    let modal = $('#modalResult');
-    let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
-    let status = document.querySelector('#modalResultStatus');
-    let back = modalButtonsBlock.querySelector('.modalProgressBack');
-    let edit = modalButtonsBlock.querySelector('.modalResultEdit');
-    let show = modalButtonsBlock.querySelector('.modalResultShow');
-
-    $('#modalResult').iziModal('open');
-	let xhr;
-
-    xhr = $.ajax({
-		url: addedit,
-		type: 'POST',
-		//dataType: "html", //формат данных
-		//dataType: "json",
-		//data: $("#addform").serialize(),
-		data: formData,
-		processData: false,
-		contentType: false,
-		beforeSend: function()
-		{
-            debug(xhr);
-
-			modal.iziModal('setTitle', 'Идёт отправление данных на сервер.');
-			modal.iziModal('setHeaderColor', '#858172');
-
-			//xhr.abort();
-			//if ( xhr.readyState === 0 ) debug('aborted');
-		},
-		success:function(resp)
-		{
-			resp = JSON.parse(resp);
-			debug(resp);
-
-			modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-saved');
-            modal.iziModal('setHeaderColor', '#edaa16');
-            modal.iziModal('setTitle', 'Сохранение прошло успешно!');
-            let title = '';
-			if ( resp.isEdit == true )
-			{
-				title = 'Данные модели <b>'+ resp.number_3d + ' - ' + resp.model_type+'</b> изменены!';
-            } else {
-                title = 'Новая модель <b>'+ resp.number_3d + ' - ' + resp.model_type+'</b> добавлена!';
-			}
-
-			status.innerHTML = title;
-
-			back.href = '../Main/index.php';
-            show.href = '../ModelView/index.php?id=' + resp.id;
-            let href = _URL_ + '/views/AddEdit/index.php?id=' + resp.id + '&component=2';
-
-            edit.onclick = function() {
-            	document.location.href = href;
-            };
-
-            back.classList.remove('hidden');
-            edit.classList.remove('hidden');
-            show.classList.remove('hidden');
-
-		},
-		error: function(error) { // Данные не отправлены
-			modal.iziModal('setTitle', 'Ошибка отправки! Попробуйте снова.');
-			modal.iziModal('setHeaderColor', '#95ffb1');
-
-            edit.classList.remove('hidden');
-            
-			debug(error);
-		}
-	});
-}
-//-------- END ОТПРАВКА ФОРМЫ ---------//
-
-
-
-
-//-------- Side buttons ---------//
-let addEditSideButtons = [];
-window.addEventListener('load',function(){
-	addEditSideButtons = document.getElementById('AddEditSideButtons').querySelectorAll('button');
-},false);
-
-function pageUp()
-{
-	//debug('Текущая прокрутка сверху: ' + window.pageYOffset);
-	window.scrollTo(0,0);
-}
-
-function pageDown()
-{
-    let scrollHeight = Math.max(
-        document.body.scrollHeight, document.documentElement.scrollHeight,
-        document.body.offsetHeight, document.documentElement.offsetHeight,
-        document.body.clientHeight, document.documentElement.clientHeight
-    );
-	window.scrollTo(0,scrollHeight);
-}
-
-window.addEventListener('scroll',function () {
-
-    let scrollHeight = Math.max(
-        document.body.scrollHeight, document.documentElement.scrollHeight,
-        document.body.offsetHeight, document.documentElement.offsetHeight,
-        document.body.clientHeight, document.documentElement.clientHeight
-    );
-    let windowHeight = document.documentElement.clientHeight;
-
-    addEditSideButtons = document.getElementById('AddEditSideButtons').querySelectorAll('button');
-
-    //верхняя
-	if ( window.pageYOffset === 0 ) addEditSideButtons[0].classList.add('hidden');
-    if ( window.pageYOffset !== 0 ) addEditSideButtons[0].classList.remove('hidden');
-
-    // нижняя
-    if ( Math.round(window.pageYOffset + windowHeight) === scrollHeight ) addEditSideButtons[2].classList.add('hidden');
-    if ( Math.round(window.pageYOffset + windowHeight) !== scrollHeight ) addEditSideButtons[2].classList.remove('hidden');
-
-});
-//-------- END Side buttons ---------//
-
-
-
-//-------- Statuses buttons ---------//
-let statusesChevrons = document.querySelectorAll('.statusesChevron');
-statusesChevrons.forEach(button => {
-    button.addEventListener('click', function () {
-
-        if ( button.getAttribute('data-status') == 0 )
-        {
-            button.setAttribute('data-status','1')
-        } else {
-            button.setAttribute('data-status','0');
-        }
-
-        button.classList.toggle('btn-info');
-        button.classList.toggle('btn-primary');
-        button.children[0].classList.toggle('glyphicon-menu-down');
-        button.children[0].classList.toggle('glyphicon-menu-left');
-        let statArea = this.parentElement.parentElement.children[1];
-        statArea.classList.toggle('statusesPanelBodyHidden');
-        statArea.classList.toggle('statusesPanelBodyVisible');
-    }, false);
-});
-
-let workingCenters = document.getElementById('workingCenters');
-let statusesInputs = workingCenters.querySelectorAll('input');
-let panelNeedle;
-statusesInputs.forEach(input => {
-
-    if ( input.hasAttribute('checked') )
-    {
-        panelNeedle = input.parentElement.parentElement.parentElement.parentElement;
-        panelNeedle.classList.remove('panel-info');
-        panelNeedle.classList.add('panel-warning');
-
-        panelNeedle.querySelector('button').click();
-    }
-});
-
-let openAll = document.querySelector('#openAll');
-let closeAll = document.querySelector('#closeAll');
-openAll.addEventListener('click', function () {
-    statusesChevrons.forEach(button => {
-        if ( button.getAttribute('data-status') == 1 ) return;
-        button.click();
-    });
-
-    this.classList.add('hidden');
-    closeAll.classList.remove('hidden');
-}, false);
-closeAll.addEventListener('click', function () {
-    statusesChevrons.forEach(button => {
-        if ( button.getAttribute('data-status') == 0 ) return;
-        button.click();
-    });
-
-    this.classList.add('hidden');
-    openAll.classList.remove('hidden');
-}, false);
-
-//-------- END Statuses buttons ---------//
-
-
-
-
-
-
-
-
-

@@ -4,20 +4,11 @@ use Views\_Globals\Models\General;
 
 
 class ModelView extends General {
-	function __construct( $id=false, $server=false, $user=false ) {
-		parent::__construct($server);
-		if ( isset($id) ) $this->id = $id;
-		//if ( isset($user) ) $this->user = $user;
 
-        $this->connectToDB();
-        $this->dataQuery();
-
-	}
 	
 	private $id;
 	public $number_3d;
-	//private $user;
-	
+
 	public  $row;
 	public  $coll_id;
 	public  $rep_Query;
@@ -28,6 +19,16 @@ class ModelView extends General {
 	private $stl_Query;
 	private $complect_Query;
 	private $ai_Query;
+
+    public function __construct( $id = false )
+    {
+        parent::__construct();
+
+        $this->id = (int)$id;
+
+        $this->connectToDB();
+        $this->dataQuery();
+    }
 	
 	public function dataQuery()
     {
@@ -58,18 +59,13 @@ class ModelView extends General {
         return $res;
     }
 	
-	public function getStl() {
-		
-		$result = array();
-		$result['dopBottomScripts'] = false;
-		$result['button3D'] = '';
-
+	public function getStl()
+    {
 		if ( $this->stl_Query->num_rows > 0 ) {
 			$stl_file = mysqli_fetch_assoc($this->stl_Query);
-            $result['button3D'] = $stl_file['stl_name'];
-			$result['dopBottomScripts'] = true;
+            return $stl_file;
 		}
-		return $result;
+        return false;
 	}
 
 	public function getAi()
@@ -109,7 +105,7 @@ class ModelView extends General {
             $fileImg = $this->number_3d.'/'.$complects['id'].'/images/'.$compl_row['img_name'];
             $img = _stockDIR_HTTP_ .$this->number_3d.'/'.$complects['id'].'/images/'.$compl_row['img_name'];
             if ( !file_exists(_stockDIR_.$fileImg) ) $img = _stockDIR_HTTP_."default.jpg";
-                $complStr .= '<a style="color:white!important;" imgtoshow="'. $img .'" href="index.php?id='.$complects['id'].'">'.$complects['model_type'].' </a>';
+                $complStr .= '<a style="color:white!important;" imgtoshow="'. $img .'" href="/model-view/?id='.$complects['id'].'">'.$complects['model_type'].' </a>';
 		}
 		if ( count($mass) == 0 ) $complStr = "Нет";
 		return $complStr;
@@ -132,9 +128,13 @@ class ModelView extends General {
 		return $images;
 	}
 
-	public function getModelMaterials() 
+    /**
+     * @return array|bool
+     * @throws \Exception
+     */
+    public function getModelMaterials()
 	{
-		$addEdit = new \Views\_AddEdit\Models\AddEdit($this->id, $_SERVER);
+		$addEdit = new \Views\_AddEdit\Models\AddEdit($this->id);
 
         $addEdit->connectToDB();
         $mats = $addEdit->getMaterials($this->row);

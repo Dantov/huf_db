@@ -55,6 +55,8 @@ function PushNotice()
             debug( JSON.parse( localStorage.getItem('showedNotice') ) );
         }
 	});
+
+    debug('PushNotice Init');
 }
 
 PushNotice.prototype.pushNoticeBadgeInc = function() {
@@ -67,9 +69,10 @@ PushNotice.prototype.closeAllNotices = function() {
 
 	let that = this;
     $.ajax({
-        url: _ROOT_ + "Views/Glob_Controllers/pushNoticeController.php",
+        url: "/globals/pushNotice",
         type: 'POST',
         data: {
+            PushNotice: 1,
             closeAllPN: 1,
             closeById: that.showedNotice,
         },
@@ -96,9 +99,10 @@ PushNotice.prototype.closeNotice = function(id, url)
     //ajax запрос на поставку ип адреса в таблицу
     let that = this;
     $.ajax({
-        url: _ROOT_ + "Views/Glob_Controllers/pushNoticeController.php",
+        url: "/globals/pushNotice",
         type: 'POST',
         data: {
+            PushNotice: 1,
             closeNotice: id
         },
         dataType:"json",
@@ -188,9 +192,12 @@ PushNotice.prototype.checkNotice = function() {
     let that = this;
 
     $.ajax({
-        url: _ROOT_ + "Views/Glob_Controllers/pushNoticeController.php",
+        url: "/globals/pushNotice",//"/Glob_Controllers/pushNoticeController.php",
         type: 'POST',
-        data: {},
+        data: {
+            PushNotice: 1,
+            checkNotice: 1,
+        },
         dataType:"json",
         success:function(data) {
 

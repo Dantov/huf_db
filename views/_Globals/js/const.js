@@ -9,15 +9,21 @@ const _URL_ = document.location.origin; // http://huf.db
 const _DIR_ = document.location.href.split('/')[3]; // views
 const _ROOT_ = _URL_ + '/'; //http://localhost/HUF_DB_Dev/
 
+// debug(_URL_,'_URL_');
+// debug(_DIR_,'_DIR_');
+// debug(_ROOT_,'_ROOT_');
+
 /**
  * @type {string}
  * _CONTROLLER_ - страница где находимся
  */
-const _CONTROLLER_ = document.location.href.split('/')[4]; // AddEdit/Main/ModelView
+const _CONTROLLER_ = _DIR_;//document.location.href.split('/')[4]; // AddEdit/Main/ModelView
+
+//debug(_CONTROLLER_,'_CONTROLLER_');
 let approvedControllers = [
-    'Main',
-    'ModelView',
-    'Nomenclature',
+    'main',
+    'model-view',
+    'nomenclature',
 ];
 const _PNSHOW_ = approvedControllers.includes(_CONTROLLER_);
 
@@ -59,4 +65,35 @@ function formatDate(date) {
     let yy = date.getFullYear();
 
     return dd + '.' + mm + '.' + yy;
+}
+function isInteger(num) {
+    return (num ^ 0) === num;
+}
+function copyInnerHTMLToClipboard(element)
+{
+    window.getSelection().removeAllRanges();
+    let range = document.createRange();
+    range.selectNode(element);
+    window.getSelection().addRange(range);
+    try {
+        // Now that we've selected the anchor text, execute the copy command
+        let successful = document.execCommand('copy');
+        let msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Copy: '+ element.innerHTML + ' - ' + msg);
+        setTimeout(function() {
+            window.getSelection().removeAllRanges();
+        },300);
+    } catch(err) {
+        debug(err,'Oops, unable to copy');
+    }
+    // Remove the selections - NOTE: Should use
+    // removeRange(range) when it is supported
+}
+function redirect(url) {
+    if ( !url ) return;
+    if ( typeof url === 'string' )
+    {
+        document.location.href = url;
+    }
+    return false;
 }

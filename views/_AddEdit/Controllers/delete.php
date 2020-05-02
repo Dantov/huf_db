@@ -2,10 +2,10 @@
 session_start();
 
 $id = (int) $_POST['id'];
-$imgname = $_POST['imgname'];
-$isSTL = (int) $_POST['isSTL'];
+$imgname = $_POST['imgName'];
+$isSTL = (int) $_POST['fileType'];
 $isPDF = (int) $_POST['isPDF'];
-$dellpos = (int) $_POST['dellpos'];
+$dellpos = (int) $_POST['dellPos'];
 
 $uploaddir = "../../../Stock/";
 chdir($uploaddir);

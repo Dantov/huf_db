@@ -15,7 +15,7 @@ $coll_other = $navBar['collectionList']['other'];
                     <div class="panel-body pb-0 p1">
                         <div class="list-group pb-1 mb-1 text-bold">
                             <?php foreach ( $coll_silver as $id => $name ) :?>
-                                <a class="list-group-item cursorPointer" href="/?coll_show=<?=$id?>"><?=$name?></a>
+                                <a class="list-group-item cursorPointer" href="/main/?coll_show=<?=$id?>"><?=$name?></a>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -28,7 +28,7 @@ $coll_other = $navBar['collectionList']['other'];
                     <div class="panel-body pb-0 p1">
                         <div class="list-group pb-1 mb-1 text-bold">
                             <?php foreach ( $coll_gold as $id => $name ) :?>
-                                <a class="list-group-item cursorPointer" href="/?coll_show=<?=$id?>"><?=$name?></a>
+                                <a class="list-group-item cursorPointer" href="/main/?coll_show=<?=$id?>"><?=$name?></a>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -41,7 +41,7 @@ $coll_other = $navBar['collectionList']['other'];
                     <div class="panel-body pb-0 p1">
                         <div class="list-group pb-1 mb-1 text-bold">
                             <?php foreach ( $coll_diamond as $id => $name ) :?>
-                                <a class="list-group-item cursorPointer" href="/?coll_show=<?=$id?>"><?=$name?></a>
+                                <a class="list-group-item cursorPointer" href="/main/?coll_show=<?=$id?>"><?=$name?></a>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -53,9 +53,9 @@ $coll_other = $navBar['collectionList']['other'];
                     <div class="panel-heading text-bold text-center">Разные (<?= count($coll_other)?>)</div>
                     <div class="panel-body pb-0 p1">
                         <div class="list-group pb-1 mb-1 text-bold">
-                            <a class="list-group-item cursorPointer" href="/?coll_show=-1">Все</a>
+                            <a class="list-group-item cursorPointer" href="/main/?coll_show=-1">Все</a>
                             <?php foreach ( $coll_other as $id => $name ) :?>
-                                <a class="list-group-item cursorPointer" href="/?coll_show=<?=$id?>"><?=$name?></a>
+                                <a class="list-group-item cursorPointer" href="/main/?coll_show=<?=$id?>"><?=$name?></a>
                             <?php endforeach; ?>
                         </div>
                     </div>

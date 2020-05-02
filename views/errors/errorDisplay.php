@@ -57,6 +57,7 @@
             </div>
             <p></p>
             <p> <?=  "PHP ver. " . PHP_VERSION . " (" . PHP_OS . ")" ?> </p>
+            <p> <?php debug($_SESSION,'$_SESSION'); ?> </p>
         <?php } else { ?>
             <h2>Внутренняя ошибка сервера! <b><?= $code ?></b></h2>
             <p>Сообщите разработчику.</p>

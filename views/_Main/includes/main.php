@@ -16,16 +16,16 @@ $session = $this->session;
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
 					<li role="presentation">
-						<a href="/?wcSort=none">Нет</a></li>
+						<a href="/main/?wcSort=none">Нет</a></li>
 					<li role="presentation" class="divider"></li>
-					<?php foreach ( $workingCenters as $wcKey => $workingCenter ) : ?>
+					<?php foreach ( $workingCenters?:[] as $wcKey => $workingCenter ) : ?>
 						<?php
 							$wcIDs = '';
 							foreach ( $workingCenter as $wcID => $wcArray ) $wcIDs .= $wcID.'-';
 							$wcIDs = trim($wcIDs,'-');
 						?>
 						<li role="presentation">
-							<a href="controllers/setSort.php?wcSort=<?=$wcIDs ?>"><?=$wcKey ?></a>
+							<a href="/main/?wcSort=<?=$wcIDs ?>"><?=$wcKey ?></a>
 						</li>
 					<?php endforeach; ?>
 				</ul>
@@ -46,10 +46,10 @@ $session = $this->session;
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
 					<li>
-						<a href="/?sortDirect=1" title="По возростанию">
+						<a href="/main/?sortDirect=1" title="По возростанию">
 							<span class="glyphicon glyphicon-triangle-top"></span> По возростанию</a></li>
 					<li>
-						<a href="/?sortDirect=2" title="По убыванию">
+						<a href="/main/?sortDirect=2" title="По убыванию">
 							<span class="glyphicon glyphicon-triangle-bottom"></span> По убыванию</a></li>
 				</ul>
 			</div>
@@ -61,13 +61,13 @@ $session = $this->session;
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
 					<li>
-						<a href="/?sortby=date">По Дате</a></li>
+						<a href="/main/?sortby=date">По Дате</a></li>
 					<li>
-						<a href="/?sortby=number_3d">По №3D</a></li>
+						<a href="/main/?sortby=number_3d">По №3D</a></li>
 					<li>
-						<a href="/?sortby=vendor_code">По Артикулу</a></li>
+						<a href="/main/?sortby=vendor_code">По Артикулу</a></li>
 					<li>
-						<a href="/?sortby=status">По Статусу</a></li>
+						<a href="/main/?sortby=status">По Статусу</a></li>
 				</ul>
 			</div>
 
@@ -78,22 +78,22 @@ $session = $this->session;
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
 					<li>
-						<a href="/?maxpos=12">12</a></li>
+						<a href="/main/?maxpos=12">12</a></li>
 					<li>
-						<a href="/?maxpos=18">18</a></li>
+						<a href="/main/?maxpos=18">18</a></li>
 					<li>
-						<a href="/?maxpos=24">24</a></li>
+						<a href="/main/?maxpos=24">24</a></li>
 					<li>
-						<a href="/?maxpos=48">48</a></li>
+						<a href="/main/?maxpos=48">48</a></li>
 					<li>
-						<a href="/?maxpos=102">102</a></li>
+						<a href="/main/?maxpos=102">102</a></li>
 				</ul>
 			</div>
 
 			<div class="btn-group" role="group" aria-label="...">
-				<a type="button" href="/?row_pos=2" class="btn btn-default <?=$activeList; ?>">
+				<a type="button" href="/main/?row_pos=2" class="btn btn-default <?=$activeList; ?>">
 					<span class="glyphicon glyphicon-th-list" title="Разбить по комплектам"></span></a>
-				<a type="button" href="/?row_pos=1" class="btn btn-default <?=$activeSquer; ?>"><span class="glyphicon glyphicon-th-large" title="Отобразить изделия плиткой"></a>
+				<a type="button" href="/main/?row_pos=1" class="btn btn-default <?=$activeSquer; ?>"><span class="glyphicon glyphicon-th-large" title="Отобразить изделия плиткой"></a>
 			</div>
 			<div class="btn-group" role="group">
 				<button type="button" class="btn btn-default <?=$activeWorkingCenters; ?> <?=$activeWorkingCenters2; ?> dropdown-toggle" title="кол-во отображаемых позиций" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -101,13 +101,13 @@ $session = $this->session;
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right">
 					<li>
-						<a href="/?row_pos=3">
+						<a href="/main/?row_pos=3">
 							<span class="glyphicon glyphicon-tasks"></span> Таблица Рабочих Участков</a></li>
 					<li>
-						<a href="/?row_pos=4">
+						<a href="/main/?row_pos=4">
 							<span class="glyphicon glyphicon-menu-hamburger"></span> Конечный центр нахождения</a></li>
 					<li>
-						<a href="/?row_pos=5">
+						<a href="/main/?row_pos=5">
 							<i class="fa-clock far"></i> Таблица просроченных</a></li>
 				</ul>
 			</div>
@@ -123,9 +123,9 @@ $session = $this->session;
 					<li role="presentation">
 						<a title="Снять выделение со всех моделей" class="selectsUncheckAll">Снять выделение</a></li>
 					<li role="presentation">
-						<a title="Отобразить только выделенные модели" href="controllers/selectionController.php?selectedModels=show">Показать</a></li>
+						<a title="Отобразить только выделенные модели" class="selectsShowModels">Показать</a></li>
 					<li role="presentation">
-						<a title="Изменить статус для всех выделенных моделей" href="/edit/">Проставить статус</a></li>
+						<a title="Изменить статус для всех выделенных моделей" class="editStatusesSelectedModels">Проставить статус</a></li>
 					<li role="presentation" class="divider"></li>
 					<?=$selectedModelsByLi; ?>
 				</ul>
@@ -150,13 +150,13 @@ $session = $this->session;
 			<?php endif; ?>
 			
 			<?php if ( $drawBy_ == 3 ): ?>
-				<a id="expiredButon" href="/?row_pos=5" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Таблица просроченных" >
+				<a id="expiredButon" href="/main/?row_pos=5" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Таблица просроченных" >
 					<i class="far fa-clock"></i>
 				</a>
 			<?php endif; ?>
 			
 			<?php if ( $drawBy_ == 5 ): ?>
-				<a id="wCentersButon" href="/?row_pos=3" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Таблица Рабочих Участков" >
+				<a id="wCentersButon" href="/main/?row_pos=3" class="btn btn-link" style="font-size: 18px; padding: 5px 8px 0 8px;" type="button" title="Таблица Рабочих Участков" >
 					<i class="fas fa-tasks"></i>
 				</a>
 			<?php endif; ?>
@@ -164,9 +164,15 @@ $session = $this->session;
 
 		<div class="pull-left">
 			<h3 style="margin: 0 0 0 15px; padding-top:4px;">
-				<a type="button" title="<?=$collectionName ?>" href="/?coll_show=<?=$session->getKey('assist')['collection_id']?>">
-					<span id="collectionName"><?=$collectionName?></span>
-				</a>
+                <?php if ( $searchFor = $session->getKey('searchFor') ): ?>
+                    <a type="button" title="сбросить" href="/main/?coll_show=-1">
+                        <span>Поиск по: &#171;<?=$searchFor?>&#187;</span>
+                    </a>
+                <?php else: ?>
+                    <a type="button" title="<?=$collectionName ?>" href="/?coll_show=<?=$session->getKey('assist')['collection_id']?>">
+                        <span id="collectionName"><?=$collectionName?></span>
+                    </a>
+                <?php endif; ?>
 			</h3>
 		</div>
 	</div><!-- end col -->
@@ -188,21 +194,12 @@ $session = $this->session;
 	<?php endif; ?>
 	<?=$showModels ?>
 </div>
-
 <!-- paggination -->
 <center>
 	<span class="statsbuttom"><?=$statsbottom?></span>
 	<?=$pagination?>
 </center>
 
-<?php include_once _viewsDIR_.'_Main/includes/modal.php' ?>
-<?php include_once _globDIR_ . 'includes/progressModal.php' ?>
-<script defer src="<?=_views_HTTP_ ?>_Main/js/Selects.js?ver=<?=time(); ?>"></script>
-
-<?php 
-    debug($_SESSION,'$_SESSION');
-    debug($_COOKIE,'$_COOKIE');
-?>
 <!--
 <div class="col-md-2">
     <iframe src="https://coronavirus-monitor.ru/map" frameBorder="0" height="400" width="900" style="max-width: 100%;"></iframe>

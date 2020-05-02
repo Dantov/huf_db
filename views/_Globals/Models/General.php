@@ -1,6 +1,7 @@
 <?php
 namespace Views\_Globals\Models;
 
+
 class General {
 	
     public function __construct( $server=false ) 
@@ -267,7 +268,11 @@ class General {
         return $connection;
     }
 
-	public function connectToDB()
+    /**
+     * @return bool|\mysqli
+     * @throws \Exception
+     */
+    public function connectToDB()
     {
         $connection = $this->connectDBLite();
         $this->getUser();
@@ -326,15 +331,9 @@ class General {
 		rmdir($src);
 	}
 	
-	public function unsetSessions($path=false) {
+	public function unsetSessions() {
 		// удаляем автозаполнение при возврате на главную
 		if ( isset($_SESSION['general_data']) ) unset($_SESSION['general_data']);
-		//удаляем инфу из ворд файла и сами файлы
-		if ( isset($_SESSION['fromWord_data']) ) { 
-			$this->rrmdir( _rootDIR_ .$_SESSION['fromWord_data']['tempDirName']);
-			unset($_SESSION['fromWord_data']);
-		}
-		if ( isset($_SESSION['id_progr']) ) unset($_SESSION['id_progr']); //сессия id пдф прогресс бара
 	}
 	
 	public function getStatus($row=[], $selMode='')
@@ -430,8 +429,13 @@ class General {
         $statusT['UPdate'] = $status_date;
         $this->addStatusesTable($statusT);
     }
-	
-	public function getLabels($str)
+
+    /**
+     * @param $str
+     * @return array
+     * @throws \Exception
+     */
+    public function getLabels($str)
     {
 		$result = array();
 		if ( isset($str) && !empty($str) )
@@ -455,12 +459,16 @@ class General {
 		return $result;
 	}
 
-	private static function getServiceArr()
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
+    private static function getServiceArr()
     {
-        if ( isset(self::$serviceArr) ) return self::$serviceArr;
+        if ( trueIsset(self::$serviceArr) ) return self::$serviceArr;
         $serviceQuery = mysqli_query(self::$connectObj,"SELECT * FROM service_arr");
 
-        if ( $serviceQuery === false ) throw new Error('No labels or Statuses found',500);
+        if ( $serviceQuery === false ) throw new \Exception('Tables "labels" or "Statuses" not found',500);
 
         while ( $data = mysqli_fetch_assoc($serviceQuery) ) self::$serviceArr[] = $data;
         //debug('serviceArr empty');
@@ -468,15 +476,21 @@ class General {
         return self::$serviceArr;
     }
 
-	public function getStatLabArr($query, $location = '')
+    /**
+     * @param $query
+     * @param string $location
+     * @return bool | mixed
+     * @throws \Exception
+     */
+    public function getStatLabArr($query, $location = '')
     {
 
         //статусы
 		if ( $query == 'status' )
 		{
-		    if ( !empty($location) && isset($this->statuses) )
+		    if ( !empty($location) && trueIsset($this->statuses) )
             {
-                if ( !is_int($location) ) new Error('location must be integer',500);
+                if ( !is_int($location) ) throw new \Exception('location must be integer',500);
                 $arrStatuses = [];
                 foreach ( $this->statuses as $status )
                 {
@@ -485,12 +499,12 @@ class General {
                 return $arrStatuses;
             }
 
-            if( isset($this->statuses) )
+            if( trueIsset($this->statuses)  )
             {
                 return $this->statuses;
             }
 
-            foreach ( self::$serviceArr as $status )
+            foreach ( self::getServiceArr() as $status )
             {
                 if ( $status['tab'] == 'status' ) $this->statuses[] = $status;
             }
@@ -501,10 +515,10 @@ class General {
 		//метки
 		if ( $query == 'labels' )
 		{
-            if ( isset($this->labels) ) return $this->labels;
+            if ( trueIsset($this->labels) ) return $this->labels;
 
             $c = 0;
-            foreach ( self::$serviceArr as $status )
+            foreach ( self::getServiceArr() as $status )
             {
                 if ( $status['tab'] == 'label' )
                 {
@@ -560,7 +574,7 @@ class General {
 			
 			$this->checkBackupFiles( (int)$maxAllowedFiles, BACKUP_DIR);
 			
-			$result = $backupDatabase->backupTables(TABLES, BACKUP_DIR) ? 'OK' : 'KO';
+			$result = $backupDatabase->backupTables(TABLES) ? 'OK' : 'KO';
 			$backupDatabase->obfPrint('Backup result: ' . $result, 1);
 
 			if ( $backupDatabase->done === true )
@@ -612,6 +626,8 @@ class General {
 
     /**
      *  Проверим на существование конкретной модели
+     * @param $id
+     * @return bool
      */
     public function checkID($id)
     {
@@ -625,12 +641,13 @@ class General {
     /**
      * @param $sqlStr
      * @return bool|\mysqli_result
+     * @throws \Exception
      */
     public function baseSql($sqlStr)
     {
-        if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
-        $query = mysqli_query($this->connection, $sqlStr );
-        if ( !$query ) throw new \Error("Error in baseSql() " . mysqli_error($this->connection), 1);
+        if ( !is_string($sqlStr) || empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
+        $query = mysqli_query( $this->connection, $sqlStr );
+        //if ( !$query ) throw new \Exception("Error in baseSql() " . mysqli_error($this->connection), 555);
 
         return $query;
     }
@@ -642,9 +659,7 @@ class General {
      */
     public function sql($sqlStr)
     {
-        if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
-
-        $query = mysqli_query($this->connection, $sqlStr );
+        $query = $this->baseSql( $sqlStr );
         if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
 
         return $this->connection->insert_id;
@@ -657,14 +672,12 @@ class General {
      */
 	public function findAsArray($sqlStr)
     {
-        if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
+        $query = $this->baseSql( $sqlStr );
+
+        if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
+        if ( !$query->num_rows ) return [];
 
         $result = [];
-
-        $query = mysqli_query($this->connection, $sqlStr );
-        if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
-        //if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];
-
         while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;
         return $result;
     }
@@ -676,7 +689,7 @@ class General {
      */
     public function findOne($sqlStr)
     {
-        if ( !is_string($sqlStr) || empty($sqlStr) ) return false;
+        if ( !is_string($sqlStr) || empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
 
         $result = [];
 
@@ -687,9 +700,14 @@ class General {
         return $result[0];
     }
 
+    /**
+     * @param $tableName
+     * @return array|bool
+     * @throws \Exception
+     */
     public function getTableSchema($tableName)
     {
-        if ( !is_string($tableName) || empty($tableName) ) return false;
+        if ( !is_string($tableName) || empty($tableName) ) throw new \Exception('Table name not valid!', 555);
         
         $query = $this->baseSql('DESCRIBE ' . $tableName);
         if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];

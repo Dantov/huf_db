@@ -62,25 +62,25 @@ DeleteModal.prototype.onModalOpen = function(that)
 	
 	let dellData = that.dellObj;
 	let titleText, img;
-	if ( dellData.imgname )
+	if ( dellData.fileName )
 	{
-		if ( !dellData.isSTL )
+		if ( dellData.fileType === 'image' )
 		{
-			titleText = 'Удалить картинку <b>' + dellData.imgname + '?</b>';
+			titleText = 'Удалить картинку <b>' + dellData.fileName + '?</b>';
 			img = document.createElement('img');
-			img.src = _URL_ + '/Stock/' + num3d + '/' + dellData.id + '/images/' + dellData.imgname + '';
+			img.src = _URL_ + '/Stock/' + num3d + '/' + dellData.id + '/images/' + dellData.fileName + '';
 			img.height = 100;
 		} else {
 			img = document.createElement('p');
-			img.innerHTML = dellData.imgname;
+			img.innerHTML = dellData.fileName;
 		}
 		status.appendChild(img);
 	}
-	if ( dellData.isSTL == 1 )
+	if ( dellData.fileType === 'stl' )
 		titleText = 'Удалить STL файлы позиции '+ modelText +'?'; 
-	if ( dellData.isSTL == 2 )
+	if ( dellData.fileType === 'ai' )
 		titleText = 'Удалить AI файл позиции '+ modelText +'?'; 
-	if ( dellData.dellpos ) 
+	if ( dellData.dellPosition ) 
 	{
 		titleText = 'Удалить позицию '+ modelText +'?';
 		modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-remove');
@@ -143,24 +143,24 @@ DeleteModal.prototype.modalDeleteButton = function(that, event) {
 	let back = buttons[0];
 	let dell = buttons[1];
 	let ok = buttons[2];
-	
+
 	$.ajax({
 		type: 'POST',
-		url: 'controllers/delete.php',
+		url: '/add-edit/delete',
 		data: dellData,
 		dataType:"json",
 		success:function(response) {
             debug(response,'response');
 
-			let imgname = response.imgname;
-			let kartinka = response.kartinka;
+			let fileName = response.fileName;
+			let text = response.text;
 
 			if ( response.dell ) { // удалили модель целиком
-				imgname = response.dell; // здесь строка с именем модели
-				kartinka = 'Модель ';
+				fileName = response.dell; // здесь строка с именем модели
+				text = 'Модель ';
 			}
 			
-			modal.iziModal('setTitle', kartinka + imgname +' удалена!');
+			modal.iziModal('setTitle', text + fileName +' удалена!');
 			modal.iziModal('setSubtitle', '');
 			modal.iziModal('setHeaderColor', '#2aabd2');
 			modal.iziModal('setIcon', 'glyphicon glyphicon-ok');
@@ -173,7 +173,12 @@ DeleteModal.prototype.modalDeleteButton = function(that, event) {
 			ok.classList.remove('hidden');
 			back.classList.add('hidden');
 			dell.classList.add('hidden');
-		}
+		},
+		error:function (error) {
+            debug("Ошибка при удалении!");
+
+			debug(error);
+        }
 	});
 };
 

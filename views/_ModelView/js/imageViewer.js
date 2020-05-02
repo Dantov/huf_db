@@ -67,7 +67,11 @@ ImageViewer.prototype.init = function()
     $(document).on('opening', '#modalImageViewer', function () {
 
         let num3D = document.getElementById('num3d').innerHTML;
-        let article = document.getElementById('articl').innerHTML !== 'Нет' ? ' / ' + document.getElementById('articl').innerHTML : '';
+        let article = '';
+        if ( document.getElementById('articl') )
+        {
+            article = ' / ' + document.getElementById('articl').innerHTML;
+        }
         let modType = document.getElementById('modelType').innerHTML;
         let titleStr = num3D + article + ' - ' + modType;
         $('#modalImageViewer').iziModal('setTitle',titleStr);

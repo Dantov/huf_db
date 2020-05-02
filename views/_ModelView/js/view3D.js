@@ -1,27 +1,28 @@
-var	content =  document.getElementById('content');
+let	content = document.getElementById('content');
 	content.classList.add('hidden');
-var buttonBlock3D = document.getElementById('buttonBlock3D');
+let buttonBlock3D = document.getElementById('buttonBlock3D');
 	buttonBlock3D.classList.toggle('hidden');
-var buttClose = document.getElementById('buttClose');
+let buttClose = document.getElementById('buttClose');
 	buttClose.classList.toggle('hidden');
-var body = document.getElementById('body');
+let body = document.getElementById('body');
 	body.classList.add('body');
-var info3D = document.getElementById('info3D');
+let info3D = document.getElementById('info3D');
 	info3D.classList.toggle('hidden');
-var dellstlform = document.getElementById('dellstlform');
-var f_num = dellstlform.children.length;
-var names = [];
-for ( var i = 0; i < f_num; i++ ) {
-	names[i] = dellstlform.children[i].getAttribute('value');
+let dellStlForm = document.getElementById('dellStlForm');
+let f_num = dellStlForm.children.length;
+let names = [];
+for ( let i = 0; i < f_num; i++ ) {
+
+	names[i] = dellStlForm.children[i].getAttribute('value');
 }
 
-var camera, scene, renderer, control;
+let camera, scene, renderer, control;
 
 			init();
 			
 			function init() {
-				var innW = window.innerWidth-5;
-				var innH = window.innerHeight-5;
+				let innW = window.innerWidth-5;
+				let innH = window.innerHeight-5;
 				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -29,15 +30,15 @@ var camera, scene, renderer, control;
 				renderer.setClearColor(0xc8c7ff);
 				document.body.appendChild( renderer.domElement );
 
-				var target = new THREE.Vector3( 0, 20, 0 );
+				let target = new THREE.Vector3( 0, 20, 0 );
 				
 				camera = new THREE.PerspectiveCamera( 50, innW / innH, 1, 5000 );
 				camera.position.set( 100, 50, 100 );
 				camera.lookAt( target );
 				
 				control = new THREE.TransformControls( camera, renderer.domElement );
-				
-				var trackballControls = new THREE.TrackballControls( camera );
+				/*
+				let trackballControls = new THREE.TrackballControls( camera );
 					trackballControls.rotateSpeed = 2;
 					trackballControls.zoomSpeed = 1.5;
 					trackballControls.panSpeed = 1.5;
@@ -45,28 +46,28 @@ var camera, scene, renderer, control;
 					trackballControls.noPan = false;
 					trackballControls.staticMoving = true;
 					trackballControls.dynamicDampingFactor = 0.5;
-				
-				/*
-				var orbitControls = new THREE.OrbitControls( camera, renderer.domElement );
+				*/
+
+				let orbitControls = new THREE.OrbitControls( camera, renderer.domElement );
 					orbitControls.target = target;
 					orbitControls.zoomSpeed = 1.5;
 					orbitControls.mouseButtons = {
 						ORBIT: THREE.MOUSE.RIGHT,
 						PAN: THREE.MOUSE.MIDDLE
-					}
+					};
 					orbitControls.saveState();
 					orbitControls.update();
-				*/
+
 				scene = new THREE.Scene();
-				var gridHelper = new THREE.GridHelper( 100, 10 );
-				var axesHelper = new THREE.AxesHelper(100);
+				let gridHelper = new THREE.GridHelper( 100, 10 );
+				let axesHelper = new THREE.AxesHelper(100);
 				scene.add( gridHelper );
 				scene.add( axesHelper );
 				
-				var pointLight_Camera = new THREE.PointLight( 0xffffff, 0.95, 600 );
-				var ambientLight = new THREE.AmbientLight(0xfff, 0.2);
-				var light = new THREE.DirectionalLight( 0xffffff, 0.65 );
-				var light2 = new THREE.DirectionalLight( 0xffffff, 0.65 );
+				let pointLight_Camera = new THREE.PointLight( 0xffffff, 0.95, 600 );
+				let ambientLight = new THREE.AmbientLight(0xfff, 0.2);
+				let light = new THREE.DirectionalLight( 0xffffff, 0.65 );
+				let light2 = new THREE.DirectionalLight( 0xffffff, 0.65 );
 					light.position.set( 100, 100, 100 );
 					light2.position.set( -100, -100, -100 );
 					
@@ -77,18 +78,18 @@ var camera, scene, renderer, control;
 				scene.add( ambientLight );
 				scene.add( camera );
 				
-				var pivots = [];
-				var objects = [];
-				var helpers = [];
-				var boxes = [];
-				var j = 0;
-				var loader = new THREE.STLLoader();
+				let pivots = [];
+				let objects = [];
+				let helpers = [];
+				let boxes = [];
+				let j = 0;
+				let loader = new THREE.STLLoader();
 				
-				for ( var i = 0; i < f_num; i++ ) {
+				for ( let i = 0; i < f_num; i++ ) {
 					
 					loader.load( names[i], function ( geometry ) {
 						
-						var material = new THREE.MeshPhongMaterial();
+						let material = new THREE.MeshPhongMaterial();
 							material.color.setHex( Math.random() * 0xffffff );
 							
 						objects[j] = new THREE.Mesh( geometry, material );
@@ -189,12 +190,12 @@ var camera, scene, renderer, control;
 				}, false );
 				
 				// raycaster try
-				var raycaster = new THREE.Raycaster();
-				var mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
+				let raycaster = new THREE.Raycaster();
+				let mouse = new THREE.Vector2(), INTERSECTED, SELECTED;
 
-				var objSize = new THREE.Vector3();
-				var camPosition = new THREE.Vector3();
-				var selectionBOX = new THREE.Box3();
+				let objSize = new THREE.Vector3();
+				let camPosition = new THREE.Vector3();
+				let selectionBOX = new THREE.Box3();
 
 				function onMouseClick( event ) {
 		
@@ -206,7 +207,7 @@ var camera, scene, renderer, control;
 					// find intersections
 					//console.log( helpers );
 					raycaster.setFromCamera( mouse, camera );
-					var intersects = raycaster.intersectObjects( objects );
+					let intersects = raycaster.intersectObjects( objects );
 					
 					if ( intersects.length > 0 ) {
 						//console.log('intersects = ', intersects );
@@ -231,7 +232,7 @@ var camera, scene, renderer, control;
 							console.log( selectionBOX.min, selectionBOX.max );
 							console.log( 'size = ', selectionBOX.getSize(objSize) );
 							
-							var helper = new THREE.Box3Helper( selectionBOX, 0xffff00 );
+							let helper = new THREE.Box3Helper( selectionBOX, 0xffff00 );
 								helper.name = SELECTED.name;
 							pivots[SELECTED.name].add( helper );
 							//scene.add( helper );
@@ -250,7 +251,7 @@ var camera, scene, renderer, control;
 						//SELECTED = null;
 						//scene.remove( control );
 					}
-				};
+				}
 				
 				function clearControl( event ) {
 		
@@ -261,22 +262,22 @@ var camera, scene, renderer, control;
 					
 					// find intersections
 					raycaster.setFromCamera( mouse, camera );
-					var intersects = raycaster.intersectObjects( objects );
+					let intersects = raycaster.intersectObjects( objects );
 					
 					if ( intersects.length > 0 ) {
 						
 						if ( SELECTED != intersects[ 0 ].object ) SELECTED = intersects[ 0 ].object;
 						
-						var box = new THREE.Box3().setFromObject(SELECTED);
+						let box = new THREE.Box3().setFromObject(SELECTED);
 							box.getCenter( target );
 						
 						//console.log( 'Center of obj = ', target );
-						trackballControls.target = target;
-						//orbitControls.target = target;
+						//trackballControls.target = target;
+						orbitControls.target = target;
 						camera.lookAt( target );
 						
 						camera.getWorldPosition( camPosition ); //взяли позицию камеры в 3д
-						var dist = box.distanceToPoint ( camPosition ); // расстояние до камеры
+						let dist = box.distanceToPoint ( camPosition ); // расстояние до камеры
 						
 						//console.log( 'Distance to camera = ', dist );
 						camera.translateZ( 40 - dist );
@@ -290,7 +291,7 @@ var camera, scene, renderer, control;
 						
 					}
 					
-				};
+				}
 				
 				function render() {
 					requestAnimationFrame( render );
@@ -298,8 +299,8 @@ var camera, scene, renderer, control;
 					pointLight_Camera.position = camera.position; // свет привязан к камере
 					
 					control.update();
-					trackballControls.update();
-					//orbitControls.update();
+					//trackballControls.update();
+					orbitControls.update();
 					if ( SELECTED ) {
 						helpers[SELECTED.name].update();
 					}
@@ -310,8 +311,8 @@ var camera, scene, renderer, control;
 				
 				function onWindowResize() {
 					
-					var innW = window.innerWidth-5;
-					var innH = window.innerHeight-5;
+					let innW = window.innerWidth-5;
+					let innH = window.innerHeight-5;
 					
 					camera.aspect = innW / innH;
 					camera.updateProjectionMatrix();
@@ -321,21 +322,28 @@ var camera, scene, renderer, control;
 				
 				// BUTTONS
 			
-				buttClose.onclick = function(){
-					let formData = new FormData(dellstlform);
+				buttClose.onclick = function()
+				{
+					let formData = new FormData(dellStlForm);
 					$.ajax({
-						url: "controllers/dellstl.php",
+						url: "/model-view/dellstl",
 						type: "POST",
 						data: formData,
+						//dataType: "JSON", //// не работает с new FormData
                         processData: false,
                         contentType: false,
-						success:function() {
+						success:function(resp) {
+                            //resp = JSON.parse(resp);
+                            //debug(resp);
 							location.reload(true);
-						}
+						},
+						error:function (err) {
+							debug(err,'3D view buttClose Error: ');
+                        }
 					})
 				};
-				/*
-				var buttAnim = document.getElementById('anim');
+
+				let buttAnim = document.getElementById('anim');
 					buttAnim.onclick = function(){
 						
 						if ( orbitControls.autoRotate ) {
@@ -344,8 +352,8 @@ var camera, scene, renderer, control;
 							orbitControls.autoRotate = true;
 						}
 					};
-				*/
-				var buttColor = document.getElementById('color');
+
+				let buttColor = document.getElementById('color');
 					buttColor.onclick = function(){
 						
 						if ( SELECTED ) {
@@ -353,13 +361,13 @@ var camera, scene, renderer, control;
 						}
 					};
 				
-				var buttGrid = document.getElementById('grid');
+				let buttGrid = document.getElementById('grid');
 					buttGrid.onclick = function(){
 						gridHelper.visible = !gridHelper.visible;
 						axesHelper.visible = !axesHelper.visible;
 					};
 				
-				var butt3D = document.getElementById('butt3D');
+				let butt3D = document.getElementById('butt3D');
 					butt3D.onclick = function(){
 						
 						buttonBlock3D.classList.toggle('hidden');

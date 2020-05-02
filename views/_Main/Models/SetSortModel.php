@@ -11,7 +11,7 @@ class SetSortModel extends General
     protected $session;
 
     /**
-     * @var $sessions object
+     * @var $sessions
      * @throws \Exception
      */
     public function __construct($session)
@@ -21,10 +21,12 @@ class SetSortModel extends General
         if ( !is_object($session) ) throw new \Exception( __METHOD__. " Error: Сессий нет, а они здесь нужны!", 01);
         $this->session = $session;
     }
-    
+
     /**
-     * 
-     * @param type $params array
+     *
+     * @param $params array
+     * @return bool|string
+     * @throws \Exception
      */
     public function setSort($params=[])
     {
@@ -77,10 +79,10 @@ class SetSortModel extends General
         $session = $this->session;
         // если в поиске что-то найдено, и он нуждается в обновлении
         if ( $session->getKey('countAmount') && $session->getKey('re_search') ) 
-	{
-            return '/search/?searchFor=' . $session->getKey('searchFor');
+	    {
+            return '/main/?searchFor=' . $session->getKey('searchFor');
             //header("location:"  . _rootDIR_HTTP_ . "Views/Glob_Controllers/search.php?searchFor={$_SESSION['searchFor']}");
-	}
+	    }
         return false;
     }
 
@@ -110,6 +112,10 @@ class SetSortModel extends General
         $session->setKey('assist', $assist);
     }
 
+    /**
+     * @param $collID
+     * @throws \Exception
+     */
     protected function showCollection($collID)
     {
         $collID = (int)$collID;
@@ -192,8 +198,13 @@ class SetSortModel extends General
         $session->setKey('assist', $assist);
         $session->setKey('re_search', true);
     }
-    
-    protected function sortByStatus($statusID) 
+
+    /**
+     * @param $statusID
+     * @return string
+     * @throws \Exception
+     */
+    protected function sortByStatus($statusID)
     {
         $session = $this->session;
         $assist = $session->getKey('assist');
@@ -229,7 +240,7 @@ class SetSortModel extends General
         if ( !empty($searchFor) ) 
         {
             $session->setKey('re_search', true);
-            return '/search/?searchFor=' . $searchFor;
+            return '/main/?searchFor=' . $searchFor;
         }
         //
         //header("location:"  . _rootDIR_HTTP_ . "Views/Glob_Controllers/search.php?searchFor={$_SESSION['searchFor']}");
@@ -241,7 +252,7 @@ class SetSortModel extends General
         $assist = $session->getKey('assist');
         
         if ( (int)$param === 1 ) $assist['sortDirect'] = "ASC";
-	if ( (int)$param === 2 ) $assist['sortDirect'] = "DESC";
+	    if ( (int)$param === 2 ) $assist['sortDirect'] = "DESC";
        
         $session->setKey('assist', $assist);
         $session->setKey('re_search', true);
@@ -252,7 +263,7 @@ class SetSortModel extends General
         $wcIDs = trim( htmlentities($wcIDs, ENT_QUOTES) );
         $wcIDs = explode('-',$wcIDs);
 
-        $workingCenters = $general->getWorkingCentersDB();
+        $workingCenters = $this->getWorkingCentersDB();
 
         // просто проверка, что б не пришли другие айдишники центров
         $wcIDsss = [];
@@ -282,8 +293,13 @@ class SetSortModel extends General
         $session->setKey('assist', $assist);
         $session->setKey('re_search', true);
     }
-    
-    protected function setExpiredModels($countedIds) 
+
+    /**
+     * @param $countedIds
+     * @return bool|string
+     * @throws \Exception
+     */
+    protected function setExpiredModels($countedIds)
     {
         $session = $this->session;
         $assist = $session->getKey('assist');
@@ -309,7 +325,7 @@ class SetSortModel extends General
         $session->setKey('assist', $assist);
         $session->setKey('re_search', true); // глючит без этого
         
-        return '/';
+        return '/main/';
         
         //$_SESSION['assist']['collectionName'] = 'Выбранные модели';
         //$_SESSION['assist']['collection_id'] = -1;

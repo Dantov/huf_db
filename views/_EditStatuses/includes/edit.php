@@ -17,7 +17,7 @@
 <div class="row">
     <? foreach( $models as $model ): ?>
     <div class="col-sm-3 col-md-2 col-lg-1 pl-1 pr-0" style="height: 200px; overflow: hidden;">
-        <a href="<?=_views_HTTP_ ?>ModelView/index.php?id=<?=$model['id'] ?>">
+        <a href="/model-view/?id=<?=$model['id'] ?>">
             <div class="thumbnail text-center">
               <small class="text-bold"><?=$model['number_3d'] ." ". $model['model_type'] ?></small><br>
               <img src="<?= _stockDIR_HTTP_ . $model['number_3d']."/".$model['id']."/images/".$model['img_name'] ?>" alt="">
@@ -102,39 +102,18 @@
             </div>
         </div>
         <!-- END Statuses -->
-
-
     </div><!--end row-->
     <hr />
-
     <input type="hidden" name="save" value="1"/>
     <input type="hidden" name="date" value="<?=date('Y-m-d'); ?>" />
-
 </form>
-
 <div class="row">
     <div class="col-xs-12">
         <center id="tosubmt">
-            <button class="btn btn-default"  onclick="submitForm();" >
+            <button class="btn btn-default submitButton" >
                 <span class="glyphicon glyphicon-floppy-disk"></span>
                 Сохранить
             </button>
         </center>
     </div><!--end col-xs-6-->
 </div><!--end row-->
-<p></p>
-
-<img id="complects" width="200px" class="img-thumbnail hidden"/>
-
-<?php include('../AddEdit/includes/resultModal.php');?>
-<script defer src="<?= _views_HTTP_ ?>AddEdit/js/ResultModal.js?ver=<?=time() ?>"> </script>
-<script defer src="js/edit.js?ver=<?=time();?>"></script>
-
-
-<div class="AddEditSideButtons" id="AddEditSideButtons">
-    <div class="btn-group-vertical" role="group" aria-label="...">
-        <button type="button" class="btn btn-info hidden" title="Вверх" onclick="pageUp();"><span class="glyphicon glyphicon-chevron-up"></span></button>
-        <button type="button" class="btn btn-success" title="Сохранить" onclick="submitForm();"><span class="glyphicon glyphicon-floppy-disk"></span></button>
-        <button type="button" class="btn btn-info" title="Вниз" onclick="pageDown();"><span class="glyphicon glyphicon-chevron-down"></span></button>
-    </div>
-</div>

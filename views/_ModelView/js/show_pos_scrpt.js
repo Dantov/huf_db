@@ -1,7 +1,7 @@
 "use strict";
 
-cutLongNames( document.querySelector('.table_gems'), 12 );
-cutLongNames( document.querySelector('.table_vc_links'), 12 );
+cutLongNames( document.querySelector('.table_gems'), 16 );
+cutLongNames( document.querySelector('.table_vc_links'), 16 );
 function cutLongNames( table, numCut ) {
 	if ( !table ) return;
 	let td_arr = table.getElementsByTagName('td');
@@ -120,41 +120,72 @@ let butt3D = document.getElementById('butt3D');
 if ( butt3D )
 {
     butt3D.onclick = function() {
-        let extractform = document.getElementById('extractform');
-        let formData = new FormData(extractform);
+        let formData = new FormData( document.getElementById('extractForm') );
         $.ajax({
-            url: "controllers/extractzip.php",
+            url: "/model-view/extract-zip",
             type: "POST",
             data: formData,
             processData: false,
             contentType: false,
+			//dataType: "JSON", // не работает с new FormData
             success:function(resp) {
                 resp = JSON.parse(resp);
+                if ( resp.done === false )
+                {
+                    debug(resp.errMessage);
+                	return;
+                }
 
-                if ( resp['Error'] != false ) return debug(resp['Error']);
+                let body = document.getElementById("body");
+                let formToDell = document.getElementById("dellStlForm");
 
-                let result = document.getElementById("content");
-                let formtodell = document.getElementById("dellstlform");
-
-                let names = resp['names'];
+                let names = resp.names;
 
                 for ( let i = 0; i < names.length; i++ )
                 {
                     let input = document.createElement('input');
-                    input.setAttribute( 'type', 'hidden' );
-                    input.setAttribute( 'name', 'dell_name[]' );
-                    input.setAttribute('value', '../../Stock/'+resp['zip_path'] + names[i]);
-
-                    formtodell.appendChild(input);
+						input.setAttribute('type', 'hidden');
+						input.setAttribute('name', 'dell_name[]');
+						input.setAttribute('value', resp.zip_path + names[i]); //'../../Stock/'+resp['zip_path'] + names[i]
+                    formToDell.appendChild(input);
                 }
 
-                let script = document.createElement('script');
-                script.setAttribute('src','js/view3D.js?ver=014');
-                result.appendChild(script);
+                let three = document.createElement('script');
+                three.setAttribute('src','/web/js_lib/three.min.js');
+                body.appendChild(three);
+                $( three ).on('load',function()
+                {
+                    let scripts = {
+                        script2: '/web/js_lib/OrbitControls.js',
+                        //script3: '/web/js_lib/TrackballControls.js',
+                        script4: '/web/js_lib/TransformControls.js',
+                        script5: '/web/js_lib/STLLoader.js',
+                        script6: '../_ModelView/js/view3D.js?ver='+new Date().getMilliseconds(),
+                    };
+                    for( let src in scripts )
+                    {
+                        let script = document.createElement('script');
+                        script.setAttribute('src',scripts[src]);
+                        body.appendChild(script);
+                    }
+
+                    body.classList.add('body');
+                });
+            },
+            error:function (err) {
+				debug('Error sending ajax');
+				debug(err);
             }
         })
     };
 }
+
+
+
+
+
+
+
 
 
 

@@ -1,7 +1,6 @@
 <?php
 namespace Views\_AddEdit\Models;
 use Views\_Globals\Models\General;
-//if (!class_exists('General', false)) include( _globDIR_ . 'classes/General.php' );
 
 /**
  * общий класс, для манипуляций с базой данных MYSQL, и файлами на сервере
@@ -36,9 +35,7 @@ class Handler extends General {
 		if ( isset($id) ) $this->id = $id;
 	}
 
-	/**
-	 * 
-	 */
+
 	public function setNumber_3d($number_3d='')
     {
 		if ( !empty($number_3d) )
@@ -74,7 +71,7 @@ class Handler extends General {
 	}
     public function setCollections($collections = [])
     {
-        if ( !is_array($collections) || empty($collections) ) return;
+        if ( !is_array($collections) || empty($collections) ) return null;
 
         foreach ( $collections as &$collection )
         {
@@ -209,7 +206,7 @@ class Handler extends General {
 
         foreach ( $labels as $label )
         {
-            foreach ( $labelsOrigin as $labelOrigin )
+            foreach ( $labelsOrigin?:[] as $labelOrigin )
             {
                 if ( $label === $labelOrigin['name'] )
                 {
@@ -307,7 +304,8 @@ class Handler extends General {
 			$quertext = mysqli_query($this->connection, " UPDATE stock SET creator_name='$creator_name' WHERE id='$this->id' ");
 		}
 	}
-	
+
+	/*
 	private function findLastNum() {
 		$findQuer = mysqli_query($this->connection, " SELECT img_name FROM images WHERE pos_id='$this->id' ");
 		if ($findQuer) {
@@ -323,6 +321,7 @@ class Handler extends General {
 			return $last_number;
 		}
 	}
+	*/
 	
 	public function addImageFiles($files, $imgRows)
     {
@@ -357,7 +356,7 @@ class Handler extends General {
             //если имя есть, это значит что добавили вручную
             if ( !empty( basename($files['name'][$i]) ) )
             {
-                $info = new SplFileInfo($files['name'][$i]);
+                $info = new \SplFileInfo($files['name'][$i]);
                 $extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
                 $uploading_img_name = $this->number_3d."_".$randomString.mt_rand(0,98764321).".".$extension;
                 $destination = $this->number_3d.'/'.$this->id.'/images/'.$uploading_img_name;
@@ -416,9 +415,9 @@ class Handler extends General {
 	public function addSTL( &$filesSTL ) {
 		$folder = $this->number_3d.'/'.$this->id.'/stl/';
 		
-		$zip = new ZipArchive();
+		$zip = new \ZipArchive();
 		$zip_name = $this->number_3d."-".$this->model_typeEn.".zip";
-		$zip->open($folder.$zip_name, ZIPARCHIVE::CREATE);
+		$zip->open($folder.$zip_name, \ZIPARCHIVE::CREATE);
 		$countSTls = count($filesSTL['name']);
 		for ( $i = 0; $i < $countSTls; $i++ ) {
 			
@@ -426,7 +425,7 @@ class Handler extends General {
 			
 			if ( !empty($fileSTL_name) ) {
 				
-				$info = new SplFileInfo($filesSTL['name'][$i]);
+				$info = new \SplFileInfo($filesSTL['name'][$i]);
 				$extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
 				
 				$uploading_fileSTL_name[$i] = $this->number_3d."-".$this->model_typeEn."-".$i.".".$extension;
@@ -454,9 +453,9 @@ class Handler extends General {
 	public function addAi( &$filesAi ) {
 		$folder = $this->number_3d.'/'.$this->id.'/ai/';
 		
-		$zip = new ZipArchive();
+		$zip = new \ZipArchive();
 		$zip_name = $this->number_3d."-".$this->model_typeEn.".zip";
-		$zip->open($folder.$zip_name, ZIPARCHIVE::CREATE);
+		$zip->open($folder.$zip_name, \ZIPARCHIVE::CREATE);
 		$countAis = count($filesAi['name']);
 		for ( $i = 0; $i < $countAis; $i++ ) {
 			
@@ -464,7 +463,7 @@ class Handler extends General {
 			
 			if ( !empty($fileAi_name) ) {
 				
-				$info = new SplFileInfo($filesAi['name'][$i]);
+				$info = new \SplFileInfo($filesAi['name'][$i]);
 				$extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
 				
 				$uploading_fileAi_name[$i] = $this->number_3d."-".$this->model_typeEn."-".$i.".".$extension;
@@ -758,6 +757,8 @@ class Handler extends General {
 	
 	public function deleteModel()
     {
+        chdir(_stockDIR_);
+
 		$selQuery = mysqli_query($this->connection, " SELECT number_3d,vendor_code,model_type FROM stock WHERE id='$this->id' ");
 		$row = mysqli_fetch_assoc($selQuery);
 
@@ -775,6 +776,7 @@ class Handler extends General {
 		mysqli_query($this->connection, " DELETE FROM vc_links       WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM statuses       WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM pushnotice     WHERE pos_id='$this->id' ");
+
 		$path = $row['number_3d'].'/'.$this->id;
 		
 		if ( file_exists($path) ) $this->rrmdir($path);
@@ -787,50 +789,131 @@ class Handler extends General {
 			if ( $files[$i] == '.' || $files[$i] == '..' ) continue;
 			if ( !empty($files[$i]) ) $is_empty = false;
 		}
-		if ( $is_empty ) rmdir($row['number_3d']);
+		if ( $is_empty ) rmdir( $row['number_3d'] );
 		
 		return $result;
 	}
-	
-	public function deleteImage($imgname) {
-		$result = mysqli_query($this->connection, " SELECT number_3d,vendor_code,model_type FROM stock WHERE id='$this->id' ");
-		$row = mysqli_fetch_assoc($result);
-		
-		mysqli_query($this->connection, " DELETE FROM images WHERE img_name='$imgname' ");
-		
-		if (file_exists($row['number_3d']."/".$this->id."/images/".$imgname)) {
-			unlink($row['number_3d']."/".$this->id."/images/".$imgname);
-		}
 
-		return true;
-	}
-	
-	public function deleteStl($stlname) {
-		$result = mysqli_query($this->connection, " SELECT number_3d,vendor_code,model_type FROM stock WHERE id='$this->id' ");
-		$row = mysqli_fetch_assoc($result);
-		
-		mysqli_query($this->connection, " DELETE FROM stl_files WHERE stl_name='$stlname' ");
-		
-		if (file_exists($row['number_3d']."/".$this->id."/stl/".$stlname)) {
-			unlink($row['number_3d']."/".$this->id."/stl/".$stlname);
-		}
-		
-		return true;
-	}
-	
-	public function deleteAi($aiName) {
-		$result = mysqli_query($this->connection, " SELECT number_3d,vendor_code,model_type FROM stock WHERE id='$this->id' ");
-		$row = mysqli_fetch_assoc($result);
-		
-		mysqli_query($this->connection, " DELETE FROM ai_files WHERE name='$aiName' ");
-		
-		if (file_exists($row['number_3d']."/".$this->id."/ai/".$aiName)) {
-			unlink($row['number_3d']."/".$this->id."/ai/".$aiName);
-		}
-		
-		return true;
-	}
-	
+    /**
+     * @param $fileName string
+     * @param $fileType string
+     * @return bool
+     * @throws \Exception
+     */
+    public function deleteFile( $fileName, $fileType )
+    {
+        if ( !is_string($fileName) || empty($fileName) || !is_string($fileType) || empty($fileType)  )
+            throw new \Exception('Имя и тип файла должен быть не пусты и string.',444);
+
+        $configs = [
+            'stl' => [
+                'table' => 'stl_files',
+                'field' => 'stl_name',
+                'folder' => 'stl',
+                'text' => 'Stl файлы ',
+            ],
+            'image' => [
+                'table' => 'images',
+                'field' => 'img_name',
+                'folder' => 'images',
+                'text' => 'Картинка ',
+            ],
+            'ai' => [
+                'table' => 'ai_files',
+                'field' => 'name',
+                'folder' => 'ai',
+                'text' => 'Файлы накладки ',
+            ],
+            '3dm' => [
+                'table' => '3dm_files',
+                'field' => 'name',
+                'folder' => '3dm',
+                'text' => '3dm файлы ',
+            ],
+        ];
+        if ( !array_key_exists($fileType, $configs) ) throw new \Exception('Передан не известный тип файла.',444);
+        $config = $configs[$fileType];
+
+        $modelData = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ");
+
+        $dellQuery = mysqli_query($this->connection, " DELETE FROM {$config['table']} WHERE {$config['field']}='$fileName' ");
+        if ( !$dellQuery ) throw new \Exception(__METHOD__.' Error '. mysqli_error($this->connection));
+
+        $file = _stockDIR_ . $modelData['number_3d']."/".$this->id."/{$config['folder']}/".$fileName;
+        if ( file_exists($file) )
+        {
+            unlink($file);
+            return $config['text'];
+        } else {
+            return false;
+        }
+    }
+//
+//    /**
+//     * @param $imgName
+//     * @return bool
+//     * @throws \Exception
+//     */
+//    public function deleteImage($imgName)
+//    {
+//        $modelData = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ");
+//
+//		$dellQuery = mysqli_query($this->connection, " DELETE FROM images WHERE img_name='$imgName' ");
+//		if ( !$dellQuery ) throw new \Exception(__METHOD__.' Error '. mysqli_error($this->connection));
+//
+//		$file = _stockDIR_ . $modelData['number_3d']."/".$this->id."/images/".$imgName;
+//		if ( file_exists($file) )
+//		{
+//			unlink($file);
+//            return true;
+//		} else {
+//		    return false;
+//        }
+//	}
+//
+//    /**
+//     * @param $stlName
+//     * @return bool
+//     * @throws \Exception
+//     */
+//    public function deleteStl($stlName)
+//    {
+//        $modelData = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ");
+//
+//        $dellQuery = mysqli_query($this->connection, " DELETE FROM stl_files WHERE stl_name='$stlName' ");
+//        if ( !$dellQuery ) throw new \Exception(__METHOD__.' Error '. mysqli_error($this->connection));
+//
+//        $file = _stockDIR_ . $modelData['number_3d']."/".$this->id."/stl/".$stlName;
+//		if ( file_exists($file) )
+//        {
+//            unlink($file);
+//            return true;
+//        } else {
+//            return false;
+//        }
+//	}
+//
+//    /**
+//     * @param $aiName
+//     * @return bool
+//     * @throws \Exception
+//     */
+//    public function deleteAi($aiName) {
+//        $modelData = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ");
+//
+//        $dellQuery = mysqli_query($this->connection, " DELETE FROM ai_files WHERE name='$aiName' ");
+//        if ( !$dellQuery ) throw new \Exception(__METHOD__.' Error '. mysqli_error($this->connection));
+//
+//        $file = _stockDIR_ . $modelData['number_3d']."/".$this->id."/ai/".$aiName;
+//        if ( file_exists($file) )
+//        {
+//            unlink($file);
+//            return true;
+//        } else {
+//            return false;
+//        }
+//	}
+
 	public function deletePDF($pdfName) {
 		
 		$name = _rootDIR_."Pdfs/".$pdfName;
@@ -981,12 +1064,12 @@ class Handler extends General {
      * @param $toRemove
      * @param $tableName
      * @return array|bool
-     * @throws Exception
+     * @throws \Exception
      */
     public function removeRows($toRemove, $tableName)
     {
     	if ( empty($toRemove) || !is_array($toRemove)) return [];
-        if ( empty($tableName) || !is_string($tableName) ) throw new Exception("Error removeRows() table name might be a string!", 1);
+        if ( empty($tableName) || !is_string($tableName) ) throw new \Exception("Error removeRows() table name might be a string!", 1);
         
         $ids = '';
         foreach ( $toRemove as $id )
@@ -1000,10 +1083,10 @@ class Handler extends General {
 
         try {
             $rem = $this->baseSql( "DELETE from $tableName WHERE id IN $ids" );
-            if ( isset($rem['error']) ) throw new Exception("Error removeRows() : " . $rem['error'], 1);
+            if ( isset($rem['error']) ) throw new \Exception("Error removeRows() : " . $rem['error'], 1);
             return true;
 
-        } catch ( Exception $e) {
+        } catch ( \Exception $e) {
             echo 'removeRows() Выбросил исключение: ',  $e->getMessage(), "\n";
         }
 
@@ -1011,8 +1094,11 @@ class Handler extends General {
     }
 
     /**
-    * Формируте массив строк для пакетной вставки картинок
-    */
+     * Формируте массив строк для пакетной вставки картинок
+     * @param $data
+     * @return array|bool
+     * @throws \Exception
+     */
     public function makeBatchImgInsertRow($data)
     {
         $newImgRows = [];
@@ -1092,24 +1178,25 @@ class Handler extends General {
 
     /**
      * Example:
-        INSERT INTO mytable (id, a, b, c)
-            VALUES  (1, 'a1', 'b1', 'c1'),
-                    (2, 'a2', 'b2', 'c2'),
-                    (3, 'a3', 'b3', 'c3'),
-                    (4, 'a4', 'b4', 'c4'),
-                    (5, 'a5', 'b5', 'c5'),
-                    (6, 'a6', 'b6', 'c6')
-        ON DUPLICATE KEY UPDATE
-                    id=VALUES(id),
-                    a=VALUES(a),
-                    b=VALUES(b),
-                    c=VALUES(c)
+     * INSERT INTO mytable (id, a, b, c)
+     * VALUES  (1, 'a1', 'b1', 'c1'),
+     * (2, 'a2', 'b2', 'c2'),
+     * (3, 'a3', 'b3', 'c3'),
+     * (4, 'a4', 'b4', 'c4'),
+     * (5, 'a5', 'b5', 'c5'),
+     * (6, 'a6', 'b6', 'c6')
+     * ON DUPLICATE KEY UPDATE
+     * id=VALUES(id),
+     * a=VALUES(a),
+     * b=VALUES(b),
+     * c=VALUES(c)
      *
      * @param array $rows
      * массив строк
      * @param string $table
      * имя таблицы
      * @return bool|int
+     * @throws \Exception
      */
     public function insertUpdateRows($rows, $table)
     {

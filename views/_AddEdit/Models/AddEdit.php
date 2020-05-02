@@ -4,16 +4,21 @@ use Views\_Globals\Models\General;
 
 class AddEdit extends General
 {
-	
-	function __construct( $id=false ) 
-	{
-		parent::__construct();
-		if ( $id ) $this->id = $id;
+
+    public $id;
+    public $row;
+	public $workingCenters;
+	public $users; //array - массив пользователей. Нужен для статусов
+
+    public function __construct( $id=false )
+    {
+        parent::__construct();
+        if ( $id ) $this->id = (int)$id;
 
         $this->connectToDB();
-	}
+    }
 
-	public function connectToDB()
+    public function connectToDB()
     {
         parent::connectToDB();
 
@@ -22,12 +27,6 @@ class AddEdit extends General
 
         return $this->connection;
     }
-
-    public $id;
-    public $row;
-	public $workingCenters;
-	public $users; //array - массив пользователей. Нужен для статусов
-
 
 	/**
 	*
@@ -222,7 +221,8 @@ class AddEdit extends General
 		
 		return $gems_Li;
 	}
-	public function getNamesVCLi(){
+	public function getNamesVCLi()
+    {
 		$vc_namesLI = '';
 		$vc_names_quer = mysqli_query($this->connection, " SELECT name FROM vc_names ");
 		while( $vc_names_row = mysqli_fetch_assoc($vc_names_quer) ) {

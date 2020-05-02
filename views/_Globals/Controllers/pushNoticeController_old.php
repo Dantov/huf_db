@@ -11,6 +11,7 @@
 		echo json_encode($arr);
 		exit;
 	}
+
 	if ( isset($_POST['closeAllPN']) ) {
 
 	    $notIDs = $_POST['closeById'];

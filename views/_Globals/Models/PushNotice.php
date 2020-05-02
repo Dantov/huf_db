@@ -1,6 +1,5 @@
 <?php
 namespace Views\_Globals\Models;
-use Views\_Globals\Models\General;
 
 class PushNotice extends General
 {

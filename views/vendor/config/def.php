@@ -16,8 +16,8 @@ define('_vendorDIR_', _rootDIR_.'vendor/');
 define('_rootDIR_HTTP_', 'http://'.$_SERVER['HTTP_HOST'].'/'); // для ссылок
 define('_webDIR_HTTP_', _rootDIR_HTTP_ . 'web/'); // для ссылок
 
-define('_views_HTTP_', _rootDIR_HTTP_.'views/'); // для ссылок
-define('_glob_HTTP_', _rootDIR_HTTP_.'views/Glob_Controllers/'); // для ссылок
+define('_views_HTTP_', _rootDIR_HTTP_.'Views/'); // для ссылок
+define('_glob_HTTP_', _views_HTTP_.'/_Globals/'); // для ссылок
 define('_stockDIR_HTTP_', _rootDIR_HTTP_.'Stock/'); // http://192.168.0.245/HUF_DB/Stock/
 
 

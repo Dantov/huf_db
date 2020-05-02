@@ -4,7 +4,7 @@ $coll_silver = $navBar['collectionList']['silver'];
 $coll_gold = $navBar['collectionList']['gold'];
 $coll_diamond = $navBar['collectionList']['diamond'];
 $coll_other = $navBar['collectionList']['other'];
-
+$session = $this->session;
 // Перекинем массив Юзера в JS
 $wsUserData = [];
 $wsUserData['id'] = $_SESSION['user']['id'];
@@ -70,14 +70,20 @@ JS;
                         </li>
                     </ul>
 
-                    <form action="<?=_glob_HTTP_?>search.php" method="post" <?=$searchStyle;?> class="navbar-form navbar-left topSearchForm">
+                    <form action="/main/search=<?=$_SESSION['searchFor']?>" method="post" <?=$searchStyle?> class="navbar-form navbar-left topSearchForm">
+                        <?php if ( trueIsset( $session->getKey('countAmount') ) ) : ?>
+                            <span class="cursorArrow" title="Найдено позиций"><?=$session->getKey('countAmount')?></span>
+                        <?php endif; ?>
                         <div class="input-group">
                         <span class="input-group-btn">
+                            <?php if ( $session->getKey('searchFor') ): ?>
+                                <a href="/main/?search=resetSearch" class="btn btn-link" type="button" name="resetSearch" title="Сбросить поиск"><i class="fas fa-broom"></i></a>
+                            <?php endif; ?>
                             <button class="btn btn-link" type="submit" name="search" title="Нажать для поиска">
                                 <span class="glyphicon glyphicon-search"></span>
                             </button>
                         </span>
-                            <input type="text" class="form-control topSearchInpt" title="Что искать" placeholder="Поиск..." name="searchFor" value="<?=$_SESSION['searchFor'];?>">
+                            <input type="text" class="form-control topSearchInpt" title="Что искать" placeholder="Поиск..." name="searchFor" value="<?=$_SESSION['searchFor']?>">
                             <div class="input-group-btn">
                                 <button type="button" id="searchInBtn" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Где искать">
                                     <span><?=$navBar['searchInStr'];?> </span><span class="caret"></span>
@@ -209,6 +215,14 @@ JS;
         <div class="<?=$container?> content">
             <?=$content;?>
         </div><!--container-->
+
+        <?php
+        debug($_GET,'$_GET');
+        debug($this->getQueryParams(),'QueryParams');
+        debug($_SESSION,'$_SESSION');
+        debug($_COOKIE,'$_COOKIE');
+        ?>
+
         <footer class="footer" style="box-shadow: 0 -1px 5px rgba(0,0,0,.075)">
             <div class="container">
                 <?php if ( $_SESSION['user']['access'] == 1 || $_SESSION['user']['access'] == 2 ):?>
@@ -217,7 +231,7 @@ JS;
                         <strong> Добавить модель</strong>
                     </a>
                 <?php endif; ?>
-                <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="<?= _glob_HTTP_ ?>versions.php" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i>
+                <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="/versions/" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i>
             </div>
             <script src="/web/js_lib/jquery-3.2.1.min.js"></script>
             <script src="/web/js_lib/bootstrap.min.js"></script>
@@ -225,11 +239,11 @@ JS;
             <script src="/web/js_lib/iziToast.min.js"></script>
 			<script defer src="../_Globals/js/NavBar.js?ver=<?=time()?>"></script>
 			<?php if ($_SESSION['assist']['PushNotice'] == 1): ?>
-				<script defer src="../_Globals/js/pushNotice.js?ver=<?=time() ?>"> </script>
+				<script defer src="../_Globals/js/pushNotice.js?ver=<?=time() ?>"></script>
 			<?php endif; ?>
             <script defer src="../_Main/js/main.js?ver=<?=time()?>"></script>
             <script defer src="../_Main/js/ProgressModal.js?ver=<?=time()?>"></script>
-            
+
         </footer>
 
     </div><!--content-->

@@ -10,12 +10,19 @@ class Main extends General {
     //public $workingCenters;
     public $today;
 
-    public function __construct( $server, $assist=false, $user=false, $foundRow=[] )
+    /**
+     * Main constructor.
+     * @param bool $assist
+     * @param bool $user
+     * @param array $foundRow
+     * @throws \Exception
+     */
+    public function __construct($assist=false, $user=false, $foundRow=[] )
     {
-        parent::__construct($server);
+        parent::__construct();
         if ( isset($assist) ) $this->assist = $assist;
 
-        $this->row = !empty($foundRow) ? $foundRow : array();
+        $this->row = !empty($foundRow) ? $foundRow : [];
         $this->today = time();
         $this->connectToDB();
     }
@@ -179,6 +186,8 @@ class Main extends General {
 	
 	public function getModelsFormStock()
     {
+        //debug($selectRow,'$selectRow',1);
+        //$_SESSION['assist']['collectionName'] = 'Все Коллекции';
         $where = "WHERE collections<>'Детали'";
         if ( $this->assist['collectionName'] != 'Все Коллекции' ) $where = "WHERE collections like '%{$this->assist['collectionName']}%'";
 
@@ -217,11 +226,12 @@ class Main extends General {
 
 		if ( $this->assist['byStatHistory'] === 1 )
         {
-            //include_once _globDIR_ . "classes/Search.php";
+
             $dates = [];
             if ( !empty($_SESSION['assist']['byStatHistoryFrom'])) $dates['from'] = $_SESSION['assist']['byStatHistoryFrom'];
             if ( !empty($_SESSION['assist']['byStatHistoryTo'])) $dates['to'] = $_SESSION['assist']['byStatHistoryTo'];
-            \Views\Glob_Controllers\classes\Search::byStatusesHistory($this->connection, $regStat, $this->row, $dates);
+            //debug($dates,',',1);
+            Search::byStatusesHistory($this->connection, $regStat, $this->row, $dates);
         }
 
 		return $this->row;
@@ -282,7 +292,11 @@ class Main extends General {
 		return $result;
 	}
 
-	public function getModelsByTiles()
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getModelsByTiles()
 	{
 		$result = [
 		    'showByTiles' => '',
@@ -303,9 +317,11 @@ class Main extends General {
 		for ( $i = $from; $i < $to; $i++ ) $posIds .= $this->row[$i]['id'].',';
 		$posIds = trim($posIds,',') . ')';
 		//debug($this->row,'$this->row');
-		$imagesQuery = mysqli_query($this->connection, " SELECT pos_id,img_name FROM images WHERE pos_id IN $posIds AND main=1 ");
+
+        $rowImages = $this->findAsArray(" SELECT pos_id,img_name,main,onbody,sketch FROM images WHERE pos_id IN $posIds "); //AND main=1
 		$stlQuer = mysqli_query($this->connection, " SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN $posIds ");
-		while ( $image = mysqli_fetch_assoc($imagesQuery) ) $rowImages[$image['pos_id']] = $image;
+
+		//while ( $image = mysqli_fetch_assoc($imagesQuery) ) $rowImages[$image['pos_id']] = $image;
 		while ( $stl = mysqli_fetch_assoc($stlQuer) ) $rowStls[$stl['pos_id']] = $stl;
 
 		ob_start();
@@ -804,39 +820,68 @@ class Main extends General {
 	}
 
 
-
-
     /**
      * плиткой
+     * @param array $rowImages
      * @param array $row - each model data
      * @param $comlectIdent
-	 * true - drawModel вызвана в отрисовке комплекта
+     * true - drawModel вызвана в отрисовке комплекта
+     * @throws \Exception
      */
-	private function drawModel(&$row, $rowImages, $rowStls, $comlectIdent=false)
+	private function drawModel(&$row, &$rowImages, $rowStls, $comlectIdent=false)
 	{
 		//по дефолту
 		$vc_show = "";
 		if ( !empty($row['vendor_code']) ) $vc_show = " | ".$row['vendor_code'];
 		$columns = $comlectIdent === true ? 3 : 2;
-		
-		
-		$image = [];
+
+        $showimg = '';
+        $mainIsset = false;
+        $images = [];
+		//$image = [];
 		$rowId = $row['id'];
+
+		foreach ($rowImages as &$thisImage) if ( $thisImage['pos_id'] === $rowId ) $images[] = $thisImage;
+		//debug($images,'$images');
+        $setMainImg = function($which) use (&$mainIsset, &$images, &$showimg)
+        {
+            foreach ( $images as &$image )
+            {
+                if ($image[$which] == 1 ) {
+                    $showimg = $image['img_name'];
+                    $mainIsset = true;
+                    break;
+                }
+            }
+        };
+        if ( !$mainIsset ) $setMainImg('main');
+        if ( !$mainIsset ) $setMainImg('sketch');
+        if ( !$mainIsset ) $setMainImg('onbody');
+        if ( !$mainIsset ) {
+            foreach ( $images as &$image )
+            {
+                $showimg = $image['img_name'];
+                break;
+            }
+        }
+        //debug($showimg,'$showimg',1);
+
+        /*
 		if ( array_key_exists($rowId, $rowImages) )
 		{
 			$image = $rowImages[$rowId];
 			$showimg = $row['number_3d'].'/'.$row['id'].'/images/'.$image['img_name'];
 		} else {
 			$showimg = "default.jpg";
-		}
+		}*/
+
 		//debug(_stockDIR_.$showimg,'$showimg');
-		if ( !file_exists(_stockDIR_.$showimg) ) // file_exists работает только с настоящим путём!! не с HTTP
+        $path = $row['number_3d'].'/'.$row['id'].'/images/';
+		if ( !file_exists(_stockDIR_. $path . $showimg) ) // file_exists работает только с настоящим путём!! не с HTTP
 		{
 		    $showimg = _stockDIR_HTTP_ . "default.jpg";
 		} else {
-			
-            $showimg = _stockDIR_HTTP_ . $showimg;
-			
+            $showimg = _stockDIR_HTTP_ . $path . $showimg;
         }
 		
 		$btn3D = false;
@@ -993,7 +1038,7 @@ class Main extends General {
 			$startI = $this->assist['startFromPage'] - $max_shown_pagin; // флаг - с какой стр. начинать рисовать квадратики
 			$pagination .= "
 				<li>
-					<a href=\"/?page=$startI&start_FromPage=$startI\" aria-label=\"Next\" title=\"Назад на пред. 10\">
+					<a href=\"/main/?page=$startI&start_FromPage=$startI\" aria-label=\"Next\" title=\"Назад на пред. 10\">
 						<span aria-hidden=\"true\">&laquo;</span>
 					</a>
 				</li>
@@ -1031,7 +1076,4 @@ class Main extends General {
         $pagination .= '</nav>';
 		return $pagination;
 	}
-	
 }
-//Вставка под алмазку 14
-?>

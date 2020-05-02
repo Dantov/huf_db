@@ -1,29 +1,89 @@
 <?php
 namespace Views\_Main\Controllers;
-use Views\_Main\Models\Main;
-use Views\_Main\Models\SetSortModel;
+
+use Views\_Main\Models\{Main, SetSortModel, Search};
 use Views\_Globals\Controllers\GeneralController;
+use Views\_Globals\Models\SelectionsModel;
+
 
 class MainController extends GeneralController
 {
 	
     public $title = 'ХЮФ 3Д База';
+    public $foundRows = [];
 
     public function __construct($controllerName)
     {
         parent::__construct($controllerName);
     }
 
+
+    /**
+     * @throws \Exception
+     */
     public function beforeAction()
     {
         $params = $this->getQueryParams();
+        $request = $this->request;
+        $session = $this->session;
 
-        if ( empty($params) ) return;
+        if ( $request->isAjax() )
+        {
+            // ******* Status history ******** //
+            if ( $request->post('statHistoryON') ) $this->selectByStatHistory();
+            if ( $request->post('changeDates') ) $this->changeDatesByStatHistory();
 
-        $setSort = new SetSortModel($this->session);
+            if ( $request->post('changeStatusDate') ) $this->changeStatusDate();
 
-        // вернет адрес для редиректа, или false если редирект не нужен
-        if ( $url = $setSort->setSort($params) ) $this->redirect($url);
+            // ******* Selection mode ******** //
+            if ( $request->post('selections') )
+            {
+                $selections = new SelectionsModel($session);
+                if ( $selToggle = (int)$request->post('toggle') ) $selections->selectionModeToggle($selToggle);
+                if ( $checkBox = (int)$request->post('checkBox') ) $selections->checkBoxToggle($checkBox);
+                if ( $request->post('checkSelectedModels') ) $selections->checkSelectedModels();
+                if ( $request->post('selectedModels') === 'show' )
+                {
+                    $selections->getSelectedModels();
+                    echo json_encode('ok');
+                    exit;
+                }
+            }
+            exit;
+        }
+
+        if ( $this->getQueryParam('search') === 'resetSearch' )
+        {
+            $session->dellKey('searchFor');
+            $session->dellKey('foundRow');
+            $session->dellKey('countAmount');
+            $session->setKey('re_search', false);
+            return;
+        }
+
+        if ( !empty($request->post('searchFor')) || !empty($request->get('searchFor')) || ($session->getKey('re_search') === true) )
+        {
+            $session->dellKey('foundRow');
+            $session->dellKey('countAmount');
+            $searchFor = $request->post('searchFor') ? $request->post('searchFor') : $request->get('searchFor');
+            $session->setKey('searchFor', $searchFor);
+
+            $search = new Search($session);
+            $this->foundRows = $search->search($searchFor);
+
+            $session->setKey('searchFor',$searchFor);
+        } elseif ( $request->isPost() && empty($request->post('searchFor')) )
+        {
+            $this->redirect('/main/?search=resetSearch');
+        }
+
+
+        if ( !empty($params) )
+        {
+            $setSort = new SetSortModel($this->session);
+            // вернет адрес для редиректа, или false если редирект не нужен
+            if ( $url = $setSort->setSort($params) ) $this->redirect($url);
+        }
     }
 
     /**
@@ -32,13 +92,8 @@ class MainController extends GeneralController
     public function action()
     {
         $session = $this->session;
-		// означает что в поиске что-то найдено, и он нуждается в обновлении
-		if ( $session->getKey('countAmount') && $session->getKey('re_search') ) {
-                    $this->redirect('/search/?searchFor=' . $session->getKey('searchFor'));
-                    //header("location:". _glob_HTTP_ ."search.php?searchFor={$_SESSION['searchFor']}");
-		}
 		$_SESSION['id_notice'] = 0;
-		$main = new Main( $_SERVER, $session->getKey('assist'), $session->getKey('user'), $session->getKey('foundRow') );
+		$main = new Main( $session->getKey('assist'), $session->getKey('user'), $session->getKey('foundRow') );
 		
 		$main->unsetSessions();
 
@@ -74,8 +129,7 @@ class MainController extends GeneralController
 		}
 
 		//если нет поиска, выбираем из базы
-		if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) )
-			$main->getModelsFormStock();
+		if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) ) $main->getModelsFormStock();
 
 		// начинаем вывод моделей
 		if ( !isset($_SESSION['nothing']) ) {
@@ -146,6 +200,11 @@ class MainController extends GeneralController
 			if ($wholePos > $_SESSION['assist']['maxPos'])
 				$pagination = $main->drawPagination();
 		}
+		$this->includePHPFile('modalStatuses.php',compact(['status','selectedStatusName']));
+		$this->includePHPFile('progressModal.php','','',_globDIR_. 'includes/');
+		//php include_once _globDIR_ . 'includes/progressModal.php'
+
+		$this->includeJSFile('Selects.js',['defer','timestamp']);
 		
 		$compacted = compact(['variables','chevron_','chevTitle','showsort','activeSquer','activeWorkingCenters',
 		'activeWorkingCenters2','activeList','collectionName','collectionList','status','selectedStatusName',
@@ -154,5 +213,68 @@ class MainController extends GeneralController
 		
 		return $this->render('main', $compacted);
 	}
-	
+
+	protected function selectByStatHistory()
+    {
+        $assist = $this->session->getKey('assist');
+        $request = $this->request;
+
+        $checked = (int)$request->post('byStatHistory');
+        if ( $checked )
+        {
+            $assist['byStatHistory'] = 1;
+            echo json_encode(['ok'=>1]);
+        } else {
+            $assist['byStatHistory'] = 0;
+
+            $assist['byStatHistoryFrom'] = '';
+            $assist['byStatHistoryTo'] = '';
+            echo json_encode(['ok'=>0]);
+        }
+        $this->session->setKey('assist', $assist);
+        exit;
+    }
+
+    protected function changeDatesByStatHistory()
+    {
+        $assist = $this->session->getKey('assist');
+        $request = $this->request;
+        if ( $from = $request->post('byStatHistoryFrom') )
+        {
+            $assist['byStatHistoryFrom'] = $from==='0000-00-00'?'':$from;
+            echo json_encode(['ok'=>$from]);
+        }
+        if ( $to = $request->post('byStatHistoryTo') )
+        {
+            $assist['byStatHistoryTo'] = $to==='0000-00-00'?'':$to;
+            echo json_encode(['ok'=>$to]);
+        }
+        $this->session->setKey('assist', $assist);
+        exit;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function changeStatusDate()
+    {
+        $request = $this->request;
+        $id = (int)$request->post('id');
+        $newDate = trim( htmlentities($request->post('newDate'), ENT_QUOTES) );
+
+        if ( !$id ) return;
+        if ( !validateDate( $newDate, 'Y-m-d' ) ) return;
+
+        $general = new \Views\_Globals\Models\General();
+        $general->connectDBLite();
+
+        $result = $general->baseSql(" UPDATE statuses SET date='$newDate' WHERE id='$id' ");
+        if ( $result )
+        {
+            echo json_encode(['ok'=>1]);
+        } else {
+            echo json_encode(['ok'=>0]);
+        }
+        exit;
+    }
 }

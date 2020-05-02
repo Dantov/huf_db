@@ -256,7 +256,7 @@
                         </div>
                         <div class="img_dell">
                             <button class="btn btn-default" type="button" <? if ( !$protoImgRow ): ?>
-                                    onclick="dell_fromServ(<?=$id?>, '<?=$image['imgName']?>', false, false, this)"
+                                    onclick="dell_fromServ(<?=$id?>, '<?=$image['imgName']?>', 'image', false, this)"
                                     <?endif;?>
                                     >
                                 <span class="glyphicon glyphicon-remove"></span>

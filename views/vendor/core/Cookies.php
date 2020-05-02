@@ -15,7 +15,7 @@ class Cookies
     {
         if ( empty($name) || empty($value) ) return false;
         if ( empty($time) || !is_int($time) ) $time = time()+3600; // час
-        if ( setcookie($name, $value, $time, '/', $_SERVER['HTTP_HOST'] ) )
+        if ( setcookie($name, $value, $time, $path?:'/', $domain?:$_SERVER['HTTP_HOST'] ) )
         {
             self::$cookies[$name] = $value;
             return true;
@@ -55,17 +55,14 @@ class Cookies
 
     /**
      * @param string $cookieName // user[id]
+     * @return bool
      */
     public static function dellOne($cookieName)
     {   
         if ( is_string($cookieName) )
         {
-            if ( setcookie($cookieName, '', 1, '/', $_SERVER['HTTP_HOST']) )
-            {
-                return true;
-            } else {
-                return false;
-            }
+            if ( setcookie($cookieName, '', 1, '/', $_SERVER['HTTP_HOST']) ) return true;
+            return false;
         }
         return false;
     }

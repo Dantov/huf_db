@@ -11,6 +11,11 @@ class AddEditController extends GeneralController
     public $stockID = null;
     public $component = null;
 
+
+
+    /**
+     * @throws \Exception
+     */
     public function beforeAction()
     {
         $request = $this->request;
@@ -24,13 +29,34 @@ class AddEditController extends GeneralController
             {
                 $this->actionPaidRepair($request->post);
             }
-            if ( $request->isPost() && $request->post('save') )
+
+            if ( $request->post('deleteFile') )
             {
-                $this->actionFormHandler();
+                $fileName = $request->post('fileName');
+                $id = (int)$request->post('id');
+                $fileType = $request->post('fileType');
+                if ( !empty($fileName) && !empty($id) && !empty($fileType) )
+                {
+                    $this->actionDeleteFile($id, $fileName, $fileType);
+                }
             }
 
+            if ( $request->post('dellPosition') )
+            {
+                if ( $id = (int)$request->post('id') )
+                {
+                    $this->actionDeletePosition($id);
+                }
+            }
+
+            if ( $request->isPost() && $request->post('save') )
+            {
+                $this->actionFormController();
+            }
             exit;
         }
+
+
 
         $id = (int)$this->getQueryParam('id');
         if ( $id < 0 || $id >= 99999 ) $this->redirect('/main/');
@@ -42,14 +68,17 @@ class AddEditController extends GeneralController
     }
 
     /**
+     * Action of this Controller
      * @throws \Exception
      */
     public function action()
     {
         $id = $this->stockID;
         $component = $this->component;
-        $addEdit = new AddEdit($id, $_SERVER);
-        if ( !$addEdit->checkID($id) )  $this->redirect('/main/');
+        $addEdit = new AddEdit($id);
+        if ( $id > 0 )
+            if ( !$addEdit->checkID($id) )
+                $this->redirect('/main/');
 
         // список разрешенных для ред полей
         $permittedFields = $addEdit->permittedFields();
@@ -76,6 +105,9 @@ class AddEditController extends GeneralController
             'imgStat' => $addEdit->getStatLabArr('image'),
             'materialsData' => $this->parseMaterialsData($dataTables),
         ];
+        $materialsData = $dataArrays['materialsData']['materials'];
+        $coveringsData = $dataArrays['materialsData']['coverings'];
+        $handlingsData = $dataArrays['materialsData']['handlings'];
 
         //$ai_hide = 'hidden';
         $status = '';
@@ -95,7 +127,6 @@ class AddEditController extends GeneralController
 
         if ( $component === 2 )  // значит что мы в форме редактирования
         {
-
             unset($_SESSION['general_data']);
 
             $row = $addEdit->getGeneralData();
@@ -142,7 +173,7 @@ class AddEditController extends GeneralController
             $vc_Len = $dopVC['vc_Len'];
             $row_dop_vc = $dopVC['row_dop_vc'];
 
-            $num3DVC_LI = $addEdit -> getNum3dVCLi( $vc_Len, $row_dop_vc );
+            $num3DVC_LI = $addEdit->getNum3dVCLi( $vc_Len, $row_dop_vc );
 
             // это здесь для внесения первого статуса в таблицу статусов
             $status = $addEdit -> getStatus($_SESSION['general_data']);
@@ -194,15 +225,40 @@ class AddEditController extends GeneralController
 
         $header = $addEdit->printHeaderEditAddForm($component);
 
+        /* ===== JS includes ===== */
+        $this->includeJSFile('ResultModal.js', ['defer','timestamp'] );
+        $this->includeJSFile('deleteModal.js', ['defer','timestamp'] );
+        $this->includeJSFile('add_edit.js', ['defer','timestamp'] );
+        $this->includeJSFile('sideButtons.js', ['defer','timestamp','path'=>_views_HTTP_.'_Globals/js/'] );
+        $this->includeJSFile('statusesButtons.js', ['defer','timestamp','path'=>_views_HTTP_.'_Globals/js/'] );
+        $this->includeJSFile('submitForm.js', ['defer','timestamp'] );
+        if ( $permittedFields['images'] )
+        {
+            $this->includeJSFile('HandlerFiles.js', ['defer','timestamp'] );
+        } else {
+            $js = <<<JS
+            let handlerFiles;
+JS;
+            $this->includeJS($js);
+        }
 
-        $compact = compact([
+        $compact1 = compact([
+            'gems_sizesLi','gems_cutLi','gems_namesLi','gems_colorLi','vc_namesLI','num3DVC_LI','materialsData','coveringsData','handlingsData',
+        ]);
+        /* ===== PHP includes ===== */
+        $this->includePHPFile('resultModal.php');
+        $this->includePHPFile('deleteModal.php');
+        $this->includePHPFile('num3dVC_input_Proto.php', $compact1);
+        $this->includePHPFile('protoGemsVC_Rows.php', $compact1);
+        $this->includePHPFile('upDownSaveSideButtons.php');
+        
+        $compact2 = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi',
             'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','ai_hide','status','haveAi','noAi','vc_Len','collections_len',
-            'row','stl_file','haveStl','noStl','ai_file','repairs', 'images','materials',
-            'gs_len','row_gems','row_dop_vc','num3DVC_LI', 'dataArrays',
-            'rowStatus','material','covering','labels','header',
+            'row','stl_file','haveStl','noStl','ai_file','repairs','images','materials', 'gs_len','row_gems','row_dop_vc','num3DVC_LI',
+            'dataArrays','materialsData','coveringsData','handlingsData', 'rowStatus','material','covering','labels','header',
         ]);
-        return $this->render('addEdit', $compact);
+        return $this->render('addEdit', $compact2);
     }
 
     protected function parseMaterialsData($dataTables)
@@ -286,10 +342,60 @@ class AddEditController extends GeneralController
         echo json_encode($result);
     }
 
-
-    protected function actionFormHandler()
+    /**
+     * @param $modelID integer
+     * @param $fileName string
+     * @param $fileType string
+     * @throws \Exception
+     */
+    protected function actionDeleteFile( $modelID, $fileName, $fileType )
     {
-        $request = $this->request;
-        include "AddFormController.php";
+        if ( $modelID > 0 && $modelID < 999999 )
+        {
+            $handler = new Handler($modelID);
+            $handler->connectDBLite();
+
+            $result['id'] = $modelID;
+            $result['fileName'] = $fileName;
+
+            if ( !$result['text'] = $handler->deleteFile($fileName, $fileType) ) $result['text'] = 'Ошибка при удалении файла: ';
+
+            $handler->closeDB();
+            $this->session->setKey('re_search', true);
+
+            echo json_encode($result);
+        }
+    }
+
+    /**
+     * @param $modelID
+     * @throws \Exception
+     */
+    protected function actionDeletePosition($modelID)
+    {
+        if ( $modelID > 0 && $modelID < 999999 )
+        {
+            $handler = new Handler($modelID);
+            $handler->connectToDB();
+
+            $resultDell = $handler->deleteModel();
+
+            $pn = new \Views\_Globals\Models\PushNotice();
+            $pn->addPushNotice($modelID, 3, $resultDell['number_3d'], $resultDell['vendor_code'], $resultDell['model_type'], $handler->date, false, $handler->user['fio']);
+
+            $handler->closeDB();
+            $this->session->setKey('re_search', true);
+
+            $result['dell'] = $resultDell['dell'];
+            echo json_encode($result);
+        }
+
+
+
+    }
+
+    protected function actionFormController()
+    {
+        require_once "formController.php";
     }
 }

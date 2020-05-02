@@ -1,5 +1,8 @@
+<?php
+$session = $this->session->getAll();
+$isView = true;
+?>
 <div class="row" id="middleRow">
-
     <!-- images block start-->
     <div class="col-xs-12 col-sm-6 pl-0 pr-1" id="images_block">
 
@@ -8,11 +11,15 @@
             <? if ($button3D): ?>
             <li role="presentation" title="Доступен 3D просмотр">
                 <a href="#" role="tab" id="butt3D" data-toggle="tab" ><span class="button-3D-pict"></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Просмотр</a>
-                <form method="post" id="extractform" class="hidden">
-                    <input type="hidden" name="zip_name" value="<?= $row['number_3d'].'/'.$row['id'].'/stl/'.$button3D ?>" />
-                    <input type="hidden" name="zip_path" value="<?= $row['number_3d'].'/'.$row['id'].'/stl/' ?>" />
+                <form method="POST" id="extractForm" class="hidden">
+                    <input type="hidden" name="zip_name" value="<?=$button3D?>" />
+                    <input type="hidden" name="zip_id" value="<?=$row['id']?>" />
+                    <input type="hidden" name="zip_num3d" value="<?=$row['number_3d']?>" />
+                    <input type="hidden" name="zipExtract" value="1" />
                 </form>
-                <form method="post" id="dellstlform" class="hidden"></form>
+                <form method="post" id="dellStlForm" class="hidden">
+                    <input type="hidden" name="zipDelete" value="1" />
+                </form>
             </li>
             <? endif; ?>
         </ul>
@@ -27,10 +34,10 @@
                     </div>
                 </div>
                 <div class="row dopImages">
-                    <? foreach ( $images as $image ) :?>
-                        <? $borderDopImg = $image['main'] == 1 ? 'border-primary-1': 'border-secondary-1' ?>
+                    <? foreach ( isset($images)?$images:[] as $image ) :?>
+                        <?php $borderDopImg = isset($image['active']) ? 'border-primary-1': 'border-secondary-1' ?>
                         <div class="col-xs-6 col-sm-3 pl-0 pr-2 mb-1">
-                            <div class="imageSmall cursorPointer border-radius-1 <?=$borderDopImg?> <?=$image['main']==1?'activeImage':''?>" data-id="<?=$image['id']?>" style="background-image: url(<?= $image['img_name'] ?>); height: 10rem;"></div>
+                            <div class="imageSmall cursorPointer border-radius-1 <?=$borderDopImg?> <?= isset($image['active']) ? 'activeImage':''?>" data-id="<?=$image['id']?>" style="background-image: url(<?= $image['img_name'] ?>); height: 10rem;"></div>
                         </div>
                     <? endforeach; ?>
                 </div>
@@ -55,20 +62,22 @@
                     <div class="panel-heading <?=$stat_class;?> cursorArrow mb-2" title="<?=$stat_title;?>"><span class="<?=$stat_glyphi?>"></span> <?=$stat_name;?><span title="Дата последнего изменения статуса"><?=$stat_date?" - " . $stat_date:''?></span></div>
                     <ul class="list-group">
                         <li class="list-group-item">
-                            <span class="badge badge-lg" id="num3d"><?=$row['number_3d']?></span>
+                            <span class="badge badge-lg cursorPointer" id="num3d" title="Скопировать" onclick="copyInnerHTMLToClipboard(this)"><?=$row['number_3d']?></span>
                             <i class="fas fa-hashtag"></i> Номер 3D:
                         </li>
-                        <li class="list-group-item">
-                            <span class="badge badge-lg" id="articl"><?=$stillNo?></span>
-                            <i class="fas fa-industry"></i> Фабричный Артикул:
-                        </li>
+                        <?php if (isset($row['vendor_code']) && !empty($row['vendor_code'])): ?>
+                            <li class="list-group-item">
+                                <span class="badge badge-lg cursorPointer" id="articl" title="Скопировать" onclick="copyInnerHTMLToClipboard(this)"><?=$row['vendor_code']?></span>
+                                <i class="fas fa-industry"></i> Фабричный Артикул:
+                            </li>
+                        <?php endif; ?>
                         <li class="list-group-item">
                             <span class="badge badge-lg" id="complects"><?=$complectedStr?></span>
                             <i class="fas fa-object-group"></i> В Комплекте:
                         </li>
                         <li class="list-group-item">
-                            <?php foreach ( $coll_id as $coll ) : ?>
-                                <span class="badge badge-lg" ><i><a style="color:white;" href="<?=_views_HTTP_?>Main/controllers/setSort.php?sCollId=<?=$coll['id']?>" id="collection"><?=$coll['name']?></a></i></span>
+                            <?php foreach ( isset($coll_id)?$coll_id:[] as $coll ) : ?>
+                                <span class="badge badge-lg" ><i><a style="color:white;" href="/main/?coll_show=<?=$coll['id']?>" id="collection"><?=$coll['name']?></a></i></span>
                             <?php endforeach;?>
                             <i class="fas fa-gem"></i> Коллекции:
                         </li>
@@ -100,24 +109,11 @@
                                 <i class="fab fa-quinscape"></i> Размерный Ряд:
                             </li>
                         <?php endif; ?>
-                        <?php
-                        if ( isset($row['print_cost']) && !empty($row['print_cost']) && $session['user']['access'] > 0 ) : ?>
-                            <li class="list-group-item">
-                                <span class="badge badge-lg"><?=$row['print_cost']." гр."?></span>
-                                <span class="glyphicon glyphicon-usd"></span> Печать:
-                            </li>
-                        <?php endif; ?>
-                        <?php if (  is_array($ai_file) ) : ?>
-                            <li class="list-group-item" title="загрузить файл накладки">
-                                <span class="badge badge-lg"><a href="<?= _stockDIR_HTTP_.$modelView->number_3d.'/'.$id.'/ai/'.$ai_file['name'] ?>">Скачать</a></span>
-                                <span class="glyphicon glyphicon-floppy-save"></span> Накладка:
-                            </li>
-                        <?php endif; ?>
                         <?php if ( !empty($labels) ) : ?>
                             <li class="list-group-item text-right">
                                 <span class="pull-left"><span class="glyphicon glyphicon-tags"></span>&nbsp;&nbsp;Метки:</span>
                                 <?php foreach ( $labels as $label ) : ?>
-                                    <span class="label <?=$label['class']?>"><span class="glyphicon glyphicon-tag"></span> <?=$label['name']?></span>
+                                    <span class="label <?=$label['class']?>" style="font-size: 100%!important;"><span class="glyphicon glyphicon-tag"></span> <?=$label['name']?></span>
                                 <?php endforeach; ?>
                             </li>
                         <?php endif; ?>
@@ -126,6 +122,36 @@
                             <span class="glyphicon glyphicon-comment"></span><strong> Примечания:</strong> &nbsp;
                             <span><?=$row['description'];?></span>
                         </li>
+                        <?php endif; ?>
+                        <?php if ( isset($row['print_cost']) && !empty($row['print_cost']) && $session['user']['access'] > 0 ) : ?>
+                            <li class="list-group-item">
+                                <span class="badge badge-lg"><?=$row['print_cost']?></span>
+                                <i class="fas fa-print"></i><span class="glyphicon glyphicon-usd"></span> Стоимость 3Д Печати:
+                            </li>
+                        <?php endif; ?>
+                        <?php if ( isset($row['model_cost']) && !empty($row['model_cost']) && $session['user']['access'] > 0 ) : ?>
+                            <li class="list-group-item">
+                                <span class="badge badge-lg"><?=$row['model_cost']?></span>
+                                <i class="fas fa-hammer"></i><span class="glyphicon glyphicon-usd"></span> Стоимость доработки:
+                            </li>
+                        <?php endif; ?>
+                        <?php if (  isset($ai_file) && is_array($ai_file) ) : ?>
+                            <li class="list-group-item" title="загрузить файл накладки">
+                                <span class="badge badge-lg"><a class="text-white" href="<?=_stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/ai/'.$ai_file['name']?>" download="<?='ai_'.$ai_file['name']?>">Скачать</a></span>
+                                <span class="glyphicon glyphicon-floppy-save"></span> AI Файл накладки:
+                            </li>
+                        <?php endif; ?>
+                        <?php if (  isset($stl_file) && is_array($stl_file) && $session['user']['access'] > 0 && $session['user']['access'] < 3 ) : ?>
+                            <li class="list-group-item" title="загрузить STL файл">
+                                <span class="badge badge-lg"><a class="text-white" href="<?= _stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/stl/'.$stl_file['stl_name'] ?>" download="<?='stl_'.$ai_file['name']?>">Скачать</a></span>
+                                <span class="glyphicon glyphicon-floppy-save"></span> Stl Файл модели:
+                            </li>
+                        <?php endif; ?>
+                        <?php if (  isset($rhino_file) && is_array($rhino_file) && $session['user']['access'] > 0 && $session['user']['access'] < 3 ) : ?>
+                            <li class="list-group-item" title="загрузить 3dm файл">
+                                <span class="badge badge-lg"><a class="text-white" href="<?= _stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/3dm/'.$rhino_file['name'] ?>" download="<?='3dm_'.$ai_file['name']?>">Скачать</a></span>
+                                <span class="glyphicon glyphicon-floppy-save"></span> 3dm Файл модели:
+                            </li>
                         <?php endif; ?>
                         <li class="list-group-item">
                             <span class="pull-left" title="Дата добавления модели в базу"><span class="glyphicon glyphicon-calendar"></span>&nbsp;&nbsp;Дата создания:</span>
@@ -174,7 +200,7 @@
         <div class="panel mb-1 panel-success">
             <div class="panel-heading"><i class="fab fa-codepen"></i> <b>Материалы:</b></div>
             <ul class="list-group">
-                <?php foreach ( $matsCovers?:[] as $material ) : ?>
+                <?php foreach ( isset($matsCovers)?$matsCovers:[] as $material ) : ?>
                 <li class="list-group-item brb-2-secondary bg-info-light">
                     <span class="badge badge-lg"><?=$material['probe']."&deg;"?></span>
                     <span class="badge badge-lg"><?=$material['metalColor']?></span>
@@ -251,31 +277,14 @@
             </div>
         </div>
     <?php endif; ?>
-    <? $isView = true; ?>
-    <?php foreach ( $repairs as $repair ): ?>
+    <?php foreach ( isset($repairs)?$repairs:[] as $repair ): ?>
         <? $whichRepair = $repair['which'] ? true : false ?>
         <div class="col-xs-12 col-sm-12 col-lg-6 pl-1 pr-0">
-            <?require _viewsDIR_ . "AddEdit/includes/protoRepair.php"?>
+            <?require _viewsDIR_ . "_AddEdit/includes/protoRepair.php"?>
         </div>
     <? endforeach; ?>
 </div>
 
-<? if($dopBottomScripts): ?>
-    <script src="<?= _webDIR_HTTP_ ?>js_lib/three.min.js"></script>
-    <script src="<?= _webDIR_HTTP_ ?>js_lib/OrbitControls.js"></script>
-    <script src="<?= _webDIR_HTTP_ ?>js_lib/TrackballControls.js"></script>
-    <script src="<?= _webDIR_HTTP_ ?>js_lib/TransformControls.js"></script>
-    <script src="<?= _webDIR_HTTP_ ?>js_lib/STLLoader.js"></script>
-    <?php
-        $this->startBlock('3DPanels');
-        include_once _viewsDIR_.$this->controllerName."/includes/3DWievPanels.php";
-        $this->endBlock();
-    ?>
-<? endif; ?>
-
 <!-- lond cut div -->
 <div id="longTD" class="longTD hidden"></div>
 <img src="" id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="imgPrev-thumbnail hidden"/>
-
-
-<?php include_once _globDIR_. 'includes/progressModal.php'; ?>

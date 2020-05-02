@@ -39,7 +39,7 @@
                 //У людей проблемы с открытием статусов на компах под Win Xp chrome 40 - 49
             ?>
             <?php foreach ( $status?:[] as $wcName => $workingCenter ) :?>
-                <div class="panel panel-info" style="position:relative;">
+                <div class="panel panel-info mb-1" style="position:relative;">
                     <div class="panel-heading">
                         <?=$wcName?>
                         <button title="Раскрыть" onclick="event.preventDefault()" data-status="0" class="btn btn-sm btn-info statusesChevron"><span class="glyphicon glyphicon-menu-left"></span></button>

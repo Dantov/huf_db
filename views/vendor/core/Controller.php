@@ -215,20 +215,32 @@ class Controller
 
     /**
      * @param $fileName
+     * @param $path
+     * @param $vars
      * @param string $position
      * @throws \Exception
      */
-    public function includePHPFile($fileName, $position='')
+    public function includePHPFile($fileName, $vars=[], $position='', $path='')
     {
         if ( empty($fileName) || !is_string($fileName) ) return;
         if ( !$position ) $position = $this->ENDBody;
 
-        $primalDir = _viewsDIR_ .'_'. $this->controllerName . '/includes/';
-        if ( !file_exists($primalDir.$fileName) )
-            throw new \Exception('Файл "' . $fileName . '" не найден в папе подключений текущего контроллера.',3);
+        if ( !empty($path) )
+        {
+            $primalDir = $path;
+            if ( !file_exists($path.$fileName) )
+                throw new \Exception('Файл "' . $fileName . '" не найден в ' . $path,311);
+        } else {
+            $primalDir = _viewsDIR_ .'_'. $this->controllerName . '/includes/';
+            if ( !file_exists($primalDir.$fileName) )
+                throw new \Exception('Файл "' . $fileName . '" не найден в папе подключений текущего контроллера.',311);
+        }
 
         $php['position'] = $position;
         $php['php'] = $primalDir.$fileName;
+
+        if ( !empty($vars) && is_array($vars) ) $php['vars'] = $vars;
+
         $this->phpFilesPack[] = $php;
     }
 
@@ -280,11 +292,25 @@ class Controller
         if ( !is_array($options) )
             throw new \Exception('Опции должен быть массивом - ',2);
 
-        $primalDir = _viewsDIR_ .'_'. $this->controllerName . '/js/';
-        $httpPath = _views_HTTP_ .'_'. $this->controllerName . '/js/';
+        if ( isset( $options['path'] ) && !empty($options['path']) )
+        {
+            $http = explode('/',$options['path']);
+            unset($http[0], $http[1], $http[2]);
+            $http = implode('/',$http);
 
-        if ( !file_exists($primalDir.$fileName) )
-            throw new \Exception('Файл "' . $fileName . '" не найден в папе скриптов текущего контроллера.',3);
+            $primalDir = _rootDIR_. $http;
+            $httpPath = $options['path'];
+            //debug($primalDir,'$primalDir');
+            //debug($httpPath,'$primalDir',1);
+            if ( !file_exists($primalDir.$fileName) )
+                throw new \Exception('Файл "' . $fileName . '" не найден по указанному пути: ' . $httpPath,311);
+        } else {
+            $primalDir = _viewsDIR_ .'_'. $this->controllerName . '/js/';
+            $httpPath = _views_HTTP_ .'_'. $this->controllerName . '/js/';
+            if ( !file_exists($primalDir.$fileName) )
+                throw new \Exception('Файл "' . $fileName . '" не найден в папе скриптов текущего контроллера.',311);
+        }
+
 
         $script['position'] = $position;
         $script['src'] = $httpPath.$fileName;
@@ -292,6 +318,13 @@ class Controller
         $optionsStr = '';
         foreach ($options as $key => $option) {
             if ( $key === 'id' ) $optionsStr .= ' id="'.$option.'" ';
+            if ( $key === 'class' ) $optionsStr .= ' class="'.$option.'" ';
+            if ( $key === 'path' )
+            {
+                $script['src'] = $option . $fileName;
+                continue;
+            }
+
             switch ($option)
             {
                 case 'defer':
@@ -322,11 +355,15 @@ class Controller
     {
         $method = explode('::',__METHOD__)[1];
 
-
+        function includePHP( $pack )
+        {
+            if ( !empty($pack['vars']) && is_array($pack['vars']) ) extract($pack['vars']);
+            require $pack['php'];
+        }
         foreach ($this->phpFilesPack as $pack)
         {
             if ( $method !== $pack['position'] ) continue;
-            require $pack['php'];
+            includePHP($pack);
         }
 
         foreach ($this->jsPack as $pack)

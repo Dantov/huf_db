@@ -1,5 +1,5 @@
 <IfModule mod_php7.c>
-    php_value auto_prepend_file D:\OSPanel\domains\HUF_DB\Views\config\appMode.php
+    php_value auto_prepend_file F:\OpenServer\OSPanel\domains\HUF_DB\Views\config\appMode.php
 </IfModule>
 
 RewriteCond %{REQUEST_FILENAME} !-f

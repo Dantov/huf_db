@@ -201,12 +201,8 @@
                 <label for="work_cost"><span class="glyphicon glyphicon-usd"></span> Стоимость доработки:</label>
                 <input type="text" class="form-control" name="model_cost" value="<?=$row['model_cost'];?>" />
             </div>
-            <div class="col-xs-12 "><br></div>
         <?php endif; ?>
 
-        <?php $materialsData = $dataArrays['materialsData']['materials']; ?>
-        <?php $coveringsData = $dataArrays['materialsData']['coverings']; ?>
-        <?php $handlingsData = $dataArrays['materialsData']['handlings']; ?>
         <?php if ( $permittedFields['material'] ): ?>
             <div class="col-xs-12" id="material">
                 <?php require _viewsDIR_."_AddEdit/includes/model_materials_full.php" ?>
@@ -226,7 +222,7 @@
                 <div><span style="position:relative; top: -6px; font-size:13px;">* Просьба, перед загрузкой stl файлов применять к моделям метод Triangle Reduction в Magics с параметром 0,0025. Для уменьшения размера файлов. </span></div>
                 <div class="haveStl <?=$haveStl;?>">
                     <span><b>STL:&nbsp;&nbsp;</b><?=$stl_file['stl_name'];?></span>
-                    <button type="button" id="dellStl" class="btn btn-default" onclick="dell_fromServ( <?=$id.',\''.$stl_file['stl_name'].'\'';?>, 1, false )" title="Удалить">
+                    <button type="button" id="dellStl" class="btn btn-default" onclick="dell_fromServ( <?=$id.',\''.$stl_file['stl_name'].'\'';?>, 'stl', false )" title="Удалить">
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
                 </div>
@@ -251,7 +247,7 @@
             <div class="col-xs-12">
                 <div class="haveStl <?=$haveAi;?>">
                     <span><b>Накладка:&nbsp;&nbsp;</b><?=$ai_file['name'];?></span>
-                    <button type="button" id="dellAi" class="btn btn-default" onclick="dell_fromServ( <?=$id.',\''.$ai_file['name'].'\'';?>, 2, false )" title="Удалить">
+                    <button type="button" id="dellAi" class="btn btn-default" onclick="dell_fromServ( <?=$id.',\''.$ai_file['name'].'\'';?>, 'ai', false )" title="Удалить">
                         <span class="glyphicon glyphicon-trash"></span>
                     </button>
                 </div>
@@ -336,7 +332,6 @@
         <?php endif; ?>
 
         <div class="col-xs-12">
-
             <?php if ( $permittedFields['vc_links'] ): ?>
                 <?=$vcDopFromWord;?>
                 <div class="panel panel-default">
@@ -389,7 +384,7 @@
         <?php if ( $permittedFields['repairs'] ): ?>
             <div class="col-xs-12" id="repairsBlock">
                 <?php if ( $permittedFields['repairs3D'] ): ?>
-                <?
+                <?php
                     $isRepairProto = false;
                     for ( $i = 0; $i < count($repairs?:[]); $i++ )
                     {
@@ -402,7 +397,7 @@
                 <?php endif; ?>
 
                 <?php if ( $permittedFields['repairsJew'] ): ?>
-                <?
+                <?php
                     for ( $i = 0; $i < count($repairs?:[]); $i++ )
                     {
                         $repair = $repairs[$i];
@@ -452,8 +447,8 @@
                         <span class="glyphicon glyphicon-ok"></span>
                         &#160;Текущий статус:
                     </span>
-                    <span class="label label-warning" style="font-weight: bold;font-size: medium;" title="<?=$row['status']['title']?>" >
-                        <span style="color: #1C1C1C" class="glyphicon glyphicon-<?=$row['status']['glyphi']?>"></span>
+                    <span class="label label-warning" style="font-weight: bold;font-size: medium;" title="<?= $row['status']['title']??'' ?>" >
+                        <span style="color: #1C1C1C" class="glyphicon glyphicon-<?= $row['status']['glyphi']??''?>"></span>
                         <span id="currentStatus" ><?=$row['status']['name_ru']?></span>
                     </span>
                     <button id="openAll" title="Раскрыть Все" onclick="event.preventDefault()" style="margin-bottom: 10px" class="pull-right btn btn-sm btn-info"><span class="glyphicon glyphicon-menu-left"></span> Раскрыть Все</button>
@@ -560,28 +555,5 @@
     </div><!--end row-->
 </form>
 
-
 <img src="" id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
-<?php require _viewsDIR_.'_AddEdit/includes/resultModal.php'?>
-<?php require _viewsDIR_.'_AddEdit/includes/deleteModal.php'?>
-<?php require _viewsDIR_.'_AddEdit/includes/num3dVC_input_Proto.php'?>
-<?php require _viewsDIR_.'_AddEdit/includes/protoGemsVC_Rows.php'?>
 <?php $isRepairProto = true; require _viewsDIR_.'_AddEdit/includes/protoRepair.php' ?>
-
-<script defer src="../_AddEdit/js/ResultModal.js?ver=<?=time();?>"></script>
-<script defer src="../_AddEdit/js/deleteModal.js?v=<?=time();?>"></script>
-<script defer src="../_AddEdit/js/add_edit.js?ver=<?=time();?>"></script>
-
-<?php if ( $permittedFields['images'] ): ?>
-<script defer src="../_AddEdit/js/HandlerFiles.js?ver=<?=time();?>"></script>
-<?php else: ?>
-<script>let handlerFiles;</script>
-<?php endif; ?>
-
-<div class="AddEditSideButtons" id="AddEditSideButtons">
-    <div class="btn-group-vertical" role="group" aria-label="...">
-        <button type="button" class="btn btn-info hidden" title="Вверх" onclick="pageUp();"><span class="glyphicon glyphicon-chevron-up"></span></button>
-        <button type="button" class="btn btn-success submitButton" title="Сохранить"><span class="glyphicon glyphicon-floppy-disk"></span></button>
-        <button type="button" class="btn btn-info" title="Вниз" onclick="pageDown();"><span class="glyphicon glyphicon-chevron-down"></span></button>
-    </div>
-</div>

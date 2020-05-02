@@ -3,8 +3,16 @@ namespace Views\_EditStatuses\Models;
 use Views\_AddEdit\Models\AddEdit;
 
 
-class Edit extends AddEdit
+class EditStatusesModel extends AddEdit
 {
+
+    public function __construct(bool $id = false)
+    {
+        parent::__construct($id);
+
+        $this->connectDBLite();
+    }
+
     public function setPrevPage()
     {
         $pp = '';
@@ -21,6 +29,10 @@ class Edit extends AddEdit
         return parent::getStatus($row, 'selectionMode');
     }
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function modelsData()
     {
         $selectedModels = !isset($_SESSION['selectionMode']['models']) ? [] : $_SESSION['selectionMode']['models'];

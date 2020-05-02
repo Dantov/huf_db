@@ -40,13 +40,10 @@ Main.prototype.getQueryParam = function(param)
 
 Main.prototype.searchIn = function(num) {
     if ( num === 1 || num === 2 ) {
-        //console.log(num);
-
         $.ajax({
-            //url: _ROOT_ + "Views/Main/controllers/setSort.php", //путь к скрипту, который обрабатывает задачу
-            url: "/globals/serchIn", //путь к скрипту, который обрабатывает задачу
+            url: "/globals/serchIn",
             type: 'POST',
-            data: {//данные передаваемые в POST запросе
+            data: {
                searchInNum: num
             },
             success:function(data) {
@@ -124,13 +121,14 @@ Main.prototype.changeStatusDate = function(self)
     let newDate = self.value;
 
     let data = {
+        changeStatusDate: 1,
         id: id,
         newDate: newDate,
         oldDate: oldDate
     };
 
     $.ajax({
-        url: _ROOT_ + "Views/Main/Controllers/changeStatusDate.php",
+        url: _ROOT_ + "/main/changeStatusDate",
         type: "POST",
         data: data,
         dataType:"json",
@@ -197,15 +195,17 @@ Main.prototype.modalStatusesInit = function()
             afterRender: function() {
                 document.getElementById('modalContent').classList.remove('hidden');
                 let statusesChevrons = document.querySelectorAll('.statusesChevron');
-                statusesChevrons.forEach(button => {
+                $.each(statusesChevrons, function(i, button)
+                {
                     button.addEventListener('click', function () {
 
-                        if ( button.getAttribute('data-status') == 0 )
+                        if ( +button.getAttribute('data-status') === 0 )
                         {
                             button.setAttribute('data-status','1')
                         } else {
                             button.setAttribute('data-status','0');
                         }
+
                         button.classList.toggle('btn-info');
                         button.classList.toggle('btn-primary');
                         button.children[0].classList.toggle('glyphicon-menu-down');
@@ -220,8 +220,10 @@ Main.prototype.modalStatusesInit = function()
                 let modalStatuses = document.getElementById('modalStatuses');
                 let statusesItems = modalStatuses.querySelectorAll('.wc-status-item');
                 let panelNeedle;
-                statusesItems.forEach(a => {
-                    if ( a.children[1].innerHTML == currentSelectedStatus )
+
+                $.each(statusesItems, function(i, a)
+                {
+                    if ( a.children[1].innerHTML === currentSelectedStatus )
                     {
                         a.classList.add('active');
                         panelNeedle = a.parentElement.parentElement.parentElement;
@@ -238,20 +240,20 @@ Main.prototype.modalStatusesInit = function()
                 let inputDates = document.querySelector('.byStatHistory_dates').querySelectorAll('input');
 
                 openAll.addEventListener('click', function () {
-                    statusesChevrons.forEach(button => {
-                        if ( button.getAttribute('data-status') == 1 ) return;
+                    $.each(statusesChevrons, function(i, button)
+                    {
+                        if ( +button.getAttribute('data-status') === 1 ) return;
                         button.click();
                     });
-
                     this.classList.add('hidden');
                     closeAll.classList.remove('hidden');
                 }, false);
                 closeAll.addEventListener('click', function () {
-                    statusesChevrons.forEach(button => {
-                        if ( button.getAttribute('data-status') == 0 ) return;
+                    $.each(statusesChevrons, function(i, button)
+                    {
+                        if ( +button.getAttribute('data-status') === 0 ) return;
                         button.click();
                     });
-
                     this.classList.add('hidden');
                     openAll.classList.remove('hidden');
                 }, false);
@@ -272,6 +274,9 @@ Main.prototype.modalStatusesInit = function()
         });
     }
 };
+
+
+
 Main.prototype.searchByStatusesHistory = function(input)
 {
     let check = !input.checked;
@@ -280,7 +285,7 @@ Main.prototype.searchByStatusesHistory = function(input)
     let inputDates = dates.querySelectorAll('input');
 
     $.ajax({
-        url: _ROOT_ + "Views/Main/Controllers/changeStatusByHistory.php",
+        url: "/main/changeStatusByHistory",
         type: "POST",
         data: {
             statHistoryON: 1,
@@ -304,9 +309,9 @@ Main.prototype.searchByStatusesHistory = function(input)
                 dates.classList.add('hidden');
             }
         },
-        error: function ()
+        error: function (e)
         {
-            alert('Ошибка!');
+            debug(e,'Ошибка!');
         }
     });
 };
@@ -315,10 +320,10 @@ Main.prototype.changeDateByStatusesHistory = function(dateInput)
     let obj = {
         changeDates: 1,
     };
-    obj[dateInput.name] = dateInput.value;
+    obj[dateInput.name] = dateInput.value ? dateInput.value : '0000-00-00';
 
     $.ajax({
-        url: _ROOT_ + "Views/Main/Controllers/changeStatusByHistory.php",
+        url: "/main/changeStatusByHistory",
         type: "POST",
         data: obj,
         dataType:"json",
@@ -330,6 +335,7 @@ Main.prototype.changeDateByStatusesHistory = function(dateInput)
         },
         error: function (e)
         {
+            debug(obj);
             debug(e,'Ошибка!');
         }
     });

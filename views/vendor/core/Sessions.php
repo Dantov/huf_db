@@ -46,8 +46,8 @@ class Sessions
      */
     public function __set($name, $value)
     {
-        if ( !is_string($name) ) throw new \Exception('Session name must be string type', 589);
-        if ( array_key_exists($name, $_SESSION) ) $_SESSION[$name] = $value;
+        if ( !is_string($name) || empty($name) ) throw new \Exception('Session name must be string type and not empty', 589);
+        $_SESSION[$name] = $value;
     }
 
     protected function startSession()

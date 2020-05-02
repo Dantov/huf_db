@@ -6,6 +6,9 @@ function Selects() {
     this.selectedElements = []; //здесь хранятся выделенные модели
     this.selectionMode = false;
 
+    //
+    this.listeners = false;
+
     let that = this;
 
     this.sgUL.querySelector('.selectsCheckAll').addEventListener('click', function(event){
@@ -16,37 +19,53 @@ function Selects() {
         event.preventDefault();
         that.unselectAllBoxes();
     },false);
+    this.sgUL.querySelector('.selectsShowModels').addEventListener('click', function(event){
+        event.preventDefault();
+        that.showSelectedModels();
+    },false);
+    this.sgUL.querySelector('.editStatusesSelectedModels').addEventListener('click', function(event){
+        event.preventDefault();
+       if ( that.selectedElements.length )
+       {
+           redirect('/edit-statuses/');
+       }
+
+    },false);
 
     this.checkSelectionMode();
-};
+}
 
 Selects.prototype.checkSelectionMode = function() {
     this.selectionMode = document.querySelector('#selectMode').classList.contains('btnDefActive');
 
-    var that = this;
-    this.lc.addEventListener('click', function(event){
+    let that = this;
+    if ( !this.listeners )
+    {
+        this.lc.addEventListener('click', function(event) {
+            let click = event.target;
+            if ( !click.hasAttribute('checkBoxId') ) return;
 
-        let click = event.target;
-        if ( !click.hasAttribute('checkBoxId') ) return;
-
-        that.selectBox(click);
-    }, false);
+            that.selectBox(click);
+        }, false);
+        this.listeners = true;
+    }
 
     if ( this.selectionMode ) this.checkSelectedModels();
 };
 
 Selects.prototype.checkSelectedModels = function() {
 
-    var that = this;
+    let that = this;
     $.ajax({
-        url: "controllers/selectionController.php",
+        url: "/main/selectionCheck",
         type: "POST",
         data: {
+            selections: 1,
             checkSelectedModels: 1
         },
         dataType: "json",
         success: function (data) {
-            for (var key in data) {
+            for (let key in data) {
                 that.selectedElements.push(data[key]);
             }
             console.log(that.selectedElements);
@@ -55,30 +74,34 @@ Selects.prototype.checkSelectedModels = function() {
 };
 
 Selects.prototype.toggleSelectionMode = function(self) {
-    var activateClass = 1;  // 1 - мы включаем режим выделения. 2 - выключаем
+    let activateClass = 1;  // 1 - мы включаем режим выделения. 2 - выключаем
 
     if ( this.selectionMode ) {
         if ( this.selectedElements.length ) {
-            var conf = confirm('Есть выделенные элементы! Если отключить, все выделение сбросится. Продолжить?');
+            let conf = confirm('Есть выделенные элементы! Если отключить, все выделение сбросится. Продолжить?');
             if ( !conf ) return;
         }
         activateClass = 2;
     }
 
-    var that = this;
+    let that = this;
     $.ajax({
-        url: "controllers/selectionController.php",
+        url: "/main/toggleSelectionMode",
         type: "POST",
         data: {
-            active: activateClass
+            selections: 1,
+            toggle: activateClass
         },
         dataType: "json",
         success: function (data) {
-            if ( data === 1 ) { // on
+            if ( data === 'on' )
+            {
                 that.selectionMode = true;
                 document.querySelector('#selectedGroup').classList.remove('hidden');
+                debug('Selection mode ON');
             }
-            if ( data === 2 ) { //off
+            if ( data === 'off' )
+            {
                 that.selectionMode = false;
                 that.selectedElements = [];
                 let li_arr = that.sgUL.querySelectorAll('li');
@@ -86,18 +109,22 @@ Selects.prototype.toggleSelectionMode = function(self) {
                     li_arr[i].remove();
                 }
                 document.querySelector('#selectedGroup').classList.add('hidden');
+                debug('Selection mode OFF');
             }
             self.classList.toggle('btnDefActive');
             that.toggleBoxes();
-            console.log(that.selectedElements);
+            //debug(that.selectedElements,'selectedElements');
+        },
+        error:function (e) {
+            debug(e,'Error in selection Toggle');
         }
-    })
+    });
 };
 
 Selects.prototype.toggleBoxes = function() {
 
-    var selectBoxes = this.lc.querySelectorAll('.selectionCheck');
-    var i;
+    let selectBoxes = this.lc.querySelectorAll('.selectionCheck');
+    let i;
 
     if ( this.selectionMode ) {
         for ( i = 0; i < selectBoxes.length; i++ ) {
@@ -116,45 +143,38 @@ Selects.prototype.toggleBoxes = function() {
 */
 Selects.prototype.selectAllBoxes = function(click) {
     let checkIdBoxes = this.lc.querySelectorAll('input');
-    let that = this;
 
-    $.each(checkIdBoxes, function(i, checkbox){
+    $.each(checkIdBoxes, function(i, checkbox) {
         if ( checkbox.checked ) return;
         checkbox.click();
-        //that.selectBox(checkbox);
     });
 
-    //debug(this.lc);
-    //debug(checkIdBoxes);
 };
 /**
 *  Убрать выделения со всех моделей
 */
 Selects.prototype.unselectAllBoxes = function(click) {
     let checkIdBoxes = this.lc.querySelectorAll('input');
-    let that = this;
 
     $.each(checkIdBoxes, function(i, checkbox){
         if ( !checkbox.checked ) return;
         checkbox.click();
-        //that.selectBox(checkbox);
     });
 
-    //debug(this.lc);
-    //debug(checkIdBoxes);
 };
 Selects.prototype.selectBox = function(click) {
 
-    //console.log(click);
+    console.log(click);
     
-    var checked = 1;
+    let checked = 1;
     if ( !click.checked ) checked = 2;
 
-    var that = this;
+    let that = this;
     $.ajax({
-        url: "controllers/selectionController.php",
+        url: "/main/selectBox",
         type: "POST",
         data: {
+            selections: 1,
             checkBox: checked,
             modelId: click.getAttribute('modelId'),
             modelName: click.getAttribute('modelName'),
@@ -163,25 +183,21 @@ Selects.prototype.selectBox = function(click) {
         dataType:"json",
         success:function(obj) {
 			
-			// var span = click.previousElementSibling.children[0];
-			// span.classList.toggle('glyphicon-unchecked');
-			// span.classList.toggle('glyphicon-check');
-			
-            var models = that.selectedElements;
-            if ( checked === 1 ) { // добавляем
+            let models = that.selectedElements;
+            if ( obj.checkBox === 1 ) { // добавляем
                 models.push(obj);
                 // добавляем в меню вверху
-                var newLI = document.createElement('li');
+                let newLI = document.createElement('li');
                     newLI.setAttribute('data-id',obj.id);
-                    newLI.innerHTML = '<a href="../ModelView/index.php?id=' + obj.id + '" >' + obj.name + '</a>';
+                    newLI.innerHTML = '<a href="../_ModelView/?id=' + obj.id + '" >' + obj.name + '</a>';
                 that.sgUL.appendChild(newLI);
 				
-				var span = click.previousElementSibling.children[0];
+				let span = click.previousElementSibling.children[0];
 				span.classList.remove('glyphicon-unchecked');
 				span.classList.add('glyphicon-check');
             }
 
-            if ( checked === 2 ) { // удаляем
+            if ( obj.checkBox === 2 ) { // удаляем
                 let li_arr = that.sgUL.querySelectorAll('li[data-id]');
                 // console.log(li_arr);
                 // console.log('obj.id=' + obj.id);
@@ -195,13 +211,37 @@ Selects.prototype.selectBox = function(click) {
                 });
                 models.splice(dellIndex, 1);
 
-				var span = click.previousElementSibling.children[0];
+				let span = click.previousElementSibling.children[0];
 				span.classList.remove('glyphicon-check');
 				span.classList.add('glyphicon-unchecked');
             }
             console.log(that.selectedElements);
         }
     })
+};
+
+Selects.prototype.showSelectedModels = function() {
+    if ( this.selectedElements.length )
+    {
+        $.ajax({
+            url: "/main/selected-models-show",
+            type: "POST",
+            data: {
+                selections: 1,
+                selectedModels: 'show',
+            },
+            dataType: "json",
+            success: function (data) {
+                if ( data === 'ok' )
+                {
+                   redirect('/main/selected-models'); //document.location.href = '/main/selected-models';
+                }
+            },
+            error:function (e) {
+                debug(e,'Error in showSelectedModels');
+            }
+        });
+    }
 };
 
 let selects = new Selects();
