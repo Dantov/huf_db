@@ -120,7 +120,7 @@ function randomStringChars( $length=null, $language='en', $method='chars' )
 function trueIsset($var)
 {
     if ( isset($var) && !empty($var) ) return true;
-    if ( $var === '0' ) return true;
+    //if ( $var === '0' ) return true;
     return false;
 }
 

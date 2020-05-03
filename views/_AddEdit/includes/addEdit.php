@@ -46,7 +46,7 @@
                         <i class="fas fa-hashtag"></i>
                         номер 3D: <?=$component === 1?' Вносится автоматически. Можно изменить при редактировании.':''?>
                     </label>
-                    <input <?=$component === 1?'readonly':''?> id="num3d" type="text" name="number_3d" class="form-control" value="<?=$_SESSION['general_data']['number_3d'], $_SESSION['fromWord_data']['number3D'];?>">
+                    <input <?=($component===1||$component===3)?'readonly':''?> id="num3d" type="text" name="number_3d" class="form-control" value="<?= $row['number_3d']??'' ?>">
                 </div>
             </div>
         <?php endif; ?>
@@ -58,7 +58,7 @@
                         <i class="fas fa-industry"></i>
                         Фабричный артикул:
                     </label>
-                    <input id="vendor_code" type="text" name="vendor_code" class="form-control" value="<?=$_SESSION['general_data']['vendor_code'];?>" />
+                    <input id="vendor_code" type="text" name="vendor_code" class="form-control" value="<?=$row['vendor_code']??''?>" />
                 </div>
             </div>
         <?php endif; ?>
@@ -75,7 +75,7 @@
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
                 </div>
-                <table class="table <?= $collections_len ? "" : "hidden" ?>">
+                <table class="table <?= $row['collections'] ? "" : "hidden" ?>">
                     <thead>
                     <tr class="thead11">
                         <th>№</th><th>Название</th><th></th>
@@ -83,10 +83,10 @@
                     </thead>
                     <tbody id="collections_table">
                     <!-- // автозаполнение если добавляем комплект или редакт модель -->
-                    <?php $i = 0; foreach ( $collections_len?:[] as $collection ) : ?>
+                    <?php foreach ( $row['collections']??[] as $collection ) : ?>
                         <tr>
-                            <td style="width: 30px"><?=++$i?><?php --$i; ?></td>
-                            <td><?php require _viewsDIR_. '_AddEdit/includes/collections_input.php'; $i++ ?></td>
+                            <td style="width: 30px"><?=++$i?></td>
+                            <td><?php require _viewsDIR_. '_AddEdit/includes/collections_input.php'; ?></td>
                             <td style="width:100px;">
                                 <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
                                     <span class="glyphicon glyphicon-trash"></span>
@@ -106,7 +106,7 @@
             <div class="col-sm-4 ">
                 <label for="author"><span class="glyphicon glyphicon-user"></span> Автор:</label>
                 <div class="input-group">
-                    <input required type="text" class="form-control" aria-label="..." name="author" id="author" value="<?=$_SESSION['general_data']['author'], $_SESSION['fromWord_data']['author'];?>" >
+                    <input required type="text" class="form-control" aria-label="..." name="author" id="author" value="<?=$row['author']?>" >
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
@@ -124,7 +124,7 @@
             <div class="col-sm-4 ">
                 <label for="modeller3d"><span class="glyphicon glyphicon-user"></span> 3Д модельер:</label>
                 <div class="input-group">
-                    <input required type="text" class="form-control" aria-label="..." name="modeller3d" id="modeller3d" value="<?=$_SESSION['general_data']['modeller3d'], $_SESSION['fromWord_data']['mod3D']; ?>">
+                    <input required type="text" class="form-control" aria-label="..." name="modeller3d" id="modeller3d" value="<?=$row['modeller3D']?>">
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
@@ -141,7 +141,7 @@
             <div class="col-sm-4 ">
                 <label for="jewelerName"><span class="glyphicon glyphicon-user"></span> Доработчик:</label>
                 <div class="input-group">
-                    <input type="text" class="form-control" aria-label="..." name="jewelerName" value="<?=$_SESSION['general_data']['jewelerName']?>">
+                    <input type="text" class="form-control" aria-label="..." name="jewelerName" value="<?=$row['jewelerName']?>">
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
@@ -162,7 +162,7 @@
             <div class="col-xs-3">
                 <label for="model_type" class=""><span class="glyphicon glyphicon-eye-open"></span> Вид модели:</label>
                 <div class="input-group ">
-                    <input required  type="text" id="modelType" class="form-control" aria-label="..." name="model_type" value="<?=$row['model_type'], $_SESSION['fromWord_data']['modType'];?>" />
+                    <input required  type="text" id="modelType" class="form-control" aria-label="..." name="model_type" value="<?=($component===3)?'':$row['model_type']?>" />
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
@@ -178,14 +178,14 @@
         <?php if ( $permittedFields['size_range'] ): ?>
             <div class="col-xs-3">
                 <label for="model_weight"><i class="fab fa-quinscape"></i> Размерный Ряд:</label>
-                <input type="text" class="form-control" name="size_range" value="<?=$row['size_range'];?>" />
+                <input type="text" class="form-control" name="size_range" value="<?=$row['size_range']?>" />
             </div>
         <?php endif; ?>
 
         <?php if ( $permittedFields['model_weight'] ): ?>
             <div class="col-xs-2 ">
                 <label for="model_weight"><span class="glyphicon glyphicon-scale"></span> Вес 3D:</label>
-                <input step="0.01" type="number" class="form-control" required id="modelWeight" name="model_weight" value="<?=$_SESSION['general_data']['model_weight'], $_SESSION['fromWord_data']['weight']; ?>">
+                <input step="0.01" type="number" class="form-control" required id="modelWeight" name="model_weight" value="<?=($component===3)?'':$row['model_weight'] ?>">
             </div>
         <?php endif; ?>
 
@@ -300,18 +300,18 @@
                             <span class="glyphicon glyphicon-plus"></span>
                         </button>
                     </div>
-                    <table class="table <?=$gs_len ? "" : "hidden"?>">
+                    <table class="table <?= $gemsRow ? "" : "hidden"?>">
                         <thead>
                         <tr class="thead11">
                             <th>№</th><th>Ø(Размер мм)</th><th>Кол-во шт.</th><th>Огранка</th><th>Сырьё</th><th>Цвет</th><th></th>
                         </tr>
                         </thead>
                         <tbody id="gems_table">
-                        <?php for ( $i = 0; $i < $gs_len; $i++ ): // автозаполнение если добавляем комплект или редакт модель?>
+                        <?php foreach ( $gemsRow??[] as $gem ): ?>
                             <tr>
-                                <td><?=$i+1;?></td>
+                                <td><?= ++$gI ?></td>
                                 <td><?php require _viewsDIR_.'_AddEdit/includes/gems_diametr_input.php' ?></td>
-                                <td><input type="number" class="form-control gems_value_input" name="gemsVal[]" value="<?=$row_gems[$i]['value'];?>"></td>
+                                <td><input type="number" class="form-control gems_value_input" name="gemsVal[]" value="<?=$gem['value']?>"></td>
                                 <td><?php require _viewsDIR_.'_AddEdit/includes/gems_cut_input.php' ?></td>
                                 <td><?php require _viewsDIR_.'_AddEdit/includes/gems_input.php' ?></td>
                                 <td><?php require _viewsDIR_.'_AddEdit/includes/gems_color_input.php' ?></td>
@@ -324,7 +324,7 @@
                                     </button>
                                 </td>
                             </tr>
-                        <?php endfor; ?>
+                        <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div><!-- end panel gems-->
@@ -342,19 +342,19 @@
                             <span class="glyphicon glyphicon-plus"></span>
                         </button>
                     </div>
-                    <table class="table <?=$vc_Len ? "" : "hidden"?>">
+                    <table class="table <?=$dopVCs ? "" : "hidden"?>">
                         <thead>
                         <tr class="thead11">
                             <th>№</th><th>Название</th><th>Артикул / Номер 3D</th><th>Описание</th><th></th>
                         </tr>
                         </thead>
                         <tbody id="dop_vc_table">
-                        <?php for ( $j = 0; $j < $vc_Len; $j++ ): ?>
+                        <?php foreach ( $dopVCs??[] as $dopVc ): ?>
                             <tr>
-                                <td><?=$j+1; ?></td>
+                                <td><?= ++$vcI ?></td>
                                 <td><?php require _viewsDIR_.'_AddEdit/includes/DopArticl_names_input.php' ?></td>
                                 <td><?php require _viewsDIR_.'_AddEdit/includes/num3dVC_input.php' ?></td>
-                                <td><input type="text" class="form-control" name="descr_dopvc_[]" value="<?=$row_dop_vc[$j]['descript'];?>"></td>
+                                <td><input type="text" class="form-control" name="descr_dopvc_[]" value="<?=$dopVc['descript'];?>"></td>
                                 <td>
                                     <button class="btn btn-sm btn-default " type="button" onclick="duplicateRow(this);" title="дублировать строку">
                                         <span class="glyphicon glyphicon-duplicate"></span>
@@ -364,7 +364,7 @@
                                     </button>
                                 </td>
                             </tr>
-                            <?php endfor; ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div><!-- end panel dopArticls-->
@@ -372,9 +372,7 @@
 
             <?php if ( $permittedFields['description'] ): ?>
                 <label for="descr" class=""><span class="glyphicon glyphicon-comment"></span> Примечания:</label>
-                <textarea id="descr" class="form-control" rows="3" name="description" style="margin:0px 0 15px 0 !important;"><?php
-                    echo $_SESSION['general_data']['description']; echo $_SESSION['fromWord_data']['descr'];
-                    ?></textarea>
+                <textarea id="descr" class="form-control" rows="3" name="description" style="margin:0px 0 15px 0 !important;"><?=$row['description']?></textarea>
             <?php endif; ?>
 
         </div> <!--col-xs-12-->
@@ -423,15 +421,15 @@
             <div class="col-xs-12 lables">
                 <p><b><span class="glyphicon glyphicon-tags"></span> &#160;Метки:</b></p>
                 <div class="row">
-                    <?php for ( $i = 0; $i < count($labels); $i++ ):?>
-                        <div class="col-xs-6 col-sm-4 col-md-3 col-lg-3" title="<?=$labels[$i]['info']?>">
-                            <input type="checkbox" <?=$labels[$i]['check'];?> name="labels[<?=$labels[$i]['id']?>]" id="<?=$labels[$i]['id']?>" aria-label="..." value="<?=$labels[$i]['name'];?>">
-                            <label for="<?=$labels[$i]['id'];?>">
-                            <span class="label <?=$labels[$i]['class'];?> lables-bottom">
-                                <span class="glyphicon glyphicon-tag"></span> <?=$labels[$i]['name'];?></span>
+                    <?php foreach ( $labels??[] as $label):?>
+                        <div class="col-xs-6 col-sm-4 col-md-3 col-lg-3" title="<?=$label['info']?>">
+                            <input type="checkbox" <?=$label['check'];?> name="labels[<?=$label['id']?>]" id="<?=$label['id']?>" aria-label="..." value="<?=$label['name'];?>">
+                            <label for="<?=$label['id'];?>">
+                            <span class="label <?=$label['class'];?> lables-bottom">
+                                <span class="glyphicon glyphicon-tag"></span> <?=$label['name'];?></span>
                             </label>
                         </div>
-                    <?php endfor; ?>
+                    <?php endforeach; ?>
                 </div>
                 <hr />
             </div>
@@ -457,7 +455,7 @@
                 </p>
                 <div class="row">
                     <?php
-                    $countWC = count($status?:[]);
+                    $countWC = count($statusesWorkingCenters?:[]);
                     $columns = [
                         0=>'',
                         1=>'',
@@ -473,7 +471,7 @@
                     $userAccess = (int)$_SESSION['user']['access'];
                     if ( $userAccess > 1 ) $barubina = '';
                     ?>
-                    <?php foreach ( $status?:[] as $wcName => $workingCenter ) :?>
+                    <?php foreach ( $statusesWorkingCenters??[] as $wcName => $workingCenter ) :?>
                         <div class="panel panel-info" style="position:relative;">
                             <div class="panel-heading">
                                 <?=$wcName?>
@@ -519,15 +517,15 @@
 
     <input type="hidden" name="save" value="1"/>
     <?php if ( !$permittedFields['number_3d'] ): ?>
-        <input type="hidden" id="num3d" name="number_3d" value="<?=$_SESSION['general_data']['number_3d'];?>"/>
+        <input type="hidden" id="num3d" name="number_3d" value="<?=$row['number_3d'];?>"/>
     <?php endif;?>
     <?php if ( !$permittedFields['vendor_code'] ): ?>
-        <input type="hidden" id="vendor_code" value="<?=$_SESSION['general_data']['vendor_code'];?>"/>
+        <input type="hidden" id="vendor_code" value="<?=$row['vendor_code'];?>"/>
     <?php endif;?>
     <?php if ( !$permittedFields['model_type'] ): ?>
-        <input type="hidden" id="modelType" value="<?=$_SESSION['general_data']['model_type'];?>"/>
+        <input type="hidden" id="modelType" value="<?=$row['model_type'];?>"/>
     <?php endif;?>
-    <input type="hidden" name="id" value="<?=$id?>"/>
+    <input type="hidden" name="id" value="<?=($component===3)?0:$id?>"/>
     <input type="hidden" name="edit" id="edit" value="<?=$component;?>"/>
     <input type="hidden" name="date" value="<?=date('Y-m-d'); ?>" />
 

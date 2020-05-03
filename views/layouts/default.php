@@ -119,8 +119,9 @@ JS;
                             </button>
                             <ul class="dropdown-menu">
                                 <li class="<?=$navBar['navbarStatsShow'];?>"><a href="<?=$navBar['navbarStatsUrl'];?>"><span class="glyphicon glyphicon-stats"></span>&#160; Статистика</a></li>
-                                <li><a href="/options"><span class="glyphicon glyphicon-cog"></span>&#160; Опции</a></li>
+                                <li><a href="/options/"><span class="glyphicon glyphicon-cog"></span>&#160; Опции</a></li>
                                 <li class="<?=$navBar['navbarDevShow'];?>"><a href="<?=$navBar['navbarDevUrl'];?>"><span class="glyphicon glyphicon-wrench"></span>&#160; Dev</a></li>
+                                <li class=""><a href="/help/"><i class="far fa-question-circle"></i>&#160; Помощь</a></li>
                                 <li role="separator" class="divider"></li>
                                 <li><a href="/auth/?a=exit"><span class="glyphicon glyphicon-log-out"></span>&#160; Выход</a></li>
                             </ul>
@@ -231,7 +232,7 @@ JS;
                         <strong> Добавить модель</strong>
                     </a>
                 <?php endif; ?>
-                <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="/versions/" title="Список изменений">ver. 1.67</a> &#160; developed by Vadim Bukov</i>
+                <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="/versions/" title="Список изменений">ver. <?=$this->currentVersion?></a> &#160; разработка by Vadim Bukov</i>
             </div>
             <script src="/web/js_lib/jquery-3.2.1.min.js"></script>
             <script src="/web/js_lib/bootstrap.min.js"></script>

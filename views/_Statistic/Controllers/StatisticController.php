@@ -1,17 +1,15 @@
 <?php
-require_once _globDIR_ . "classes/GeneralController.php";
+namespace Views\_Statistic\Controllers;
+use Views\_Statistic\Models\Statistic;
+use Views\_Globals\Controllers\GeneralController;
 
 
 class StatisticController extends GeneralController
 {
 
-
     public function action()
     {
-        require_once _viewsDIR_ . 'Statistic/classes/Statistic.php';
-        $stat = new Statistic($_SERVER);
-
-        if ( !$connection = $stat->connectToDB() ) exit;
+        $stat = new Statistic();
 
         $thisPage = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
         if ( $thisPage !== $_SERVER["HTTP_REFERER"] ) {

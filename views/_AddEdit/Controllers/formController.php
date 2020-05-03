@@ -51,7 +51,6 @@ if ( (int)$request->post('edit') === 2 )  //isset($_POST['edit']) && (int)$_POST
     $isEdit = true;
 } else {
     $isEdit = false; // новая модель!
-    unset($_SESSION['general_data']);
 }
 
 //debug($_POST['mats'],'mats',1);
@@ -67,7 +66,11 @@ $date = trim($_POST['date']);
 if ( $isEdit === true ) {
     $number_3d = $handler->setNumber_3d( strip_tags(trim($_POST['number_3d'])) );
 } else {
-    $number_3d = $handler->setNumber_3d();
+    if ( (int)$request->post('edit') === 3 ) {
+        $number_3d = $handler->setNumber_3d($request->post('number_3d'));
+    } else {
+        $number_3d = $handler->setNumber_3d();
+    }
 }
 
 $permissions = $handler->permittedFields();

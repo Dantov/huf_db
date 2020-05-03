@@ -6,7 +6,7 @@ Options.prototype.widthControl = function(opt) {
 
     //let that = this;
     $.ajax({
-        url: _ROOT_ + "Views/Options/controllers/opt_handler.php",
+        url: "/options/widthControl",
         type: 'POST',
         data: {
             widthControl: opt
@@ -23,8 +23,9 @@ Options.prototype.widthControl = function(opt) {
 Options.prototype.noticeControl = function(opt) {
 
     //let that = this;
+    debug(opt,'opt');
     $.ajax({
-        url: _ROOT_ + "Views/Options/controllers/opt_handler.php",
+        url: "/options/noticeControl",
         type: 'POST',
         data: {
             noticeActivate: opt
@@ -48,7 +49,7 @@ Options.prototype.changeBgImg = function() {
     let src = this.getAttribute('data-class');
     console.log(src);
     $.ajax({
-        url: _ROOT_ + "Views/Options/controllers/opt_handler.php",
+        url: "/options/changeBgImg",
         type: 'POST',
         data: {
             srcBgImg: src

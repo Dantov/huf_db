@@ -1,5 +1,3 @@
-<?php
-?>
 <div class="row">
     <p class="lead text-info text-center">Опции</p>
     <div class="col-xs-12 stats_table">
@@ -30,5 +28,3 @@
 
     <a class="btn btn-default" type="button" href="<?=$_SESSION['prevPage'];?>"><span class="glyphicon glyphicon-triangle-left"></span> Назад</a>
 </div><!--row-->
-
-<script src="js/options.js?ver=<?=time();?>"></script>

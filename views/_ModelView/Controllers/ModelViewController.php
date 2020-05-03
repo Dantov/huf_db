@@ -59,12 +59,14 @@ class ModelViewController extends GeneralController
         $ai_file = $modelView->getAi();
 
         $matsCovers = $modelView->getModelMaterials();
-        $complectedStr = $modelView->getComplects();
+        $complectes = $modelView->getComplectes();
         $images = $modelView->getImages();
         $mainImg = [];
         $mainIsset = false;
         //debug($images,'$images',1);
 
+        // проверим наличие статусов в картинках
+        // что б какую отобразить главной
         $setMainImg = function($which) use (&$mainIsset, &$images, &$mainImg)
         {
             foreach ( $images as &$image )
@@ -150,7 +152,7 @@ JS;
         $this->includePHPFile('progressModal.php','','',_globDIR_.'includes/');
 
         $compacted = compact([
-            'id','row','coll_id','getStl','button3D','dopBottomScripts','complectedStr','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
+            'id','row','coll_id','getStl','button3D','dopBottomScripts','complectes','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
             'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','ai_file','stl_file','thisPage','editBtn',
             'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers']);
 
