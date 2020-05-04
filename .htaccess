@@ -1,14 +1,12 @@
 ErrorDocument 404 /Views/errors/err404.php
-ErrorDocument 403 /Views/errors/err404.php
-ErrorDocument 410 /Views/errors/err404.php
+ErrorDocument 403 /Views/errors/err403.php
+ErrorDocument 410 /Views/errors/err410.php
 
 Options -Indexes
 RewriteEngine On 
 RewriteRule ^/.htaccess$ - [F]
 
-#
-Redirect /index.php /Views/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 
-<IfModule mod_php7.c>
-    php_value auto_prepend_file F:\OpenServer\OSPanel\domains\HUF-DB-DEV\views\def.php
-</IfModule>
+RewriteRule ^(.*) /views/$1
