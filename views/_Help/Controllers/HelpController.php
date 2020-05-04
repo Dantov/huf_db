@@ -8,7 +8,7 @@ class HelpController extends GeneralController
     public function action()
     {
 
-
+    	
         return $this->render('help');
     }
 

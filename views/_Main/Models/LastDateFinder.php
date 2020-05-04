@@ -1,5 +1,5 @@
 <?php
-namespace Views\Main\classes;
+namespace Views\_Main\Models;
 
 /**
  * User: BVA
