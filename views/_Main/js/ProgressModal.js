@@ -21,6 +21,8 @@ function ProgressModal()
     };
 
     this.openPDFListen = false; // сообщим о том что накинули обработчик
+
+    this.pictID = null; // ID картинки которую хотим распечатать
     
     this.init();
     
@@ -40,7 +42,7 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
 	{
 		doc.doc = 'Excel';
 		doc.icon = 'far fa-file-excel';
-		doc.url = 'controllers/workingCenters_xls.php';
+		doc.url = '/main/excel-export';
 		doc.headerColor = '#00a623';
 		doc.method = 'GET';
 		doc.data.excel = 1;
@@ -49,7 +51,8 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
     {
         case 'pdf':
             doc.doc = 'PDF';
-            doc.url = 'controllers/pdfExport_Controller.php';
+            doc.url = '/main/collection-pdf';
+            doc.data.collectionPDF = 1;
             doc.method = 'POST';
             break;
 		case 'xls':
@@ -66,21 +69,36 @@ ProgressModal.prototype.setProgressModal = function(docSwitch)
 			break;
         case 'passport':
             doc.doc = 'PDF';
-            doc.url = 'controllers/docPdfController.php';
+            doc.method = 'POST';
+            doc.url = '/model-view/?document-pdf=1';
+            doc.text = 'Пасспорт';
             doc.data.id = main.getQueryParam('id');
             doc.data.document = 'passport';
             break;
         case 'runner':
             doc.doc = 'PDF';
-            doc.url = 'controllers/docPdfController.php';
+            doc.method = 'POST';
+            doc.url = '/model-view/?document-pdf=1';
+            doc.text = 'Бегунок';
             doc.data.id = main.getQueryParam('id');
             doc.data.document = 'runner';
             break;
         case 'both':
             doc.doc = 'PDF';
-            doc.url = 'controllers/docPdfController.php';
+            doc.method = 'POST';
+            doc.url = '/model-view/?document-pdf=1';
+            doc.text = 'Пасспорт + Бегунок';
             doc.data.id = main.getQueryParam('id');
             doc.data.document = 'both';
+            break;
+        case 'picture':
+            doc.doc = 'PDF';
+            doc.method = 'POST';
+            doc.url = '/model-view/?document-pdf=1';
+            doc.text = 'Картинка';
+            doc.data.id = main.getQueryParam('id');
+            doc.data.pictID = this.pictID;
+            doc.data.document = 'picture';
             break;
     }
 
@@ -107,9 +125,9 @@ ProgressModal.prototype.onModalOpen = function(that, event)
     let docStr = that.searchValue ? 'Найдено ' + that.searchValue : that.collectionName;
     let doc = that.doc;
 
-    if ( doc.switch === 'passport' ) docStr = 'Пасспорт';
-    if ( doc.switch === 'runner' ) docStr = 'Бегунок';
-    if ( doc.switch === 'both' ) docStr = 'Пасспорт + Бегунок';
+    // debug(that.collectionName,'that.collectionName');
+    // debug(that.searchValue,'that.searchValue');
+
 
     that.xhr = $.ajax({
         url: doc.url,
@@ -119,14 +137,15 @@ ProgressModal.prototype.onModalOpen = function(that, event)
         data: doc.data,
         beforeSend: function() {
             cancel.classList.remove('hidden');
-            modal.iziModal('setTitle', 'Идёт создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b>');
+            docStr = doc.text ? doc.text : docStr;
+            modal.iziModal('setTitle', 'Идёт создание <b>'+ doc.doc +'</b> документа: <b>' + docStr + '</b>');
 
             if ( doc.switch === 'xls' || doc.switch === 'getXlsxFwc' || doc.switch === 'getXlsxExpired' )
             {
                 // вторым запросом добудем имя файла
                 $.ajax({
                     type:'GET',
-                    url: 'controllers/workingCenters_xls.php',
+                    url: '/main/wc-file-name',
                     data: {
                         excel:1,
                         getFileName:1
@@ -142,11 +161,14 @@ ProgressModal.prototype.onModalOpen = function(that, event)
         },
         success:function(fileName)
         {
-            if ( doc.switch === 'passport' || doc.switch === 'runner' ) doc.fileName = docStr = fileName;
-            modal.iziModal('setTitle', 'Создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
+            //if ( doc.switch === 'passport' || doc.switch === 'runner' || doc.switch === 'picture' ) doc.fileName = docStr = fileName;
+            //if ( fileName.length < 12 ) doc.fileName = docStr = fileName;
+            //modal.iziModal('setTitle', 'Создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
 
             if ( doc.switch === 'xls' || doc.switch === 'getXlsxFwc' || doc.switch === 'getXlsxExpired' )
             {
+                modal.iziModal('setTitle', 'Создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
+
                 let int = setInterval(function () {
                     if ( doc.fileName )
                     {
@@ -154,10 +176,20 @@ ProgressModal.prototype.onModalOpen = function(that, event)
                         ok.classList.remove('hidden');
                         cancel.classList.add('hidden');
                         clearInterval(int);
+
+                        let $a = $("<a>");
+                        $a.attr("href",fileName);
+                        $("body").append($a);
+                        $a.attr("download", doc.fileName + ".xlsx");
+                        $a[0].click();
+                        $a.remove();
                     }
                 },500);
 
             } else {
+                doc.fileName = docStr = fileName;
+                modal.iziModal('setTitle', 'Создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
+
                 debug(fileName);
                 doc.fileName = fileName;
 
@@ -175,7 +207,7 @@ ProgressModal.prototype.onModalOpen = function(that, event)
                 download.setAttribute('href', _ROOT_ + 'Pdfs/' + fileName );
             }
         }
-    }).done(function(data)
+    })/*.done(function(data)
     {
 		if ( doc.switch === 'xls' || doc.switch === 'getXlsxFwc' || doc.switch === 'getXlsxExpired' )
         {
@@ -193,7 +225,7 @@ ProgressModal.prototype.onModalOpen = function(that, event)
                 }
             },500);
         }
-    });
+    })*/;
 };
 ProgressModal.prototype.onModalClosing = function(main, event)
 {
@@ -207,21 +239,21 @@ ProgressModal.prototype.onModalClosing = function(main, event)
     let doc = main.doc;
     debug(doc);
     if ( !doc.fileName ) return;
-    if ( doc.switch === 'pdf' || doc.switch === 'passport' || doc.switch === 'runner' )
-    {
+    // if ( doc.switch === 'pdf' || doc.switch === 'passport' || doc.switch === 'runner' )
+    // {
         $.ajax({
-            url: "../AddEdit/controllers/delete.php",
+            url: "/globals/delete",
             type: "POST",
             data: {
                 isPDF: 1,
-                pdfname: doc.fileName,
+                pdfName: doc.fileName,
             },
             dataType:"json",
             success:function(data) {
                 if ( data.success ) console.log('delete complete');
             }
         });
-    }
+    //}
 };
 ProgressModal.prototype.onModalClosed = function(main, event)
 {
@@ -309,7 +341,7 @@ ProgressModal.prototype.sendPDF = function()
 
 ProgressModal.prototype.ProgressBar = function(percent)
 {
-    let progBar = document.querySelector('.progress-bar');
+    let progBar = document.querySelector('.progress-bar-success');//document.querySelector('.progressBarScript');
 
     if ( percent === -1 ) percent = 0;
 
@@ -317,7 +349,6 @@ ProgressModal.prototype.ProgressBar = function(percent)
     progBar.style.width = percent + "%";
     progBar.innerHTML = percent + "%";
 };
-
 ProgressModal.prototype.openPDF = function(filename) {
     window.open( _ROOT_ + 'Pdfs/' + filename );
 };
@@ -338,7 +369,24 @@ function sendXLS(drawBy)
 		
     progressModal.sendXLS(doc);
 }
-function getPDF(doc) // пасспорт бегун
+function getPDF(doc) // пасспорт бегун картинка
 {
-	progressModal.getPDF(doc);
+    if ( doc === 'picture' )
+    {
+        let dopPictures = document.querySelector('.dopImages').querySelectorAll('.imageSmall');
+        let pictID = 0;
+        $.each(dopPictures, function (i, img) {
+            if ( img.classList.contains('activeImage') )
+            {
+                progressModal.pictID = +img.getAttribute('data-id');
+                return null;
+            }
+        });
+    }
+    if ( doc === 'pictureAll' )
+    {
+        progressModal.pictID = -1;
+        doc = 'picture';
+    }
+    progressModal.getPDF(doc);
 }

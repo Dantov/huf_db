@@ -1,9 +1,9 @@
 <?php
-namespace Views\Main\classes;
-session_start();
+namespace Views\_Main\Models;
 
+//session_start();
 //require_once  _viewsDIR_ . 'Main/classes/Main.php';
-require_once _vendorDIR_ . "autoload.php";
+//require_once _vendorDIR_ . "autoload.php";
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -51,7 +51,7 @@ class ToExcel extends Main
             return;
         }
 
-        parent::__construct($_SERVER, $_SESSION['assist'], false, $_SESSION['foundRow']);
+        parent::__construct($_SESSION['assist'], false, $_SESSION['foundRow']);
         $this->connectToDB();
 
         if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) )
@@ -972,13 +972,14 @@ class ToExcel extends Main
         $this->output($spreadsheet);
 	}
 
-	protected function output($spreadsheet)
+
+    protected function output($spreadsheet)
     {
         $writer = new Xlsx($spreadsheet);
         ob_start();
         try {
             $writer->save('php://output');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo json_encode(['error' => ['message'=>$e->getMessage(), 'file'=>$e->getFile(), 'line' => $e->getLine()], 'message'=>'Error in save() XLSX']);
             exit;
         }
@@ -988,6 +989,7 @@ class ToExcel extends Main
 
         $this->progressCount(100);
         echo json_encode('data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'.base64_encode($xlsData));
+        exit;
     }
 
 

@@ -25,6 +25,9 @@
 .mr-0 {
     margin-right: 0!important;
 }
+.mr-1 {
+    margin-right: 5px!important;
+}
 .mt-0 {
     margin-top: 0!important;
 }
@@ -84,7 +87,6 @@
     padding-right: 10px!important;
 }
 
-
 /* BORDER */
 .brb-1-success {
     border-bottom: 1px solid #5cb85c;
@@ -95,12 +97,17 @@
 .brb-3-success {
     border-bottom: 3px solid #5cb85c!important;
 }
+
+.brb-1-secondary {
+    border-bottom: 1px solid #19c8c8!important;
+}
 .brb-2-secondary {
     border-bottom: 2px solid #19c8c8!important;
 }
 .brr-2-secondary {
     border-right: 2px solid #19c8c8!important;
 }
+
 .border-primary-1 {
     border: 1px solid #3677e2;
 }

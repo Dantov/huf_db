@@ -1,6 +1,6 @@
 <?php
 namespace Views\_ModelView\Controllers;
-use Views\_ModelView\Models\ModelView;
+use Views\_ModelView\Models\{ModelView,DocumentPDF};
 use Views\_Globals\Controllers\GeneralController;
 
 
@@ -10,7 +10,9 @@ class ModelViewController extends GeneralController
     public $title = 'ХЮФ 3Д Модель - ';
     public $stockID = null;
 
-
+    /**
+     * @throws \Exception
+     */
     public function beforeAction()
     {
         $request = $this->request;
@@ -23,6 +25,51 @@ class ModelViewController extends GeneralController
             if ( (int)$request->post('zipDelete') === 1 )
             {
                 $this->actionDellStlFiles();
+            }
+            if ( (int)$request->post('zipDelete') === 1 )
+            {
+                $this->actionDellStlFiles();
+            }
+
+            if ( $this->getQueryParam('document-pdf') )
+            {
+                ini_set('max_execution_time', 180); // макс. время выполнения скрипта в секундах
+                ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
+
+                $docPdf = new DocumentPDF($request->post('id'), $request->post('userName'), $request->post('tabID'), $request->post('document'));
+
+                if ( $request->post('document') === 'passport' )
+                {
+                    $docPdf->printPassport();
+                    $fileName = $docPdf->exportToFile('passport');
+
+                    echo json_encode($fileName);
+                    exit;
+                }
+                if ( $request->post('document') === 'runner' )
+                {
+                    $docPdf->printRunner();
+                    $fileName = $docPdf->exportToFile('runner');
+
+                    echo json_encode($fileName);
+                    exit;
+                }
+                if ( $request->post('document') === 'both' )
+                {
+                    $docPdf->printPassport();
+                    $docPdf->printRunner();
+                    $fileName = $docPdf->exportToFile('passportRunner');
+
+                    echo json_encode($fileName);
+                    exit;
+                }
+                if ( $request->post('document') === 'picture' )
+                {
+                    $docPdf->printPicture( (int)$request->post('pictID') );
+                    $fileName = $docPdf->exportToFile('picture');
+                    echo json_encode($fileName);
+                    exit;
+                }
             }
             exit;
         }
@@ -57,14 +104,17 @@ class ModelViewController extends GeneralController
             $this->includePHPFile('3DViewPanels.php');
         }
         $ai_file = $modelView->getAi();
+        $rhino_file = $modelView->get3dm();
 
         $matsCovers = $modelView->getModelMaterials();
-        $complectedStr = $modelView->getComplects();
+        $complectes = $modelView->getComplectes();
         $images = $modelView->getImages();
         $mainImg = [];
         $mainIsset = false;
         //debug($images,'$images',1);
 
+        // проверим наличие статусов в картинках
+        // что б какую отобразить главной
         $setMainImg = function($which) use (&$mainIsset, &$images, &$mainImg)
         {
             foreach ( $images as &$image )
@@ -150,9 +200,9 @@ JS;
         $this->includePHPFile('progressModal.php','','',_globDIR_.'includes/');
 
         $compacted = compact([
-            'id','row','coll_id','getStl','button3D','dopBottomScripts','complectedStr','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
+            'id','row','coll_id','getStl','button3D','dopBottomScripts','complectes','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
             'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','ai_file','stl_file','thisPage','editBtn',
-            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers']);
+            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers','rhino_file']);
 
         return $this->render('modelView', $compacted);
     }

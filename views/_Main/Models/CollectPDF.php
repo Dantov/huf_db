@@ -1,11 +1,12 @@
 <?php
-include('Main.php');
+namespace Views\_Main\Models;
+
 
 class CollectPDF extends Main {
 	
-	function __construct( &$server, $assist, $user, $foundRow, $searchFor='', $collectionName='' ) 
+	function __construct( $assist, $user, $foundRow, $searchFor='', $collectionName='' )
 	{
-		parent::__construct($server, $assist, $user, $foundRow);
+		parent::__construct( $assist, $user, $foundRow);
 		$this->toPdf = true;
 		if ( !empty($searchFor) ) $this->searchFor = $searchFor;
 		if ( !empty($collectionName) ) $this->collectionName = $collectionName;

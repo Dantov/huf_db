@@ -96,6 +96,8 @@ class SetSortModel extends General
         $session->dellKey('foundRow');
         $session->dellKey('countAmount');
         $session->dellKey('searchFor');
+
+        $session->dellKey('re_search'); //было добавлено!!! 04,05,20
     }
     
     protected function setPagination($param, $value) 
@@ -310,26 +312,21 @@ class SetSortModel extends General
         $selectRow = "SELECT * FROM stock WHERE id IN $in ORDER BY {$assist['reg']} {$assist['sortDirect']}";
         $foundModels = $this->findAsArray($selectRow);
         
-        if ( empty($foundModels) ) return false; //header("location: ../index.php");
+        if ( empty($foundModels) ) return false;
 
         $this->killSearch();
-        $session['foundRow'] = $foundModels;
+        $session->setKey('foundRow', $foundModels);
 
         //debug($_SESSION['foundRow'],'foundRow=',1);
-        
-        $session['countAmount'] = count($_SESSION['foundRow']);
+        $session->setKey('countAmount', count($foundModels));
+
         $assist['page'] = 0;
         $assist['startfromPage'] = 0;
         $assist['drawBy_'] = 3;
       
         $session->setKey('assist', $assist);
-        $session->setKey('re_search', true); // глючит без этого
-        
+
         return '/main/';
-        
-        //$_SESSION['assist']['collectionName'] = 'Выбранные модели';
-        //$_SESSION['assist']['collection_id'] = -1;
-        //header("location: "._views_HTTP_ ."Main/index.php");
     }
 
 }

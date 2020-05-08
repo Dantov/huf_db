@@ -17,10 +17,15 @@ class ModelView extends General {
 	private $gems_Query;
 	private $dopVc_Query;
 	private $stl_Query;
-	private $complect_Query;
+	private $complected;
 	private $ai_Query;
 
-    public function __construct( $id = false )
+    /**
+     * ModelView constructor.
+     * @param bool $id
+     * @throws \Exception
+     */
+    public function __construct($id = false )
     {
         parent::__construct();
 
@@ -29,10 +34,13 @@ class ModelView extends General {
         $this->connectToDB();
         $this->dataQuery();
     }
-	
-	public function dataQuery()
+
+    /**
+     * @throws \Exception
+     */
+    public function dataQuery()
     {
-		$stock_Query       = mysqli_query($this->connection, " SELECT * FROM stock     WHERE     id='$this->id' ");
+		$this->row         = $this->findOne( " SELECT * FROM stock     WHERE     id='$this->id' ");
 		$this->img_Query   = mysqli_query($this->connection, " SELECT * FROM images    WHERE pos_id='$this->id' ");
 		$this->gems_Query  = mysqli_query($this->connection, " SELECT * FROM gems      WHERE pos_id='$this->id' ");
 		$this->dopVc_Query = mysqli_query($this->connection, " SELECT * FROM vc_links  WHERE pos_id='$this->id' ");
@@ -40,10 +48,18 @@ class ModelView extends General {
 		$this->ai_Query    = mysqli_query($this->connection, " SELECT * FROM ai_files  WHERE pos_id='$this->id' ");
 		$this->rep_Query   = mysqli_query($this->connection, " SELECT * FROM repairs   WHERE pos_id='$this->id' ");
 		
-		$this->row = mysqli_fetch_assoc($stock_Query);
+		//$this->row = mysqli_fetch_assoc($stock_Query);
 		$this->number_3d = $this->row['number_3d'];
-		
-		$this->complect_Query  = mysqli_query($this->connection, " SELECT id,model_type FROM stock WHERE number_3d='{$this->number_3d}' ");
+
+		$sql = " SELECT st.id, st.model_type, img.pos_id, img.img_name 
+				FROM stock st 
+					LEFT JOIN images img 
+					ON (st.id = img.pos_id AND img.main=1) 
+				WHERE st.number_3d='{$this->number_3d}' 
+				AND st.id<>'{$this->id}' ";
+		//debug($sql,'$sql');
+		$this->complected = $this->findAsArray( $sql );
+		//debug($this->complected,'complected',1);
 	}
 
     public function getCollections()
@@ -79,36 +95,47 @@ class ModelView extends General {
 	}
 
     /**
+     * @return array|bool
+     * @throws \Exception
+     */
+    public function get3dm()
+    {
+        return $this->findOne( " SELECT * FROM rhino_files WHERE pos_id='$this->id' ");
+    }
+
+    /**
      * @param bool $forPdf
      * @return array|string
      */
-	public function getComplects($forPdf=false)
+	public function getComplectes($forPdf=false)
     {
-        if ($forPdf)
-        {
-            $res = [];
-            while( $resQ = mysqli_fetch_assoc($this->complect_Query) ) {
-                if ( $resQ['id'] == $this->row['id'] ) continue;
-                $res[] = $resQ;
-            }
-            return $res;
-        }
+    	if ( empty($this->complected) ) return [];
+        if ($forPdf) return $this->complected;
 
-		$complStr = '';
-		$mass = [];
-		while( $complects = mysqli_fetch_assoc($this->complect_Query) ) {
-			if ( $complects['id'] == $this->row['id'] ) continue;
-			$mass[] = $complects['model_type'];
-			$compl_quer = mysqli_query($this->connection, " SELECT img_name FROM images WHERE pos_id='{$complects['id']}' AND main='1' ");
-			$compl_row = mysqli_fetch_assoc($compl_quer);
+		// $ids = '(';
+		// foreach ($this->complected as $key => $complectedd) $ids .= $complectedd['id'] . ',';
+		// $ids = trim($ids,',') . ')';
 
-            $fileImg = $this->number_3d.'/'.$complects['id'].'/images/'.$compl_row['img_name'];
-            $img = _stockDIR_HTTP_ .$this->number_3d.'/'.$complects['id'].'/images/'.$compl_row['img_name'];
-            if ( !file_exists(_stockDIR_.$fileImg) ) $img = _stockDIR_HTTP_."default.jpg";
-                $complStr .= '<a style="color:white!important;" imgtoshow="'. $img .'" href="/model-view/?id='.$complects['id'].'">'.$complects['model_type'].' </a>';
+		// $images = $this->findAsArray( " SELECT img_name,pos_id FROM images WHERE pos_id IN $ids AND main='1' ");
+
+		// foreach ($images as &$image) 
+		// {
+		// 	$path = $this->number_3d.'/'.$image['pos_id'].'/images/'. $image['img_name'];
+  //           $image['img_name'] = _stockDIR_HTTP_ . $path;
+  //           if ( !file_exists(_stockDIR_ . $path) ) $image['img_name'] = _stockDIR_HTTP_."default.jpg";
+
+  //           foreach ($this->complected as &$complected) 
+		// 	{
+		// 		if ( $complected['id'] === $image['pos_id'] ) $complected['image'] = $image['img_name'];
+		// 	}
+		// }
+		foreach ($this->complected as &$complect) 
+		{
+			$imagePath = $this->number_3d.'/'.$complect['id'].'/images/'.$complect['img_name'];
+			$complect['img_name'] = _stockDIR_HTTP_ . $imagePath;
+            if ( !file_exists(_stockDIR_ . $imagePath) ) $complect['img_name'] = _stockDIR_HTTP_."default.jpg";
 		}
-		if ( count($mass) == 0 ) $complStr = "Нет";
-		return $complStr;
+		return $this->complected;
 	}
 	
 	public function getImages()

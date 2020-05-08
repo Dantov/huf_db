@@ -1,12 +1,9 @@
 <?php
+namespace Views\_Options\Models;
+use Views\_Main\Models\Main;
 
-include(_viewsDIR_.'Main/classes/Main.php');
-
-class Options extends Main {
-	
-	function __construct( $server=false ) {
-		parent::__construct($server);
-	}
+class Options extends Main 
+{
 	
 	public function scanBGFolder()
     {

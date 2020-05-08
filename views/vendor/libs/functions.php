@@ -120,17 +120,5 @@ function randomStringChars( $length=null, $language='en', $method='chars' )
 function trueIsset($var)
 {
     if ( isset($var) && !empty($var) ) return true;
-    if ( $var === '0' ) return true;
-    return false;
-}
-
-/**
- * Проверяет наличие переменной, вернет её если она не пуста
- * @param $var
- * @return bool | mixed
- */
-function isSetValue($var)
-{
-    if ( isset($var) && !empty($var) ) return $var;
     return false;
 }

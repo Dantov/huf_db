@@ -166,7 +166,7 @@ $session = $this->session;
 			<h3 style="margin: 0 0 0 15px; padding-top:4px;">
                 <?php if ( $searchFor = $session->getKey('searchFor') ): ?>
                     <a type="button" title="сбросить" href="/main/?coll_show=-1">
-                        <span>Поиск по: &#171;<?=$searchFor?>&#187;</span>
+                        <span id="collectionName">Поиск по: &#171;<?=$searchFor?>&#187;</span>
                     </a>
                 <?php else: ?>
                     <a type="button" title="<?=$collectionName ?>" href="/?coll_show=<?=$session->getKey('assist')['collection_id']?>">

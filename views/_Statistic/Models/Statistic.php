@@ -1,12 +1,9 @@
 <?php
-
-include(_viewsDIR_.'Main/classes/Main.php');
+namespace Views\_Statistic\Models;
+use Views\_Main\Models\Main;
 
 class Statistic extends Main 
 {
-	function __construct( $server=false ) {
-		parent::__construct($server);
-	}
 	
 	public $allModels;
 	public $allComplects;

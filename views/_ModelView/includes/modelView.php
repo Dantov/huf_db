@@ -71,10 +71,16 @@ $isView = true;
                                 <i class="fas fa-industry"></i> Фабричный Артикул:
                             </li>
                         <?php endif; ?>
-                        <li class="list-group-item">
-                            <span class="badge badge-lg" id="complects"><?=$complectedStr?></span>
-                            <i class="fas fa-object-group"></i> В Комплекте:
-                        </li>
+                        <?php if ( !empty($complectes) ): ?>
+                            <li class="list-group-item">
+                                <span class="badge badge-lg" id="complects">
+                                    <?php foreach ($complectes as $complect) : ?>
+                                        <a style="color:white!important;" imgtoshow="<?= $complect['img_name'] ?>" href="/model-view/?id=<?=$complect['id']?>"><?=$complect['model_type']?></a>
+                                    <?php endforeach;?>
+                                </span>
+                                <i class="fas fa-object-group"></i> В Комплекте:
+                            </li>
+                        <?php endif; ?>
                         <li class="list-group-item">
                             <?php foreach ( isset($coll_id)?$coll_id:[] as $coll ) : ?>
                                 <span class="badge badge-lg" ><i><a style="color:white;" href="/main/?coll_show=<?=$coll['id']?>" id="collection"><?=$coll['name']?></a></i></span>
@@ -135,21 +141,21 @@ $isView = true;
                                 <i class="fas fa-hammer"></i><span class="glyphicon glyphicon-usd"></span> Стоимость доработки:
                             </li>
                         <?php endif; ?>
-                        <?php if (  isset($ai_file) && is_array($ai_file) ) : ?>
+                        <?php if (  trueIsset($ai_file) ) : ?>
                             <li class="list-group-item" title="загрузить файл накладки">
                                 <span class="badge badge-lg"><a class="text-white" href="<?=_stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/ai/'.$ai_file['name']?>" download="<?='ai_'.$ai_file['name']?>">Скачать</a></span>
                                 <span class="glyphicon glyphicon-floppy-save"></span> AI Файл накладки:
                             </li>
                         <?php endif; ?>
-                        <?php if (  isset($stl_file) && is_array($stl_file) && $session['user']['access'] > 0 && $session['user']['access'] < 3 ) : ?>
+                        <?php if (  trueIsset($stl_file) && $session['user']['access'] > 0 && $session['user']['access'] < 3 ) : ?>
                             <li class="list-group-item" title="загрузить STL файл">
-                                <span class="badge badge-lg"><a class="text-white" href="<?= _stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/stl/'.$stl_file['stl_name'] ?>" download="<?='stl_'.$ai_file['name']?>">Скачать</a></span>
+                                <span class="badge badge-lg"><a class="text-white" href="<?= _stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/stl/'.$stl_file['stl_name'] ?>" download="<?='stl_'.$stl_file['stl_name']?>">Скачать</a></span>
                                 <span class="glyphicon glyphicon-floppy-save"></span> Stl Файл модели:
                             </li>
                         <?php endif; ?>
-                        <?php if (  isset($rhino_file) && is_array($rhino_file) && $session['user']['access'] > 0 && $session['user']['access'] < 3 ) : ?>
+                        <?php if (  trueIsset($rhino_file) && $session['user']['access'] > 0 && $session['user']['access'] < 3 ) : ?>
                             <li class="list-group-item" title="загрузить 3dm файл">
-                                <span class="badge badge-lg"><a class="text-white" href="<?= _stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/3dm/'.$rhino_file['name'] ?>" download="<?='3dm_'.$ai_file['name']?>">Скачать</a></span>
+                                <span class="badge badge-lg"><a class="text-white" href="<?= _stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/3dm/'.$rhino_file['name'] ?>" download="<?='3dm_'.$rhino_file['name']?>">Скачать</a></span>
                                 <span class="glyphicon glyphicon-floppy-save"></span> 3dm Файл модели:
                             </li>
                         <?php endif; ?>
@@ -168,7 +174,8 @@ $isView = true;
                                 <li><a onclick="getPDF('passport');" title="">Пасспорт</a></li>
                                 <li><a onclick="getPDF('runner');" title="">Бегунок</a></li>
                                 <li><a onclick="getPDF('both');" title="Пасспорт и Бегунок">П+Б</a></li>
-                                <li><a title="Печать текущей картинки">Картинка</a></li>
+                                <li><a onclick="getPDF('picture');" title="Печать выбранной картинки">Одна картинка</a></li>
+                                <li><a onclick="getPDF('pictureAll');" title="Печать всех картинок">Все картинки</a></li>
                               </ul>
                             </div>
                             <? if ( $editBtn ): ?>

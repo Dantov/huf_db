@@ -6,44 +6,18 @@ use Views\_Globals\Models\{ProgressCounter,PushNotice,SelectionsModel};
 use Views\vendor\core\{Request,Sessions};
 
 $request = new Request();
-
 $progress = new ProgressCounter();
 if ( isset($_POST['userName']) && isset($_POST['tabID']) )
 {
     $progress->setProgress($_POST['userName'], $_POST['tabID']);
 }
-
-$manualProcesses = 3;
-
-$imagesProcesses = 0;
-if ( !empty($_FILES['UploadImages']['images'][0]) ) {
-    $imagesProcesses = count( $_FILES['UploadImages']['images']?:[] );
-}
-//debug($_FILES,'$_FILES');
-
-$stlProcesses = 0;
-if ( !empty($_FILES['fileSTL']['name'][0]) ) {
-    $stlProcesses = 1;
-}
-
-$repairsProcesses = count($_POST['repairs']['3d']?:[]) > 0 ? 1 : 0;
-$stonesProcesses = count( $_POST['gemsName']?:[] ) > 0 ? 1 : 0;
-$dopVCProcesses = count( $_POST['dop_vc_name_']?:[] ) > 0 ? 1 : 0;
-
-$overalProcesses = $manualProcesses + $imagesProcesses + $stlProcesses + $repairsProcesses + $stonesProcesses + $dopVCProcesses;
-$overalProgress = 0;
 $progressCounter = 0;
+$overallProcesses = 12;
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 
 $resp_arr = [];
 $resp_arr['processes'] = [];
-
-/*debug($manualProcesses,'$manualProcesses');
-debug($imagesProcesses,'$imagesProcesses');
-debug($stlProcesses,'$stlProcesses');
-debug($stonesProcesses,'$stonesProcesses');
-debug($dopVCProcesses,'$dopVCProcesses');
-debug($repairsProcessec,'$repairsProcesses');
-debug($overalProcesses,'$overalProcesses',1);*/
 
 $id = (int)$request->post('id');
 if ( (int)$request->post('edit') === 2 )  //isset($_POST['edit']) && (int)$_POST['edit'] === 2
@@ -51,10 +25,7 @@ if ( (int)$request->post('edit') === 2 )  //isset($_POST['edit']) && (int)$_POST
     $isEdit = true;
 } else {
     $isEdit = false; // новая модель!
-    unset($_SESSION['general_data']);
 }
-
-//debug($_POST['mats'],'mats',1);
 
 chdir(_stockDIR_);
 
@@ -67,7 +38,11 @@ $date = trim($_POST['date']);
 if ( $isEdit === true ) {
     $number_3d = $handler->setNumber_3d( strip_tags(trim($_POST['number_3d'])) );
 } else {
-    $number_3d = $handler->setNumber_3d();
+    if ( (int)$request->post('edit') === 3 ) {
+        $number_3d = $handler->setNumber_3d($request->post('number_3d'));
+    } else {
+        $number_3d = $handler->setNumber_3d();
+    }
 }
 
 $permissions = $handler->permittedFields();
@@ -85,9 +60,7 @@ $handler -> setDate($date);
 if ( $isEdit === true ) $handler->checkModel();
 
 //============= counter point ==============//
-$overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-$progress->progressCount( $overalProgress );
-$resp_arr['processes']['manual'][] = $overalProgress;
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 
 // добавляем во все коиплекты артикул, если он есть
 $handler -> addVCtoComplects($vendor_code, $number_3d);
@@ -142,6 +115,9 @@ if ( $permissions['labels'] ) $datas .= "labels='$str_labels',";
 
 $datas = trim($datas,',');
 
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
+
 //т.е добавляем новую модель
 if ( $isEdit === false )
 {
@@ -177,9 +153,7 @@ if ( !$updateModelData )
     exit('$updateModelData Error');
 }
 //============= counter point ==============//
-$overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-$progress->progressCount( $overalProgress );
-$resp_arr['processes']['manual'][] = $overalProgress;
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 
 
 //-------------- материалы ----------------//
@@ -223,14 +197,10 @@ if ( $permissions['images'] )
 
     }
 
-    //============= counter point ==============//
-    $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-    $progress->progressCount( $overalProgress );
-    $resp_arr['processes']['picts'][] = $overalProgress;
 }
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 // ----- конец добавляем картинки ----- //
-
-
 
 
 
@@ -245,17 +215,31 @@ if ( !empty($_FILES['fileSTL']['name'][0]) && $permissions['stl'] )
 
     if ( $querSTL ) {
 
-        //============= counter point ==============//
-        $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-        $progress->progressCount( $overalProgress );
-        $resp_arr['processes']['stl'] = $overalProgress;
-
     } else {
         exit();
     }
+}
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
+//END Добавляем STL FILE
 
-}//END Добавляем STL FILE
 
+// ----- Добавляем 3dm FILE ----- //
+if ( !empty($_FILES['file3dm']['name'][0]) && $permissions['stl'] )
+{
+    if( !file_exists($number_3d) ) mkdir($number_3d, 0777, true);
+    if( !file_exists($number_3d.'/'.$id.'/3dm') ) mkdir($number_3d.'/'.$id.'/3dm', 0777, true);
+
+    $query3dm = $handler->add3dm($_FILES['file3dm']);
+
+    if ( $query3dm )
+    {
+
+    }
+}
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
+// ----- END 3dm FILE ----- //
 
 
 // ----- Добавляем Ai FILE ----- //
@@ -272,7 +256,10 @@ if ( !empty($_FILES['fileAi']['name'][0]) && $permissions['ai'] ) {
         exit;
     }
 
-}//END Добавляем Ai FILE
+}
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
+//END Добавляем Ai FILE
 
 
 
@@ -291,15 +278,13 @@ if ( $permissions['gems'] )
     $quer_gem = $handler -> addGems( $gems );
 
     if ( $quer_gem ) {
-        //============= counter point ==============//
-        $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-        $progress->progressCount( $overalProgress );
-        $resp_arr['processes']['gems'] = $overalProgress;
     } else {
         exit();
     }
-} // конец добавляем камни
-
+}
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
+// конец добавляем камни
 
 
 
@@ -314,15 +299,14 @@ if ( $permissions['vc_links'] )
     $quer_dop_vc = $handler->addDopVC( $vc );
 
     if ( $quer_dop_vc ) {
-        //============= counter point ==============//
-        $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-        $progress->progressCount( $overalProgress );
-        $resp_arr['processes']['dopVC'] = $overalProgress;
 
     } else {
         exit();
     }
-} //конец добавляем доп. артикулы
+}
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
+//конец добавляем доп. артикулы
 
 
 
@@ -332,34 +316,20 @@ if ( $permissions['repairs'] )
     if ( $permissions['repairs3D'] )
     {
         $repairResp = $handler->addRepairs( $_POST['repairs']['3d'] );
-        if ( $repairResp ) {
-            //============= counter point ==============//
-            $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-            $progress->progressCount( $overalProgress );
-            $resp_arr['processes']['repairs'] = $overalProgress;
-
-        }
     }
     if ( $permissions['repairsJew'] )
     {
         $repairResp = $handler->addRepairs( $_POST['repairs']['jew'] );
-        if ( $repairResp ) {
-            //============= counter point ==============//
-            $overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
-            $progress->progressCount( $overalProgress );
-            $resp_arr['processes']['repairs'] = $overalProgress;
-
-        }
     }
 }
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 /// --------- END ремонты ----------///
 
 
 $handler->closeDB();
 // флаг для репоиска
 if ( $_SESSION['searchFor'] ) $_SESSION['re_search'] = true;
-
-$handler->unsetSessions();
 
 $lastMess = "Модель добавлена";
 if ( $isEdit === true ) $lastMess = "Данные изменены";
@@ -368,13 +338,6 @@ $resp_arr['number_3d'] = $number_3d;
 $resp_arr['model_type'] = $model_type;
 $resp_arr['lastMess'] = $lastMess;
 $resp_arr['id'] = $id;
-
-$resp_arr['manualProcesses'] = $manualProcesses;
-$resp_arr['imagesProcesses'] = $imagesProcesses;
-$resp_arr['stlProcesses'] = $stlProcesses;
-$resp_arr['stonesProcesses'] = $stonesProcesses;
-$resp_arr['repairsProcesses'] = $repairsProcesses;
-$resp_arr['dopVCProcesses'] = $dopVCProcesses;
 
 $pn = new PushNotice();
 $addPushNoticeResp = $pn->addPushNotice($id, $isEdit?2:1, $number_3d, $vendor_code, $model_type, $date, $status, $creator_name);
@@ -387,8 +350,6 @@ if ( !empty($_SESSION['selectionMode']['models']) )
 }
 
 //============= counter point ==============//
-$overalProgress =  ceil( ( ++$progressCounter * 100 ) / $overalProcesses );
 $progress->progressCount( 100 );
-$resp_arr['processes']['manual'][] = $overalProgress;
 
 echo json_encode($resp_arr);

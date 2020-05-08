@@ -10,7 +10,12 @@ class AddEdit extends General
 	public $workingCenters;
 	public $users; //array - массив пользователей. Нужен для статусов
 
-    public function __construct( $id=false )
+    /**
+     * AddEdit constructor.
+     * @param bool $id
+     * @throws \Exception
+     */
+    public function __construct($id=false )
     {
         parent::__construct();
         if ( $id ) $this->id = (int)$id;
@@ -28,10 +33,12 @@ class AddEdit extends General
         return $this->connection;
     }
 
-	/**
-	*
-	*/
-	public function getDataTables()
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getDataTables()
     {
 		$tabs = [
 		    'author',
@@ -98,7 +105,6 @@ class AddEdit extends General
         return $this->workingCenters;
     }
 
-
 	public function setPrevPage()
     {
         $pp = '';
@@ -109,13 +115,40 @@ class AddEdit extends General
 		}
 		return $pp;
 	}
-	
+
+    /**
+     * @param $component
+     * @return array
+     * @throws \Exception
+     */
+    public function getComplected($component)
+    {
+        $and = "";
+        if ( $component === 2 ) $and = "AND st.id<>'{$this->id}'";
+        $sql = " SELECT st.id, st.model_type, img.pos_id, img.img_name 
+				FROM stock st 
+					LEFT JOIN images img 
+					ON (st.id = img.pos_id AND img.main=1) 
+				WHERE st.number_3d='{$this->row['number_3d']}' 
+				$and ";
+        $complected = $this->findAsArray( $sql );
+        foreach ($complected as &$complect)
+        {
+            $imagePath = $this->row['number_3d'].'/'.$complect['id'].'/images/'.$complect['img_name'];
+            $complect['img_name'] = _stockDIR_HTTP_ . $imagePath;
+            if ( !file_exists(_stockDIR_ . $imagePath) ) $complect['img_name'] = _stockDIR_HTTP_."default.jpg";
+        }
+        return $complected;
+    }
+
+	/*
 	function printHeaderEditAddForm($component)
     {
 		$header = '';
-		if ( $component === 2 || $component === 3 ) {
-			$thisNum = $_SESSION['general_data']['number_3d'];
-			$thisMT = $_SESSION['general_data']['model_type'];
+		if ( $component === 2 || $component === 3 ) 
+		{
+			$thisNum = $this->row['number_3d'];
+			$thisMT = $this->row['model_type'];
 			
 			if ( $component === 2 ) {
 				$str = "Редактировать Модель <strong>".$thisNum." - ".$thisMT."</strong>";
@@ -149,9 +182,9 @@ class AddEdit extends General
 			if ( empty($mass) ) $header .= "Нет"; // если нет комплекта
 			$header .= ")";
 		}
-
 		return $header;
 	}
+	*/
 	
 	public function getDataLi()
     {
@@ -181,7 +214,6 @@ class AddEdit extends General
 
 	public function getGemsLi()
     {
-		
 		$querArr = array('gems_sizes', 'gems_cut', 'gems_names', 'gems_color');
 		$gems_Li = array();
 		
@@ -230,10 +262,10 @@ class AddEdit extends General
 		}
 		return $vc_namesLI;
 	}
-	public function getNum3dVCLi( &$vc_Len, &$row_dop_vc )
+	public function getNum3dVCLi( $row_dop_vc )
     {
-		$num3DVC_LI = array();
-		for ( $i = 0; $i < $vc_Len; $i++ ) {
+		$num3DVC_LI = [];
+		for ( $i = 0; $i < count($row_dop_vc); $i++ ) {
 			
 			$prnt_vc_names = $row_dop_vc[$i]['vc_names'];
 			$details_quer = mysqli_query($this->connection, " SELECT id,number_3d,vendor_code FROM stock WHERE collections='Детали' AND model_type='$prnt_vc_names' ");
@@ -258,59 +290,50 @@ class AddEdit extends General
 		return $num3DVC_LI;
 	}
 
-	public function getGeneralData()
+    /**
+     * @return array|bool
+     * @throws \Exception
+     */
+    public function getGeneralData()
     {
-		$result = mysqli_query($this->connection, " SELECT * FROM stock WHERE id='$this->id' ");
-		$row = mysqli_fetch_assoc($result);
-		// автозаполнение для добавления комплекта
-		$_SESSION['general_data']['id']             = $this->id;
-		$_SESSION['general_data']['number_3d']      = $row['number_3d'];
-		$_SESSION['general_data']['vendor_code']    = $row['vendor_code'];
-		$_SESSION['general_data']['author']         = $row['author'];
-		$_SESSION['general_data']['modeller3d']     = $row['modeller3D'];
-		$_SESSION['general_data']['jewelerName']    = $row['jewelerName'];
-		$_SESSION['general_data']['model_weight']   = $row['model_weight'];
-		$_SESSION['general_data']['model_covering'] = $row['model_covering'];
-		$_SESSION['general_data']['model_material'] = $row['model_material'];
-		$_SESSION['general_data']['model_type']     = $row['model_type'];
-		$_SESSION['general_data']['description']    = $row['description'];
-		$_SESSION['general_data']['status']   		= $row['status'];
-		$_SESSION['general_data']['labels']   		= $row['labels'];
-
-
-        $_SESSION['general_data']['collection'] 	= $row['collections'];
-
-        $this->row = $row;
-		return $row;
-	}
-	public function getStl(){
-		$respArr = array();	
-		$respArr['haveStl'] = "hidden";
-		$respArr['noStl'] = "";
-		$stl_quer = mysqli_query($this->connection, " SELECT * FROM stl_files  WHERE pos_id='$this->id' ");	
-		if ( $stl_quer -> num_rows > 0 ) {
-			$stl_file = mysqli_fetch_assoc($stl_quer);
-			$respArr['stl_name'] = $stl_file['stl_name'];
-			$respArr['haveStl'] = "";
-			$respArr['noStl'] = "hidden";
-		}
-		return $respArr;
-	}
-	
-	public function getAi() {
-		$respArr = array();	
-		$respArr['haveAi'] = "hidden";
-		$respArr['noAi'] = "";
-		$ai_quer = mysqli_query($this->connection, " SELECT * FROM ai_files WHERE pos_id='$this->id' ");	
-		if ( $ai_quer->num_rows > 0 ) {
-			$ai_file = mysqli_fetch_assoc($ai_quer);
-			$respArr['name'] = $ai_file['name'];
-			$respArr['haveAi'] = "";
-			$respArr['noAi'] = "hidden";
-		}
-		return $respArr;
+    	$this->row = $this->findOne( " SELECT * FROM stock WHERE id='$this->id' ");
+    	if ( empty($this->row) ) return [];
+    	$this->row['collections'] = explode(';',$this->row['collections']);
+        foreach ( $this->statuses as $status )
+        {
+            if ( $status['id'] === $this->row['status'] )
+            {
+                $this->row['status'] = $status;
+                break;
+            }
+        }
+		return $this->row;
 	}
 
+    /**
+     * @return array|bool
+     * @throws \Exception
+     */
+    public function getStl()
+    {
+        return $this->findOne( " SELECT * FROM stl_files WHERE pos_id='$this->id' ");
+	}
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function get3dm()
+    {
+        return $this->findOne( " SELECT * FROM rhino_files WHERE pos_id='$this->id' ");
+    }
+    /**
+     * @return array|bool
+     * @throws \Exception
+     */
+    public function getAi()
+    {
+        return $this->findOne( " SELECT * FROM ai_files WHERE pos_id='$this->id' ");
+	}
 
 	/*	Старый вариант
 	public function getMaterial($str_material) 
@@ -358,12 +381,11 @@ class AddEdit extends General
     /**
      * @param bool $row
      * @return array|bool
-     * @throws Exception
+     * @throws \Exception
      */
 	public function getMaterials($row=false)
 	{
 		$materials = $this->findAsArray(" SELECT * FROM metal_covering WHERE pos_id='$this->id' ");
-		if ( isset($materials['error']) ) throw new Error("Error in getMaterials(): " . $materials['error'], 500);
 		if (!empty($materials)) return $materials;
 
 		if ( $row ) $this->row = $row;
@@ -452,12 +474,15 @@ class AddEdit extends General
                     break;
             }
         }
-
-
         return $materials;
 	}
 
-	public function getImages($sketch = false)
+    /**
+     * @param bool $sketch
+     * @return array
+     * @throws \Exception
+     */
+    public function getImages($sketch = false)
     {
 		$respArr = array();
 		if ( $sketch === true ) {
@@ -472,8 +497,9 @@ class AddEdit extends General
 			while( $row_img = mysqli_fetch_assoc($img) ) {
 				$respArr[$i]['id'] = $row_img['id'];
                 $respArr[$i]['imgName'] = $row_img['img_name'];
+                if ( $row_img['main'] ) $respArr[$i]['main'] = $row_img['main'];
 
-                $imgPath = $_SESSION['general_data']['number_3d'].'/'.$this->id.'/images/'.$row_img['img_name'];
+                $imgPath = $this->row['number_3d'].'/'.$this->id.'/images/'.$row_img['img_name'];
 
                 if ( !file_exists(_stockDIR_.$imgPath) )
                 {
@@ -509,78 +535,40 @@ class AddEdit extends General
 		return $respArr;
 	}
 
-
-	public function getGems(){
-		$respArr = array();	
-		$gems = mysqli_query($this->connection, " SELECT * FROM gems WHERE pos_id='$this->id' ");
-		while( $rowGems[] = mysqli_fetch_assoc($gems) ){}
-		array_pop($rowGems); 
-		$respArr['gs_len'] = count($rowGems);
-		$respArr['row_gems'] = &$rowGems;
-		return $respArr;
-	}
-	public function getDopVC(){
-		$respArr = array();	
-		$dop_vc = mysqli_query($this->connection, " SELECT * FROM vc_links WHERE pos_id='$this->id' ");
-		while( $rowVC[] = mysqli_fetch_assoc($dop_vc) ){}
-		array_pop($rowVC);
-		$respArr['vc_Len'] = count($rowVC);
-		$respArr['row_dop_vc'] = &$rowVC;
-		return $respArr;
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getGems()
+	{
+		return $this->findAsArray( " SELECT * FROM gems WHERE pos_id='$this->id' ");
 	}
 
-	public function getRepairs()
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getDopVC()
+	{
+		return $this->findAsArray( " SELECT * FROM vc_links WHERE pos_id='$this->id' ");
+	}
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getRepairs()
     {
-		$result = [];
-		$repQuery = mysqli_query($this->connection, " SELECT * FROM repairs WHERE pos_id='$this->id' ");
-
-		if ( $repQuery->num_rows > 0 ) {
-			while($repRow = mysqli_fetch_assoc($repQuery)) $result[] = $repRow;
-
-		}
-		return $result;
-	}
-
-	public function getWordData()
-    {
-		$respArr = array();
-		
-		$respArr['stonesFromWord'] = 'hidden';
-		$respArr['imgFromWord'] = '';
-		$respArr['vcDopFromWord'] = '';
-		$respArr['stonesScript'] = '';
-		
-		if ( isset($_SESSION['fromWord_data']['filesImg']) ) {
-			$mass = $_SESSION['fromWord_data']['filesImg'];
-			foreach( $mass as $key=>$value ){
-				$fnameExt = explode('.', $value);
-				if ( $fnameExt[1] == 'jpeg' || $fnameExt[1] == 'jpg' || $fnameExt[1] == 'png' ) $respArr['imgFromWord'] .= '<span class="hidden">'.$value.'</span>';
-				$fnameExt = '';
-			}
-		}
-		
-		if ( isset($_SESSION['fromWord_data']['stones']) ) {
-			$respArr['stonesFromWord'] = '';
-			$respArr['stonesScript'] = '<script defer src="js/addImgFromWord.js?ver=008"></script>';
-		}
-		
-		if ( isset($_SESSION['fromWord_data']['vcDop']) ) $respArr['vcDopFromWord'] = "<div>{$_SESSION['fromWord_data']['vcDop']}</div>";
-		
-		return $respArr;
+		return $this->findAsArray( " SELECT * FROM repairs WHERE pos_id='$this->id' ");
 	}
 
 
-	
-
-
-
-	public function getStatus($row=[], $selMode='')
+	public function getStatus($stockStatusID='', $selMode='')
     {
 		$locations = explode(',',$this->user['location']); // ID участки к которому относится юзер
 
 		$statuses = $this->statuses; // все возможные статусы
         $permittedStatuses = []; // разрешенные статусы на участок
-
 
         if ( $this->user['access'] > 1 )
         {
@@ -597,27 +585,16 @@ class AddEdit extends General
             $permittedStatuses = $statuses;
         }
 
-
 		// Этот код ставит галочку на текущем статусе в соответствии со статусом в таблице Stock
-		if ( isset($row['status']) && !empty($row['status']) )
+		if ( !empty($stockStatusID) )
 		{
-
-            //  КОСТЫЛЬ!!!!
-            // при добавлении новых моделей в stock status заходит ID
-            // возьмём этот Id из статусов
-            if ( $rowStatus = $this->getStatusCrutch($row['status']) ) $row['status'] = $rowStatus;
-
-			$stockStatus = trim($row['status']);
-			for ( $i = 0; $i < count($permittedStatuses); $i++ )
+			foreach ( $permittedStatuses as &$permittedStatus )
 			{
-				if ( $stockStatus == $permittedStatuses[$i]['name_ru'] ) $permittedStatuses[$i]['check'] = "checked";
+				if ( $stockStatusID == $permittedStatus['id'] ) $permittedStatus['check'] = "checked";
 			}
-
-
 		} else {
             if ( $selMode !== 'selectionMode' ) $permittedStatuses[0]['check'] = "checked";
 		}
-
 
         $permittedStatuses = $this->sortStatusesByWorkingCenters($permittedStatuses);
 
@@ -668,7 +645,7 @@ class AddEdit extends General
         return $this->workingCenters;
     }
 
-	public function getLabels($str) 
+	public function getLabels($str='') 
 	{
 		$labels = $this->getStatLabArr('labels');
 		if ( isset($str) && !empty($str) ) {

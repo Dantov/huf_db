@@ -343,4 +343,3 @@ Main.prototype.changeDateByStatusesHistory = function(dateInput)
 };
 
 if ( main !== 'object' ) main = new Main();
-

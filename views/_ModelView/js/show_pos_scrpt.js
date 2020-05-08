@@ -1,7 +1,7 @@
 "use strict";
 
-cutLongNames( document.querySelector('.table_gems'), 16 );
-cutLongNames( document.querySelector('.table_vc_links'), 16 );
+cutLongNames( document.querySelector('.table_gems'), 21 );
+cutLongNames( document.querySelector('.table_vc_links'), 21 );
 function cutLongNames( table, numCut ) {
 	if ( !table ) return;
 	let td_arr = table.getElementsByTagName('td');

@@ -1,5 +1,6 @@
 <?php
 namespace Views\_Globals\Controllers;
+use Views\_AddEdit\Models\Handler;
 use Views\vendor\core\Controller;
 /**
  * Description of AjaxController
@@ -15,26 +16,26 @@ class GlobalsController extends Controller
         
         if ( $request->isAjax() )
         {
-            
             if ( $searchInNum = (int)$request->post('searchInNum') ) 
             {
                 $this->searchIn($searchInNum);
             }
-
             if ( (int)$request->post('PushNotice') === 1 )
             {
                 $this->actionPushNotice();
             }
-
+            if ( (int)$request->post('isPDF') === 1 )
+            {
+                $handler = new Handler();
+                $arr['success'] = 0;
+                $pdfName = $request->post('pdfName');
+                if ( $pdfName ) $arr['success'] = $handler->deletePDF($pdfName);
+                echo json_encode($arr);
+                exit;
+            }
             exit;
         }
-        
-        if ( $request->isPost() )
-        {
-            
-        }
     }
-    
     
     /**
      * Смена режима поиска в нав. баре вверху

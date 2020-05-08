@@ -1,4 +1,4 @@
-<tr <?= $trFill ? 'class="danger"':'' ?> onclick="window.location.href = _URL_ + '/Views/ModelView/index.php?id=<?=$row['id']?>'">
+<tr <?= $trFill ? 'class="danger"':'' ?> onclick="window.location.href = _URL_ + '/model-view/?id=<?=$row['id']?>'">
     <td title="Артикул / №3Д"><?=$row['vendor_code'] ?: $row['number_3d']?></td>
     <td></td>
     <td title="<?=$row['size_range']?>"><?=$sizeRange?></td>

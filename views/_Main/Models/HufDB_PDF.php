@@ -1,15 +1,14 @@
 <?php
-namespace Views\Main\classes;
-use vendor\TCPDF\TCPDF;
+namespace Views\_Main\Models;
+
 /**
  * Created by PhpStorm.
  * User: Dant
  * Date: 12.01.2020
  * Time: 16:24
  */
-session_start();
-//require_once( _vendorDIR_.'TCPDF/tcpdf.php');
-class HufDB_PDF extends TCPDF
+require_once _vendorDIR_ . "TCPDF/tcpdf.php";
+class HufDB_PDF extends \TCPDF
 {
     public $headerName;
 

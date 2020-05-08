@@ -34,12 +34,12 @@ ResultModal.prototype.onModalOpen = function(that, event)
 {
     console.log('Modal is Open');
 
-    let modal = $('#modalResult');
-    let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
-    let status = modalButtonsBlock.querySelector('.modalResultStatus');
-    let back = modalButtonsBlock.querySelector('.modalProgressBack');
-    let edit = modalButtonsBlock.querySelector('.modalResultEdit');
-    let show = modalButtonsBlock.querySelector('.modalResultShow');
+    // let modal = $('#modalResult');
+    // let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
+    // let status = modalButtonsBlock.querySelector('.modalResultStatus');
+    // let back = modalButtonsBlock.querySelector('.modalProgressBack');
+    // let edit = modalButtonsBlock.querySelector('.modalResultEdit');
+    // let show = modalButtonsBlock.querySelector('.modalResultShow');
 
 };
 ResultModal.prototype.onModalClosing = function(main, event)
@@ -52,20 +52,30 @@ ResultModal.prototype.onModalClosed = function(main, event)
     console.log('Modal is closed');
 
     let modal = $('#modalResult');
+    let progressUpload = document.querySelector('.progressBarUpload');
     let modalButtonsBlock = document.getElementById('modalResult').querySelector('.modalButtonsBlock');
-    let status = document.querySelector('#modalResultStatus');
+
+    let statusUpload = document.querySelector('#modalResultStatusUpload');
+    let statusScript = document.querySelector('#modalResultStatusScript');
+
     let back = modalButtonsBlock.querySelector('.modalProgressBack');
     let edit = modalButtonsBlock.querySelector('.modalResultEdit');
     let show = modalButtonsBlock.querySelector('.modalResultShow');
 
-    status.innerHTML = '';
+
+    statusUpload.innerHTML = '';
+    statusScript.innerHTML = '';
     back.classList.add('hidden');
     edit.classList.add('hidden');
     show.classList.add('hidden');
 
     modal.iziModal('setTitle', '');
     modal.iziModal('setSubtitle', '');
-    modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-disk');
+    //modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-disk');
+
+    progressUpload.setAttribute('aria-valuenow', '0');
+    progressUpload.style.width = 0;
+    progressUpload.innerHTML = "";
 
     progressModal.ProgressBar(-1);
 };

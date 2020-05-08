@@ -2,11 +2,11 @@ ErrorDocument 404 /Views/errors/err404.php
 ErrorDocument 403 /Views/errors/err403.php
 ErrorDocument 410 /Views/errors/err410.php
 
-Options -Indexes
-RewriteEngine On 
-RewriteRule ^/.htaccess$ - [F]
-
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-RewriteRule ^(.*) /views/$1
+Options -Indexes
+RewriteEngine On 
+RewriteRule ^(.*)$ /views/$1
+
+RewriteRule ^/.htaccess$ - [F]

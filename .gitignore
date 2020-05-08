@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /.idea/
 /backup/
 /Pdfs/
@@ -7,3 +8,13 @@
 composer.json
 composer.lock
 favicon.ico
+=======
+/nbproject/
+/Stock/
+/vendor/
+/backup/
+/Pdfs/
+/runtime/
+favicon.ico
+.htaccess
+>>>>>>> fb8351065e2cef2e01ceb905885e1ae1a997b87c

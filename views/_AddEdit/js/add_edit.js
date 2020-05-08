@@ -76,8 +76,7 @@ function getVCmenu( mType_name, targetEl )
 
 
 
-
-
+/*
 //-----  Добавляем STL и Ai файлы  -------//
 let aiSelect = document.getElementById('aiSelect');
 if ( aiSelect ) {
@@ -158,7 +157,7 @@ if ( stlSelect ) {
 
 }
 //----- END STL файлы -------//
-
+*/
 
 
 
@@ -572,7 +571,6 @@ function dellImgPrew(self){
 //----- удаление с сервера картинок, стл, модели целиком -------//
 function dell_fromServ( id, fileName, fileType, dellPos, element )
 {
-
     let imageDOMElement;
     if (element)
     {
@@ -581,7 +579,7 @@ function dell_fromServ( id, fileName, fileType, dellPos, element )
     let dellObj = {
         id: id || 0,
         fileName: fileName || '',
-        fileType: fileType || '', // 2 - Ai файл // 3 - картинка // 1 - stl
+        fileType: fileType || '',
         dellPosition: dellPos || '',
         element: imageDOMElement || '',
 		deleteFile: fileName ? 1 : '',
@@ -600,14 +598,14 @@ function dell_fromServ( id, fileName, fileType, dellPos, element )
 
 
 //--------- отображаем превью при наведении ----------//
-addPrevImg( document.getElementById('topName'), 'top', 'right' );
+addPrevImg( document.querySelector('#topName'), 'top', 'right' );
 addPrevImg( document.getElementById('dop_vc_table'), 'bottom', 'right' );
 function addPrevImg( domEl, vert, horiz )
 {
 	if ( domEl == null ) return;
 
 	let complects = domEl.querySelectorAll('a');
-	
+
 	let multMinTop = 10;
 	let multMinLeft = 15;
 	
@@ -617,7 +615,7 @@ function addPrevImg( domEl, vert, horiz )
 	for ( let i = 0; i < complects.length; i++ ) {
 		if ( !complects[i].hasAttribute('imgtoshow') ) continue;
 		complects[i].addEventListener('mouseover',function(event){
-			
+
 			let mouseX = event.pageX;
 			let mouseY = event.pageY;
 			

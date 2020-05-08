@@ -1,6 +1,5 @@
-
 <div class="row">
-    <p class="lead text-info text-center">Список Наименований</p>
+    <p class="lead text-info text-center">Списки Наименований</p>
 
     <div class="col-xs-12 stats_table">
         <ul class="nav nav-tabs" role="tablist" id="tablist">
@@ -23,11 +22,7 @@
                     </tr>
                     </thead>
                     <tbody data-coll="collections">
-                    <?php
-                    $i = 0;
-                    while ($row_coll = mysqli_fetch_assoc($coll)) {
-                        $i++;
-                        ?>
+                    <?php foreach ($collections as $i => $row_coll) : ?>
                         <tr class="collsRow">
                             <td><?=$i;?></td>
                             <td>
@@ -40,17 +35,14 @@
                                 </a>
                             </td>
                         </tr>
-                        <?php
-                    }
-                    ?>
-                    <?php include('includes/plus.php');?>
+                    <?php endforeach; ?>
+                    <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                     <tr class="warning">
                         <td></td>
                         <td>Всего коллекций: <?=$i;?></td>
                         <td></td>
                         <td></td>
                     </tr>
-
                     </tbody>
                 </table>
             </div> <!-- end of КОЛЛЕКЦИИ -->
@@ -73,11 +65,7 @@
                             </tr>
                             </thead>
                             <tbody data-coll="gems_names">
-                            <?php
-                            $i = 0;
-                            while ($gems_names_row = mysqli_fetch_assoc($gems_names_quer)) {
-                                $i++;
-                                ?>
+                            <?php foreach ($gems_names as $i => $gems_names_row) : ?>
                                 <tr class="collsRow">
                                     <td><?=$i;?></td>
                                     <td>
@@ -90,10 +78,8 @@
                                         </a>
                                     </td>
                                 </tr>
-                                <?php
-                            }
-                            ?>
-                            <?php include('includes/plus.php');?>
+                            <?php endforeach; ?>
+                            <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                             <tr class="warning">
                                 <td></td>
                                 <td>Всего: <?=$i;?></td>
@@ -105,7 +91,6 @@
                         </table>
 
                         <!-- gems КАМНИ ОГРАНКА -->
-                        <form action="add_nomenclature.php" method="POST" >
                             <table class="table table-hover">
                                 <thead>
                                 <tr class="thead11">
@@ -116,11 +101,7 @@
                                 </tr>
                                 </thead>
                                 <tbody data-coll="gems_cut">
-                                <?php
-                                $i = 0;
-                                while ($gems_cut_row = mysqli_fetch_assoc($gems_cut_quer)) {
-                                    $i++;
-                                    ?>
+                                <?php foreach ($gems_cut as $i => $gems_cut_row) : ?>
                                     <tr class="collsRow">
                                         <td><?=$i;?></td>
                                         <td>
@@ -133,10 +114,8 @@
                                             </a>
                                         </td>
                                     </tr>
-                                    <?php
-                                }
-                                ?>
-                                <?php include('includes/plus.php');?>
+                                <?php endforeach; ?>
+                                <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                                 <tr class="warning">
                                     <td></td>
                                     <td>Всего: <?=$i;?></td>
@@ -159,11 +138,7 @@
                                 </tr>
                                 </thead>
                                 <tbody data-coll="gems_color">
-                                <?php
-                                $i = 0;
-                                while ($gems_color_row = mysqli_fetch_assoc($gems_color_quer)) {
-                                    $i++;
-                                    ?>
+                                <?php foreach ($gems_color as $i => $gems_color_row) : ?>
                                     <tr class="collsRow">
                                         <td><?=$i; ?></td>
                                         <td>
@@ -176,10 +151,8 @@
                                             </a>
                                         </td>
                                     </tr>
-                                    <?php
-                                }
-                                ?>
-                                <?php include('includes/plus.php');?>
+                                <?php endforeach; ?>
+                                <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                                 <tr class="warning">
                                     <td></td>
                                     <td>Всего: <?=$i; ?></td>
@@ -204,11 +177,7 @@
                             </tr>
                             </thead>
                             <tbody data-coll="gems_sizes">
-                            <?php
-                            $i = 0;
-                            while ($gems_size_row = mysqli_fetch_assoc($gems_size_quer)) {
-                                $i++;
-                                ?>
+                            <?php foreach ($gems_size as $i => $gems_size_row) : ?>
                                 <tr class="collsRow">
                                     <td><?=$i;?></td>
                                     <td>
@@ -221,10 +190,8 @@
                                         </a>
                                     </td>
                                 </tr>
-                                <?php
-                            }
-                            ?>
-                            <?php include('includes/plus.php');?>
+                                <?php endforeach; ?>
+                                <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                             <tr class="warning">
                                 <td></td>
                                 <td>Всего: <?php echo $i; ?></td>
@@ -255,11 +222,7 @@
                         </tr>
                         </thead>
                         <tbody data-coll="author">
-                        <?php
-                        $i = 0;
-                        while ($gems_author_row = mysqli_fetch_assoc($gems_author_quer)) {
-                            $i++;
-                            ?>
+                        <?php foreach ($gems_author as $i => $gems_author_row) : ?>
                             <tr class="collsRow">
                                 <td><?=$i;?></td>
                                 <td>
@@ -272,9 +235,8 @@
                                     </a>
                                 </td>
                             </tr>
-                            <?php
-                        }
-                        ?> 		<?php include('includes/plus.php');?>
+                        <?php endforeach; ?>
+                        <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                         <tr class="warning">
                             <td></td>
                             <td>Всего: <?=$i;?></td>
@@ -297,10 +259,7 @@
                         </tr>
                         </thead>
                         <tbody data-coll="modeller3d">
-                        <?php $i = 0;
-                        while ($gems_modeller3D_row = mysqli_fetch_assoc($gems_modeller3D_quer)) {
-                            $i++;
-                            ?>
+                        <?php foreach ($gems_modeller3D as $i => $gems_modeller3D_row) : ?>
                             <tr class="collsRow">
                                 <td><?php echo $i; ?></td>
                                 <td>
@@ -313,10 +272,8 @@
                                     </a>
                                 </td>
                             </tr>
-                            <?php
-                        }
-                        ?>
-                        <?php include('includes/plus.php');?>
+                            <?php endforeach; ?>
+                            <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                         <tr class="warning">
                             <td></td>
                             <td>Всего: <?= $i; ?></td>
@@ -341,10 +298,7 @@
                         </tr>
                         </thead>
                         <tbody data-coll="jeweler_names">
-                        <?php $i = 0;
-                        while ($jeweler_row = mysqli_fetch_assoc($jeweler_quer)) {
-                            $i++;
-                            ?>
+                        <?php foreach ($jeweler as $i => $jeweler_row) : ?>
                             <tr class="collsRow">
                                 <td><?php echo $i; ?></td>
                                 <td>
@@ -357,10 +311,8 @@
                                     </a>
                                 </td>
                             </tr>
-                            <?php
-                        }
-                        ?>
-                        <?php include('includes/plus.php');?>
+                        <?php endforeach; ?>
+                        <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                         <tr class="warning">
                             <td></td>
                             <td>Всего: <?= $i; ?></td>
@@ -385,11 +337,7 @@
                         </tr>
                         </thead>
                         <tbody data-coll="model_type">
-                        <?php
-                        $i = 0;
-                        while ($gems_model_type_row = mysqli_fetch_assoc($gems_model_type_quer)) {
-                            $i++;
-                            ?>
+                        <?php foreach ($gems_model_type as $i => $gems_model_type_row) : ?>
                             <tr class="collsRow">
                                 <td><?=$i;?></td>
                                 <td>
@@ -402,10 +350,8 @@
                                     </a>
                                 </td>
                             </tr>
-                            <?php
-                        }
-                        ?>
-                        <?php include('includes/plus.php');?>
+                        <?php endforeach; ?>
+                        <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                         <tr class="warning">
                             <td></td>
                             <td>Всего: <?php echo $i; ?></td>
@@ -429,11 +375,7 @@
                         </tr>
                         </thead>
                         <tbody data-coll="vc_names">
-                        <?php
-                        $i = 0;
-                        while ($gems_vc_names_row = mysqli_fetch_assoc($gems_vc_names_quer)) {
-                            $i++;
-                            ?>
+                        <?php foreach ($gems_vc_names as $i => $gems_vc_names_row) : ?>
                             <tr class="collsRow">
                                 <td><?=$i;?></td>
                                 <td>
@@ -446,10 +388,8 @@
                                     </a>
                                 </td>
                             </tr>
-                            <?php
-                        }
-                        ?>
-                        <?php include('includes/plus.php');?>
+                        <?php endforeach; ?>
+                        <?php require _viewsDIR_.'_Nomenclature/includes/plus.php'?>
                         <tr class="warning">
                             <td></td>
                             <td>Всего: <?=$i;?></td>
@@ -471,6 +411,4 @@
 
 </div>
 
-<?php include('includes/nom_incl.php');?>
-
-<script src="js/nomenclature.js?ver=<?=time();?>"></script>
+<?php //include('includes/nom_incl.php');?>

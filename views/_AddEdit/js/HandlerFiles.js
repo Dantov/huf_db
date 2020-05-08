@@ -4,7 +4,15 @@ function HandlerFiles( dropArea, button, filterTypes )
     this.button = button;
 
     this.fileTypes = Array.isArray(filterTypes) ? filterTypes : [];
-    this.fileBuffer = []; //здесь хранятся загруженные файлы. это массив файлов, не FileList
+    this.fileBuffer = []; //здесь хранятся все загруженные файлы. это массив файлов, не FileList
+
+    this.imageFilesBuffer = [];
+    this.stlFilesBuffer = [];
+    this.rhinoFilesBuffer = [];
+    this.aiFilesBuffer = [];
+
+    this.stlOveralSize = 0;
+    this.rhinoOveralSize = 0;
 
     this.init();
 }
@@ -54,8 +62,15 @@ HandlerFiles.prototype.init = function() {
         fileInput.click();
     }, false);
 
-    debug('HandlerFiles Init(ok)');
+    let removeDataFiles = document.querySelectorAll('.removeDataFiles');
+    $.each(removeDataFiles, function (i, button) {
+        button.addEventListener('click',function () {
+            let dataType = this.getAttribute('data-type');
+            self.removeDataFiles(dataType);
+        },false);
+    });
 
+    debug('HandlerFiles Init(ok)');
 };
 
 HandlerFiles.prototype.highlight = function(dropArea)
@@ -68,20 +83,31 @@ HandlerFiles.prototype.unhighlight = function(dropArea)
     dropArea.classList.remove('highlight');
 };
 
-HandlerFiles.prototype.handleFiles = function(files) {
 
+
+HandlerFiles.prototype.handleFiles = function(files)
+{
     let self = this;
-
     Array.prototype.push.apply( this.fileBuffer, files );
     files = [...files];
+    //debug( self.fileTypes,'fileTypes');
     files.forEach(function (file)
     {
-        debug(file.type);
-        if ( !self.fileTypes.includes(file.type) ) return;
-        self.previewFile(file);
+        let fileExtension = file.name.split('.')[1];
+        if ( self.fileTypes.includes(file.type) )
+        {   // картинки здесь
+            self.imageFilesBuffer.push(file);
+            self.previewFile(file);
+            debug(self.imageFilesBuffer,'imageFilesBuffer');
+        } else if ( self.fileTypes.includes('.' + fileExtension) ) {
+            // Для остальных типов
+            self.addDataFile(file, fileExtension);
+        }
     });
-
+    this.fileBuffer = [];
+    //debug(this.fileBuffer,'fileBuffer');
     // удаляем файлы из Буффера, не соотвсетст. заданным типам
+    /*
     for ( let i = 0; i < this.fileBuffer.length; i++ )
     {
         if ( !this.fileTypes.includes(this.fileBuffer[i].type) )
@@ -90,12 +116,113 @@ HandlerFiles.prototype.handleFiles = function(files) {
             --i;
         }
     }
-
-    debug(this.fileBuffer);
+    */
 };
+/**
+ * Data Files
+ */
+HandlerFiles.prototype.addDataFile = function(file,type)
+{
+    let areaID = '';
+    let removeBtnID = '';
+    let size = 0;
+    let mb = 'Мб';
+    let overallSize = '';
 
-/*
- * этот метод нужно реализовать
+    switch (type)
+    {
+        case "stl":
+            areaID = 'stl-files-area';
+            removeBtnID = 'removeStl';
+            size = ( (file.size / 1024) / 1024 ).toFixed(2);
+            this.stlOveralSize += file.size;
+
+            this.stlFilesBuffer.push(file);
+            debug(this.stlFilesBuffer,'stlFilesBuffer');
+
+            overallSize = document.getElementById(removeBtnID).previousElementSibling.children[0];
+            overallSize.innerHTML = '( ' + ((this.stlOveralSize / 1024) / 1024 ).toFixed(2) + ' Мб)';
+            break;
+        case "3dm":
+            areaID = '3dm-files-area';
+            removeBtnID = 'remove3dm';
+            size = ( (file.size / 1024) / 1024 ).toFixed(2);
+            this.rhinoOveralSize += file.size;
+
+            this.rhinoFilesBuffer.push(file);
+            debug(this.rhinoFilesBuffer,'rhinoFilesBuffer');
+
+            overallSize = document.getElementById(removeBtnID).previousElementSibling.children[0];
+            overallSize.innerHTML = ' ( ' + ((this.rhinoOveralSize / 1024) / 1024 ).toFixed(2) + ' Мб)';
+            break;
+        case "ai":
+            areaID = 'ai-files-area';
+            removeBtnID = 'removeAi';
+            size = ( (file.size / 1024) ).toFixed(2);
+            mb = 'Кб';
+
+            this.aiFilesBuffer.push(file);
+            debug(this.aiFilesBuffer,'aiFilesBuffer');
+            break;
+    }
+
+    let typeArea = document.getElementById(areaID);
+    let removeBtn = document.getElementById(removeBtnID);
+
+    let fileBlock = document.querySelector('.file-block-proto').cloneNode(true);
+        fileBlock.classList.remove('file-block-proto', 'hidden');
+        fileBlock.classList.add('file-block');
+        fileBlock.children[0].src = '../../web/picts/icon_' + type + '.png';
+        fileBlock.children[1].innerHTML = file.name + ' (' + size + ' ' + mb +')';
+
+
+    //let size = ( (file.size / 1024) / 1024 ).toFixed(2);
+
+    // let span = document.createElement('span');
+    //     //span.classList.add('data-files-block','mr-1');
+    //     span.classList.add('stlFileBlock','mr-1');
+    //     span.innerHTML = file.name + ' (' + size + ' ' + mb +')';
+    typeArea.appendChild(fileBlock);
+    removeBtn.classList.remove('hidden');
+};
+HandlerFiles.prototype.removeDataFiles = function(type)
+{
+    let areaID = '';
+    let removeBtnID = '';
+    switch (type)
+    {
+        case "stl":
+            areaID = 'stl-files-area';
+            removeBtnID = 'removeStl';
+            this.stlFilesBuffer = [];
+            this.stlOveralSize = 0;
+            debug(this.stlFilesBuffer,'stlFilesBuffer');
+            break;
+        case "3dm":
+            areaID = '3dm-files-area';
+            removeBtnID = 'remove3dm';
+            this.rhinoFilesBuffer = [];
+            this.rhinoOveralSize = 0;
+            debug(this.rhinoFilesBuffer,'rhinoFilesBuffer');
+            break;
+        case "ai":
+            areaID = 'ai-files-area';
+            removeBtnID = 'removeAi';
+            this.aiFilesBuffer = [];
+            debug(this.aiFilesBuffer,'aiFilesBuffer');
+            break;
+    }
+
+    let overallSize = document.getElementById(removeBtnID).previousElementSibling.children[0];
+    overallSize.innerHTML = '';
+
+    let typeArea = document.getElementById(areaID);
+    let removeBtn = document.getElementById(removeBtnID);
+    if ( typeArea ) typeArea.innerHTML = '';
+    removeBtn.classList.add('hidden');
+};
+/**
+ * Превьюшка для картинок
  */
 HandlerFiles.prototype.previewFile = function(file) {
 
@@ -128,9 +255,11 @@ HandlerFiles.prototype.previewFile = function(file) {
         let img = imgRow.getElementsByTagName('img');
             img[0].src = reader.result;
 
-        document.getElementById('picts').insertBefore(imgRow, self.dropArea.parentElement);
+        //document.getElementById('picts').insertBefore(imgRow, self.dropArea.parentElement);
+        document.getElementById('picts').appendChild(imgRow);
     }
 };
+
 HandlerFiles.prototype.onSelect = function(self)
 {
     let options = self.options;
@@ -181,25 +310,30 @@ HandlerFiles.prototype.removeImg = function(self)
 {
 
     let toDell = self.parentElement.parentElement.parentElement.parentElement;
-
-    for ( let i = 0; i < this.fileBuffer.length; i++ )
+    for ( let i = 0; i < this.imageFilesBuffer.length; i++ )
     {
-        if ( this.fileBuffer[i].lastModified === +toDell.getAttribute('fileId') )
+        if ( this.imageFilesBuffer[i].lastModified === +toDell.getAttribute('fileId') )
         {
             toDell.remove();
-            this.fileBuffer.splice(i, 1);
+            this.imageFilesBuffer.splice(i, 1);
             break;
         }
     }
-    debug(this.fileBuffer);
+    debug(this.imageFilesBuffer);
 };
-HandlerFiles.prototype.getFiles = function()
+HandlerFiles.prototype.getImageFiles = function()
 {
-    return this.fileBuffer;
+    return this.imageFilesBuffer;
 };
-
-let handlerFiles = new HandlerFiles(
-    document.getElementById('drop-area'),
-    document.getElementById('addImageFiles'),
-    ["image/jpeg", "image/png", "image/gif"]
-);
+HandlerFiles.prototype.getStlFiles = function()
+{
+    return this.stlFilesBuffer;
+};
+HandlerFiles.prototype.get3dmFiles = function()
+{
+    return this.rhinoFilesBuffer;
+};
+HandlerFiles.prototype.getAiFiles = function()
+{
+    return this.aiFilesBuffer;
+};

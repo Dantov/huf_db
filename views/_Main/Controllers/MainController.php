@@ -1,7 +1,7 @@
 <?php
 namespace Views\_Main\Controllers;
 
-use Views\_Main\Models\{Main, SetSortModel, Search};
+use Views\_Main\Models\{Main, SetSortModel, Search, ToExcel};
 use Views\_Globals\Controllers\GeneralController;
 use Views\_Globals\Models\SelectionsModel;
 
@@ -49,9 +49,48 @@ class MainController extends GeneralController
                     exit;
                 }
             }
+
+            // ******* Exports PDF/Excel ******** //
+            if ( (int)$request->post('collectionPDF') === 1 ) $this->collectionPDF();
+            if ( (int)$request->get('excel') === 1 )
+            {
+                $excel = new ToExcel();
+                if ( (int)$request->get('getXlsx') === 1 )
+                {
+                    $excel->setProgress($_GET['userName'], $_GET['tabID']);
+                    $excel->getXlsx();
+                    exit;
+                }
+                if ( (int)$request->get('getXlsxFwc') === 1 )
+                {
+                    $excel->setProgress($_GET['userName'], $_GET['tabID']);
+                    $excel->getXlsxFwc();
+                    exit;
+                }
+                if ( (int)$request->get('getXlsxExpired') === 1 )
+                {
+                    $excel->setProgress($_GET['userName'], $_GET['tabID']);
+                    $excel->getXlsxExpired();
+                    exit;
+                }
+                if ( (int)$request->get('getFileName') === 1 )
+                {
+                    if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) )
+                    {
+                        $collectionName = $_SESSION['assist']['collectionName'];
+                    } else {
+                        $collectionName = (int)$_SESSION['assist']['searchIn'] === 1 ? $_SESSION['searchFor'] : $_SESSION['assist']['collectionName'].'_-_'.$_SESSION['searchFor'];
+                    }
+                    $date = date('d.m.Y');
+                    $res['fileName'] = $excel->translit($collectionName) . '_'. $date;
+                    echo json_encode($res);
+                    exit;
+                }
+            }
             exit;
         }
 
+        // ******* SEARCH ******** //
         if ( $this->getQueryParam('search') === 'resetSearch' )
         {
             $session->dellKey('searchFor');
@@ -60,7 +99,6 @@ class MainController extends GeneralController
             $session->setKey('re_search', false);
             return;
         }
-
         if ( !empty($request->post('searchFor')) || !empty($request->get('searchFor')) || ($session->getKey('re_search') === true) )
         {
             $session->dellKey('foundRow');
@@ -77,7 +115,7 @@ class MainController extends GeneralController
             $this->redirect('/main/?search=resetSearch');
         }
 
-
+        // ******* SORT ******** //
         if ( !empty($params) )
         {
             $setSort = new SetSortModel($this->session);
@@ -275,6 +313,12 @@ class MainController extends GeneralController
         } else {
             echo json_encode(['ok'=>0]);
         }
+        exit;
+    }
+
+    protected function collectionPDF()
+    {
+        require _viewsDIR_ . "_Main/Controllers/collectionExportController.php";
         exit;
     }
 }

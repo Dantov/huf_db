@@ -57,7 +57,6 @@ class AddEditController extends GeneralController
         }
 
 
-
         $id = (int)$this->getQueryParam('id');
         if ( $id < 0 || $id >= 99999 ) $this->redirect('/main/');
         $component = (int)$this->getQueryParam('component');
@@ -76,31 +75,26 @@ class AddEditController extends GeneralController
         $id = $this->stockID;
         $component = $this->component;
         $addEdit = new AddEdit($id);
-        if ( $id > 0 )
-            if ( !$addEdit->checkID($id) )
-                $this->redirect('/main/');
-
+    
         // список разрешенных для ред полей
         $permittedFields = $addEdit->permittedFields();
 
         $prevPage = $addEdit->setPrevPage();
 
+        // Списки добавлений
         $data = $addEdit->getDataLi();
         $collLi        = $data['collections'];
         $authLi        = $data['author'];
         $mod3DLi       = $data['modeller3d'];
         $jewelerNameLi = $data['jeweler_names'];
         $modTypeLi     = $data['model_type'];
-
         $gems = $addEdit->getGemsLi();
         $gems_sizesLi = $gems['gems_sizes'];
         $gems_cutLi   = $gems['gems_cut'];
         $gems_namesLi = $gems['gems_names'];
         $gems_colorLi = $gems['gems_color'];
         $vc_namesLI = $addEdit->getNamesVCLi();
-
         $dataTables = $addEdit->getDataTables();
-
         $dataArrays = [
             'imgStat' => $addEdit->getStatLabArr('image'),
             'materialsData' => $this->parseMaterialsData($dataTables),
@@ -109,121 +103,83 @@ class AddEditController extends GeneralController
         $coveringsData = $dataArrays['materialsData']['coverings'];
         $handlingsData = $dataArrays['materialsData']['handlings'];
 
-        //$ai_hide = 'hidden';
-        $status = '';
+        
         if ( $component === 1 )  // чистая форма
         {
             $this->title = 'Добавить новую модель';
-
             $haveStl = 'hidden';
             $haveAi = 'hidden';
-            $gs_len = 0;
-            $vc_Len = 0;
-
-            unset($_SESSION['general_data']);
-            $collections_len = [];
+            $statusesWorkingCenters = $addEdit->getStatus();
+            $labels = $addEdit->getLabels();
         }
 
 
-        if ( $component === 2 )  // значит что мы в форме редактирования
+        if ( $component === 2 )  // редактирование
         {
-            unset($_SESSION['general_data']);
+            if ( $id > 0 )
+            if ( !$addEdit->checkID($id) )
+                $this->redirect('/main/');
 
             $row = $addEdit->getGeneralData();
-
             $this->title = 'Редактировать ' . $row['number_3d'] . '-' . $row['model_type'];
 
+            $complected = $addEdit->getComplected($component);
             $stl_file = $addEdit->getStl();
-            $haveStl = $stl_file['haveStl'];
-            $noStl = $stl_file['noStl'];
-
-            $collections_len = $_SESSION['general_data']['collection'] = explode(';',$row['collections']);
-
-            /*
-            // откроем блок для внесения ai файла, если коллекции соответствуют нижеперечисленным
-            foreach ( $collections_len as $coll_len )
-            {
-                switch ( $coll_len )
-                {
-                    case "Серебро с Золотыми накладками":
-                        $ai_hide = '';
-                        break;
-                    case "Серебро с бриллиантами":
-                        $ai_hide = '';
-                        break;
-                    case "Золото ЗВ":
-                        $ai_hide = '';
-                        break;
-                }
-            }*/
-
+            $rhino_file = $addEdit->get3dm();
             $ai_file = $addEdit->getAi();
-            $haveAi = $ai_file['haveAi'];
-            $noAi = $ai_file['noAi'];
 
             $materials = $addEdit->getMaterials();
             $repairs = $addEdit->getRepairs();
             $images  = $addEdit->getImages();
+            //debug($images,'',1);
+            $mainImage = '';
+            foreach ( $images as $image )
+            {
+                if ( trueIsset($image['main']) )
+                {
+                    $mainImage = $image['imgPath'];
+                    break;
+                }
+            }
 
-            $gems  = $addEdit -> getGems();
-            $gs_len = $gems['gs_len'];
-            $row_gems = $gems['row_gems'];
+            $gemsRow  = $addEdit -> getGems();
+            $dopVCs  = $addEdit -> getDopVC();
 
-            $dopVC  = $addEdit -> getDopVC();
-            $vc_Len = $dopVC['vc_Len'];
-            $row_dop_vc = $dopVC['row_dop_vc'];
+            $num3DVC_LI = $addEdit->getNum3dVCLi( $dopVCs );
 
-            $num3DVC_LI = $addEdit->getNum3dVCLi( $vc_Len, $row_dop_vc );
+            $labels = $addEdit->getLabels($row['labels']);
 
-            // это здесь для внесения первого статуса в таблицу статусов
-            $status = $addEdit -> getStatus($_SESSION['general_data']);
-            //$statuses = $addEdit->getStatuses($id, $status['stat_name'], $status['stat_date']);
-
-            //  КОСТЫЛЬ!!!!
-            // при добавлении новых моделей в stock status заходит ID
-            // возьмём этот Id из статусов
-            if ( $rowStatus = $addEdit->getStatusCrutch($row['status'],true) ) $row['status'] = $rowStatus;
-
+            $statusesWorkingCenters = $addEdit->getStatus($row['status']['id']);
         }
 
-        //$material = $addEdit->getMaterial($_SESSION['general_data']['model_material']);
-        //$covering = $addEdit->getCovering($_SESSION['general_data']['model_covering']);
-        if ( empty($status) ) $status = $addEdit -> getStatus($_SESSION['general_data']);
-        $labels = $addEdit -> getLabels($_SESSION['general_data']['labels']);
 
-        if ( $component === 3 ) // для добавления комплекта
+        if ( $component === 3 ) // добавление комплекта
         {
             $row = $addEdit->getGeneralData();
+            $complected = $addEdit->getComplected($component);
 
-            $this->title = 'Добавить комплект для ' . $_SESSION['general_data']['number_3d'];
+            $this->title = 'Добавить комплект для ' . $row['number_3d'];
 
             $noStl = "";
             $haveStl = "hidden";
             $haveAi = 'hidden';
             $ai_hide = 'hidden';
 
+            $materials = $addEdit->getMaterials();
+            $gemsRow  = $addEdit->getGems();
+            $dopVCs  = $addEdit->getDopVC();
 
-            $gems  = $addEdit->getGems();
-            $gs_len = $gems['gs_len'];
-            $row_gems = $gems['row_gems'];
-
-            $dopVC  = $addEdit->getDopVC();
-            $vc_Len = $dopVC['vc_Len'];
-            $row_dop_vc = $dopVC['row_dop_vc'];
-
-            $num3DVC_LI = $addEdit->getNum3dVCLi( $vc_Len, $row_dop_vc );
+            $num3DVC_LI = $addEdit->getNum3dVCLi( $dopVCs );
 
             $images  = $addEdit->getImages(true);
+            $labels = $addEdit->getLabels($row['labels']);
 
             $id = 0; // нужен 0 что бы добавилась новая модель
 
-            // на проверку
-            $_SESSION['general_data']['status'] = '';
-            if ( $rowStatus = $addEdit->getStatusCrutch(1,true) ) $row['status'] = $rowStatus;
-            $status = $addEdit->getStatus($row);
+            // на проверке
+            $row['status'] = $addEdit->getStatusCrutch(1, true);
+            $statusesWorkingCenters = $addEdit->getStatus();
         }
-
-        $header = $addEdit->printHeaderEditAddForm($component);
 
         /* ===== JS includes ===== */
         $this->includeJSFile('ResultModal.js', ['defer','timestamp'] );
@@ -232,9 +188,22 @@ class AddEditController extends GeneralController
         $this->includeJSFile('sideButtons.js', ['defer','timestamp','path'=>_views_HTTP_.'_Globals/js/'] );
         $this->includeJSFile('statusesButtons.js', ['defer','timestamp','path'=>_views_HTTP_.'_Globals/js/'] );
         $this->includeJSFile('submitForm.js', ['defer','timestamp'] );
-        if ( $permittedFields['images'] )
+        if ( $permittedFields['files'] )
         {
             $this->includeJSFile('HandlerFiles.js', ['defer','timestamp'] );
+            $fileTypes = ["image/jpeg", "image/png", "image/gif"]; //".3dm", ".stl", ".ai"
+            if ( $permittedFields['3dm'] && empty($rhino_file) ) $fileTypes[] = ".3dm";
+            if ( $permittedFields['stl'] && empty($stl_file) ) $fileTypes[] = ".stl";
+            if ( $permittedFields['ai'] && empty($ai_file) ) $fileTypes[] = ".ai";
+            $fileTypes = json_encode($fileTypes,JSON_UNESCAPED_UNICODE);
+
+            $js = <<<JS
+            let handlerFiles;
+            window.addEventListener('load',function() {
+              handlerFiles = new HandlerFiles( document.getElementById('drop-area'),document.getElementById('addImageFiles'),$fileTypes);
+            },false);
+JS;
+            $this->includeJS($js);
         } else {
             $js = <<<JS
             let handlerFiles;
@@ -254,9 +223,9 @@ JS;
         
         $compact2 = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi',
-            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','ai_hide','status','haveAi','noAi','vc_Len','collections_len',
-            'row','stl_file','haveStl','noStl','ai_file','repairs','images','materials', 'gs_len','row_gems','row_dop_vc','num3DVC_LI',
-            'dataArrays','materialsData','coveringsData','handlingsData', 'rowStatus','material','covering','labels','header',
+            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage',
+            'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI',
+            'dataArrays','materialsData','coveringsData','handlingsData', 'statusesWorkingCenters','material','covering','labels','complected',
         ]);
         return $this->render('addEdit', $compact2);
     }
@@ -389,9 +358,6 @@ JS;
             $result['dell'] = $resultDell['dell'];
             echo json_encode($result);
         }
-
-
-
     }
 
     protected function actionFormController()

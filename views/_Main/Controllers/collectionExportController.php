@@ -1,20 +1,12 @@
 <?php
-ignore_user_abort(false);
+namespace Views\_Main\Controllers;
+use Views\_Main\Models\{PDFExports,HufDB_PDF};
 
-date_default_timezone_set('Europe/Kiev');
+
 ini_set('max_execution_time',600); //10min // макс. время выполнения скрипта в секундах
 ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
 
-session_start();
-
-$uploaddir = _stockDIR_HTTP_;
-$uploaddirST = _stockDIR_;
-
-require_once(_viewsDIR_ . 'Main/classes/PDFExports.php');
-require_once( _vendorDIR_.'TCPDF/HufDB_PDF.php');
-
-$collectPDF = new PDFExports($_SERVER, $_SESSION['assist'], $_SESSION['user'], $_SESSION['foundRow'], $_SESSION['searchFor'], $_SESSION['assist']['collectionName'] );
-$collectPDF->connectToDB();
+$collectPDF = new PDFExports( $_SESSION['assist'], $_SESSION['user'], $_SESSION['foundRow'], $_SESSION['searchFor'], $_SESSION['assist']['collectionName'] );
 
 if ( empty($collectPDF->getRow()) ) $collectPDF->getModelsFormStock();
 $complects = $collectPDF->countComplects();
@@ -38,7 +30,7 @@ $pdf = new HufDB_PDF('L', 'mm', 'A4', true, 'UTF-8', false, $headerNameString);
 
 // set document information
 $pdf->SetCreator(PDF_CREATOR);
-$pdf->SetAuthor('Вадим Быков');
+$pdf->SetAuthor('');
 $pdf->SetTitle('');
 $pdf->SetSubject('');
 $pdf->SetKeywords('');
@@ -66,8 +58,8 @@ $pdf->SetAutoPageBreak(false, 10);
 $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 // set some language-dependent strings (optional)
-if (@file_exists(dirname(__FILE__).'/lang/rus.php')) {
-    require_once(dirname(__FILE__).'/lang/rus.php');
+if (@file_exists(_vendorDIR_ .'/TCPDF/rus.php')) {
+    require_once( _vendorDIR_ .'/TCPDF/rus.php');
     $pdf->setLanguageArray($l);
 }
 

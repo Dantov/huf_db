@@ -134,8 +134,10 @@ class General {
             'model_cost' => false,
             'material' => false,
             'covering' => false,
+            'files' => false,
             'stl' => false,
             'ai' => false,
+            '3dm' => false,
             'images' => false,
             'dellImage' => false,
             'gems' => false,
@@ -153,21 +155,21 @@ class General {
 
         switch ($this->user['access'])
         {
-            case 1:
+            case 1: //
                 foreach ( $permittedFields as &$field ) $field = true;
                 break;
-            case 2:
+            case 2: // 3д моделлер
                 foreach ( $permittedFields as &$field ) $field = true;
                 $permittedFields['print_cost'] = false;
                 $permittedFields['model_cost'] = false;
                 $permittedFields['jewelerName'] = false;
                 $permittedFields['repairsJew'] = false;
                 break;
-            case 3:
+            case 3: // 3д печать
                 $permittedFields['print_cost'] = true;
                 $permittedFields['statuses'] = true;
                 break;
-            case 4:
+            case 4: // ПДО ?
                 $permittedFields['vendor_code'] = true;
                 $permittedFields['material'] = true;
                 $permittedFields['covering'] = true;
@@ -177,7 +179,8 @@ class General {
                 $permittedFields['statuses'] = true;
                 $permittedFields['labels'] = true;
                 break;
-            case 5:
+            case 5: // Доработчики
+                $permittedFields['files'] = true;
                 $permittedFields['images'] = true;
                 $permittedFields['jewelerName'] = true;
                 $permittedFields['gems'] = true;
@@ -188,7 +191,8 @@ class General {
                 $permittedFields['labels'] = true;
                 $permittedFields['statuses'] = true;
                 break;
-            case 6:
+            case 6: //Фото?
+                $permittedFields['files'] = true;
                 $permittedFields['images'] = true;
                 $permittedFields['statuses'] = true;
                 break;
@@ -333,7 +337,7 @@ class General {
 	
 	public function unsetSessions() {
 		// удаляем автозаполнение при возврате на главную
-		if ( isset($_SESSION['general_data']) ) unset($_SESSION['general_data']);
+		//if ( isset($_SESSION['general_data']) ) unset($_SESSION['general_data']);
 	}
 	
 	public function getStatus($row=[], $selMode='')
@@ -697,7 +701,9 @@ class General {
         if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
 
         while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;
-        return $result[0];
+        if ( !empty($result) ) return $result[0];
+
+        return [];
     }
 
     /**

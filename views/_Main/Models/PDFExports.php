@@ -1,5 +1,5 @@
 <?php
-include('Main.php');
+namespace Views\_Main\Models;
 
 class PDFExports extends Main {
 
@@ -35,9 +35,18 @@ class PDFExports extends Main {
      */
     public $socketClientResource;
 
-	function __construct( &$server, $assist, $user, $foundRow, $searchFor='', $collectionName='' ) 
+    /**
+     * PDFExports constructor.
+     * @param $assist
+     * @param $user
+     * @param $foundRow
+     * @param string $searchFor
+     * @param string $collectionName
+     * @throws \Exception
+     */
+	function __construct( $assist, $user, $foundRow, $searchFor='', $collectionName='' )
 	{
-		parent::__construct($server, $assist, $user, $foundRow);
+		parent::__construct( $assist, $user, $foundRow);
 		$this->toPdf = true;
 		if ( !empty($searchFor) ) $this->searchFor = $searchFor;
 		if ( !empty($collectionName) ) $this->collectionName = $collectionName;
@@ -51,6 +60,8 @@ class PDFExports extends Main {
             ],
             'message' => 'progressBarPDF' // флаг о том что идёт создание пдф
         ];
+
+        $this->connectToDB();
 	}
 
     public function setProgress($userName=false, $tabID=false)

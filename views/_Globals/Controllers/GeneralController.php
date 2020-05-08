@@ -6,6 +6,7 @@ use Views\vendor\core\Cookies;
 class GeneralController extends Controller
 {
 
+    public $currentVersion = '2.001a';
     public $navBar;
 
     public function __construct($controllerName)

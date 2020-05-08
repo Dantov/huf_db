@@ -1,4 +1,4 @@
-<div class="panel panel-default" style="margin-top: 10px">
+<div class="panel panel-default">
     <div class="panel-heading">
         <i class="fas fa-cubes"></i>
         <strong> Материал изделия:</strong> <span id="model_material" class="hidden err-notice"></span>

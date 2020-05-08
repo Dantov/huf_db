@@ -44,7 +44,7 @@ function changeInpt() {
 	};
 	
 	$.ajax({
-		url: "controllers/nom_handler.php", //путь к скрипту, который обрабатывает задачу
+		url: "/nomenclature/change", //путь к скрипту, который обрабатывает задачу
 		type: 'POST',
 		data: obj,
 		dataType:"json",
@@ -144,7 +144,7 @@ function dellRow(){
 	let conf = confirm(conf_str);
 	if ( conf ) {
 		$.ajax({
-			url: "controllers/nom_handler.php", //путь к скрипту, который обрабатывает задачу
+			url: "/nomenclature/dellrow", //путь к скрипту, который обрабатывает задачу
 			type: 'POST',
 			data: objReqest,
 			dataType:"json",

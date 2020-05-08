@@ -1,14 +1,15 @@
 <?php
-require_once _globDIR_  . 'classes/ProgressCounter.php';
-require_once _viewsDIR_ . 'ModelView/classes/ModelView.php';
-require_once _vendorDIR_. 'TCPDF/tcpdf.php';
+namespace Views\_ModelView\Models;
+use Views\_Globals\Models\ProgressCounter;
 
+require_once _vendorDIR_. 'TCPDF/tcpdf.php';
 class DocumentPDF
 {
 
 	public $pdf;
 	public $modelView;
 	public $modelViewData = [];
+	public $document = '';
 
 	public $progress;
 
@@ -18,37 +19,56 @@ class DocumentPDF
 	public $complects_lenght;
 	public $complectCounter;
 
-	public function __construct( $id, $userName, $tabID ) 
+    /**
+     * DocumentPDF constructor.
+     * @param $id
+     * @param $userName
+     * @param $tabID
+     * @param $document
+     * @throws \Exception
+     */
+    public function __construct($id, $userName, $tabID, $document )
 	{
 		$id = (int)$id;
 		if ( $id <= 0 || $id > 999999 ) exit('wrong ID');
 		if ( !isset($userName) || !isset($tabID) ) exit( 'no user data');
 
+        if ( trueIsset($document) ) $this->document =$document;
 		$this->init($id, $userName, $tabID);
 	}
 
-	public function init($id, $userName, $tabID)
+    /**
+     * @param $id
+     * @param $userName
+     * @param $tabID
+     * @throws \Exception
+     */
+    public function init($id, $userName, $tabID)
 	{
-
 		$this->progress = new ProgressCounter();
 	    $this->progress->setProgress($userName, $tabID);
 	    $this->complects_lenght = 10;
 	    $this->complectCounter = 0;
 
-	    $modelView = new ModelView($id, $_SERVER);
-	    $this->modelViewData['row'] = $modelView->row;
-		$this->modelViewData['coll_id'] = $modelView->getCollections();
-	    $this->modelViewData['matsCovers'] = $modelView->getModelMaterials();
-	    $this->modelViewData['complected'] = $modelView->getComplects();
-	    $this->modelViewData['images'] = $modelView->getImages();
-	    $this->modelViewData['gems'] = $modelView->getGems();
-	    $this->modelViewData['dopVC'] = $modelView->getDopVC();
-	    $this->modelViewData['repairs'] = $modelView->getRepairs();
-		$this->modelViewData['date'] = date_create( $row['date'] )->Format('d.m.Y');
-		$this->modelView = $modelView;
+	    $modelView = new ModelView($id);
+	    if ( $this->document === 'picture' )
+        {
+            $this->modelViewData['images'] = $modelView->getImages();
+        } else {
+            $this->modelViewData['coll_id'] = $modelView->getCollections();
+            $this->modelViewData['matsCovers'] = $modelView->getModelMaterials();
+            $this->modelViewData['images'] = $modelView->getImages();
+            $this->modelViewData['gems'] = $modelView->getGems();
+            $this->modelViewData['dopVC'] = $modelView->getDopVC();
+            $this->modelViewData['repairs'] = $modelView->getRepairs();
+            $this->modelViewData['complected'] = $modelView->getComplectes();
+        }
+        $this->modelViewData['row'] = $modelView->row;
+        $this->modelViewData['date'] = date_create( $this->modelViewData['row']['date'] )->Format('d.m.Y');
+        $this->modelView = $modelView;
 
 		// create new PDF document
-		$pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+		$pdf = new \TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 	
 		$pdf->setPrintHeader(false);
 		$pdf->setPrintFooter(false);
@@ -69,9 +89,10 @@ class DocumentPDF
 		// set image scale factor
 		$pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 		// set some language-dependent strings (optional)
-		if (@file_exists(dirname(__FILE__).'/lang/rus.php')) {
-			require_once(dirname(__FILE__).'/lang/rus.php');
-			$pdf->setLanguageArray($l);
+		if (@file_exists(_vendorDIR_.'TCPDF/rus.php'))
+		{
+			require_once(_vendorDIR_.'TCPDF/rus.php');
+			$pdf->setLanguageArray($l??[]);
 		}
 		// set default font subsetting mode
 		$pdf->setFontSubsetting(true);
@@ -82,12 +103,15 @@ class DocumentPDF
 
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $this->progress->progressCount( $this->overallProgress );
+	    $this->progress->progressCount( $overallProgress );
 	}
 
-	public function printPassportRunnerHeader($row, $date, $complected)
+	public function printPassportRunnerHeader($row, $date, $complected='')
 	{
 		$pdf = $this->pdf;
+		$complectedTD = '';
+		if ( $complected ) $complectedTD = 'В комплекте: <b>'.$complected.'</b>';
+
 		$header='
 			<style>
 				td {
@@ -98,11 +122,11 @@ class DocumentPDF
 				<tbody>
 					<tr>
 						<td width="50%" style="text-align:left;">Фабричный Артикул: <b>'.$row['vendor_code'].'</b></td>
-						<td width="50%" style="text-align:right;">Дата: <b>'.$date.'</b></td>
+						<td width="50%" style="text-align:right;">Дата Добавления: <b>'.$date.'</b></td>
 					</tr>
 					<tr>
 						<td style="text-align:left;">Номер 3Д: <b>'.$row['number_3d'].'-'.$row['model_type'].'</b></td>
-						<td style="text-align:right;">В комплекте: <b>'.$complected.'</b></td>
+						<td style="text-align:right;">'.$complectedTD.'</td>
 					</tr>
 				</tbody>
 			</table>
@@ -114,7 +138,7 @@ class DocumentPDF
 
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $this->progress->progressCount( $this->overallProgress );
+	    $this->progress->progressCount( $overallProgress );
 	}
 
 	public function makeLabelsStr($row)
@@ -158,7 +182,7 @@ class DocumentPDF
 
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $this->progress->progressCount( $this->overallProgress );
+	    $this->progress->progressCount( $overallProgress );
 
 		return $labelImgDIV;
 	}
@@ -223,7 +247,7 @@ class DocumentPDF
 		$sketchimg = '';
 		$mainimg = '';
 		$onbodyimg = '';
-		$imgPath = _stockDIR_ . $row['number_3d'].'/'.$id.'/images/';
+		//$imgPath = _stockDIR_ . $row['number_3d'].'/'.$id.'/images/';
 		foreach ( $images as $img_str )
 		{
 	        $imgPath = _stockDIR_ . explode('Stock/', $img_str['img_name'])[1];
@@ -241,7 +265,7 @@ class DocumentPDF
 		
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 
 
 	    $matsCoversStr = '';
@@ -304,7 +328,7 @@ class DocumentPDF
 
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 
 		//--table 2--//
 		$table2 = '
@@ -343,7 +367,7 @@ class DocumentPDF
 
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 
 		$lastTableY = $pdf->GetY();
 		
@@ -425,7 +449,7 @@ class DocumentPDF
 		
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 
 		//--END table 3--//
 		$descr = trim($row['description']);
@@ -511,7 +535,7 @@ class DocumentPDF
 
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 
 		$table3='
 			<style>
@@ -621,7 +645,7 @@ class DocumentPDF
 
 		//============= counter point ==============//
 		$overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 
 		$rowspans = 3; //Увеличиваем на 1 если добавили строку <tr>
 
@@ -722,7 +746,7 @@ class DocumentPDF
 
 	    //============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 
 		
 		$top_txt = '
@@ -757,7 +781,7 @@ class DocumentPDF
 
 		//============= counter point ==============//
 		$overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 		
 		//--table 1--//
 		$table1 = "
@@ -845,7 +869,7 @@ class DocumentPDF
 
 		//============= counter point ==============//
 		$overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
-	    $progress->progressCount( $this->overallProgress );
+	    $progress->progressCount( $overallProgress );
 		
 		$tableMiddl = "
 			<style>
@@ -910,7 +934,48 @@ class DocumentPDF
 	    //============= counter point ==============//
 	    $this->progress->progressCount( 100 );
 
-		//echo json_encode($pdfname);
 		return $pdfname;
 	}
+
+	public function printPicture($pictID)
+    {
+        $pdf = $this->pdf;
+        $progress = $this->progress;
+        $row = $this->modelViewData['row'];
+        $date = $this->modelViewData['date'];
+        $images = $this->modelViewData['images'];
+
+        $tr = '';
+        if ( $pictID > 0 )
+        {
+            $imgName = '';
+            foreach ( $images as $image )
+            {
+                if ( (int)$image['id'] === $pictID )
+                {
+                    $imgName = $image['img_name'];
+                    break;
+                }
+            }
+            $tr = '<tr><td><img src="'.$imgName.'"/></td></tr>';
+        } else {
+            $tds = [];
+            foreach ( $images as $image ) $tds[] = '<td><img src="'.$image['img_name'].'"/></td>';
+
+            $div = 4;
+            if ( count($tds) < 5 ) $div = 3;
+            $tr = '<tr>';
+            for ( $i = 1; $i <= count($tds); $i++ )
+            {
+                if ( $i % $div === 0 ) $tr .= '</tr><tr>';
+                $tr .= $tds[$i-1];
+            }
+            $tr .= '</tr>';
+        }
+
+        $pdf->AddPage();
+        $this->printPassportRunnerHeader($row, $date);
+        $table = '<table><tbody>'.$tr.'</tbody></table>';
+        $pdf->writeHTMLCell(195, '', '', '', $table, 0, 1, 0, true, 'L', true);
+    }
 }

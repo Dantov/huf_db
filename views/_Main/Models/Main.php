@@ -780,7 +780,7 @@ class Main extends General {
         }
 
 		ob_start();
-        require_once  _viewsDIR_ . "Main/includes/drawTableExpired_Start.php";
+        require_once  _viewsDIR_ . "_Main/includes/drawTableExpired_Start.php";
 
         foreach ( $workingCenters as $workingCenter )
 		{
@@ -1023,7 +1023,8 @@ class Main extends General {
 		}
 		return $complects;
 	}
-	public function drawPagination() {
+	public function drawPagination()
+    {
 		$pagination = '';
 		
 		$max_shown_pagin = 10; // максимальное число отображаемых квадратиков пагинации
@@ -1051,7 +1052,7 @@ class Main extends General {
 			$classAct = '';
 			if ( $this->assist['page'] == $i ) $classAct = 'class="active"';
 			$pagination .= "<li $classAct>";
-			$pagination .= '<a href="/?page='.$i.'">'.($i+1).'</a>';
+			$pagination .= '<a href="/main/?page='.$i.'">'.($i+1).'</a>';
 			$pagination .= '</li>';
 			
 			// если это не первая стр. то начинаем проверять на кратность макс. разрешенных квадратиков т.е 10

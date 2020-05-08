@@ -1,6 +1,6 @@
 <tr class="">
     <td>
-        <a href="<?=_views_HTTP_ . 'ModelView/index.php?id='.$row['id'] ?>"><?=$row['vendor_code'] ?: $row['number_3d']?></a>
+        <a href="<?='/model-view/?id='.$row['id'] ?>"><?=$row['vendor_code'] ?: $row['number_3d']?></a>
     </td>
     <td><?=$row['model_type']?></td>
     <td><?= $workingCenter['name'] ?></td>

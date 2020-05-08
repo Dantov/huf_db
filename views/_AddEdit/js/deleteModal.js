@@ -77,8 +77,10 @@ DeleteModal.prototype.onModalOpen = function(that)
 		status.appendChild(img);
 	}
 	if ( dellData.fileType === 'stl' )
-		titleText = 'Удалить STL файлы позиции '+ modelText +'?'; 
-	if ( dellData.fileType === 'ai' )
+		titleText = 'Удалить STL файлы позиции '+ modelText +'?';
+    if ( dellData.fileType === '3dm' )
+        titleText = 'Удалить Rhino 3dm файлы позиции '+ modelText +'?';
+    if ( dellData.fileType === 'ai' )
 		titleText = 'Удалить AI файл позиции '+ modelText +'?'; 
 	if ( dellData.dellPosition ) 
 	{

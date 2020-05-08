@@ -411,6 +411,15 @@ class Handler extends General {
 		return true;
 	}
 
+	protected function openZip($path)
+    {
+        $zip = new \ZipArchive();
+        $zip_name = $this->number_3d."-".$this->model_typeEn.".zip";
+        $zip->open($path.$zip_name, \ZIPARCHIVE::CREATE);
+
+        return ['zip'=>$zip, 'zipName' => $zip_name];
+    }
+
 	
 	public function addSTL( &$filesSTL ) {
 		$folder = $this->number_3d.'/'.$this->id.'/stl/';
@@ -419,6 +428,7 @@ class Handler extends General {
 		$zip_name = $this->number_3d."-".$this->model_typeEn.".zip";
 		$zip->open($folder.$zip_name, \ZIPARCHIVE::CREATE);
 		$countSTls = count($filesSTL['name']);
+
 		for ( $i = 0; $i < $countSTls; $i++ ) {
 			
 			$fileSTL_name = basename($filesSTL['name'][$i]);
@@ -449,6 +459,47 @@ class Handler extends General {
 		}
 		return true;
 	}
+
+    /**
+     * @param $files3DM
+     * @return bool
+     * @throws \Exception
+     */
+    public function add3dm($files3DM)
+    {
+        $path = $this->number_3d.'/'.$this->id.'/3dm/';
+        $zipArch = $this->openZip($path);
+        $zip = $zipArch['zip'];
+
+        $fileNames = [];
+
+        for ( $i = 0; $i < count($files3DM['name']); $i++ )
+        {
+            $fileSTL_name = basename($files3DM['name'][$i]);
+            if ( !empty($fileSTL_name) )
+            {
+                $info = new \SplFileInfo($files3DM['name'][$i]);
+                $extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
+
+                $fileNames[$i] = $this->number_3d."-".$this->model_typeEn."-".$i.".".$extension;
+                move_uploaded_file($files3DM['tmp_name'][$i], $path.$fileNames[$i]);
+
+                $zip->addFile( $path.$fileNames[$i], $fileNames[$i] );
+            }
+        }
+        $zip->close();
+        foreach ( $fileNames as $fileName ) if ( file_exists( $path.$fileName ) ) unlink($path.$fileName);
+
+        $zipFile = $path.$zipArch['zipName'];
+
+        if ( file_exists( $zipFile ) )
+        {
+            $zipArchSize = filesize( $zipFile );
+            $query = $this->baseSql(" INSERT INTO rhino_files (name, size, pos_id) VALUES ('{$zipArch['zipName']}', '$zipArchSize','$this->id') ");
+            if ( !$query ) throw new \Exception(__METHOD__ . 'Error :' . mysqli_error($this->connection),412);
+        }
+        return true;
+    }
 	
 	public function addAi( &$filesAi ) {
 		$folder = $this->number_3d.'/'.$this->id.'/ai/';
@@ -825,7 +876,7 @@ class Handler extends General {
                 'text' => 'Файлы накладки ',
             ],
             '3dm' => [
-                'table' => '3dm_files',
+                'table' => 'rhino_files',
                 'field' => 'name',
                 'folder' => '3dm',
                 'text' => '3dm файлы ',
