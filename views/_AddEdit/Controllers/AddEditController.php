@@ -130,6 +130,8 @@ class AddEditController extends GeneralController
 
             $materials = $addEdit->getMaterials();
             $repairs = $addEdit->getRepairs();
+            $notes = $addEdit->getDescriptions();
+
             $images  = $addEdit->getImages();
             //debug($images,'',1);
             $mainImage = '';
@@ -223,7 +225,7 @@ JS;
         
         $compact2 = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi',
-            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage',
+            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes',
             'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI',
             'dataArrays','materialsData','coveringsData','handlingsData', 'statusesWorkingCenters','material','covering','labels','complected',
         ]);

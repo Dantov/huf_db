@@ -31,8 +31,11 @@ chdir(_stockDIR_);
 
 
 $handler = new Handler($id);
-
-if ( !$handler->connectToDB() ) exit;
+try {
+    $handler->connectToDB();
+} catch ( \Exception $e) {
+    exit($e->getMessage() . "connectToDB Failed in" . __METHOD__ );
+}
 
 $date = trim($_POST['date']);
 if ( $isEdit === true ) {
@@ -308,7 +311,12 @@ if ( $permissions['vc_links'] )
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 //конец добавляем доп. артикулы
 
-
+/// --------- Добавляем Описания ----------///
+if ( $permissions['description'] )
+{
+    $addNotes = $handler->addNotes( $_POST['notes'] );
+    $resp_arr['notes'] = $addNotes;
+}
 
 /// --------- Добавляем ремонты ----------///
 if ( $permissions['repairs'] )

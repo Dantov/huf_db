@@ -275,7 +275,6 @@
 
                 <div class="col-xs-12">
                     <?php if ( $permittedFields['vc_links'] ): ?>
-                        <?=$vcDopFromWord;?>
                         <div class="panel panel-default">
                             <div class="panel-heading">
                                 <span class="glyphicon glyphicon-link"></span>
@@ -311,13 +310,28 @@
                             </table>
                         </div><!-- end panel dopArticls-->
                     <?php endif; ?>
+                </div>
 
-                    <?php if ( $permittedFields['description'] ): ?>
+
+                <!-- Примечания / Описания -->
+                <?php if ( $permittedFields['description'] ): ?>
+                    <div class="col-xs-12">
                         <label for="descr" class=""><span class="glyphicon glyphicon-comment"></span> Примечания:</label>
-                        <textarea id="descr" class="form-control" rows="3" name="description" style="margin:0px 0 15px 0 !important;"><?=$row['description']?></textarea>
-                    <?php endif; ?>
-
-                </div> <!--col-xs-12-->
+                        <textarea id="descr" class="form-control" rows="2" name="description" style="margin:0px 0 15px 0 !important;"><?=$row['description']?></textarea>
+                    </div>
+                    <div class="col-xs-12 modelNotes">
+                        <?php if ( trueIsset($notes??[]) ): ?>
+                            <?php $switchTableRow = 'notes'; ?>
+                            <?php foreach ( $notes??[] as $note ): ?>
+                                <?php require _viewsDIR_."_AddEdit/includes/protoRows.php" ?>
+                            <?php endforeach; unset($note); ?>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-xs-12">
+                        <button class="btn btn-default addNote"><i class="far fa-comment-alt"></i> Добавить Описание</button>
+                    </div>
+                    <div class="col-xs-12"><hr/></div>
+                <?php endif; ?>
 
 
                 <!--РЕМОНТЫ-->
@@ -621,3 +635,4 @@
 
 <img src="" id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
 <?php $isRepairProto = true; require _viewsDIR_.'_AddEdit/includes/protoRepair.php' ?>
+<?php $switchTableRow = 'notes'; require _viewsDIR_."_AddEdit/includes/protoRows.php";?>

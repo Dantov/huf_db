@@ -367,7 +367,43 @@ if ( gems_table )
 }
 
 
+// ----- Описания -------//
+let addNote = document.querySelector('.addNote');
+if ( addNote )
+{
+    let modelNotes = document.querySelector('.modelNotes');
+    let modelNotesDIV = modelNotes.querySelectorAll('.model-note');
+    let lastNoteNum = 0;
+    if ( modelNotesDIV.length )
+	{
+        lastNoteNum = modelNotesDIV[modelNotesDIV.length-1].querySelector('.note_num').getAttribute('value');
+	}
 
+    addNote.addEventListener('click', function(event) {
+        event.preventDefault();
+
+        let newNote = document.querySelector('.proto-note').cloneNode(true);
+			newNote.classList.remove('proto-note', 'hidden');
+			newNote.querySelector('.note-num').innerHTML = ++lastNoteNum;
+			newNote.querySelector('.note_num').setAttribute('value', lastNoteNum);
+
+        modelNotes.appendChild(newNote);
+    });
+}
+function removeNote(self)
+{
+    let notePanel = self.parentElement.parentElement;
+    let noteID = notePanel.querySelector('.note_id').getAttribute('value');
+
+    notePanel.classList.add('hidden');
+    notePanel.classList.remove('model-note');
+    if ( noteID  )
+	{
+        notePanel.querySelector('textarea').innerHTML = -1;
+	} else {
+        notePanel.remove();
+	}
+}
 
 
 // ----- РЕМОНТЫ -------//

@@ -279,4 +279,23 @@
             </div>
 <?php
             break;
+        case 'notes':
+?>
+            <div class="panel panel-default mb-2 <?= trueIsset($note??[]) ? 'model-note':'proto-note hidden' ?>">
+                <div class="panel-heading">
+                    <i class="far fa-comment-alt"></i>
+                    <strong> Описание №<span class="note-num"><?=$note['num']?></span>: </strong>
+                    <button class="btn btn-sm btn-default pull-right remove-note" onclick="removeNote(this)" style="top:-5px !important; position:relative;" type="button" title="Удалить описание">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                    <?php if ( $note??'' ) :?>
+                        <span class="pull-right">Добавлено: <?=$note['date']?> - <?=$note['userName']?>&nbsp;&nbsp; </span>
+                    <?endif;?>
+                </div>
+                <input type="hidden" class="note_id" name="notes[id][]" value="<?=$note['id']?>">
+                <input type="hidden" class="note_num" name="notes[num][]" value="<?=$note['num']?>">
+                <textarea class="form-control note-text" rows="2" name="notes[text][]"><?=$note['text']?></textarea>
+            </div>
+<?php
+            break;
     }

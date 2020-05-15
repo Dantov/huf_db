@@ -42,11 +42,11 @@ class ModelView extends General {
     {
 		$this->row         = $this->findOne( " SELECT * FROM stock     WHERE     id='$this->id' ");
 		$this->img_Query   = mysqli_query($this->connection, " SELECT * FROM images    WHERE pos_id='$this->id' ");
-		$this->gems_Query  = mysqli_query($this->connection, " SELECT * FROM gems      WHERE pos_id='$this->id' ");
-		$this->dopVc_Query = mysqli_query($this->connection, " SELECT * FROM vc_links  WHERE pos_id='$this->id' ");
-		$this->stl_Query   = mysqli_query($this->connection, " SELECT * FROM stl_files WHERE pos_id='$this->id' ");
-		$this->ai_Query    = mysqli_query($this->connection, " SELECT * FROM ai_files  WHERE pos_id='$this->id' ");
-		$this->rep_Query   = mysqli_query($this->connection, " SELECT * FROM repairs   WHERE pos_id='$this->id' ");
+        $this->gems_Query  = mysqli_query($this->connection, " SELECT * FROM gems      WHERE pos_id='$this->id' ");
+        $this->dopVc_Query = mysqli_query($this->connection, " SELECT * FROM vc_links  WHERE pos_id='$this->id' ");
+        $this->stl_Query   = mysqli_query($this->connection, " SELECT * FROM stl_files WHERE pos_id='$this->id' ");
+        $this->ai_Query    = mysqli_query($this->connection, " SELECT * FROM ai_files  WHERE pos_id='$this->id' ");
+        $this->rep_Query   = mysqli_query($this->connection, " SELECT * FROM repairs   WHERE pos_id='$this->id' ");
 		
 		//$this->row = mysqli_fetch_assoc($stock_Query);
 		$this->number_3d = $this->row['number_3d'];
@@ -60,6 +60,8 @@ class ModelView extends General {
 		//debug($sql,'$sql');
 		$this->complected = $this->findAsArray( $sql );
 		//debug($this->complected,'complected',1);
+
+
 	}
 
     public function getCollections()
@@ -101,6 +103,34 @@ class ModelView extends General {
     public function get3dm()
     {
         return $this->findOne( " SELECT * FROM rhino_files WHERE pos_id='$this->id' ");
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function usedInModels()
+    {
+        $vc = "";
+        if ( !empty( $this->row['vendor_code'] ) ) $vc = "OR vc_3dnum LIKE '%{$this->row['vendor_code']}%'";
+
+        $sql = " SELECT s.id, s.number_3d, s.vendor_code, s.model_type FROM stock as s WHERE s.id IN
+                  ( SELECT pos_id FROM vc_links WHERE vc_3dnum LIKE '%{$this->number_3d}%' $vc ) AND s.id <> {$this->row['id']}";
+        return $this->findAsArray( $sql );
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getDescriptions()
+    {
+        $sql = "SELECT d.num, d.text, DATE_FORMAT(d.date, '%d.%m.%Y') as date, d.pos_id, u.fio as userName
+                FROM description as d
+                  LEFT JOIN users as u
+                    ON (d.userID = u.id ) 
+                WHERE d.pos_id = $this->id";
+        return $this->findAsArray( $sql );
     }
 
     /**
@@ -163,11 +193,12 @@ class ModelView extends General {
 	{
 		$addEdit = new \Views\_AddEdit\Models\AddEdit($this->id);
 
-        $addEdit->connectToDB();
+        $addEdit->connectDBLite();
         $mats = $addEdit->getMaterials($this->row);
         $addEdit->closeDB();
         return $mats;
 	}
+
 	/*  Old
 	public function getModelMaterial() {
 		$str_material_arr = explode(";",$this->row['model_material']);
@@ -334,24 +365,20 @@ class ModelView extends General {
 
         return $repairs;
     }
-	/*
-	public function checklikePos() {
-		$ipsQuer = mysqli_query($this->connection, " SELECT * FROM ips WHERE ip='$this->IP_visiter' ");
-		if ( $ipsQuer->num_rows > 0 ) {
-			$row = mysqli_fetch_assoc($ipsQuer);
-			$str = explode(';',$row['liked_pos']);
-			if ( in_array($this->id, $str) ) return true;
-		}
-		return false;
-	}
-	*/
 
 	public function getLabels($labelsStr=false)
     {
         return parent::getLabels($this->row['labels']);
     }
 
-    public function getStatuses( $id = false, $status_name = '', $status_date = '' )
+    /**
+     * @param bool $id
+     * @param string $status_name
+     * @param string $status_date
+     * @return array
+     * @throws \Exception
+     */
+    public function getStatuses($id = false, $status_name = '', $status_date = '' )
     {
         $statuses = $this->getStatLabArr('status');
         $result = [];

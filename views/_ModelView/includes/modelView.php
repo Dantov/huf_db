@@ -62,31 +62,29 @@ $isView = true;
                     <div class="panel-heading <?=$stat_class;?> cursorArrow mb-2" title="<?=$stat_title;?>"><span class="<?=$stat_glyphi?>"></span> <?=$stat_name;?><span title="Дата последнего изменения статуса"><?=$stat_date?" - " . $stat_date:''?></span></div>
                     <ul class="list-group">
                         <li class="list-group-item">
-                            <span class="badge badge-lg cursorPointer" id="num3d" title="Скопировать" onclick="copyInnerHTMLToClipboard(this)"><?=$row['number_3d']?></span>
-                            <i class="fas fa-hashtag"></i> Номер 3D:
-                        </li>
-                        <?php if (isset($row['vendor_code']) && !empty($row['vendor_code'])): ?>
-                            <li class="list-group-item">
+                            <span class="badge badge-lg" id="modelType"><?=$row['model_type']?></span>
+                            <?php if (isset($row['vendor_code']) && !empty($row['vendor_code'])): ?>
                                 <span class="badge badge-lg cursorPointer" id="articl" title="Скопировать" onclick="copyInnerHTMLToClipboard(this)"><?=$row['vendor_code']?></span>
-                                <i class="fas fa-industry"></i> Фабричный Артикул:
-                            </li>
-                        <?php endif; ?>
-                        <?php if ( !empty($complectes) ): ?>
-                            <li class="list-group-item">
-                                <span class="badge badge-lg" id="complects">
-                                    <?php foreach ($complectes as $complect) : ?>
-                                        <a style="color:white!important;" imgtoshow="<?= $complect['img_name'] ?>" href="/model-view/?id=<?=$complect['id']?>"><?=$complect['model_type']?></a>
-                                    <?php endforeach;?>
-                                </span>
-                                <i class="fas fa-object-group"></i> В Комплекте:
-                            </li>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                            <span class="badge badge-lg cursorPointer" id="num3d" title="Скопировать" onclick="copyInnerHTMLToClipboard(this)"><?=$row['number_3d']?></span>
+                            <i class="fas fa-hashtag"></i> Номер 3D / Арт. / Вид:
+                        </li>
                         <li class="list-group-item">
                             <?php foreach ( isset($coll_id)?$coll_id:[] as $coll ) : ?>
                                 <span class="badge badge-lg" ><i><a style="color:white;" href="/main/?coll_show=<?=$coll['id']?>" id="collection"><?=$coll['name']?></a></i></span>
                             <?php endforeach;?>
                             <i class="fas fa-gem"></i> Коллекции:
                         </li>
+                        <?php if ( !empty($complectes) ): ?>
+                            <li class="list-group-item">
+                                <?php foreach ($complectes as $complect) : ?>
+                                <span class="badge badge-lg" id="complects">
+                                    <a style="color:white!important;" imgtoshow="<?= $complect['img_name'] ?>" href="/model-view/?id=<?=$complect['id']?>"><?=$complect['model_type']?></a>
+                                </span>
+                                <?php endforeach;?>
+                                <i class="fas fa-object-group"></i> В Комплекте:
+                            </li>
+                        <?php endif; ?>
                         <li class="list-group-item">
                             <span class="badge badge-lg"><?=$row['author']?></span>
                             <i class="fas fa-user-tie"></i> Автор:
@@ -101,10 +99,6 @@ $isView = true;
                             <i class="fas fa-user-cog"></i> Модельер-доработчик:
                         </li>
                         <?endif;?>
-                        <li class="list-group-item">
-                            <span class="badge badge-lg" id="modelType"><?=$row['model_type']?></span>
-                            <span class="glyphicon glyphicon-eye-open"></span> Вид модели:
-                        </li>
                         <li class="list-group-item">
                             <span class="badge badge-lg"><?=$row['model_weight']." гр."?></span>
                             <span class="glyphicon glyphicon-scale"></span> Вес в 3D:
@@ -123,11 +117,20 @@ $isView = true;
                                 <?php endforeach; ?>
                             </li>
                         <?php endif; ?>
+                        <?php if ( trueIsset($descriptions??[]) ): ?>
+                            <?php foreach ( $descriptions??[] as $description ) : ?>
+                                <li class="list-group-item">
+                                    <i class="far fa-comment-alt"></i><strong> Описание №<?=$description['num']?>: </strong>
+                                    <span><?=$description['text'];?></span>
+                                    <span class="badge" style="background-color: #a39e6d!important;">Добавлено: <?=$description['date']?> - <?=$description['userName']?></span>
+                                </li>
+                            <?php endforeach;?>
+                        <?php endif; ?>
                         <?php if ( !empty($row['description']) ) :?>
-                        <li class="list-group-item">
-                            <span class="glyphicon glyphicon-comment"></span><strong> Примечания:</strong> &nbsp;
-                            <span><?=$row['description'];?></span>
-                        </li>
+                            <li class="list-group-item">
+                                <span class="glyphicon glyphicon-comment"></span><strong> Примечания:</strong> &nbsp;
+                                <span><?=$row['description'];?></span>
+                            </li>
                         <?php endif; ?>
                         <?php if ( isset($row['print_cost']) && !empty($row['print_cost']) && $session['user']['access'] > 0 ) : ?>
                             <li class="list-group-item">
@@ -161,10 +164,21 @@ $isView = true;
                         <?php endif; ?>
                         <li class="list-group-item">
                             <span class="pull-left" title="Дата добавления модели в базу"><span class="glyphicon glyphicon-calendar"></span>&nbsp;&nbsp;Дата создания:</span>
-                            <span title="Создатель" class="badge"><?=$row['creator_name'];?></span>
+                            <span title="Кто добавил" class="badge"><?=$row['creator_name'];?></span>
                             <span title="Дата создания" class="badge"><?=date_create( $row['date'] )->Format('d.m.Y');?></span>
                             <div class="clearfix"></div>
                         </li>
+                        <?php if (  trueIsset($usedInModels) ) : ?>
+                            <li class="list-group-item">
+                                <span class="pull-left" title="Используется в моделях"><span class="glyphicon glyphicon-refresh"></span>&nbsp;&nbsp;Используется в моделях: &nbsp;&nbsp;</span>
+                                <?php foreach ( $usedInModels as $usedInModel ) : ?>
+                                    <span class="badge" style="background-color: #cbdfed!important; float: none;" >
+                                        <i><a href="/model-view/?id=<?=$usedInModel['id']?>"><?= $usedInModel['number_3d'].($usedInModel['vendor_code']?' / '.$usedInModel['vendor_code']:'').' - '.$usedInModel['model_type'] ?></a></i>
+                                    </span>
+                                <?php endforeach;?>
+                                <div class="clearfix"></div>
+                            </li>
+                        <?php endif; ?>
                         <li class="list-group-item">
                             <div class="btn-group">
                               <button type="button" class="btn btn-sm btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

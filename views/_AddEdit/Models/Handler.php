@@ -613,24 +613,117 @@ class Handler extends General {
 		return true;
 	}
 
-	protected function parseRepairs($repairs)
-    {
-        if ( !is_array($repairs) ) return [];
-        $parsedRepairs = [];
 
-        foreach ( $repairs as $field => $records )
+	public function addNotes( $notes )
+    {
+        if ( !is_array($notes) || empty($notes) ) return [];
+        $notes = $this->parseRecords($notes);
+
+        $deletions = [];
+        $updates = [];
+        $insertions = [];
+
+        foreach ( $notes as $note )
         {
-            foreach ( $records as $key => $value )
+            $noteID = (int)$note['id'];
+            $noteText = trim($note['text']);
+
+            if ( $noteID > 0 )
             {
-                $parsedRepairs[$key][$field] = $value;
+                $repQuery = mysqli_query($this->connection, " SELECT COUNT(1) FROM description WHERE id='$noteID' ");
+
+                if ( $repQuery->num_rows && ( empty($noteText) || $noteText == -1) )
+                {
+                    // кандидат на удаление
+                    $deletions[] = $note;
+                } elseif ($repQuery->num_rows)
+                {
+                    $updates[] = $note;
+                }
+            }
+            if ( $noteID === 0 )
+            {
+                $insertions[] = $note;
+                continue;
             }
         }
-        return $parsedRepairs;
+
+        //        debug($deletions,'$deletions');
+        //        debug($updates,'$updates');
+        //        debug($insertions,'$insertions');
+
+        $result = [];
+        if ( !empty($deletions) )
+        {
+            $dellIds = '(';
+            foreach ( $deletions as $deletion ) $dellIds .= $deletion['id'] . ',';
+            $dellIds = trim($dellIds,',') . ')';
+
+            $dellQuery = mysqli_query($this->connection, " DELETE FROM description WHERE id in $dellIds ");
+            if ($dellQuery) {
+                $result['deletions'] = $dellIds . ' - deleted.';
+            } else {
+                printf( "Error Delete notes: %s\n", mysqli_error($this->connection) );
+                $result['deletions'] = 'error';
+            }
+        }
+        if ( !empty($updates) )
+        {
+            foreach ( $updates as $update )
+            {
+                $id = $update['id'];
+                $text = $update['text'];
+
+                $queryStr = " UPDATE description SET text='$text' WHERE id='$id' ";
+
+                $updQuery = mysqli_query($this->connection, $queryStr);
+                if ($updQuery) {
+                    $result['updates'][] = $id . ' - success.';
+                } else {
+                    printf( "Error Update notes: %s\n", mysqli_error($this->connection) );
+                    $result['updates'][] = $id . ' - update error!';
+                }
+            }
+        }
+        if ( !empty($insertions) )
+        {
+            foreach ( $insertions as $insertion )
+            {
+                $num = $insertion['num'];
+                $text = $insertion['text'];
+                $userID = $_SESSION['user']['id'];
+                $insertQuery = mysqli_query($this->connection, " INSERT INTO description (num, text, userID, date, pos_id) 
+		                                                                 VALUES ('$num','$text','$userID','$this->date','$this->id') ");
+                if ($insertQuery) {
+                    $result['insertions'][] =  $this->connection->insert_id . ' - success.';
+                } else {
+                    printf( "Error Insert repairs: %s\n", mysqli_error($this->connection) );
+                    $result['insertions'][] = ' Insert error!';
+                }
+            }
+        }
+
+        return $result;
+    }
+
+	protected function parseRecords($records)
+    {
+        if ( !is_array($records) ) return [];
+        $parsedRecords = [];
+
+        foreach ( $records as $field => $record )
+        {
+            foreach ( $record as $key => $value )
+            {
+                $parsedRecords[$key][$field] = $value;
+            }
+        }
+        return $parsedRecords;
     }
 	public function addRepairs( $repairs )
     {
         if ( !is_array($repairs) || empty($repairs) ) return [];
-        $repairs = $this->parseRepairs($repairs);
+        $repairs = $this->parseRecords($repairs);
         //$repairsJew = $this->parseRepairs(isset($repairs['jew'])?$repairs['jew']:[]);
         //$repairs = array_merge($repairs3D, $repairsJew);
 
@@ -722,61 +815,6 @@ class Handler extends General {
         }
 
         return $result;
-        /*
-		for ( $i = 0; $i < count($repairs['repairs_descr']); $i++ ) {
-			
-			$repairs_descr = trim($repairs['repairs_descr'][$i]);
-			$repairs_num = trim($repairs['repairs_num'][$i]);
-			
-			if ( $repairs_descr == -1 ) { // кандидат на удаление
-				mysqli_query($this->connection, " DELETE FROM repairs WHERE pos_id='$this->id' AND rep_num='$repairs_num' ");
-				continue;
-			}
-			
-			$repQuer = mysqli_query($this->connection, " SELECT repair_descr FROM repairs WHERE pos_id='$this->id' AND rep_num='$repairs_num' ");
-
-			if ( mysqli_num_rows($repQuer) ) { // если уже есть такой ремонт
-			
-				$repRow = mysqli_fetch_assoc($repQuer);
-				if (empty($repairs_descr)) { // если пришла пустая запись удаляем ремонт
-					mysqli_query($this->connection, " DELETE FROM repairs WHERE pos_id='$this->id' AND rep_num='$repairs_num' ");
-					continue;
-				}
-				if ( $repRow['repair_descr'] != $repairs_descr ) { // если в нем были изменения
-					
-					$repQuer_upd = mysqli_query($this->connection, " UPDATE repairs SET repair_descr='$repairs_descr' WHERE pos_id='$this->id' AND rep_num='$repairs_num' ");
-					
-					if (!$repQuer_upd) {
-						printf( "Error Upd repair: %s\n", mysqli_error($this->connection) );
-						return false;
-					} else {
-						//echo "Well done update repair!";
-					}
-				}
-			
-			} else { //иначе добавляем ремонт
-				if (empty($repairs_descr)) continue; // пустые записи не добавляем
-				$repQuer_ins = mysqli_query($this->connection, " INSERT INTO repairs (rep_num, 
-		                                                                        repair_descr,
-																	            date,
-																	            pos_id
-																	           ) 
-		                                                         VALUES ('$repairs_num',
-															             '$repairs_descr',
-																    	 '$this->date',
-															             '$this->id'
-																	    ) 
-				");
-				if (!$repQuer_ins) {
-					printf( "Error Add repair: %s\n", mysqli_error($this->connection) );
-					return false;
-				} else {
-					//echo "Well done insert repair!";
-				}
-			}
-		}
-		return true;
-        */
 	}
 	
 	public function getModelsByType($modelType)
@@ -821,12 +859,17 @@ class Handler extends General {
         ];
 
 		mysqli_query($this->connection, " DELETE FROM stock          WHERE     id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM model_material WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM metal_covering WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM images         WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM gems           WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM vc_links       WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM statuses       WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM ai_files       WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM stl_files      WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM rhino_files    WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM repairs        WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM pushnotice     WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM description    WHERE pos_id='$this->id' ");
 
 		$path = $row['number_3d'].'/'.$this->id;
 		

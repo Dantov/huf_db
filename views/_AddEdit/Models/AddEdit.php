@@ -557,6 +557,20 @@ class AddEdit extends General
      * @return array
      * @throws \Exception
      */
+    public function getDescriptions()
+    {
+        $sql = "SELECT d.id, d.num, d.text, DATE_FORMAT(d.date, '%d.%m.%Y') as date, d.pos_id, u.fio as userName
+                FROM description as d
+                  LEFT JOIN users as u
+                    ON (d.userID = u.id ) 
+                WHERE d.pos_id = $this->id";
+        return $this->findAsArray( $sql );
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function getRepairs()
     {
 		return $this->findAsArray( " SELECT * FROM repairs WHERE pos_id='$this->id' ");

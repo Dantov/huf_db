@@ -200,6 +200,7 @@ class DocumentPDF
 	    $repairs = $this->modelViewData['repairs'];
 		$date = $this->modelViewData['date'];
 		$labelImgDIV = $this->makeLabelsStr($row);
+		$notes = $modelView->getDescriptions();
 
 		$pdf = $this->pdf;
 		$progress = $this->progress;
@@ -455,7 +456,7 @@ class DocumentPDF
 		$descr = trim($row['description']);
 		$descrScol = '';
 		if (!empty($descr)) $descrScol = 'style="background-color: lime;"';
-		$descr_table='
+		$descr_table = '
 			<style>
 				table {
 					border: 2px solid #333;
@@ -463,15 +464,23 @@ class DocumentPDF
 			</style>
 			<table cellspacing="1" cellpadding="2" width="100%">
 				<tbody>
-					<tr>
-						<td colspan="2" style="text-align:left;"><span '.$descrScol.'>Примечания:</span></td>
-					</tr>
-					<tr>
-						<td>'.$descr.'</td>
-					</tr>
+					<tr><td colspan="2" style="text-align:left;"><span '.$descrScol.'>Примечания:</span></td></tr>
+					<tr><td colspan="2">'.$descr.'</td></tr>
 				</tbody>
 			</table>
 		';
+
+		if ( !empty( $notes ) )
+        {
+            $descr_table .= '<table cellspacing="1" cellpadding="2" width="100%"><tbody>';
+            foreach ( $notes as $note )
+            {
+                $descr_table .= '<tr><td colspan="2" style="text-align:left;"><span '.$descrScol.'>Описание № '.$note['num'].': </span></td></tr>';
+				$descr_table .= '<tr><td colspan="2">'.$note['text'].'</td></tr>';
+            }
+            $descr_table .= '</tbody></table>';
+        }
+
 		$pdf->writeHTMLCell(195, '', '', '', $descr_table, 0, 1, 0, true, 'L', true);
 
 
@@ -594,6 +603,7 @@ class DocumentPDF
 	    $dopVC = $this->modelViewData['dopVC'];
 	    $repairs = $this->modelViewData['repairs'];
 		$date = $this->modelViewData['date'];
+		$notes = $modelView->getDescriptions();
 		//$labelImgDIV = $this->makeLabelsStr($row);
 
 		$progress = $this->progress;
@@ -705,13 +715,22 @@ class DocumentPDF
 				$br = '';
 			}
 		}
-		
 
 		$descr = trim($row['description']);
-		if (!empty($descr)) {
+		if ( !empty($descr) )
+		{
 			$txt .= '<hr/>';
 			$txt .= '<span style="background-color: lime;">Примечания: </span><b>'.$row['description'].'</b>';
 		}
+        if (! empty($notes) )
+        {
+            foreach ( $notes as $note )
+            {
+                $txt .= '<hr/>';
+                $txt .= '<span style="background-color: lime;">Описание № '.$note['num'].': </span><b>'.$note['text'].'</b>';
+            }
+        }
+
 		if ( !empty($descr) || !empty($dopVC) || !empty($gems) ) {
 			$gemsTR = '
 				<tr >

@@ -141,7 +141,9 @@ class ModelViewController extends GeneralController
             }
         }
 
+        $usedInModels =$modelView->usedInModels();
 
+        $descriptions = $modelView->getDescriptions();
         $labels = $modelView->getLabels();
         $gemsTR = $modelView->getGems();
         $dopVCTr = $modelView->getDopVC();
@@ -202,7 +204,7 @@ JS;
         $compacted = compact([
             'id','row','coll_id','getStl','button3D','dopBottomScripts','complectes','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
             'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','ai_file','stl_file','thisPage','editBtn',
-            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers','rhino_file']);
+            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers','rhino_file','usedInModels','descriptions']);
 
         return $this->render('modelView', $compacted);
     }
