@@ -106,11 +106,21 @@ class DocumentPDF
 	    $this->progress->progressCount( $overallProgress );
 	}
 
-	public function printPassportRunnerHeader($row, $date, $complected='')
+	public function printPassportRunnerHeader($row, $date, $complected=[])
 	{
 		$pdf = $this->pdf;
 		$complectedTD = '';
-		if ( $complected ) $complectedTD = 'В комплекте: <b>'.$complected.'</b>';
+		
+		if ( is_array($complected) && !empty($complected) ) 
+		{
+			foreach( $complected as $modelCompl )
+			{
+				$complectedTD .= $modelCompl['model_type'] . ',';
+			}
+			$complectedTD = trim($complectedTD,",");
+			
+			$complectedTD = 'В комплекте: <b>'.$complectedTD.'</b>';
+		}
 
 		$header='
 			<style>
@@ -675,8 +685,9 @@ class DocumentPDF
 	        $rowspans++;
 	    }
 	    //debug($matsCoversStr,'$matsCoversStr',1);
-
+		
 		$size_rangeTR = '';
+		$size_range = trim($row['size_range']);
 		if ( !empty($size_range) ) {
 			$size_rangeTR = '
 				<tr >
