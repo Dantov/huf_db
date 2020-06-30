@@ -128,7 +128,7 @@ class SetSortModel extends General
 
         if ( $collID !== -1 ) 
         {
-            $coll_row = $this->findOne(" SELECT name FROM collections WHERE id='$collID' ");
+            $coll_row = $this->findOne(" SELECT name FROM service_data WHERE id='$collID' AND tab='collections' ");
             $assist['collectionName'] = $coll_row['name'];
             $assist['collection_id'] = $collID;
             $assist['page'] = 0;

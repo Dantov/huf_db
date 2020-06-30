@@ -2,21 +2,23 @@
 
 let container = document.querySelector('.content');
 
-function addRow(self){
+function addRow(self)
+{
 	let tbody = self.parentElement.parentElement.parentElement;
 	let trPlus = self.parentElement.parentElement;
 	let len = tbody.querySelectorAll('.collsRow').length;
-	let coll = tbody.getAttribute('data-coll');
+	let tab = tbody.getAttribute('data-tab');
 	
 	let newRow = document.querySelector('.protoRow').cloneNode(true);
 		newRow.classList.remove('protoRow');
 		newRow.classList.add('collsRow');
-		newRow.children[1].children[0].setAttribute('data-coll',coll);
+		newRow.children[1].children[0].setAttribute('data-tab',tab);
 		newRow.children[0].innerHTML = ++len;
 		
 	let elem = tbody.insertBefore(newRow, trPlus);
 		elem.children[1].children[0].addEventListener('change', changeInpt, false);
 }
+
 applyEvents();
 function applyEvents() {
 	let inputs = container.querySelectorAll('.collsRow input');
@@ -30,15 +32,15 @@ function applyEvents() {
 
 function changeInpt() {
 	
-	let coll = this.getAttribute('data-coll');
+	let tab = this.getAttribute('data-tab');
 	let id = this.getAttribute('data-id');
 	let val = this.value;
 	let that = this;
 	
-	console.log('coll=',coll,' val=',val,' id=',id);
+	console.log('tab=',tab,' value=',val,' id=',id);
 	
 	let obj = {
-		coll : coll,
+		tab : tab,
 		id : id,
 		val : val
 	};
@@ -86,10 +88,10 @@ function changeInpt() {
 					modeller3d : 'Модельер - "'+val+'" уже есть!',
 					model_type : 'Тип модели - "'+val+'" уже есть!',
 					vc_names : 'Доп. Артикул - "'+val+'" уже есть!'
-				}
+				};
 				let strAlert = '';
 				for (let key in objNames) {
-					if ( coll == key ) {
+					if ( tab === key ) {
 						strAlert = objNames[key];
 						break;
 					}
@@ -99,18 +101,20 @@ function changeInpt() {
 				alert('ошибка при внесении данных. Попробуйте снова.' );
 			}
 		}
-	})
+	});
 }
-function dellRow(){
-	//let table = this.parentElement.parentElement.getAtribute('data-coll');
+
+function dellRow()
+{
+	//let table = this.parentElement.parentElement.getAtribute('data-tab');
 	let input = this.parentElement.previousElementSibling.previousElementSibling.children[0];
-	let coll = input.getAttribute('data-coll');
+	let tab = input.getAttribute('data-tab');
 	let id = input.getAttribute('data-id');
 	let val = input.value;
 	let that = this;
 	let str = '';
 
-	console.log('coll=',coll,' val=',val,' id=',id);
+	console.log('tab=',tab,' val=',val,' id=',id);
 	let objNames = {
 		collections : 'Коллекция "' + val + '" удалена!;Удалить коллекцию - "' + val + '" ? Все модели принадлежащие к ней будут помечены тирэ.',
 		gems_names : 'Сырьё "' +val+ '" удален!;Удалить сырьё - "' + val + '" ?',
@@ -125,28 +129,29 @@ function dellRow(){
 
 	let strAlert = '';
 	for (let key in objNames) {
-		if ( coll == key ) {
+		if ( tab === key ) {
 			strAlert = objNames[key];
 			break;
 		}
 	}
+
 	let mass = strAlert.split(';');
 	let conf_str = mass[1];
 	strAlert = mass[0];
 
-	let objReqest = {
-		coll : coll,
+	let objRequest = {
+		tab : tab,
 		id : id,
 		val : val,
 		dell : 1
 	};
 	
-	let conf = confirm(conf_str);
+	let conf = confirm("Удалить запись " + val + "?");
 	if ( conf ) {
 		$.ajax({
 			url: "/nomenclature/dellrow", //путь к скрипту, который обрабатывает задачу
 			type: 'POST',
-			data: objReqest,
+			data: objRequest,
 			dataType:"json",
 			success:function(data) {  //функция обратного вызова, выполняется в случае успешной отработки скрипта
 
@@ -156,7 +161,7 @@ function dellRow(){
 					if ( data.count ) str = data.count + ' моделей остались без коллекции';
 					target.remove();
 
-					alert(strAlert + str );
+					alert( "Запись " + val + " удалена!" );
 
 				}
 			}

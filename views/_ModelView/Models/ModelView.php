@@ -71,7 +71,7 @@ class ModelView extends General {
         foreach ( $collections as $collection ) $collectionStr .= "'".$collection."',";
         $collectionStr = "(". trim($collectionStr,",") . ")";
 
-        $collId_Query = mysqli_query($this->connection, " SELECT id,name FROM collections WHERE name IN $collectionStr ");
+        $collId_Query = mysqli_query($this->connection, " SELECT id,name FROM service_data WHERE name IN $collectionStr AND tab='collections' ");
         $res = [];
         while( $coll = mysqli_fetch_assoc($collId_Query) ) $res[] = $coll;
         return $res;

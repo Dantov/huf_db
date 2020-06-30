@@ -135,7 +135,7 @@ class GeneralController extends Controller
         $general = new \Views\_Globals\Models\General();
         $general->connectDBLite();
 
-        $collections_arr = $general->findAsArray(" SELECT * FROM collections ORDER BY name ");
+        $collections_arr = $general->findAsArray(" SELECT id,name FROM service_data WHERE tab='collections' ORDER BY name ");
 
         $navBar['collectionList'] = getCollections($collections_arr);
 

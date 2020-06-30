@@ -6,30 +6,38 @@ use Views\_Globals\Controllers\GeneralController;
 class NomenclatureController extends GeneralController
 {
 
+    /**
+     * @throws \Exception
+     */
     public function beforeAction()
     {
         $request = $this->request;
 
         if ( $request->isAjax() )
         {
-            if ( trueIsset($request->post('val')) && trueIsset($request->post('coll')) )
+            if ( trueIsset($request->post('val')) && trueIsset($request->post('tab')) )
             {
-                $quer_coll = $request->post('coll');
-                $quer_id = (int)$request->post('id');
+                $row_tab = $request->post('tab');
+                $row_id = (int)$request->post('id');
                 $dell = (int)$request->post('dell');
-                $quer_val = $request->post('val');
+                $row_value = $request->post('val');
 
-                if ( trueIsset($dell) ) $this->actionDell($quer_coll, $quer_id, $dell, $quer_val);
-                if ( trueIsset($quer_id) ) {
-                    $this->edit($quer_coll, $quer_id, $dell, $quer_val);
+                if ( trueIsset($dell) ) $this->actionDell($row_id, $row_value, $row_tab);
+
+                if ( trueIsset($row_id) ) {
+                    $this->edit($row_id, $row_tab, $row_value);
                 } else {
-                    $this->add($quer_coll, $quer_id, $dell, $quer_val);
+                    $this->add($row_value, $row_tab);
                 }
             }
             exit;
         }
     }
 
+
+    /**
+     * @throws \Exception
+     */
     public function action()
     {
         $nom = new NomenclatureModel();
@@ -41,26 +49,45 @@ class NomenclatureController extends GeneralController
         return $this->render('nomenclature', $data);
     }
 
-    protected function actionDell($quer_coll, $quer_id, $dell, $quer_val)
+    /**
+     * @param $row_id
+     * @param $row_val
+     * @param $row_tab
+     * @throws \Exception
+     */
+    protected function actionDell($row_id, $row_val, $row_tab)
     {
         $nom = new NomenclatureModel();
-        $arr = $nom->dell($quer_coll, $quer_id, $dell, $quer_val);
+        $arr = $nom->dell($row_id, $row_val, $row_tab);
 
         echo json_encode($arr);
         exit;
     }
-    protected function edit($quer_coll, $quer_id, $dell, $quer_val)
+
+    /**
+     * @param $row_id
+     * @param $row_tab
+     * @param $row_value
+     * @throws \Exception
+     */
+    protected function edit($row_id, $row_tab, $row_value)
     {
         $nom = new NomenclatureModel();
-        $arr = $nom->edit($quer_coll, $quer_id, $dell, $quer_val);
+        $arr = $nom->edit($row_id, $row_tab, $row_value);
 
         echo json_encode($arr);
         exit;
     }
-    protected function add($quer_coll, $quer_id, $dell, $quer_val)
+
+    /**
+     * @param $row_value
+     * @param $row_tab
+     * @throws \Exception
+     */
+    protected function add($row_value, $row_tab)
     {
         $nom = new NomenclatureModel();
-        $arr = $nom->add($quer_coll, $quer_id, $dell, $quer_val);
+        $arr = $nom->add($row_value, $row_tab);
 
         echo json_encode($arr);
         exit;

@@ -10,54 +10,107 @@ class NomenclatureModel extends General
 		$this->connectDBLite();
 	}
 
-	public function getData()
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getData()
     {
-    	$collections =     $this->findAsArray( "SELECT * FROM collections ORDER BY name ASC");
-        $gems_names =      $this->findAsArray( "SELECT * FROM gems_names ORDER BY name ASC");
-        $gems_cut =        $this->findAsArray( "SELECT * FROM gems_cut ORDER BY name ASC");
-        $gems_color =      $this->findAsArray( "SELECT * FROM gems_color ORDER BY name ASC");
-        $gems_size =       $this->findAsArray( "SELECT * FROM gems_sizes ORDER BY name ASC");
-        $gems_author =     $this->findAsArray( "SELECT * FROM author ORDER BY name");
-        $gems_modeller3D = $this->findAsArray( "SELECT * FROM modeller3D ORDER BY name");
-        $jeweler =         $this->findAsArray( "SELECT * FROM jeweler_names ORDER BY name");
-        $gems_model_type = $this->findAsArray( "SELECT * FROM model_type ORDER BY name");
-        $gems_vc_names =   $this->findAsArray( "SELECT * FROM vc_names ORDER BY name");
-        $users =           $this->findAsArray( "SELECT * FROM users ORDER BY fio");
+        $tabs = [
+            'collections',
+            'author',
+            'modeller3d',
+            'jeweler',
+            'model_type',
+            'model_material',
+            'model_covering',
+            'handling',
+            'metal_color',
+            'vc_names',
+            'gems_color',
+            'gems_cut',
+            'gems_names',
+            'gems_sizes',
+        ];
+        $tables = [];
 
-        return compact([
-        	'collections', 'gems_names','gems_cut','gems_color','gems_size',
-        	'gems_author','gems_modeller3D','jeweler','gems_model_type','gems_vc_names','users',
-        ]);
+        $service_data = $this->findAsArray("select * from service_data ORDER BY name");
+
+        foreach ( $service_data as $row )
+        {
+            foreach ( $tabs as $tab )
+            {
+                if ( $row['tab'] === $tab ) $tables[$tab][] = $row;
+            }
+        }
+        return compact(['tables']);
 	}
 
-	public function dell($quer_coll, $quer_id, $dell, $quer_val)
+    /**
+     * @param $row_id
+     * @param $row_val
+     * @param $row_tab
+     * @return mixed
+     * @throws \Exception
+     */
+    public function dell($row_id, $row_val, $row_tab)
     {
-    	$modelsQuery = $this->baseSql(" SELECT collections FROM stock WHERE collections='$quer_val' ");
-		$count = $modelsQuery->num_rows;
+        $count = 0;
+        if ( $row_tab == 'collections' )
+        {
+            $stock = $this->findAsArray(" SELECT id,collections FROM stock WHERE collections like '%$row_val%' ");
+            $count = count($stock);
+            if ( $count )
+            {
+                $newCollectionsStrArr = [];
+                foreach ($stock as $stockRow)
+                {
 
-		$this->baseSql(" UPDATE stock SET collections='-' WHERE collections='$quer_val' ");
-		$this->baseSql(" DELETE FROM $quer_coll WHERE id='$quer_id' ");
+                    $collArr = explode(';',$stockRow['collections']);
+                    foreach ( $collArr as &$coll )
+                    {
+                        if ( $coll == $row_val ) $coll = "";
+                    }
+                    $newCollectionsStrArr[$stockRow['id']] = implode(';',$collArr);
+                }
+
+                $collIdStr = 'VALUES ';
+                foreach ( $newCollectionsStrArr as $idModel=>$newCollStr ) $collIdStr .= "('".$idModel."','".$newCollStr."'),";
+                $collIdStr = trim($collIdStr,',');
+
+                $queryString = "INSERT INTO stock (id,collections) $collIdStr
+                                  ON DUPLICATE KEY UPDATE collections=VALUES(collections)";
+
+                $queryUPDATEColl = $this->baseSql($queryString);
+                if (!$queryUPDATEColl) printf( "Error: %s\n", mysqli_error($this->connection) );
+            }
+        }
+
+		$this->baseSql(" DELETE FROM service_data WHERE id='$row_id' ");
 		
 		$arr['count'] = $count;
 		$arr['dell'] = 1;
 		return $arr;
-    } 
+    }
 
-    public function edit($quer_coll, $quer_id, $dell, $quer_val)
+    /**
+     * @param $row_id
+     * @param $row_tab
+     * @param $row_val
+     * @return mixed
+     * @throws \Exception
+     */
+    public function edit($row_id, $row_tab, $row_val)
     {
     	// изменяет в самой коллекции
     	$arr['status'] = 0;
-		$change = $this->baseSql(" UPDATE $quer_coll SET name='$quer_val' WHERE id='$quer_id' ");
 
-		if ( $change ) $arr['status'] = 1;
-
-    	if ( $quer_coll == 'collections' )
+    	if ( $row_tab == 'collections' )
 		{
-			$oldName = $this->findOne( " SELECT name FROM $quer_coll WHERE id='$quer_id' ");
-			//$oldName = mysqli_fetch_assoc($queryName);
+			$oldName = $this->findOne( " SELECT name FROM service_data WHERE id='$row_id' ");
 			$oldName = $oldName['name'];
 
-			$newCollectionName = $quer_val;
+			$newCollectionName = $row_val;
 
 			if ( $newCollectionName === $oldName ) return $arr;
 
@@ -66,7 +119,8 @@ class NomenclatureModel extends General
 			if ( empty($stock) ) return $arr;
 
             $newCollectionsStrArr = [];
-            foreach ($stock as $stockRow) {
+            foreach ($stock as $stockRow)
+            {
             	$collArr = explode(';',$stockRow['collections']);
                 foreach ( $collArr as &$coll )
                 {
@@ -91,33 +145,40 @@ class NomenclatureModel extends General
             $queryUPDATEColl = $this->baseSql($queryString);
             if (!$queryUPDATEColl) printf( "Error: %s\n", mysqli_error($this->connection) );
 		}
-		
+
+        $change = $this->baseSql(" UPDATE service_data SET name='$row_val' WHERE id='$row_id' ");
+        if ( $change ) $arr['status'] = 1;
+
 		return $arr;
     }
 
 
-    public function add($quer_coll, $quer_id, $dell, $quer_val)
+    /**
+     * @param $row_value
+     * @param $row_tab
+     * @return mixed
+     * @throws \Exception
+     */
+    public function add($row_value, $row_tab)
     {
-    	$querFind = $this->baseSql(" SELECT * FROM $quer_coll WHERE name='$quer_val' ");
+    	$querFind = $this->baseSql(" SELECT name FROM service_data WHERE name='$row_value' ");
 		
-		// совпадение найдено т.е коллекция существует
+		// совпадение найдено т.е запись существует
 		if ( $querFind->num_rows !== 0 ) 
 		{
 			$arr['status'] = -1;
-			$arr['coll'] = $quer_coll;
 			echo json_encode($arr);
 			exit;
 		}
 
 		$date = date('Y-m-d');
-
-		$quer = $this->baseSql(" INSERT INTO $quer_coll (name,date) VALUES ('$quer_val', '$date') ");
-		if ( $quer )
+		$query = $this->baseSql(" INSERT INTO service_data (name,tab,date) VALUES ('$row_value','$row_tab', '$date') ");
+		if ( $query )
 		{
-			$newId = $this->findOne(" SELECT id FROM $quer_coll WHERE name='$quer_val' ");
+			//$newId = $this->findOne(" SELECT id FROM service_data WHERE name='$row_value' ");
 			//$newId = mysqli_fetch_assoc($querid);
 			$arr['add'] = 1;
-			$arr['id'] = $newId['id'];
+			$arr['id'] = mysqli_insert_id($this->connection);
 			$arr['date'] = date_create( $date )->Format('d.m.Y');
 			$arr['status'] = 1;
 
