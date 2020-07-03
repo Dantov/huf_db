@@ -81,12 +81,14 @@ class AddEditController extends GeneralController
 
         $prevPage = $addEdit->setPrevPage();
 
+        $dataTables = $addEdit->getDataTables();
+
         // Списки добавлений
         $data = $addEdit->getDataLi();
         $collLi        = $data['collections'];
         $authLi        = $data['author'];
         $mod3DLi       = $data['modeller3d'];
-        $jewelerNameLi = $data['jeweler_names'];
+        $jewelerNameLi = $data['jeweler'];
         $modTypeLi     = $data['model_type'];
         $gems = $addEdit->getGemsLi();
         $gems_sizesLi = $gems['gems_sizes'];
@@ -94,7 +96,7 @@ class AddEditController extends GeneralController
         $gems_namesLi = $gems['gems_names'];
         $gems_colorLi = $gems['gems_color'];
         $vc_namesLI = $addEdit->getNamesVCLi();
-        $dataTables = $addEdit->getDataTables();
+
         $dataArrays = [
             'imgStat' => $addEdit->getStatLabArr('image'),
             'materialsData' => $this->parseMaterialsData($dataTables),

@@ -2,20 +2,33 @@
 namespace Views\_Globals\Controllers;
 use Views\vendor\core\Controller;
 use Views\vendor\core\Cookies;
+use Views\vendor\core\Config;
 
 class GeneralController extends Controller
 {
 
-    public $currentVersion = '2.001b';
+    public $currentVersion = '';
     public $navBar;
 
+    /**
+     * GeneralController constructor.
+     * @param $controllerName
+     * @throws \Exception
+     */
     public function __construct($controllerName)
     {
         parent::__construct($controllerName);
 
+        $this->currentVersion = Config::get('version');
+
         $this->accessControl();
         $this->navBarController();
 
+        $wp = _WORK_PLACE_ ? 'true' : 'false';
+        $js = <<<JS
+            const _WORK_PLACE_ = {$wp};
+JS;
+        $this->includeJS($js,[],$this->HEAD);
     }
 
     protected function accessControl()
@@ -55,6 +68,9 @@ class GeneralController extends Controller
         if( $access !== true || $assist['update'] !== 7 ) $this->redirect('/auth/?a=exit');//header("location:". _glob_HTTP_ ."exit.php");
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function navBarController()
     {
         $navBar = [];
@@ -69,10 +85,6 @@ class GeneralController extends Controller
         $searchIn = (int)$_SESSION['assist']['searchIn'];
         if ( $searchIn === 1 ) $navBar['searchInStr'] = "В Базе";
         if ( $searchIn === 2 ) $navBar['searchInStr'] = "В Коллекции";
-
-        // флаг для удаления ворд сесии, если нажали добавить модель, с этой сессией
-        $dell = '';
-        if ( isset($_SESSION['fromWord_data']) ) $dell = "&dellWD=1";
 
         $navBar['searchStyle']='style="margin-left:100px;"';
         $navBar['topAddModel'] = 'hidden';

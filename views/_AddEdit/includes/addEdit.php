@@ -55,11 +55,14 @@
         <?php if ( $permittedFields['files'] ): ?>
             <li role="presentation" class="" title="Файлы"><a href="#filesData" role="tab" data-toggle="tab">Файлы</a></li>
         <?php endif; ?>
+        <?php if ( $permittedFields['modelAccount'] ): ?>
+            <li role="presentation" class="active" title="Стоимость работ по этой модели"><a href="#pricesData" role="tab" data-toggle="tab">Стоимости</a></li>
+        <?php endif; ?>
     </ul>
     <div class="tab-content">
 
         <!-- ******************** TEXT ******************** -->
-        <div role="tabpanel" class="tab-pane in fade pt-1 active" id="baseData">
+        <div role="tabpanel" class="tab-pane in fade pt-1" id="baseData">
             <div class="row">
                 <?php if ( $permittedFields['number_3d'] ): ?>
                     <div class="col-sm-6">
@@ -473,7 +476,6 @@
 
 
 
-
         <!-- ******************** FILES ******************** -->
         <?php if ( $permittedFields['files'] ): ?>
         <div role="tabpanel" class="tab-pane in fade pt-1" id="filesData">
@@ -510,8 +512,13 @@
                         ** Максимальный размер всех .stl файлов не должен превышать 10 магабайт!
                     </div>
                     <?php if ( isset($stl_file['stl_name']) && !empty($stl_file['stl_name']) ): ?>
+                        <?php
+                            $stlFileName = _stockDIR_.$row['number_3d'].'/'.$id.'/stl/'.$stl_file['stl_name'];
+                            $fileSize = 0;
+                            if ( file_exists($stlFileName) ) $fileSize = filesize(_stockDIR_.$row['number_3d'].'/'.$id.'/stl/'.$stl_file['stl_name']) / 1024;
+                        ?>
                         <div class="haveStl">
-                            <span><b>STL файлы:</b><i><?= '('.round((filesize(_stockDIR_.$row['number_3d'].'/'.$id.'/stl/'.$stl_file['stl_name']) / 1024)/1024,2).' Мб)'?></i> <b><?=$stl_file['stl_name']?></b></span>
+                            <span><b>STL файлы:</b><i><?= '('.round($fileSize / 1024,2).' Мб)'?></i> <b><?=$stl_file['stl_name']?></b></span>
                             <button type="button" id="dellStl" class="btn btn-sm btn-default" onclick="dell_fromServ( <?=$id.',\''.$stl_file['stl_name'].'\'';?>, 'stl', false )" title="Удалить">
                                 <span class="glyphicon glyphicon-trash"></span>
                             </button>
@@ -592,6 +599,287 @@
         </div>
         <?php endif; ?>
 
+
+        <!-- ******************** PRICES ******************** -->
+        <?php if ( $permittedFields['modelAccount'] ): ?>
+        <div role="tabpanel" class="tab-pane in fade pt-1 active" id="pricesData" >
+            <div class="row">
+                <div class="col-xs-12">
+                    <h4 class="text-center">
+                        Здесь, каждый человек, вносит свою стоимость работы по этой модели.<br>
+                        Все кто относится к участку <b><i>Худ. совета</i></b> должны видеть все стоимости.<br>
+                        Остальные видят только свой блок!
+                    </h4>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="panel panel-default" style="position: relative;">
+                            <div class="panel-heading" title="Стоимость эскиза">
+                                <i class="far fa-image"></i>
+                                <strong> Эскиз:</strong>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                <tr class="thead11">
+                                    <th>№</th>
+                                    <th width="30%">Название</th>
+                                    <th width="30%">Стоимость</th>
+                                    <th>Статус</th>
+                                </tr>
+                                </thead>
+                                <tbody id="">
+                                <!-- // автозаполнение -->
+                                <tr>
+                                    <td style="width: 30px">1</td>
+                                    <td>Эскиз</td>
+                                    <td>285</td>
+                                    <td><span class="label label-success ">Оплачено!</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 30px">2</td>
+                                    <td>Сопровождение</td>
+                                    <td>150</td>
+                                    <td><span class="label label-primary ">Зачислено!</span><span class="label label-default ">Не оплачено!</span></td>
+                                </tr>
+                                <tr class="active text-bold">
+                                    <td style="width: 30px"></td>
+                                    <td>Всего: </td>
+                                    <td>435</td>
+                                    <td>Оплачено: 285 / Не оплачено: 150</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="panel panel-default" style="position: relative;">
+                            <div class="panel-heading" title="Стоимость 3D Модели">
+                                <i class="fas fa-cube"></i>
+                                <strong>3D Модель: Моделирование</strong>
+                                <button class="btn btn-sm btn-default pull-right" style="top:-5px !important; position:relative;" type="button" title="Добавить оценку">
+                                    <span class="glyphicon glyphicon-plus"></span>
+                                </button>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                <tr class="thead11">
+                                    <th>№</th>
+                                    <th width="30%">Название</th>
+                                    <th width="30%">Баллы</th>
+                                    <th>Статус</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody id="">
+                                <!-- // автозаполнение -->
+                                    <tr>
+                                        <td style="width: 30px">1</td>
+                                        <td>База</td>
+                                        <td>5,6</td>
+                                        <td></td>
+                                        <td style="width:100px;">
+                                            <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 30px">2</td>
+                                        <td>Моделирование по фото</td>
+                                        <td>1,4</td>
+                                        <td></td>
+                                        <td style="width:100px;">
+                                            <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 30px">3</td>
+                                        <td>Усложненный конструктив</td>
+                                        <td>2,8</td>
+                                        <td></td>
+                                        <td style="width:100px;">
+                                            <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr class="active text-bold">
+                                        <td style="width: 30px"></td>
+                                        <td>Всего: </td>
+                                        <td>980</td>
+                                        <td><span class="label label-default">Не зачислено!</span></td>
+                                        <td style="width:100px;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="panel panel-default" style="position: relative;">
+                            <div class="panel-heading" title="Стоимость Роста">
+                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                <strong>3D Модель: Согласование с технологом</strong>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                <tr class="thead11">
+                                    <th>№</th>
+                                    <th width="30%">Название</th>
+                                    <th width="30%">Стоимость</th>
+                                    <th>Статус</th>
+                                </tr>
+                                </thead>
+                                <tbody id="">
+                                <!-- // автозаполнение -->
+                                <tr>
+                                    <td>1</td>
+                                    <td>Приём модели</td>
+                                    <td>100</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="active text-bold">
+                                    <td style="width: 30px"></td>
+                                    <td>Всего: </td>
+                                    <td>100</td>
+                                    <td><span class="label label-default">Не зачислено!</span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="panel panel-default" style="position: relative;">
+                            <div class="panel-heading" title="Стоимость 3D Модели">
+                                <span class="glyphicon glyphicon-compressed" aria-hidden="true"></span>
+                                <strong>3D Модель: Поддержки</strong>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                <tr class="thead11">
+                                    <th>№</th>
+                                    <th width="30%">Название</th>
+                                    <th width="30%">Стоимость</th>
+                                    <th>Статус</th>
+                                </tr>
+                                </thead>
+                                <tbody id="">
+                                <!-- // автозаполнение -->
+                                <tr>
+                                    <td>1</td>
+                                    <td>Поддержки</td>
+                                    <td>35</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="active text-bold">
+                                    <td style="width: 30px"></td>
+                                    <td>Всего: </td>
+                                    <td>35</td>
+                                    <td><span class="label label-primary">Зачислено!</span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="panel panel-default" style="position: relative;">
+                            <div class="panel-heading" title="Стоимость Роста">
+                                <span class="glyphicon glyphicon-print" aria-hidden="true"></span>
+                                <strong>3D Модель: Рост</strong>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr class="thead11">
+                                        <th>№</th>
+                                        <th width="30%">Название</th>
+                                        <th width="30%">Стоимость</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="">
+                                <!-- // автозаполнение -->
+                                <tr>
+                                    <td>1</td>
+                                    <td>Рост 3D модели</td>
+                                    <td><input type="text" name="" class="form-control" value="120" /></td>
+                                    <td></td>
+                                </tr>
+                                <tr class="active text-bold">
+                                    <td style="width: 30px"></td>
+                                    <td>Всего: </td>
+                                    <td>120</td>
+                                    <td><span class="label label-default">Не зачислено!</span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="panel panel-default" style="position: relative;">
+                            <div class="panel-heading" title="Стоимость Доработки">
+                                <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+                                <strong>Доработка модели</strong>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                <tr class="thead11">
+                                    <th>№</th>
+                                    <th width="30%">Название</th>
+                                    <th width="30%">Стоимость</th>
+                                    <th>Статус</th>
+                                </tr>
+                                </thead>
+                                <tbody id="">
+                                <!-- // автозаполнение -->
+                                <tr>
+                                    <td>1</td>
+                                    <td>Доработка модели</td>
+                                    <td><input type="text" name="" class="form-control" value="700" /></td>
+                                    <td></td>
+                                </tr>
+                                <tr class="active text-bold">
+                                    <td style="width: 30px"></td>
+                                    <td>Всего: </td>
+                                    <td>700</td>
+                                    <td><span class="label label-default">Не зачислено!</span></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="form-group">
+                        <div class="panel panel-default" style="position: relative;">
+                            <div class="panel-heading" title="">
+                                <i class="fas fa-hryvnia"></i>
+                                <strong>Общая стоимость: 2370</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <?php endif; ?>
 
     </div>
     <hr />

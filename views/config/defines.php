@@ -21,18 +21,12 @@ define('_glob_HTTP_', _views_HTTP_.'/_Globals/'); // для ссылок
 define('_stockDIR_HTTP_', _rootDIR_HTTP_.'Stock/'); // http://192.168.0.245/HUF_DB/Stock/
 
 
-if ( _DEV_MODE_ ) //explode('/', _rootDIR_)[4] == 'HUF-DB-DEV'
+if ( _DEV_MODE_ )
 {
-    //define('_DEV_MODE_', true);
-    //define('_titlePage_', 'HUF-3d Developing mode');
-    
     define('_brandName_', '3D модели "ХЮФ" Developer mode');
     define('DATABASE', 'huf_models_dev');
 
 } else {
-    //define('_DEV_MODE_', false);
-    //define('_titlePage_', 'HUF 3D models');
-    
     define('_brandName_', '3D модели "ХЮФ"');
     define('DATABASE', 'huf_models');
 }

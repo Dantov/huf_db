@@ -161,7 +161,7 @@ class NomenclatureModel extends General
      */
     public function add($row_value, $row_tab)
     {
-    	$querFind = $this->baseSql(" SELECT name FROM service_data WHERE name='$row_value' ");
+    	$querFind = $this->baseSql(" SELECT name,tab FROM service_data WHERE name='$row_value' AND tab='$row_tab' ");
 		
 		// совпадение найдено т.е запись существует
 		if ( $querFind->num_rows !== 0 ) 

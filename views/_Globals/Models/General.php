@@ -2,73 +2,40 @@
 namespace Views\_Globals\Models;
 
 
-class General {
-	
-    public function __construct( $server=false ) 
-    {
-        $this->server = $_SERVER;
-        $this->setDirs();
-        $this->IP_visiter = $_SERVER['HTTP_X_REAL_IP'];
-        //$this->IP_visiter = $_SERVER['REMOTE_ADDR'];
-    }
-	
-	protected $alphabet = array(
-		"а"=>"a",
-		"б"=>"b",
-		"в"=>"v",
-		"г"=>"g",
-		"д"=>"d",
-		"е"=>"e",
-		"ё"=>"e",
-		"ж"=>"j",
-		"з"=>"z",
-		"и"=>"i",
-		"й"=>"i",
-		"к"=>"k",
-		"л"=>"l",
-		"м"=>"m",
-		"н"=>"n",
-		"о"=>"o",
-		"п"=>"p",
-		"р"=>"r",
-		"с"=>"s",
-		"т"=>"t",
-		"у"=>"y",
-		"ф"=>"f",
-		"х"=>"h",
-		"ц"=>"c",
-		"ч"=>"ch",
-		"ш"=>"sh",
-		"щ"=>"w",
-		"ъ"=>"",
-		"ы"=>"u",
-		"ь"=>"",
-		"э"=>"e",
-		"ю"=>"u",
-		"я"=>"ia",
-		" "=>"_",
-		"°"=>"_"
-	);
-	
+use Matrix\Exception;
+
+class General
+{
+
+	protected $alphabet = [];
 	protected $server;
 	protected $connection;
 	protected static $connectObj;
 	protected $rootDir;
 	protected $stockDir;
-    public $IP_visiter;
+
+    public static $serviceArr;
 
 	public $user;
 	public $users;
 	public $statuses;
 	public $labels;
 	public $imageStatuses;
-
-	public static $serviceArr;
-
+    public $IP_visiter;
 	public $workingCentersDB;
 	public $workingCentersSorted;
-    public $localSocket = 'tcp://192.168.0.245:1234';
-    //public $localSocket = 'tcp://127.0.0.1:1234';
+    public $localSocket = '';
+
+    public function __construct( $server=false )
+    {
+        $this->server = $_SERVER;
+        $this->setDirs();
+
+        $this->IP_visiter = _WORK_PLACE_ ? $_SERVER['HTTP_X_REAL_IP'] : $_SERVER['REMOTE_ADDR'];
+        $this->localSocket = _WORK_PLACE_ ? 'tcp://192.168.0.245:1234' : 'tcp://127.0.0.1:1234';
+
+        $this->alphabet = alphabet();
+    }
 
 	public function formatDate($date)
     {
@@ -151,6 +118,9 @@ class General {
             'dellModel' => false,
             'deleteImage' => false,
             'addModel' => false,
+            'modelAccount'   => false, // оценка модели в AddEdit
+            'userPouch'      => false, // для модельеров
+            'paymentManager' => false, // Для Худ совета
         ];
 
         switch ($this->user['access'])
@@ -201,8 +171,11 @@ class General {
         return $permittedFields;
     }
 
-    /*
+
+    /**
      * рабочие центры из БД
+     * @return mixed
+     * @throws \Exception
      */
     public function getWorkingCentersDB()
     {
@@ -210,8 +183,8 @@ class General {
 
         $query = mysqli_query($this->connection, " SELECT id,name,descr,user_id FROM working_centers ");
 
-        if ( $query === false ) throw new Error('Error in working centers query.',500);
-        if ( !$query->num_rows ) throw new Error('Working Centers not found at all!',500);
+        if ( $query === false ) throw new \Exception('Error in working centers query.',500);
+        if ( !$query->num_rows ) throw new \Exception('Working Centers not found at all!',500);
 
         while( $centerRow = mysqli_fetch_assoc($query) )
         {

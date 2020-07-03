@@ -101,7 +101,6 @@ class Controller
     public function action(){}
     public function afterAction(){}
 
-
     public function setTitle()
     {
         if ( empty( $this->title ) )  $this->title = "Powered by Dantov's Framework";
@@ -213,6 +212,8 @@ class Controller
     }
 
 
+
+    // надо создать trait Для инклюдов
     /**
      * @param $fileName
      * @param $path
@@ -311,7 +312,6 @@ class Controller
                 throw new \Exception('Файл "' . $fileName . '" не найден в папе скриптов текущего контроллера.',311);
         }
 
-
         $script['position'] = $position;
         $script['src'] = $httpPath.$fileName;
 
@@ -343,27 +343,34 @@ class Controller
         $this->jsFilesPack[] = $script;
     }
 
-    public function head() {
+    /**
+     * Имена методов совпадают с местом их подключения в шаблоне
+     */
+    public function head()
+    {
         $method = explode('::',__METHOD__)[1];
-
+        $this->includes($method);
     }
-    public function beginBody() {
+    public function beginBody()
+    {
         $method = explode('::',__METHOD__)[1];
-
+        $this->includes($method);
     }
     public function endBody()
     {
         $method = explode('::',__METHOD__)[1];
-
-        function includePHP( $pack )
-        {
-            if ( !empty($pack['vars']) && is_array($pack['vars']) ) extract($pack['vars']);
-            require $pack['php'];
-        }
+        $this->includes($method);
+    }
+    /**
+     * Подключает файлы и скрипты в нужных позициях. В методах head() beginBody() endBody()
+     * @param $method - имя метода в котором запустить цикл. Является так же, позицией подключаемого файла или скрипта
+     */
+    protected function includes($method) : void
+    {
         foreach ($this->phpFilesPack as $pack)
         {
             if ( $method !== $pack['position'] ) continue;
-            includePHP($pack);
+            $this->includePHP($pack);
         }
 
         foreach ($this->jsPack as $pack)
@@ -378,5 +385,15 @@ class Controller
             echo '<script '.$pack['options'].' src="'.$pack['src'].'"></script>';
         }
     }
-
+    /**
+     * Подключает php файлы, в методе includes($method)
+     * Этот метод нужен что бы распакованные переменные extract($pack['vars']),
+     * которые идут для подкл. файла, нормально инкапсулировались.
+     * @param $pack - писок php файлов для подключения
+     */
+    protected function includePHP( $pack ) : void
+    {
+        if ( !empty($pack['vars']) && is_array($pack['vars']) ) extract($pack['vars']);
+        require $pack['php'];
+    }
 }

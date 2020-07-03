@@ -8,6 +8,8 @@ class ErrorHandler
     protected $logs = false;
     protected $logsPath = '';
 
+    protected $defConfig = [];
+
     protected $errorCodes = [
         E_ERROR => 'E_ERROR',
         E_WARNING => 'E_WARNING',
@@ -31,7 +33,7 @@ class ErrorHandler
     {
         if ( !is_array($err_level) || $err_level['enable'] !== true ) return;
 
-        if ( is_string($err_level['logs']) && !empty($err_level['logs']) )
+        if ( isset($err_level['logs']) && ($err_level['logs'] !== false) )
         {
             $this->logs = true;
             $this->logsPath = _rootDIR_ . $err_level['logs'];            

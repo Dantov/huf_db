@@ -6,18 +6,26 @@ return [
     'uploadPath' => '/uploads',
     'cachePath' => '/runtime/cache',
     'layout' => 'baseTheme',
-    'baseController' => 'Main',
+    'baseController' => 'main',
     'multiLanguage'=> [
-        'enable' => true, // false - disable
+        'enable' => false, // false - disable
         //'language' => require_once 'languages.php', // список доступных языков
-        'default' => 'en',
+        'default' => 'ru',
     ],
-    'version' => '1001',
+    'version' => '2.002b',
     'dataCompression' => true,
+
+    /**
+     *  mode
+     *  0 - продакшн Без E_NOTICE,
+     *  1 - продакшн Без E_NOTICE и E_Warning,
+     *  2 - DEV all Errors,
+     *  3 - DEV без E_NOTICE,
+     */
     'errors' => [
         'enable' => true, // включает перехват ошибок фреймворком DTW.  false - отключает
         'logs'   => '/runtime/logs', // false - отключает логи
-        'mode'   => 2, // 1 - показ все ошибки, 0 - не показ. ошибкии, 2 - показ. нотации в жопу
+        'mode'   => _DEV_MODE_ ? 3 : 1,
     ],
     'csrf' => false, // валидация данных для форм и JS
     'classes' => [  // подключаемые классы
@@ -31,13 +39,7 @@ return [
             'layout' => 'admin',  // default layout
         ],
     ],
-    'db' => [
-        'dsn' => 'localhost',
-        'dbname' => 'dtv_fw_test',
-        'username' => 'adm_test',
-        'password' => 'V7L0QJk3YOHvMqnC',
-        'charset' => 'utf8',
-    ],
+    'db' => require_once "db_config.php",
     'libraries' => [
         'jquery' => true,
         'bootstrap' => 'bootstrap3',

@@ -1,8 +1,5 @@
 <?php
 $session = $this->session;
-//    debug($_SESSION['countAmount'],'countAmount');
-//    debug(_DEV_MODE_);
-//    debug(DATABASE);
 ?>
 <script src="/Views/_Main/js/trytoload.js?ver=004"></script>
 
@@ -201,8 +198,3 @@ $session = $this->session;
 	<span class="statsbuttom"><?=$statsbottom?></span>
 	<?=$pagination?>
 </center>
-
-<!--
-<div class="col-md-2">
-    <iframe src="https://coronavirus-monitor.ru/map" frameBorder="0" height="400" width="900" style="max-width: 100%;"></iframe>
-</div>-->

@@ -54,7 +54,7 @@ class AuthController extends Controller
             $connection = $general->connectDBLite();
 
             $login = htmlspecialchars( strip_tags( trim($_POST['login']) ), ENT_QUOTES );
-            $login  = mysqli_real_escape_string($connection, $login);
+            $login = mysqli_real_escape_string($connection, $login);
 
             $userRow = $general->findOne(" SELECT * FROM users WHERE login='$login' ");
 

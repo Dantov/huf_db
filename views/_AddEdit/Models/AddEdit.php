@@ -11,11 +11,16 @@ class AddEdit extends General
 	public $users; //array - массив пользователей. Нужен для статусов
 
     /**
+     * @var array - массив списков из service_data
+     */
+	public $dataTables = [];
+
+    /**
      * AddEdit constructor.
      * @param bool $id
      * @throws \Exception
      */
-    public function __construct($id=false )
+    public function __construct( $id=false )
     {
         parent::__construct();
         if ( $id ) $this->id = (int)$id;
@@ -40,8 +45,11 @@ class AddEdit extends General
      */
     public function getDataTables()
     {
+        if ( !empty($this->dataTables) && is_array($this->dataTables) ) return $this->dataTables;
 		$tabs = [
+		    'collections',
 		    'author',
+		    'jeweler',
             'modeller3d',
             'model_type',
             'model_material',
@@ -65,7 +73,6 @@ class AddEdit extends General
                 if ( $row['tab'] === $tab ) $tables[$tab][] = $row;
             }
 		}
-
 		//debug($tables,'',1);
 
         foreach ( $tables['gems_sizes'] as $size )
@@ -79,10 +86,7 @@ class AddEdit extends General
         }
         sort($tables['gems_sizes']['num']);
 
-        //$tables['collections'] = $this->general->collections_arr;
-        //$tables['vc_names'] = $this->getNum3dVCList($tables['vc_names']);
-
-		return $tables;
+		return $this->dataTables = $tables;
 	}
 
 	public function getAllUsers()
@@ -141,127 +145,68 @@ class AddEdit extends General
         return $complected;
     }
 
-	/*
-	function printHeaderEditAddForm($component)
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getDataLi()
     {
-		$header = '';
-		if ( $component === 2 || $component === 3 ) 
-		{
-			$thisNum = $this->row['number_3d'];
-			$thisMT = $this->row['model_type'];
-			
-			if ( $component === 2 ) {
-				$str = "Редактировать Модель <strong>".$thisNum." - ".$thisMT."</strong>";
-				$duplG = "pencil";
-			}
-			if ( $component === 3 ) {
-				$str = "Добавить комплект к <strong>".$thisNum."</strong>";
-				$duplG = "duplicate";
-			}
-			
-			$header .= "<span class=\"glyphicon glyphicon-$duplG\"></span> $str";
-			$header .= " (<i>В Комплекте: </i>";
-			$complect = mysqli_query($this->connection, " SELECT id,model_type FROM stock WHERE number_3d='$thisNum' ");
-
-            $mass = 0;
-			while( $complects = mysqli_fetch_assoc($complect) )
+        if ( empty($this->dataTables) || !is_array($this->dataTables) ) $this->getDataTables();
+		$data_Li = [];
+        $coll = '';
+        foreach ( $this->dataTables as $name => $data )
+        {
+            if ( !in_array($name, ['collections', 'author', 'modeller3d', 'model_type', 'jeweler']) ) continue;
+            if ( $name == 'collections' )  $coll = 'coll';
+            foreach ( $data as $arrayLi )
             {
-				if ( ( $component === 2 ) && ( $complects['id'] == $this->id ) ) continue;
-				$mass++;
-				
-				$compl_id = $complects['id'];
-				$compl_quer = mysqli_query($this->connection, " SELECT img_name FROM images WHERE pos_id='$compl_id' AND main='1' ");
-				$compl_row = mysqli_fetch_assoc($compl_quer);
-
-                $file = "$thisNum/{$complects['id']}/images/{$compl_row['img_name']}";
-                $fileImg = _stockDIR_HTTP_.$file;
-                if ( !file_exists(_stockDIR_.$file) ) $fileImg = _stockDIR_HTTP_."default.jpg";
-
-			    $header .= " <a class=\"imgPrev\" imgtoshow=\"$fileImg\" href=\"../modelView/index.php?id={$complects['id']}\">{$complects['model_type']}</a>";
-			}
-			if ( empty($mass) ) $header .= "Нет"; // если нет комплекта
-			$header .= ")";
-		}
-		return $header;
-	}
-	*/
-	
-	public function getDataLi()
-    {
-        // список таблиц
-		$querArr = array('collections', 'author', 'modeller3d', 'model_type', 'jeweler_names');
-		$data_Li = array();
-		
-		for ( $i = 0; $i < count($querArr); $i++ )
-		{
-			$table = $querArr[$i];
-			$res = mysqli_query($this->connection, " SELECT * FROM $table ORDER BY name");
-			
-			$goldAI = '';
-			$coll = '';
-			
-			if ( $table == 'collections' )  $coll = 'coll';
-			while( $row = mysqli_fetch_assoc($res) )
-            {
-				if ( (int)$row['id'] === 22 || (int)$row['id'] === 53 )  $goldAI = 'aiblock';
-				$data_Li[$table] .= '<li><a elemToAdd '.$coll.' '.$goldAI.' collId="'.$row['id'].'">'.$row['name'].'</a></li>';
-				$goldAI = '';
-			}
-		}
-		
+                $data_Li[$name] .= '<li><a elemToAdd '.$coll.' collId="'.$arrayLi['id'].'">'.$arrayLi['name'].'</a></li>';
+            }
+        }
 		return $data_Li;
 	}
 
-	public function getGemsLi()
+    public function getGemsLi()
     {
-		$querArr = array('gems_sizes', 'gems_cut', 'gems_names', 'gems_color');
-		$gems_Li = array();
-		
-		$num_arr = array();
-		$notnum_arr = array();
-		
-		for ( $i = 0; $i < count($querArr); $i++ ){
-			$table = $querArr[$i];
-			$gem_quer = mysqli_query($this->connection, " SELECT name FROM $table ");	
-			while( $gem_row = mysqli_fetch_assoc($gem_quer) ) {
-				
-				if ( $table == 'gems_sizes' ) {
-					if ( is_numeric($gem_row['name']) ) {
-					   $num_arr[] = $gem_row['name'];
-					} else {
-					   $notnum_arr[] = $gem_row['name'];
-					}
-				} else {
-					$gems_Li[$table] .= '
+		$gems_Li = [];
+
+        foreach ( $this->dataTables as $name => $data )
+        {
+            if ( !in_array($name, ['gems_sizes', 'gems_cut', 'gems_names', 'gems_color']) ) continue;
+            if ( $name == 'gems_sizes' )
+            {
+                foreach ( $data['num'] as &$value ) $gems_Li[$name] .= '<li><a elemToAdd>'.$value.'</a></li>';
+                $gems_Li[$name] .= '<li role="separator" class="divider"><a></a></li>';
+                foreach ( $data['notnum'] as &$value ) $gems_Li[$name] .= '<li><a elemToAdd>'.$value.'</a></li>';
+            } else {
+                foreach ( $data as $arrayLi )
+                {
+                    $gems_Li[$name] .= '
 						<li style="position:relative;">
-							<a elemToAdd>'.$gem_row['name'].'</a>
+							<a elemToAdd>'.$arrayLi['name'].'</a>
 							<div class="addElemMore" addElemMore>+</div>
 						</li>
 					';
-				}
-			}
-		}
-		sort($num_arr);
-		sort($notnum_arr);
-		foreach ($num_arr as &$value) {
-		   $gems_Li['gems_sizes'] .= '<li><a elemToAdd>'.$value.'</a></li>';
-		};
-		$gems_Li['gems_sizes'] .= '<li role="separator" class="divider"><a></a></li>';
-		foreach ($notnum_arr as &$value) {
-		   $gems_Li['gems_sizes'] .= '<li><a elemToAdd>'.$value.'</a></li>';
-		};
-		
+                }
+            }
+        }
 		return $gems_Li;
 	}
+
 	public function getNamesVCLi()
     {
 		$vc_namesLI = '';
-		$vc_names_quer = mysqli_query($this->connection, " SELECT name FROM vc_names ");
-		while( $vc_names_row = mysqli_fetch_assoc($vc_names_quer) ) {
-			$vc_namesLI .= "<li><a elemToAdd VCTelem>".$vc_names_row['name']."</a></li>";
-		}
+        foreach ( $this->dataTables as $name => $data )
+        {
+            if ( $name !== 'vc_names' ) continue;
+            foreach ( $data as $arrayLi )
+            {
+                $vc_namesLI .= "<li><a elemToAdd VCTelem>".$arrayLi['name']."</a></li>";
+            }
+        }
 		return $vc_namesLI;
 	}
+
 	public function getNum3dVCLi( $row_dop_vc )
     {
 		$num3DVC_LI = [];
@@ -673,6 +618,5 @@ class AddEdit extends General
 		}
 		return $labels;
 	}
-
 
 }

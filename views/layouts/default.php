@@ -20,22 +20,24 @@ JS;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $this->title ?></title>
-
-    <link rel="icon" href="/web/favicon.ico?ver=109">
-
+    <?php if ( _DEV_MODE_ ) : ?>
+        <link rel="icon" href="/web/favicon.ico?ver=110">
+    <?php else: ?>
+        <link rel="icon" href="/favicon.ico?ver=110">
+    <?php endif; ?>
     <link rel="stylesheet" href="/web/css/cssFW.css?ver=<?=time();?>">
     <link rel="stylesheet" href="/web/css/style.css?ver=<?=time();?>">
     <link rel="stylesheet" href="/web/css/style_adm.css?ver=<?=time();?>">
     <link rel="stylesheet" href="/web/css/bodyImg.css?ver=<?=time();?>">
     <link rel="stylesheet" href="/web/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/web/css/bootstrap-theme.min.css">
+    <!--<link rel="stylesheet" href="/web/css/bootstrap-theme.min.css">-->
     <link rel="stylesheet" href="/web/css/iziModal.min.css">
     <link rel="stylesheet" href="/web/css/iziToast.min.css">
     <link rel="stylesheet" href="/web/fontawesome5.9.0/css/all.min.css">
+    <? $this->head() ?>
     <script src="/Views/_Globals/js/const.js?ver=<?=time()?>"></script>
     <script><?=$wsUserDataJS?></script>
     <script src="/Views/_Globals/js/webSocketConnect.js?ver=<?=time()?>"></script>
-    <? $this->head() ?>
 </head>
 
 <body id="body" class="<?=$_SESSION['assist']['bodyImg']?>">
@@ -119,6 +121,12 @@ JS;
                                 <span class="glyphicon glyphicon-<?=$navBar['glphsd']?>"></span>&#160;<?=$navBar['userFio'];?>&#160;<span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu">
+                                <?php if ( (int)$session->getKey('user')['access'] === 1 ): ?>
+                                    <li><a href="/payment-manager/"></span><i class="fas fa-hryvnia"></i>&#160; Менеджер Оплат</a></li>
+                                <?php endif; ?>
+
+                                <li><a href="/user-pouch/"><span class="glyphicon glyphicon-piggy-bank" aria-hidden="true"></span>&#160; Кошелек Работника</a></li>
+
                                 <li class="<?=$navBar['navbarStatsShow'];?>"><a href="<?=$navBar['navbarStatsUrl'];?>"><span class="glyphicon glyphicon-stats"></span>&#160; Статистика</a></li>
                                 <li><a href="/options/"><span class="glyphicon glyphicon-cog"></span>&#160; Опции</a></li>
                                 <li class="<?=$navBar['navbarDevShow'];?>"><a href="<?=$navBar['navbarDevUrl'];?>"><span class="glyphicon glyphicon-wrench"></span>&#160; Dev</a></li>
@@ -217,14 +225,16 @@ JS;
         <div class="<?=$container?> content">
             <?=$content;?>
         </div><!--container-->
-
-        <?php
-//        debug($_GET,'$_GET');
-//        debug($this->getQueryParams(),'QueryParams');
-//        debug($_SESSION,'$_SESSION');
-//        debug($_COOKIE,'$_COOKIE');
-        ?>
-
+<?php
+    if ( _DEV_MODE_ )
+    {
+        debug($_GET,'$_GET');
+        debug($this->getQueryParams(),'QueryParams');
+        debug($_SESSION,'$_SESSION');
+        debug($_COOKIE,'$_COOKIE');
+        debug( Views\vendor\core\Config::get(), "Config");
+    }
+?>
         <footer class="footer" style="box-shadow: 0 -1px 5px rgba(0,0,0,.075)">
             <div class="container">
                 <?php if ( $_SESSION['user']['access'] == 1 || $_SESSION['user']['access'] == 2 ):?>
@@ -233,7 +243,7 @@ JS;
                         <strong> Добавить модель</strong>
                     </a>
                 <?php endif; ?>
-                <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="/versions/" title="Список изменений">ver. <?=$this->currentVersion?></a> &#160; разработка by Vadim Bukov</i>
+                <i class="" style="position: absolute; right: 0; margin-right: 15px; margin-top: 10px"><a href="/versions/" title="Список изменений">ver. <?=$this->currentVersion?></a> &#160; разработка - Вадим Быков</i>
             </div>
             <script src="/web/js_lib/jquery-3.2.1.min.js"></script>
             <script src="/web/js_lib/bootstrap.min.js"></script>

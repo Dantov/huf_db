@@ -4,6 +4,10 @@ namespace Views\_Globals\Models;
 class PushNotice extends General
 {
 
+    /**
+     * PushNotice constructor.
+     * @throws \Exception
+     */
     function __construct()
     {
         parent::__construct($_SERVER);
