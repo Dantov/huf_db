@@ -2,6 +2,7 @@
 namespace Views\_PaymentManager\Controllers;
 use Views\_UserPouch\Controllers\UserPouchController;
 use Views\_PaymentManager\Models\PaymentManager;
+use Views\vendor\core\URLCrypt;
 
 class PaymentManagerController extends UserPouchController
 {
@@ -15,6 +16,10 @@ class PaymentManagerController extends UserPouchController
         {
             exit;
         }
+
+
+        debug( $request->get('pm'),'PM');
+        debug( URLCrypt::decode($request->get('pm')),'',1);
 
         $this->workerID = (int)$request->get('worker');
         $this->tab = $this->getView( (int)$request->get('tab') );

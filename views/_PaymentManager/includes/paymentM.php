@@ -1,4 +1,5 @@
-<?php 
+<?php
+    use Views\vendor\core\URLCrypt;
 	$currentWorker = $this->session->getKey('currentWorker'); 
 	$tabID = (int)$this->request->get('tab');
 
@@ -21,6 +22,7 @@
 					<span class="currentWorkerName"><?= $currentWorker['fio'] ?></span> <span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu">
+					<li><a href="/payment-manager/<?= URLCrypt::encode('pm',["tab"=>$tabID, "worker"=>0, "month"=>$monthID, "year"=>$yearID]) ?>">Все работники</a></li>
 					<li><a href="/payment-manager/?tab=<?=$tabID?>&worker=0&month=<?=$monthID?>&year=<?=$yearID?>">Все работники</a></li>
 					<li role="separator" class="divider"></li>
 					<?php foreach ($usersList as $user): ?>

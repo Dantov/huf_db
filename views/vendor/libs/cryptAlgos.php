@@ -8,7 +8,7 @@
 Ну, и потом декодируем из base64.
 */
 
-function encode($unencoded, $key)
+function myencode($unencoded, $key)
 {
     //Шифруем
     debug($unencoded,'origin');
@@ -29,14 +29,14 @@ function encode($unencoded, $key)
     return $newStr;
 }
 
-function decode( $encoded, $key )
+function mydecode( $encoded, $key )
 {
     //Символы, с которых состоит base64-ключ
     $strofsym="qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM=";
     for ( $x = 0; $x < strlen($strofsym); $x++ )
     {
         //Хеш, который соответствует символу, на который его заменят.
-        $tmp = md5(md5($key.$strofsym[$x]).$key);
+        $tmp = md5($key . md5($strofsym[$x] . $key) );
         //Заменяем №3,6,1,2 из хеша на символ
         $encoded = str_replace($tmp[3].$tmp[6].$tmp[1].$tmp[2], $strofsym[$x], $encoded);
         debug($encoded,'$encoded');
