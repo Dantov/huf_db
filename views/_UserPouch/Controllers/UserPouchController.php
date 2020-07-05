@@ -9,17 +9,19 @@ class UserPouchController extends GeneralController
 
     public $title = 'Кошелёк Работника :: ХЮФ';
 
+    public $workerID;
     public $tab;
+    public $month;
+    public $year;
 
     public function beforeAction()
     {
         $request = $this->request;
-        if ( $request->isAjax() )
-        {
-            exit;
-        }
 
+        $this->workerID = $this->session->getKey('user')['id'];
         $this->tab = $this->getView( (int)$request->get('tab') );
+        $this->month = (int)$request->get('month');
+        $this->year = (int)$request->get('year');
     }
 
     /**
@@ -49,16 +51,18 @@ class UserPouchController extends GeneralController
             $_SESSION['prevPage'] = $_SERVER["HTTP_REFERER"];
         }
 
-        $userPouch = new UserPouch($this->tab);
+        $userPouch = new UserPouch($this->tab, $this->workerID, $this->month, $this->year);
 
         $stockInfo = $userPouch->getStockInfo();
         $modelPrices = $userPouch->getModelPrices();
         $statistic = $userPouch->getStatistic();
 
-
         $tab = $this->tab;
+        $workerID = $this->workerID;
+        $monthID = $this->month;
+        $yearID = $this->year;
         $compacts = compact([
-            'modelPrices','stockInfo','tab','statistic'
+            'modelPrices','stockInfo','tab','statistic','workerID','monthID','yearID',
         ]);
         return $this->render('userpouch', $compacts);
     }

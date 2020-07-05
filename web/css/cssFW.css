@@ -101,6 +101,9 @@
 }
 
 /* BORDER */
+.br-0 {
+    border: 0!important;
+}
 .brb-1-success {
     border-bottom: 1px solid #5cb85c;
 }
@@ -171,10 +174,10 @@
 
 /* CURSOR */
 .cursorPointer {
-    cursor: pointer;
+    cursor: pointer!important;
 }
 .cursorArrow {
-    cursor: default;
+    cursor: default!important;
 }
 .cursorLoupe {
     cursor: url('../picts/loupe32.cur'), zoom-in;
