@@ -1,4 +1,5 @@
 <?php
+use Views\_Globals\Models\User;
 $navBar = $this->navBar;
 $coll_silver = $navBar['collectionList']['silver'];
 $coll_gold = $navBar['collectionList']['gold'];
@@ -118,7 +119,7 @@ JS;
 						</div>
                         <div class="btn-group">
                             <button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="glyphicon glyphicon-<?=$navBar['glphsd']?>"></span>&#160;<?=$navBar['userFio'];?>&#160;<span class="caret"></span>
+                                <span class="glyphicon glyphicon-<?=$navBar['glphsd']?>"></span>&#160;<?= User::getFIO() ?>&#160;<span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu">
                                 <?php if ( (int)$session->getKey('user')['access'] === 1 ): ?>

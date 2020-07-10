@@ -5,12 +5,7 @@ $tables = $tables??[];
     <p class="lead text-info text-center">Списки Наименований</p>
 
     <div class="col-xs-12 stats_table">
-        <ul class="nav nav-tabs" role="tablist" id="tablist">
-            <li role="presentation" class="active"><a href="#tab1" role="tab" data-toggle="tab">Коллекции</a></li>
-            <li role="presentation"><a href="#tab2" role="tab" data-toggle="tab">Камни</a></li>
-            <li role="presentation"><a href="#tab3" role="tab" data-toggle="tab">Материалы</a></li>
-            <li role="presentation"><a href="#tab4" role="tab" data-toggle="tab">Общие данные</a></li>
-        </ul>
+        <?php require_once _viewsDIR_ . "_Nomenclature/includes/nom_list.php" ?>
         <div class="tab-content">
 
             <!-- КОЛЛЕКЦИИ -->

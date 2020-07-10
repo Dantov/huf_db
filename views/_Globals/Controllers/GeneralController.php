@@ -1,8 +1,7 @@
 <?php
 namespace Views\_Globals\Controllers;
-use Views\vendor\core\Controller;
-use Views\vendor\core\Cookies;
-use Views\vendor\core\Config;
+use Views\_Globals\Models\{General, User};
+use Views\vendor\core\{Controller, Cookies, Config};
 
 class GeneralController extends Controller
 {
@@ -65,7 +64,7 @@ JS;
         //debug($access,'$access');
         //debug($assist,'$assist',1);
 
-        if( $access !== true || $assist['update'] !== 7 ) $this->redirect('/auth/?a=exit');//header("location:". _glob_HTTP_ ."exit.php");
+        if( $access !== true || $assist['update'] !== 7 ) $this->redirect('/auth/?a=exit');
     }
 
     /**
@@ -144,7 +143,7 @@ JS;
             return $res;
         }
 
-        $general = new \Views\_Globals\Models\General();
+        $general = new General();
         $general->connectDBLite();
 
         $collections_arr = $general->findAsArray(" SELECT id,name FROM service_data WHERE tab='collections' ORDER BY name ");

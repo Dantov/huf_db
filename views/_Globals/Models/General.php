@@ -37,195 +37,6 @@ class General
         $this->alphabet = alphabet();
     }
 
-	public function formatDate($date)
-    {
-        $fdate = is_int($date) ? '@'.$date : $date;
-        return date_create( $fdate )->Format('d.m.Y');
-    }
-
-	protected function setDirs() 
-    {
-		$this->rootDir  = _rootDIR_; //'/HUF_DB';
-		$this->stockDir = _stockDIR_;//$this->rootDir.'Stock';
-	}
-
-    /**
-     * @return mixed
-     */
-    public function getUser()
-    {
-        if ( isset($this->user) ) return $this->user;
-        session_start();
-        $userQuery = mysqli_query($this->connection, " SELECT id,fio,fullFio,location,access FROM users WHERE id='{$_SESSION['user']['id']}' ");
-        if ( !$userQuery->num_rows ) new \Exception('Пользователь не найден!',404);
-
-        $user = mysqli_fetch_assoc($userQuery);
-        foreach ( $user as $key => $value ) $this->user[$key] = $value;
-        $this->user['IP'] = $this->IP_visiter;
-        return $this->user;
-    }
-
-
-    /**
-     * @return mixed
-     */
-    public function getUsers()
-    {
-        if ( isset($this->users) ) return $this->users;
-
-        $usersQuery = mysqli_query($this->connection, " SELECT id,fio,fullFio,location,access FROM users ");
-        if ( !$usersQuery->num_rows ) new \Exception('Users not found at all!',500);
-        while( $user = mysqli_fetch_assoc($usersQuery) )
-        {
-            $this->users[] = $user;
-        }
-        return $this->users;
-    }
-
-
-    public function permittedFields()
-    {
-        $this->getUser();
-        $permittedFields = [
-            'addComplect' => false,
-            'number_3d' => false,
-            'vendor_code' => false,
-            'collections' => false,
-            'author' => false,
-            'modeller3d' => false,
-            'jewelerName' => false,
-            'model_type' => false,
-            'model_weight' => false,
-            'size_range' => false,
-            'print_cost' => false,
-            'model_cost' => false,
-            'material' => false,
-            'covering' => false,
-            'files' => false,
-            'stl' => false,
-            'ai' => false,
-            '3dm' => false,
-            'images' => false,
-            'dellImage' => false,
-            'gems' => false,
-            'vc_links' => false,
-            'description' => false,
-            'repairs' => false,
-            'repairs3D' => false,
-            'repairsJew' => false,
-            'labels' => false,
-            'statuses' => false,
-            'dellModel' => false,
-            'deleteImage' => false,
-            'addModel' => false,
-            'modelAccount'   => false, // оценка модели в AddEdit
-            'userPouch'      => false, // для модельеров
-            'paymentManager' => false, // Для Худ совета
-        ];
-
-        switch ($this->user['access'])
-        {
-            case 1: //
-                foreach ( $permittedFields as &$field ) $field = true;
-                break;
-            case 2: // 3д моделлер
-                foreach ( $permittedFields as &$field ) $field = true;
-                $permittedFields['print_cost'] = false;
-                $permittedFields['model_cost'] = false;
-                $permittedFields['jewelerName'] = false;
-                $permittedFields['repairsJew'] = false;
-                break;
-            case 3: // 3д печать
-                $permittedFields['print_cost'] = true;
-                $permittedFields['statuses'] = true;
-                break;
-            case 4: // ПДО ?
-                $permittedFields['vendor_code'] = true;
-                $permittedFields['material'] = true;
-                $permittedFields['covering'] = true;
-                $permittedFields['gems'] = true;
-                $permittedFields['vc_links'] = true;
-                $permittedFields['description'] = true;
-                $permittedFields['statuses'] = true;
-                $permittedFields['labels'] = true;
-                break;
-            case 5: // Доработчики
-                $permittedFields['files'] = true;
-                $permittedFields['images'] = true;
-                $permittedFields['jewelerName'] = true;
-                $permittedFields['gems'] = true;
-                $permittedFields['model_cost'] = true;
-                $permittedFields['description'] = true;
-                $permittedFields['repairs'] = true;
-                $permittedFields['repairsJew'] = true;
-                $permittedFields['labels'] = true;
-                $permittedFields['statuses'] = true;
-                break;
-            case 6: //Фото?
-                $permittedFields['files'] = true;
-                $permittedFields['images'] = true;
-                $permittedFields['statuses'] = true;
-                break;
-        }
-
-        return $permittedFields;
-    }
-
-
-    /**
-     * рабочие центры из БД
-     * @return mixed
-     * @throws \Exception
-     */
-    public function getWorkingCentersDB()
-    {
-        if ( isset($this->workingCentersDB) ) return $this->workingCentersDB;
-
-        $query = mysqli_query($this->connection, " SELECT id,name,descr,user_id FROM working_centers ");
-
-        if ( $query === false ) throw new \Exception('Error in working centers query.',500);
-        if ( !$query->num_rows ) throw new \Exception('Working Centers not found at all!',500);
-
-        while( $centerRow = mysqli_fetch_assoc($query) )
-        {
-            $this->workingCentersDB[ $centerRow['name'] ][ $centerRow['id'] ] = $centerRow;
-        }
-        return $this->workingCentersDB;
-    }
-
-    /**
-     *
-     * Выберем все участки, отсортируем их
-     * и подставим им статусы start end
-     * @return array
-     */
-    public function getWorkingCentersSorted()
-    {
-        if ( isset($this->workingCentersSorted) ) return $this->workingCentersSorted;
-
-        $query = mysqli_query($this->connection, " SELECT * FROM working_centers ORDER BY sort_id");
-        if ( !$query->num_rows ) new ErrorException('Working Centers not found at all!',500);
-
-        while( $centerRow = mysqli_fetch_assoc($query) )
-        {
-            $wcID = (int)$centerRow['id'];
-
-            foreach ( $this->statuses as $status )
-            {
-                $location = (int)$status['location'];
-                $type = $status['type'];
-                if ( $location === $wcID )
-                {
-                    if ( $type === 'start' ) $centerRow['statuses']['start'] = $status;
-                    if ( $type === 'end'  ) $centerRow['statuses']['end'] = $status;
-                }
-            }
-
-            $this->workingCentersSorted[ $centerRow['sort_id'] ] = $centerRow;
-        }
-        return $this->workingCentersSorted;
-    }
-
     public function connectDBLite()
     {
         if ( $this->connection ) return $this->connection;
@@ -260,12 +71,151 @@ class General
         $this->labels = $this->getStatLabArr('labels');
         $this->getWorkingCentersDB();
 
-		return $connection;
+        return $connection;
+    }
+
+    public function closeDB() {
+        mysqli_close($this->connection);
+    }
+
+	public function formatDate($date)
+    {
+        $fdate = is_int($date) ? '@'.$date : $date;
+        return date_create( $fdate )->Format('d.m.Y');
+    }
+
+	protected function setDirs() 
+    {
+		$this->rootDir  = _rootDIR_; //'/HUF_DB';
+		$this->stockDir = _stockDIR_;//$this->rootDir.'Stock';
 	}
-	
-	public function closeDB() {
-		mysqli_close($this->connection);
-	}
+
+
+    /**
+     * @return mixed
+     */
+    public function getUser()
+    {
+        if ( isset($this->user) ) return $this->user;
+        session_start();
+        $userQuery = mysqli_query($this->connection, " SELECT id,fio,fullFio,location,access FROM users WHERE id='{$_SESSION['user']['id']}' ");
+        if ( !$userQuery->num_rows ) new \Exception('Пользователь не найден!',404);
+
+        $user = mysqli_fetch_assoc($userQuery);
+        foreach ( $user as $key => $value ) $this->user[$key] = $value;
+        $this->user['IP'] = $this->IP_visiter;
+        return $this->user;
+    }
+
+
+    /**
+     * @return mixed
+     */
+    public function getUsers( bool $full=false )
+    {
+        if ( isset($this->users) ) return $this->users;
+        $logPass = '';
+        if ( $full ) $logPass = "login, pass,";
+        $usersQuery = mysqli_query($this->connection, " SELECT id, $logPass fio,fullFio,location,access FROM users ");
+        if ( !$usersQuery->num_rows ) new \Exception('Users not found at all!',500);
+        while( $user = mysqli_fetch_assoc($usersQuery) )
+        {
+            $this->users[] = $user;
+        }
+        return $this->users;
+    }
+
+
+    /**
+     * сформируем массив разрешений для текущего пользователя
+     * @return array
+     * @throws \Exception
+     */
+    public function permittedFields() : array
+    {
+        /*
+        $this->getUser();
+
+        $permissions = $this->findAsArray("SELECT id,name,description FROM permissions");
+        $userPermissions = $this->findAsArray("SELECT permission_id FROM user_permissions WHERE user_id='{$this->user['id']}'");
+        foreach ( $userPermissions as $key => &$userPF ) $userPermissions[$key] = $userPF['permission_id'];
+
+        $permittedFields = [];
+        foreach ( $permissions as $permittedField )
+        {
+            $pfID = $permittedField['id'];
+            if ( in_array( $pfID, $userPermissions ) )
+            {
+                $permittedFields[$permittedField['name']] = true;
+            } else {
+                $permittedFields[$permittedField['name']] = false;
+            }
+        }
+
+        return $permittedFields;
+        */
+        return User::permissions();
+    }
+
+
+    /**
+     * рабочие центры из БД
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getWorkingCentersDB()
+    {
+        if ( isset($this->workingCentersDB) ) return $this->workingCentersDB;
+
+        $query = mysqli_query($this->connection, " SELECT id,name,descr,user_id FROM working_centers ");
+
+        if ( $query === false ) throw new \Exception('Error in working centers query.',500);
+        if ( !$query->num_rows ) throw new \Exception('Working Centers not found at all!',500);
+
+        while( $centerRow = mysqli_fetch_assoc($query) )
+        {
+            $this->workingCentersDB[ $centerRow['name'] ][ $centerRow['id'] ] = $centerRow;
+        }
+        return $this->workingCentersDB;
+    }
+
+    /**
+     *
+     * Выберем все участки, отсортируем их
+     * и подставим им статусы start end
+     * @return array
+     * @throws \Exception
+     */
+    public function getWorkingCentersSorted()
+    {
+        if ( isset($this->workingCentersSorted) ) return $this->workingCentersSorted;
+
+        $this->getStatLabArr('status');
+
+        $query = mysqli_query($this->connection, " SELECT * FROM working_centers ORDER BY sort_id");
+        if ( !$query->num_rows ) new \Exception('Working Centers not found at all!',500);
+
+        while( $centerRow = mysqli_fetch_assoc($query) )
+        {
+            $wcID = (int)$centerRow['id'];
+
+            foreach ( $this->statuses as $status )
+            {
+                $location = (int)$status['location'];
+                $type = $status['type'];
+                if ( $location === $wcID )
+                {
+                    if ( $type === 'start' ) $centerRow['statuses']['start'] = $status;
+                    if ( $type === 'end'  ) $centerRow['statuses']['end'] = $status;
+                }
+            }
+
+            $this->workingCentersSorted[ $centerRow['sort_id'] ] = $centerRow;
+        }
+        return $this->workingCentersSorted;
+    }
+
+
 
     /**
      * возвращает строку в транслите.
@@ -603,13 +553,15 @@ class General
 
     /**
      *  Проверим на существование конкретной модели
-     * @param $id
+     * @param int $id
+     * @param string $table
+     * @param string $column
      * @return bool
      */
-    public function checkID($id)
+    public function checkID( int $id, string $table='stock', string $column='id' ) : bool
     {
         if ( empty($id) || !is_int($id) ) return false;
-        $query = mysqli_query($this->connection, " select 1 from stock where id='$id' limit 1 ");
+        $query = mysqli_query($this->connection, " select 1 from $table where $column='$id' limit 1 ");
         if ( $query->num_rows ) return true;
         return false;
     }
@@ -639,7 +591,7 @@ class General
         $query = $this->baseSql( $sqlStr );
         if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
 
-        return $this->connection->insert_id;
+        return $this->connection->insert_id ? $this->connection->insert_id : -1;
     }
 
     /**
@@ -664,7 +616,7 @@ class General
      * @return array|bool
      * @throws \Exception
      */
-    public function findOne($sqlStr)
+    public function findOne(string $sqlStr) : array
     {
         if ( !is_string($sqlStr) || empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
 

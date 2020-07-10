@@ -60,7 +60,7 @@ class Controller
     
     /**
      * содержит методы для обработки запросов GET POST AJAX FILES
-     * @var type object
+     * @var
      */
     public $request = null;
 
@@ -97,9 +97,11 @@ class Controller
         return null;
     }
 
+    /*
     public function beforeAction(){}
     public function action(){}
     public function afterAction(){}
+    */
 
     public function setTitle()
     {
@@ -107,16 +109,23 @@ class Controller
     }
 
     /**
-     * setLayout()
      * Устанавливает шаблон из конфиг файла приложения, или из контроллера, если был задан в нем
-     * return void
      * @param string $layout
+     * @throws \Exception
      */
-    protected function setLayout($layout='')
+    protected function setLayout( string $layout='' ) : void
     {
-        if ( !empty($layout) && is_string($layout) ) $this->layout = $layout;
-
-        if ( empty( $this->layout ) ) $this->layout = 'default';
+        if ( !empty($layout) ) {
+            $this->layout = $layout;
+        } elseif ( empty($this->layout) ) {
+            $layout = Config::get('layout');
+            if ( !empty($layout) && is_string($layout) )
+            {
+                $this->layout = $layout;
+            } else {
+                throw new \Exception( "Layout is empty! You need to set it in config, or by own hands in controller." );
+            }
+        }
     }
 
     /**

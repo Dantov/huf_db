@@ -174,11 +174,13 @@ class MainController extends GeneralController
 			$showModels = '';
 			$drawBy_ = (int)$_SESSION['assist']['drawBy_']?:false;
 
+            // Когда ?page=num больше кол-ва найденнных моделей. Вываливает ошибку mysql, из-зп того что $posIds пустой
+            if ( count($main->row) < ($_SESSION['assist']['page'] * $_SESSION['assist']['maxPos']) )$this->redirect('/main/?page=0');
 
 			// **************=================*****************//
 			// Плиткой
-			if ( $drawBy_ === 1 ) {
-
+			if ( $drawBy_ === 1 )
+			{
 				$getterModels = $main->getModelsByTiles();
 				$showModels = $getterModels['showByTiles'];
 				$iter = $getterModels['iter'];

@@ -41,7 +41,7 @@ class URLCrypt
         return self::mydecode($ciphertext,self::$secretKey);
     }
 
-    private static function myencode($unencoded, $key)
+    private static function myencode(string $unencoded, string $key)
     {
         //Шифруем
         //debug($unencoded,'origin');
@@ -64,10 +64,11 @@ class URLCrypt
 
     private static function mydecode( $encoded, $key )
     {
-        //Символы, с которых состоит base64-ключ
+        //Символы, из которых состоит base64-ключ
         $strofsym="qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM=";
         for ( $x = 0; $x < strlen($strofsym); $x++ )
         {
+            // шифруем каждый символ
             //Хеш, который соответствует символу, на который его заменят.
             $tmp = hash('sha1',$key . hash('sha1',$strofsym[$x] . $key) );
             //Заменяем №3,6,1,2 из хеша на символ

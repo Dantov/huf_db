@@ -309,20 +309,18 @@ class Main extends General {
 		$from = $this->assist['page'] * $this->assist['maxPos'];
 		$to = ($this->assist['page'] + 1) * $this->assist['maxPos'];
 		
-		// SQL выборки
-		$rowImages = [];
-		$rowStls = [];
-		
 		$posIds = '(';
 		for ( $i = $from; $i < $to; $i++ ) $posIds .= $this->row[$i]['id'].',';
 		$posIds = trim($posIds,',') . ')';
-		//debug($this->row,'$this->row');
 
-        $rowImages = $this->findAsArray(" SELECT pos_id,img_name,main,onbody,sketch FROM images WHERE pos_id IN $posIds "); //AND main=1
-		$stlQuer = mysqli_query($this->connection, " SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN $posIds ");
+        $rowImages = $this->findAsArray(" SELECT pos_id,img_name,main,onbody,sketch FROM images WHERE pos_id IN $posIds ");
+        $rowStls = $this->findAsArray(" SELECT pos_id,stl_name FROM stl_files WHERE pos_id IN $posIds ");
+        foreach ( $rowStls as $key => $rowStl )
+        {
+            $rowStls[$rowStl['pos_id']] = $rowStl;
+            unset($rowStls[$key]);
+        }
 
-		//while ( $image = mysqli_fetch_assoc($imagesQuery) ) $rowImages[$image['pos_id']] = $image;
-		while ( $stl = mysqli_fetch_assoc($stlQuer) ) $rowStls[$stl['pos_id']] = $stl;
 
 		ob_start();
 		for ( $i = $from; $i < $to; $i++ )
@@ -334,7 +332,8 @@ class Main extends General {
 		}
 		$result['showByTiles'] = ob_get_contents();
 		ob_end_clean();
-		
+
+
 		return $result;
 	}
 

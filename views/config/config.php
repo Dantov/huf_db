@@ -5,7 +5,7 @@ return [
     'basePath' => dirname(__DIR__),
     'uploadPath' => '/uploads',
     'cachePath' => '/runtime/cache',
-    'layout' => 'baseTheme',
+    'layout' => 'default',
     'baseController' => 'main',
     'multiLanguage'=> [
         'enable' => false, // false - disable

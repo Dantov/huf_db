@@ -12,8 +12,10 @@ class Handler extends General {
 	private $vendor_code;
 	private $model_type;
 	private $model_typeEn;
-	public  $date;
 	private $isEdit;
+
+
+    public  $date;
 	public  $forbiddenSymbols;
 
 	function __construct( $id=false ) 
@@ -36,7 +38,12 @@ class Handler extends General {
 	}
 
 
-	public function setNumber_3d($number_3d='')
+    /**
+     * @param string $number_3d
+     * @return null|string
+     * @throws \Exception
+     */
+    public function setNumber_3d($number_3d='')
     {
 		if ( !empty($number_3d) )
 		{
@@ -1091,9 +1098,14 @@ class Handler extends General {
     }
 
     /**
-    * Формируте массив строк для пакетной вставки/обновления строк
-    * в дополнительные таблицы
-    */
+     * Формируте массив строк для пакетной вставки/обновления строк
+     * в дополнительные таблицы
+     * @param $data
+     * @param $stockID
+     * @param $tableName
+     * @return array|bool
+     * @throws \Exception
+     */
     public function makeBatchInsertRow($data, $stockID, $tableName)
     {
         if ( !is_array($data) || empty($data) ) return false;
@@ -1287,8 +1299,10 @@ class Handler extends General {
      *
      * @param array $rows
      * массив строк
+     *
      * @param string $table
      * имя таблицы
+     *
      * @return bool|int
      * @throws \Exception
      */
@@ -1321,9 +1335,10 @@ class Handler extends General {
 
         $sqlStr = "INSERT INTO $table $columns VALUES $values ON DUPLICATE KEY UPDATE $update";
 
-        if ( is_array( $sql = $this->sql($sqlStr) ) ) return $sql;
+        //if ( $sql = $this->sql($sqlStr) ) return $sql;
+        return $this->sql($sqlStr);
 
-        return true;
+        //return true;
         //debug($sql,'$sql',1);
 
 
