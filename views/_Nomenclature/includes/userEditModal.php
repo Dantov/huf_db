@@ -1,5 +1,13 @@
 <?php
 use Views\_Globals\Models\User;
+try {
+        $isAdmin = User::permission('admin');
+        $isModer = User::permission('moder');
+        $usersEditPass = User::permission('nomUsers_editPass');
+        $userAccess = User::getAccess();
+    } catch (\Exception $e) {
+        throw new Exception("Error in User::permission" . __FILE__, 1);
+    }
 ?>
 <div class="modal fade" id="userEditModal" tabindex="-1" role="dialog" aria-labelledby="userEditModalLabel">
     <div class="modal-dialog modal-lg" role="document">
@@ -28,16 +36,18 @@ use Views\_Globals\Models\User;
                                     <input type="text" class="form-control " title="Имя" id="userThirdName"  name="userThirdName" value="">
                                 </div>
                             </div>
+                            
                             <div class="list-group-item">
                                 <div class="form-group">
                                     <label for="userLog">Логин: </label>
-                                    <input type="text" class="form-control" title="Логин" id="userLog"  name="userLog" value="">
+                                    <input type="text" class="form-control" title="Логин" id="userLog" name="userLog" value="">
                                 </div>
                                 <div class="form-group">
                                     <label for="userPass">Пароль: </label>
-                                    <input type="text" class="form-control " title="Логин" id="userPass"  name="userPass" value="">
+                                    <input type="text" class="form-control" title="Логин" id="userPass" name="userPass" value="">
                                 </div>
                             </div>
+                            
                             <div class="list-group-item">
                                 <p>
                                     <div class="btn-group" role="group" aria-label="...">
@@ -57,8 +67,7 @@ use Views\_Globals\Models\User;
                                     </div>
                                 </p>
                                 <div class="clearfix"></div>
-                                <ul class="list-group wcList">
-                                </ul>
+                                <ul class="list-group wcList"></ul>
                             </div>
                             <div class="list-group-item">
                                 <label for="userMTProd">Пресет разрешений: </label>
@@ -70,10 +79,37 @@ use Views\_Globals\Models\User;
                                     <option value="mt_prod">Производство юв. изделий</option>
                                     <option value="mt_tech">Технолог юв. изделий</option>
                                     <option value="mt_pdo">ПДО</option>
-                                    <option value="mt_admin">Админ</option>
-                                    <option value="mt_moder">Модератор</option>
+                                    <?php if ( $userAccess === 1 ): ?>
+                                        <option value="mt_admin">Админ</option>
+                                    <?php endif;?>
+                                    <?php if ( $userAccess === 122 || $userAccess === 1 ): ?>
+                                        <option value="mt_moder">Модератор</option>
+                                    <?php endif;?>
                                 </select>
                             </div>
+                            <?php if ( $userAccess === 1 ): ?>
+                                <div class="list-group-item">
+                                    <p>
+                                        <div class="btn-group" role="group" aria-label="...">
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <b>Все разрешения:</b>
+                                                    <span class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu addWCList">
+                                                    <?php foreach ($allPermissions??[] as $permission): ?>
+                                                        <li>
+                                                            <a class="addPermission" data-permID="<?=$permission['id']?>"><?=$permission['description'];?></a>
+                                                        </li>
+                                                    <?php endforeach; ?>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </p>
+                                <div class="clearfix"></div>
+                                <ul class="list-group userPermList"></ul>
+                                </div>
+                            <?php endif;?>
                         </div>
                     </form>
                 </div>
@@ -111,3 +147,11 @@ use Views\_Globals\Models\User;
     <input type="hidden" class="hidden"  name="wcList[]" value="">
     <button type="button" title="удалить" class="close deleteWCListItem" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 </li>
+
+<?php if ( $userAccess === 1 ): ?>
+<li class="list-group-item permListItemProto">
+    <span class="permDescr"></span>
+    <input type="hidden" class="hidden" name="" value="">
+    <button type="button" title="удалить" class="close deletePermListItem" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
+</li>
+<?php endif; ?>

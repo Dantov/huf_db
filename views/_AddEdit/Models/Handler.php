@@ -569,7 +569,6 @@ class Handler extends General {
 																	 gems_sizes,
 																	 gems_color,
 																	 pos_id,
-																	 number_3d
 																	) 
 															 VALUES ('$gemsName',
 																	 '$gemsCut',
@@ -577,7 +576,6 @@ class Handler extends General {
 																	 '$gemsDiam',
 																	 '$gemsColor',
 																	 '$this->id',
-																	 '$this->number_3d'
 																	)
 			");
 			if ( !$quer_gem ) {
@@ -603,13 +601,11 @@ class Handler extends General {
                                                                 vc_3dnum,
                                                                 descript,
                                                                 pos_id,
-                                                                number_3d
                                                                ) 
                                                 VALUES ('$dop_vc_name',
                                                                 '$num3d_vc',
                                                                 '$descr_dopvc',
                                                                 '$this->id',
-                                                                '$this->number_3d'
                                                                ) 
 			");
 			if ( !$quer_dop_vc ) {

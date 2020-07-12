@@ -1,4 +1,5 @@
 <?php
+use Views\_Globals\Models\User;
 $session = $this->session->getAll();
 $isView = true;
 ?>
@@ -59,6 +60,12 @@ $isView = true;
             <div role="tabpanel" class="tab-pane active in fade pt-1" id="info">
 
                 <div class="panel mb-1 descriptionPanel">
+                    <?php if ( User::permission('paymentManager') && (int)$currentStatus['id'] === 35 ): ?>
+                        <button type="button" data-toggle="modal" data-target="#sketchApproveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
+                            <i class="fas fa-magic"></i>
+                            <b>Подтвердить эскиз</b>
+                        </button>
+                    <?php endif; ?>
                     <div class="panel-heading <?=$stat_class;?> cursorArrow mb-2" title="<?=$stat_title;?>"><span class="<?=$stat_glyphi?>"></span> <?=$stat_name;?><span title="Дата последнего изменения статуса"><?=$stat_date?" - " . $stat_date:''?></span></div>
                     <ul class="list-group">
                         <li class="list-group-item">
@@ -310,3 +317,22 @@ $isView = true;
 <!-- lond cut div -->
 <div id="longTD" class="longTD hidden"></div>
 <img src="" id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="imgPrev-thumbnail hidden"/>
+
+
+<?php if ( User::permission('paymentManager') ): ?>
+<div class="modal fade" id="sketchApproveModal" tabindex="-1" role="dialog" aria-labelledby="sketchApproveModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="sketchApproveModalLabel">Утвердить эскиз в работу?</h4>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span> Отмена</button>
+        <button type="button" class="btn btn-primary pull-right" id="sketchApproveSubmit"><i class="fas fa-magic"></i> Утвердить</button>
+      </div>
+    </div>
+  </div>
+</div>
+<?php endif; ?>

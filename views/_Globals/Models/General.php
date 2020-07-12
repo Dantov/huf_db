@@ -282,6 +282,7 @@ class General
             {
                 if ( $result['stat_name'] === $status['name_ru'] )
                 {
+                    $result['id'] = $status['id'];
                     $result['class'] = $status['class'];
                     $result['classMain'] = $status['name_en'];
                     $result['glyphi'] = $status['glyphi'];
@@ -576,7 +577,7 @@ class General
     {
         if ( !is_string($sqlStr) || empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
         $query = mysqli_query( $this->connection, $sqlStr );
-        //if ( !$query ) throw new \Exception("Error in baseSql() " . mysqli_error($this->connection), 555);
+        if ( !$query ) throw new \Exception("Error in baseSql() " . mysqli_error($this->connection), 555);
 
         return $query;
     }

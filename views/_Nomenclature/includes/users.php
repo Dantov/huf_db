@@ -1,6 +1,6 @@
 <?php
     use Views\_Globals\Models\User;
-    $u = true;
+    $u = true; // нужен для nom_list.php
     try {
         $editUser = User::permission('nomUsers_edit');
     } catch (\Exception $e) {}
@@ -15,11 +15,13 @@
                 <br/>
                     <div class="panel panel-default">
                         <div class="panel-heading text-bold text-center">
-                            <a class="btn btn-sm btn-primary pull-right" id="userAddModal" type="button" title="Изменить" data-id="" data-toggle="modal" data-target="#userEditModal" role="button">
-                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                                Добавить нового пользователя
-                            </a>
-                            <div class="clearfix"></div>
+                            <?php if ( $editUser ): ?>
+                                <a class="btn btn-sm btn-primary pull-right" id="userAddModal" type="button" title="Изменить" data-id="" data-toggle="modal" data-target="#userEditModal" role="button">
+                                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                                    Добавить нового пользователя
+                                </a>
+                                <div class="clearfix"></div>
+                        <?php endif; ?>
                         </div>
                         <table class="table table-hover cursorArrow">
                             <thead>
@@ -42,9 +44,15 @@
                                     </td>
                                     <td class="text-center">
                                         <?php if ( $editUser ): ?>
-                                        <a class="btn btn-sm btn-default" type="button" title="Изменить" data-id="<?=$user['id']?>" data-toggle="modal" data-target="#userEditModal" role="button">
-                                            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-                                        </a>
+                                            <?php if ( (int)$user['access'] !== 1 ): ?>
+                                                <a class="btn btn-sm btn-default" type="button" title="Изменить" data-id="<?=$user['id']?>" data-toggle="modal" data-target="#userEditModal" role="button">
+                                                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                                </a>
+                                            <?php elseif ( User::getAccess() === 1 ): ?>
+                                                <a class="btn btn-sm btn-default" type="button" title="Изменить" data-id="<?=$user['id']?>" data-toggle="modal" data-target="#userEditModal" role="button">
+                                                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                                </a>
+                                            <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

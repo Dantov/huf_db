@@ -151,6 +151,8 @@ class ModelViewController extends GeneralController
         $statuses = $modelView->getStatuses();
         $currentStatus = $modelView->getStatus($row);
 
+        //debug( $currentStatus,'',1);
+
         $stat_name = $currentStatus['stat_name'];
         $stat_date = $currentStatus['stat_date'];
         $stat_class = $currentStatus['class'];
@@ -204,7 +206,7 @@ JS;
         $compacted = compact([
             'id','row','coll_id','getStl','button3D','dopBottomScripts','complectes','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
             'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','ai_file','stl_file','thisPage','editBtn',
-            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers','rhino_file','usedInModels','descriptions']);
+            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers','rhino_file','usedInModels','descriptions','currentStatus']);
 
         return $this->render('modelView', $compacted);
     }

@@ -118,11 +118,12 @@ UsersEditing.prototype.showUserEditModal = function(e)
             that.modal.querySelector('#userThirdName').setAttribute('value', fio[2] ? fio[2] : '');
             that.modal.querySelector('#userThirdName').value = fio[2] ? fio[2] : '';
 
-            that.modal.querySelector('#userLog').setAttribute('value', data.login);
-            that.modal.querySelector('#userLog').value = data.login;
-
-            that.modal.querySelector('#userPass').setAttribute('value', data.pass);
-            that.modal.querySelector('#userPass').value = data.pass;
+            let userLog = that.modal.querySelector('#userLog');
+                userLog.setAttribute('value', data.login);
+                userLog.value = data.login;
+            let userPass = that.modal.querySelector('#userPass');
+                userPass.setAttribute('value', data.pass);
+                userPass.value = data.pass;
 
             if ( data.location )
             {
@@ -172,6 +173,25 @@ UsersEditing.prototype.showUserEditModal = function(e)
                 });
             }
 
+            if ( data.permissions )
+            {
+                let permListUL = document.querySelector('.userPermList');
+                $.each(data.permissions, function(iter, perm)
+                {
+                    
+                    let newPermLi = document.querySelector('.permListItemProto').cloneNode(true);
+                    newPermLi.children[0].innerHTML = perm.description;
+                    newPermLi.children[1].value = iter;
+                    newPermLi.classList.remove('permListItemProto','hidden');
+                    let addPermLi = permListUL.appendChild(newPermLi);
+                    addPermLi.querySelector('.deletePermListItem').addEventListener('click', function () {
+                        //that.deleteWCListItem(this);
+                    });
+                    
+                });
+                
+            }
+
         }
     });
 };
@@ -205,7 +225,7 @@ UsersEditing.prototype.editUserButtonInit = function()
                 debug(data);
 
                 $('#userEditModal').modal('hide');
-                if ( data.success )
+                if ( data.success == 349 || data.success == 350 )
                 {
                     if ( data.success != -1 ) $('#userOKModal').modal('show');
 
@@ -214,11 +234,11 @@ UsersEditing.prototype.editUserButtonInit = function()
                     switch ( data.error  )
                     {
                         case 345: text = "Поле Фамилия должно быть заполнено"; break;
-                        case 348: text = "Поле Логин должно быть заполнено"; break;
-                        case 349: text = "Поле Пароль должно быть заполнено"; break;
+                        case 344: text = "Поля Логин и Пароль должны быть заполнены"; break;
                         case 346: text = "Ошибка! Нет такого пользователя."; break;
 
                         case 347: text = "Ошибка! Попробуйте позже."; break;
+                        case 348: text = "Ошибка! Доступ запрещен."; break;
                     }
                     alert(text);
                 }
@@ -232,6 +252,9 @@ UsersEditing.prototype.hideUserEditModal = function()
     this.editUser_ID = 0;
     this.addUser = false;
     document.querySelector('.wcList').innerHTML = '';
+    if ( document.querySelector('.userPermList') )
+        document.querySelector('.userPermList').innerHTML = '';
+    
     this.modal.querySelector('.submitUserData').classList.remove('disabled');
     if ( this.modal.querySelector('.deleteUser') )
     {
@@ -248,8 +271,12 @@ UsersEditing.prototype.userAddModal = function()
     this.modal.querySelector('#userFirstName').value = "";
     this.modal.querySelector('#userSecondName').value = '';
     this.modal.querySelector('#userThirdName').value = '';
-    this.modal.querySelector('#userLog').value = "";
-    this.modal.querySelector('#userPass').value = "";
+
+    let userLog = this.modal.querySelector('#userLog');
+    let userPass = this.modal.querySelector('#userPass');
+        userLog.value = "";
+        userPass.value = "";
+    
     this.modal.querySelector('.wcList').innerHTML = '';
 
     this.modal.querySelector('.submitUserData').children[1].innerHTML = 'Добавить';
@@ -278,6 +305,7 @@ UsersEditing.prototype.userDellInit = function()
                     data: {
                         userDell: 1,
                         userID: that.editUser_ID,
+                        userMTProd: that.modal.querySelector('#userMTProd').value,
                     },
                     beforeSend: function() {
                         button.classList.add('disabled');
@@ -299,6 +327,7 @@ UsersEditing.prototype.userDellInit = function()
                             switch ( data.error  )
                             {
                                 case 347: text = "Ошибка! Попробуйте позже."; break;
+                                case 348: text = "Ошибка! Доступ запрещен."; break;
                             }
                         }
                         alert(text);

@@ -1,16 +1,16 @@
 <?php
 namespace Views\_Nomenclature\Controllers;
 
-use Views\_Nomenclature\Models\NomenclatureModel;
-use Views\_Nomenclature\Models\GradingSystemModel;
-use Views\_Nomenclature\Models\UsersModel;
-
+use Views\_Nomenclature\Models\{NomenclatureModel, GradingSystemModel, UsersModel};
 use Views\_Globals\Controllers\GeneralController;
+use Views\_Globals\Models\User;
 
 class NomenclatureController extends GeneralController
 {
     protected $view = 'nomenclature';
     protected $tab = 1;
+
+    public $title ="Номенклатура::ХЮФ";
 
 
     /**
@@ -53,8 +53,8 @@ class NomenclatureController extends GeneralController
                 echo json_encode( $this->actionEditUserPos() );
             if ( trueIsset($request->post('userAdd')) )
                 echo json_encode( $this->actionAddUserPos() );
-            if ( trueIsset($request->post('userDell')) && trueIsset($request->post('userID')) )
-                echo json_encode( $this->actionDellUserPos( (int)$request->post('userID') ) );
+            if ( trueIsset($request->post('userDell')) && trueIsset($request->post('userID')) && trueIsset($request->post('userMTProd')) )
+                echo json_encode( $this->actionDellUserPos( (int)$request->post('userID'), $request->post('userMTProd') ) );
 
             exit;
         }
@@ -140,9 +140,11 @@ class NomenclatureController extends GeneralController
 
         $users = $usersModel->sortUsersLocations();
         $workingCentersDB = $usersModel->getWorkingCentersDB();
+        $allPermissions = [];
+        if ( User::getAccess() === 1 ) $allPermissions = $usersModel->getAllPermissions();
 
-        $this->includeJSFile('users.js', ['defer','timestamp']);
-        $this->includePHPFile('userEditModal.php',compact(['workingCentersDB']));
+        $this->includeJSFile('users.js', ['defer','timestamp'] );
+        $this->includePHPFile('userEditModal.php', compact(['workingCentersDB','allPermissions']) );
 
         $workingCentersDBJS = json_encode($workingCentersDB,JSON_UNESCAPED_UNICODE);
         $js = <<<JS
@@ -219,7 +221,13 @@ JS;
     {
         $request = $this->request;
         $gs = new GradingSystemModel();
-        return $gs->editGSPos( $request->post('description'), (float)$request->post('basePercent'), $request->post('examples'), (int)$request->post('editGS_ID'));
+
+        $description = $request->post('description');
+        $basePercent = (float)$request->post('basePercent');
+        $examples = $request->post('examples');
+        $editGS_ID = (int)$request->post('editGS_ID');
+
+        return $gs->editGSPos( $description, $basePercent, $examples, $editGS_ID );
     }
 
     /**
@@ -230,10 +238,20 @@ JS;
     protected function actionShowUserPos( int $showUserID ) : array
     {
         $usersModel = new UsersModel();
+        $userRes = [];
+        foreach ( $usersModel->sortUsersLocations() as &$user ) 
+        {
+            if ( $showUserID == $user['id'] ) 
+            {
+                $userRes = $user;
+                break;
+            }
+        }
+        if ( User::getAccess() === 1 ) $usersModel->addUserPermissions( $userRes );
 
-        foreach ( $usersModel->sortUsersLocations() as &$user ) if ( $showUserID == $user['id'] ) return $user;
+        //debug($userRes,'',1);
 
-        return [];
+        return $userRes;
     }
     /**
      * Редактирование юзера
@@ -266,10 +284,10 @@ JS;
      * @param int $userID
      * @return array
      */
-    protected function actionDellUserPos( int $userID ) : array
+    protected function actionDellUserPos( int $userID, string $userMTProd ) : array
     {
         $usersModel = new UsersModel();
-        return $usersModel->dellUserData( $userID );
+        return $usersModel->dellUserData( $userID, $userMTProd );
     }
 
 }

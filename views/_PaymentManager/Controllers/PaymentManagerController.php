@@ -18,8 +18,8 @@ class PaymentManagerController extends UserPouchController
         }
 
 
-        debug( $request->get('pm'),'PM');
-        debug( URLCrypt::decode($request->get('pm')),'',1);
+        //debug( $request->get('pm'),'PM');
+        //debug( URLCrypt::decode($request->get('pm')),'',1);
 
         $this->workerID = (int)$request->get('worker');
         $this->tab = $this->getView( (int)$request->get('tab') );

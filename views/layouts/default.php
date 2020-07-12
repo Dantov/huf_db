@@ -56,17 +56,19 @@ JS;
 
                     <ul class="nav nav-pills navbar-left inlblock" id="navnav">
                         <li role="presentation" class="<?=$this->varBlock['activeMenu']?>"><a href="/main">База</a></li>
-                            <?php if ( $_SESSION['user']['access'] < 3 ): ?>
                             <div class="btn-group">
                                 <button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-menu-hamburger"></span></button>
                                 <ul class="dropdown-menu">
-                                    <li>
-                                        <a href="/add-edit/?id=0&component=1"><span class="glyphicon glyphicon-file"></span>&#160; Добавить модель</a>
-                                    </li>
-                                    <li><a href="/nomenclature/"><span class="glyphicon glyphicon-list-alt"></span>&#160; Номенклатура</a></li>
+                                    <?php if ( User::permission('addModel') ): ?>
+                                        <li>
+                                            <a href="/add-edit/?id=0&component=1"><span class="glyphicon glyphicon-file"></span>&#160; Добавить модель</a>
+                                        </li>
+                                    <?php endif;?>
+                                    <?php if ( User::permission('nomtnclature') ): ?>
+                                        <li><a href="/nomenclature/"><span class="glyphicon glyphicon-list-alt"></span>&#160; Номенклатура</a></li>
+                                    <?php endif;?>
                                 </ul>
                             </div>
-                            <?php endif;?>
                         <li role="presentation">
                             <button id="collSelect" data-izimodal-open="#collectionsModal" type="button" title="Выбрать Коллекцию" style="font-size: 18px; padding: 5px 8px 0 8px;" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-gem"></i>
@@ -122,16 +124,27 @@ JS;
                                 <span class="glyphicon glyphicon-<?=$navBar['glphsd']?>"></span>&#160;<?= User::getFIO() ?>&#160;<span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu">
-                                <?php if ( (int)$session->getKey('user')['access'] === 1 ): ?>
-                                    <li><a href="/payment-manager/"></span><i class="fas fa-hryvnia"></i>&#160; Менеджер Оплат</a></li>
+                                <?php if ( User::permission('paymentManager') ): ?>
+                                    <li>
+                                        <a href="/payment-manager/"></span><i class="fas fa-hryvnia"></i>&#160; Менеджер Оплат</a>
+                                    </li>
                                 <?php endif; ?>
-
-                                <li><a href="/user-pouch/"><span class="glyphicon glyphicon-piggy-bank" aria-hidden="true"></span>&#160; Кошелек Работника</a></li>
-
-                                <li class="<?=$navBar['navbarStatsShow'];?>"><a href="<?=$navBar['navbarStatsUrl'];?>"><span class="glyphicon glyphicon-stats"></span>&#160; Статистика</a></li>
-                                <li><a href="/options/"><span class="glyphicon glyphicon-cog"></span>&#160; Опции</a></li>
-                                <li class="<?=$navBar['navbarDevShow'];?>"><a href="<?=$navBar['navbarDevUrl'];?>"><span class="glyphicon glyphicon-wrench"></span>&#160; Dev</a></li>
-                                <li class=""><a href="/help/"><i class="far fa-question-circle"></i>&#160; Помощь</a></li>
+                                <?php if ( User::permission('userPouch') ): ?>
+                                    <li>
+                                        <a href="/user-pouch/"><span class="glyphicon glyphicon-piggy-bank" aria-hidden="true"></span>&#160; Кошелек Работника</a>
+                                    </li>
+                                <?php endif; ?>
+                                <?php if ( User::permission('statistic') ): ?>
+                                    <li>
+                                        <a href="<?=$navBar['navbarStatsUrl'];?>"><span class="glyphicon glyphicon-stats"></span>&#160; Статистика</a>
+                                    </li>
+                                <?php endif; ?>
+                                <li>
+                                    <a href="/options/"><span class="glyphicon glyphicon-cog"></span>&#160; Опции</a>
+                                </li>
+                                <li class="">
+                                    <a href="/help/"><i class="far fa-question-circle"></i>&#160; Помощь</a>
+                                </li>
                                 <li role="separator" class="divider"></li>
                                 <li><a href="/auth/?a=exit"><span class="glyphicon glyphicon-log-out"></span>&#160; Выход</a></li>
                             </ul>
@@ -238,7 +251,7 @@ JS;
 ?>
         <footer class="footer" style="box-shadow: 0 -1px 5px rgba(0,0,0,.075)">
             <div class="container">
-                <?php if ( $_SESSION['user']['access'] == 1 || $_SESSION['user']['access'] == 2 ):?>
+                <?php if ( User::permission('addModel') ): ?>
                     <a href="/add-edit/?id=0&component=1" class="btn btn-primary">
                         <span class="glyphicon glyphicon-file"></span>
                         <strong> Добавить модель</strong>

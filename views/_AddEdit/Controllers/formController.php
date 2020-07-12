@@ -278,7 +278,7 @@ if ( $permissions['gems'] )
     $gems['diam']  = &$_POST['gemsDiam'];
     $gems['color'] = &$_POST['gemsColor'];
 
-    $quer_gem = $handler -> addGems( $gems );
+    $quer_gem = $handler->addGems( $gems );
 
     if ( $quer_gem ) {
     } else {
