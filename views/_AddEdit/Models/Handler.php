@@ -563,19 +563,23 @@ class Handler extends General {
 
 			if ( $gemsName == "" ) continue;
 			
+			//$sql = " INSERT INTO gems (gems_names, gems_cut, value, gems_sizes, gems_color, pos_id ) 
+						      // VALUES ('$gemsName', '$gemsCut', '$gemsVal', '$gemsDiam', '$gemsColor', '$this->id')";
+			//debug($sql,'',1);
+			
 			$quer_gem = mysqli_query($this->connection, " INSERT INTO gems (gems_names, 
 																	 gems_cut,
 																	 value,
 																	 gems_sizes,
 																	 gems_color,
-																	 pos_id,
+																	 pos_id
 																	) 
 															 VALUES ('$gemsName',
 																	 '$gemsCut',
 																	 '$gemsVal',
 																	 '$gemsDiam',
 																	 '$gemsColor',
-																	 '$this->id',
+																	 '$this->id'
 																	)
 			");
 			if ( !$quer_gem ) {
@@ -600,12 +604,12 @@ class Handler extends General {
 			$quer_dop_vc = mysqli_query($this->connection, " INSERT INTO vc_links (vc_names, 
                                                                 vc_3dnum,
                                                                 descript,
-                                                                pos_id,
+                                                                pos_id
                                                                ) 
                                                 VALUES ('$dop_vc_name',
                                                                 '$num3d_vc',
                                                                 '$descr_dopvc',
-                                                                '$this->id',
+                                                                '$this->id'
                                                                ) 
 			");
 			if ( !$quer_dop_vc ) {

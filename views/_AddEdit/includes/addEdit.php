@@ -1,4 +1,7 @@
-<!-- ЗАГОЛОВОК -->
+<?php
+use Views\_Globals\Models\User;
+$permittedFields = User::permissions();
+?>
 <div class="row mb-2">
     <div class="col-xs-12 col-sm-8">
         <div class="text-warning text-justify font" id="topName" style="font-size: 130%">
@@ -51,11 +54,11 @@
 <form method="POST" id="addform" enctype="multipart/form-data">
 
     <ul class="nav nav-tabs text-center">
-        <li role="presentation" class="active" title="Текстовая информация"><a href="#baseData" role="tab" data-toggle="tab">Текстовые Данные</a></li>
+        <li role="presentation" class="" title="Текстовая информация"><a href="#baseData" role="tab" data-toggle="tab">Текстовые Данные</a></li>
         <?php if ( $permittedFields['files'] ): ?>
             <li role="presentation" class="" title="Файлы"><a href="#filesData" role="tab" data-toggle="tab">Файлы</a></li>
         <?php endif; ?>
-        <?php if ( $permittedFields['modelAccount'] ): ?>
+        <?php if (  $permittedFields['modelAccount'] ): ?>
             <li role="presentation" class="active" title="Стоимость работ по этой модели"><a href="#pricesData" role="tab" data-toggle="tab">Стоимости</a></li>
         <?php endif; ?>
     </ul>
@@ -599,19 +602,16 @@
         </div>
         <?php endif; ?>
 
-
-        <!-- ******************** PRICES ******************** -->
         <?php if ( $permittedFields['modelAccount'] ): ?>
+        <!-- ******************** PRICES ******************** -->
         <div role="tabpanel" class="tab-pane in fade pt-1 active" id="pricesData" >
             <div class="row">
                 <div class="col-xs-12">
                     <h4 class="text-center">
-                        Здесь, каждый человек, вносит свою стоимость работы по этой модели.<br>
-                        Все кто относится к участку <b><i>Худ. совета</i></b> должны видеть все стоимости.<br>
-                        Остальные видят только свой блок!
+                        Внесите стоимость своих работ, по текущей модели.
                     </h4>
                 </div>
-
+                <?php if ( $permittedFields['MA_design'] ): // Дизайнер?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
@@ -653,7 +653,9 @@
                         </div>
                     </div>
                 </div>
+                <?php endif;?>
 
+                <?php if ( $permittedFields['MA_modeller3D'] ): // 3Д моделлер?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
@@ -721,7 +723,9 @@
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
+                <?php if ( $permittedFields['MA_techCoord'] ): // Согласование с технологом?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
@@ -757,11 +761,51 @@
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
+                <?php if ( $permittedFields['MA_techJew'] ): // Подпись технолога?>
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <div class="panel panel-default" style="position: relative;">
+                                <div class="panel-heading" title="Стоимость Роста">
+                                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                    <strong>3D Модель: Подпись технолога</strong>
+                                </div>
+                                <table class="table">
+                                    <thead>
+                                    <tr class="thead11">
+                                        <th>№</th>
+                                        <th width="30%">Название</th>
+                                        <th width="30%">Стоимость</th>
+                                        <th>Статус</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="">
+                                    <!-- // автозаполнение -->
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Просмотр 3Д модели </td>
+                                        <td>???</td>
+                                        <td></td>
+                                    </tr>
+                                    <tr class="active text-bold">
+                                        <td style="width: 30px"></td>
+                                        <td>Всего: </td>
+                                        <td>100</td>
+                                        <td><span class="label label-default">Не зачислено!</span></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ( $permittedFields['MA_3dSupport'] ): // Поддержки?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
-                            <div class="panel-heading" title="Стоимость 3D Модели">
+                            <div class="panel-heading" title="Стоимость поддержек для 3D Модели">
                                 <span class="glyphicon glyphicon-compressed" aria-hidden="true"></span>
                                 <strong>3D Модель: Поддержки</strong>
                             </div>
@@ -793,7 +837,9 @@
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
+                <?php if ( $permittedFields['MA_3dPrinting'] ): // Рост ?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
@@ -829,7 +875,9 @@
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
+                <?php if ( $permittedFields['MA_modellerJew'] ): // Доработка модели?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
@@ -865,7 +913,9 @@
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
+                <?php if ( User::getAccess() === 1 ): // Доработка модели?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
@@ -876,6 +926,7 @@
                         </div>
                     </div>
                 </div>
+                <?php endif; ?>
 
             </div>
         </div>
