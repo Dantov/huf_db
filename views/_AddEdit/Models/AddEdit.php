@@ -153,9 +153,9 @@ class AddEdit extends General
     {
         if ( empty($this->dataTables) || !is_array($this->dataTables) ) $this->getDataTables();
 		$data_Li = [];
-        $coll = '';
         foreach ( $this->dataTables as $name => $data )
         {
+            $coll = '';
             if ( !in_array($name, ['collections', 'author', 'modeller3d', 'model_type', 'jeweler']) ) continue;
             if ( $name == 'collections' )  $coll = 'coll';
             foreach ( $data as $arrayLi )
@@ -279,6 +279,11 @@ class AddEdit extends General
     {
         return $this->findOne( " SELECT * FROM ai_files WHERE pos_id='$this->id' ");
 	}
+
+    public function getModelPrices()
+    {
+        return $this->findAsArray( " SELECT * FROM model_prices WHERE pos_id='$this->id' ");
+    }
 
 	/*	Старый вариант
 	public function getMaterial($str_material) 
@@ -619,4 +624,21 @@ class AddEdit extends General
 		return $labels;
 	}
 
+    /**
+    * Возьмем систему оценок
+    */
+    public $gsArray = [];
+    public function gradingSystem( int $gradeType = 0 ) : array
+    {
+        //if ( !empty($this->gsArray) ) return $this->gsArray;
+
+        $gs = $this->findAsArray("SELECT * FROM grading_system");
+        if ( !$gradeType ) return $this->gsArray = $gs;
+    
+        $res = [];
+        foreach ($gs as $gsRow) 
+            if ( $gsRow['grade_type'] == $gradeType ) $res[] = $gsRow;
+
+        return $res;
+    }
 }

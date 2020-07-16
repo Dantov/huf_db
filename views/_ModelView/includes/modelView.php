@@ -60,10 +60,16 @@ $isView = true;
             <div role="tabpanel" class="tab-pane active in fade pt-1" id="info">
 
                 <div class="panel mb-1 descriptionPanel">
-                    <?php if ( User::permission('paymentManager') && (int)$currentStatus['id'] === 35 ): ?>
+                    <?php if ( User::permission('paymentManager') && (int)$currentStatus['id'] === 35 ): // эскиз?> 
                         <button type="button" data-toggle="modal" data-target="#sketchApproveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
                             <i class="fas fa-magic"></i>
                             <b>Подтвердить эскиз</b>
+                        </button>
+                    <?php endif; ?>
+                    <?php if ( User::permission('MA_techJew') && (int)$currentStatus['id'] === 1 ): // На проверке?> 
+                        <button type="button" data-toggle="modal" data-target="#signTechApproveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
+                            <span class="glyphicon glyphicon-education"></span>
+                            <b>Подпись технолога</b>
                         </button>
                     <?php endif; ?>
                     <div class="panel-heading <?=$stat_class;?> cursorArrow mb-2" title="<?=$stat_title;?>"><span class="<?=$stat_glyphi?>"></span> <?=$stat_name;?><span title="Дата последнего изменения статуса"><?=$stat_date?" - " . $stat_date:''?></span></div>

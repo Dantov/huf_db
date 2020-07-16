@@ -2,7 +2,7 @@
 namespace Views\_AddEdit\Controllers;
 
 use Views\_AddEdit\Models\Handler;
-use Views\_Globals\Models\{ProgressCounter,PushNotice,SelectionsModel};
+use Views\_Globals\Models\{ProgressCounter,PushNotice,SelectionsModel,User};
 use Views\vendor\core\{Request,Sessions};
 
 $request = new Request();
@@ -20,7 +20,7 @@ $resp_arr = [];
 $resp_arr['processes'] = [];
 
 $id = (int)$request->post('id');
-if ( (int)$request->post('edit') === 2 )  //isset($_POST['edit']) && (int)$_POST['edit'] === 2
+if ( (int)$request->post('edit') === 2 )
 {
     $isEdit = true;
 } else {
@@ -36,6 +36,9 @@ try {
 } catch ( \Exception $e) {
     exit($e->getMessage() . "connectToDB Failed in" . __METHOD__ );
 }
+
+// $handler->addModeller3DPrices( $request->post('ma3Dgs') );
+// exit();
 
 $date = trim($_POST['date']);
 if ( $isEdit === true ) {
@@ -121,7 +124,7 @@ $datas = trim($datas,',');
 //============= counter point ==============//
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 
-//т.е добавляем новую модель
+// добавляем новую модель
 if ( $isEdit === false )
 {
     $id = $handler -> addNewModel($number_3d, $model_type); // возвращает id новой модели при успехе
@@ -141,11 +144,12 @@ if ( $isEdit === false )
         'UPdate'      => $date
     ];
     $handler->addStatusesTable($statusT);
-    // end
-    //debug($datas,'$datas',1);
     $updateModelData = $handler->updateDataModel($datas, $id);
 } else {
     // редактирование старой
+    if ( $status )
+        $isStatusPresent = $handler->isStatusPresent($status); 
+
     $updateModelData = $handler->updateDataModel($datas);
     $handler->updateCreater($creator_name);    // добавим создателя, если его не было
     $handler->updateStatus($status, $creator_name); // обновляем статус
@@ -333,6 +337,79 @@ if ( $permissions['repairs'] )
 //============= counter point ==============//
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 /// --------- END ремонты ----------///
+
+/// --------- Добавляем Стоимости ----------///
+//MA_design
+if ( User::permission('MA_design') )
+{
+    if ( !$isEdit ) // новая модель
+    {
+        if ( (int)$status === 35 )
+            if ( !$isStatusPresent )
+                if ( $handler->addDesignPrices('sketch') === -1 ) $resp_arr['MA_design'] = "not adding price";
+    }
+}
+if ( User::permission('MA_modeller3D') )
+{
+    if ( $isEdit )
+    {
+        if ( (int)$status === 47 )
+            // если статуса 'Готово 3D' еще не было, добавим Дизайнеру за сопровождение
+            if ( !$isStatusPresent )
+                if ( $handler->addDesignPrices('escort3D') === -1 ) $resp_arr['MA_modeller3D'] = "not adding price";
+    }
+    // инициируем вставку оценок моделироания только ели есть MA_modeller3D
+    if ( trueIsset($request->post('ma3Dgs')['gs3Dids']) )
+        $handler->addModeller3DPrices( $request->post('ma3Dgs') );
+        //$handler->addModeller3DPrices($request->post('gs3Dpoints'), $request->post('gs3Dids'), $request->post('mp3DIds'));
+}
+// MA_techCoord
+if ( User::permission('MA_techCoord') )
+{
+    if ( $isEdit )
+    {
+        if ( (int)$status === 1 ) // На проверке
+            if ( !$isStatusPresent )
+                if ( $handler->addTechPrices('onVerify') === -1 ) $resp_arr['MA_techCoord'] = "not adding price";
+
+        if ( (int)$status === 2 ) // Проверено
+            if ( !$isStatusPresent )
+                if ( $handler->addTechPrices('signed') === -1 ) $resp_arr['MA_techCoord'] = "not adding price";
+    }
+}
+// Технолог Юв (Валик)
+if ( User::permission('MA_techJew') )
+{
+    if ( $isEdit )
+    {
+        if ( (int)$status === 101 ) // Подписано технологом
+            if ( !$isStatusPresent )
+                if ( $handler->addTechPrices('SignedTechJew') === -1 ) $resp_arr['MA_techCoord'] = "not adding price";
+    }
+}
+
+if ( User::permission('MA_3dSupport') )
+{
+    if ( $isEdit )
+    {
+        if ( (int)$status === 3 ) // Поддержки
+            if ( !$isStatusPresent )
+                if ( $handler->addPrint3DPrices('supports') === -1 ) $resp_arr['MA_3dSupport'] = "not adding price";
+    }
+}
+if ( User::permission('MA_3dPrinting') )
+{
+    if ( $isEdit )
+    {
+        if ( $handler->isStatusPresent(2) ) // Есть Подписано
+            $handler->addPrintingPrices( $_POST['printingPrices']??[] );
+
+        if ( (int)$status === 5 ) //Выращено
+            if ( !$isStatusPresent )
+                if ( $handler->addPrint3DPrices('printed') === -1 ) $resp_arr['MA_3dPrinting'] = "not adding price";
+    }
+}
+/// --------- END Стоимости ----------///
 
 
 $handler->closeDB();

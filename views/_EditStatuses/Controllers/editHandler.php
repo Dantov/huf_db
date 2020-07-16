@@ -32,6 +32,49 @@ $where = "WHERE id IN (";
 
 foreach ( $_SESSION['selectionMode']['models'] as $model )
 {
+    $handler->setId( $model['id'] );
+    $isStatusPresent = $handler->isStatusPresent($status); 
+    // MA_techCoord
+    if ( User::permission('MA_techCoord') )
+    {
+        if ( $isEdit )
+        {
+            if ( (int)$status === 1 ) // На проверке
+                if ( !$isStatusPresent )
+                    if ( $handler->addTechPrices('onVerify') === -1 ) $resp_arr['MA_techCoord'] = "not adding price";
+
+            if ( (int)$status === 2 ) // Проверено
+                if ( !$isStatusPresent )
+                    if ( $handler->addTechPrices('signed') === -1 ) $resp_arr['MA_techCoord'] = "not adding price";
+        }
+    }
+    if ( User::permission('MA_techJew') )
+    {
+        if ( $isEdit )
+        {
+            if ( (int)$status === 101 ) // Подписано технологом
+                if ( !$isStatusPresent )
+                    if ( $handler->addTechPrices('SignedTechJew') === -1 ) $resp_arr['MA_techCoord'] = "not adding price";
+        }
+    }
+    if ( User::permission('MA_3dSupport') )
+    {
+        if ( $isEdit )
+        {
+            if ( (int)$status === 3 ) // Поддержки
+                if ( $handler->addPrint3DPrices('supports') === -1 ) $resp_arr['MA_3dSupport'] = "not adding price";
+        }
+    }
+    if ( User::permission('MA_3dPrinting') )
+    {
+        if ( $isEdit )
+        {
+            if ( (int)$status === 5 ) // Выращено
+                if ( !$isStatusPresent )
+                    if ( $handler->addPrint3DPrices('printed') === -1 ) $resp_arr['MA_3dPrinting'] = "not adding price";
+        }
+    }
+
     $statusT = [
         'pos_id' => $model['id'],
         'status' => $status,

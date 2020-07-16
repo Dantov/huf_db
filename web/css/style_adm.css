@@ -1420,3 +1420,7 @@ body {
 	cursor: pointer;
 }
 /* Collection Block ADD EDIT END*/
+
+.lightUpGSRow:hover {
+	background-color: #e1f2ff; 
+}

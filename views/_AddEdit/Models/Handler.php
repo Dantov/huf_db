@@ -1,6 +1,6 @@
 <?php
 namespace Views\_AddEdit\Models;
-use Views\_Globals\Models\General;
+use Views\_Globals\Models\{General,User};
 
 /**
  * общий класс, для манипуляций с базой данных MYSQL, и файлами на сервере
@@ -271,8 +271,8 @@ class Handler extends General {
         $date = $statusT['UPdate'];
         $querStr = "INSERT INTO statuses (pos_id,status,name,date) VALUES('$pos_id','$status','$name','$date')";
 
-        $quer_status =  mysqli_query($this->connection, $querStr );
-            
+        //$quer_status =  mysqli_query($this->connection, $querStr );
+        return $this->sql($querStr);
 	}
 	
 	//добавляет только номер 3д и тип, чтобы получить айди для дальнейших манипуляций
@@ -823,6 +823,194 @@ class Handler extends General {
 
         return $result;
 	}
+
+	public function isStatusPresent( int $statusID = 0 ) : bool
+	{
+		$query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$this->id' AND status='$statusID' " );
+		if ( $query->num_rows ) return true;
+        return false;
+	}
+	public function addDesignPrices( string $priceType ) : int
+	{
+		if ( $priceType === 'sketch' )
+		{
+			$userID = User::getID();
+			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='91'");
+			$points = (int)($queryGS['points'] * 100);
+			$cost_name = $queryGS['description'];
+			$grade_type = $queryGS['grade_type'];
+
+			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
+				VALUES ('$userID', 91, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+
+			return $this->sql($sql);
+		}
+		if ( $priceType === 'escort3D' )
+		{
+			$userID = 4;
+			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='92'");
+			$points = (int)($queryGS['points'] * 100);
+			$cost_name = $queryGS['description'];
+			$grade_type = $queryGS['grade_type'];
+
+			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
+				VALUES ('$userID', 92, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+
+			return $this->sql($sql);
+		}
+
+		return -1;
+	}
+
+
+	public function addModeller3DPrices( array $ma3Dgs ) : int //array $gs3Dpoints, array $gs3Dids, array $mp3DIds
+	{
+		//debug($ma3Dgs,'');
+
+		$mp3DIds = $ma3Dgs['mp3DIds'];
+		$gs3Dpoints = $ma3Dgs['gs3Dpoints'];
+		
+		// пришло на удаление
+		$toDell = $ma3Dgs['toDell'];
+		if ( trueIsset($toDell) )
+		{
+			$inD  = '';
+			foreach ($toDell as $toDellID) $inD .= $toDellID . ',';
+			$inD = '(' . rtrim($inD, ',') . ')';
+			$this->baseSql(" DELETE FROM model_prices WHERE id IN $inD ");
+		}
+		
+		$gs3Dids = $ma3Dgs['gs3Dids'];
+		$in = '';
+		foreach ($gs3Dids as $gs3Did) $in .= $gs3Did . ',';
+		$in = '(' . rtrim($in, ',') . ')';
+
+		$rows = $this->findAsArray(" SELECT id as gs_id, grade_type as is3d_grade, work_name as cost_name FROM grading_system WHERE id IN $in ");
+
+		foreach ($rows as $k => &$gsRow)
+		{
+			$gsRow['user_id'] = User::getID();
+			$gsRow['value'] = $gs3Dpoints[$k];
+			$gsRow['id'] = $mp3DIds[$k];
+			$gsRow['pos_id'] = $this->id;
+			$gsRow['date'] = $this->date;
+		}
+
+		return $this->insertUpdateRows($rows, 'model_prices');
+	} 
+
+	public function addTechPrices( string $priceType ) : int 
+	{
+		if ( $priceType === 'onVerify' )
+		{
+			$userID = User::getID(); // Будет зачислено тому кто поставил статус, если у него есть MA_techCoord
+			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='93'");
+			$points = (int)($queryGS['points'] * 100);
+			$cost_name = $queryGS['description'];
+			$grade_type = $queryGS['grade_type'];
+
+			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
+				VALUES ('$userID', 93, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+
+			return $this->sql($sql);
+		}
+
+		if ( $priceType === 'SignedTechJew' )
+		{
+			$userID = User::getID(); // Будет зачислено тому кто поставил статус, если у него есть MA_techJew
+			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='94'");
+			$points = (int)($queryGS['points'] * 100);
+			$cost_name = $queryGS['description'];
+			$grade_type = $queryGS['grade_type'];
+
+			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
+				VALUES ('$userID', 94, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+
+			return $this->sql($sql);
+		}
+
+		if ( $priceType === 'signed' ) // зачислим технологу и проверяющему и 3д модельеру
+		{
+			if ( $this->isStatusPresent(1) && $this->isStatusPresent(101) )
+			{
+				$sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='7' OR is3d_grade='1') ";
+				if ( $this->baseSql($sql) ) return 1;
+			}
+		}
+
+		return -1;
+	}
+
+	public function addPrint3DPrices( string $priceType ) : int 
+	{
+		if ( $priceType === 'supports' ) // внесем прайс поддержек
+		{
+			$userID = User::getID(); // Будет зачислено тому кто поставил статус
+			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='88'");
+			$gradeID = (int)$queryGS['id'];
+			$points = (int)($queryGS['points'] * 100);
+			$cost_name = $queryGS['description'];
+			$grade_type = $queryGS['grade_type'];
+
+			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
+				VALUES ('$userID', '$gradeID', '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+
+			return $this->sql($sql);
+		}
+
+		if ( $priceType === 'printed' ) // зачислим прайсы стоимости роста и поддержек
+		{
+			if ( $this->isStatusPresent(2) )
+			{
+				$sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='3' OR is3d_grade='5') ";
+				if ( $this->baseSql($sql) ) return 1;
+			}
+		}
+		if ( $priceType === 'printing' ) // внесение стоимостей роста
+		{
+
+		}
+	}
+	public function addPrintingPrices( array $printingPrices ) : int
+	{
+		// возьмет массив стоимостей роста из поста
+		/*
+		[ 'vax' => [ 0 => 89, 1 => 123], 'polymer' => []
+		*/
+		$mpID = $this->findOne(" SELECT id FROM model_prices WHERE is3d_grade='5' ")['id'];
+
+		$userID = User::getID(); // Будет зачислено тому кто поставил статус
+		$gradeID = '';
+		$points = '';
+		if ( trueIsset($printingPrices['vax']) )
+		{
+			$gradeID = $printingPrices['vax'][0];
+			$points = $printingPrices['vax'][1];
+		}
+		if ( trueIsset($printingPrices['polymer']) )
+		{
+			$gradeID = $printingPrices['polymer'][0];
+			$points = $printingPrices['polymer'][1];
+		}
+		$queryGS = $this->findOne("SELECT grade_type, description FROM grading_system WHERE id='$gradeID'");
+		$grade_type = $queryGS['grade_type'];
+		$cost_name = $queryGS['description'];
+
+		//если нет оценки по росту, то внесем её
+		if ( !$mpID )
+		{
+			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
+					VALUES ('$userID', '$gradeID', '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+			if ( $this->sql($sql) ) return 1;
+		} else {
+			// иначе обновим её
+			$sql = " UPDATE model_prices SET gs_id='$gradeID', cost_name='$cost_name', value='$points', date='$this->date'
+			WHERE id='$mpID' ";
+			if ( $this->baseSql($sql) ) return 1;
+		}
+
+		return -1;
+	}
 	
 	public function getModelsByType($modelType)
     {
@@ -877,6 +1065,7 @@ class Handler extends General {
 		mysqli_query($this->connection, " DELETE FROM repairs        WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM pushnotice     WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM description    WHERE pos_id='$this->id' ");
+		//mysqli_query($this->connection, " DELETE FROM model_prices   WHERE pos_id='$this->id' ");
 
 		$path = $row['number_3d'].'/'.$this->id;
 		
@@ -949,71 +1138,6 @@ class Handler extends General {
             return false;
         }
     }
-//
-//    /**
-//     * @param $imgName
-//     * @return bool
-//     * @throws \Exception
-//     */
-//    public function deleteImage($imgName)
-//    {
-//        $modelData = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ");
-//
-//		$dellQuery = mysqli_query($this->connection, " DELETE FROM images WHERE img_name='$imgName' ");
-//		if ( !$dellQuery ) throw new \Exception(__METHOD__.' Error '. mysqli_error($this->connection));
-//
-//		$file = _stockDIR_ . $modelData['number_3d']."/".$this->id."/images/".$imgName;
-//		if ( file_exists($file) )
-//		{
-//			unlink($file);
-//            return true;
-//		} else {
-//		    return false;
-//        }
-//	}
-//
-//    /**
-//     * @param $stlName
-//     * @return bool
-//     * @throws \Exception
-//     */
-//    public function deleteStl($stlName)
-//    {
-//        $modelData = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ");
-//
-//        $dellQuery = mysqli_query($this->connection, " DELETE FROM stl_files WHERE stl_name='$stlName' ");
-//        if ( !$dellQuery ) throw new \Exception(__METHOD__.' Error '. mysqli_error($this->connection));
-//
-//        $file = _stockDIR_ . $modelData['number_3d']."/".$this->id."/stl/".$stlName;
-//		if ( file_exists($file) )
-//        {
-//            unlink($file);
-//            return true;
-//        } else {
-//            return false;
-//        }
-//	}
-//
-//    /**
-//     * @param $aiName
-//     * @return bool
-//     * @throws \Exception
-//     */
-//    public function deleteAi($aiName) {
-//        $modelData = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ");
-//
-//        $dellQuery = mysqli_query($this->connection, " DELETE FROM ai_files WHERE name='$aiName' ");
-//        if ( !$dellQuery ) throw new \Exception(__METHOD__.' Error '. mysqli_error($this->connection));
-//
-//        $file = _stockDIR_ . $modelData['number_3d']."/".$this->id."/ai/".$aiName;
-//        if ( file_exists($file) )
-//        {
-//            unlink($file);
-//            return true;
-//        } else {
-//            return false;
-//        }
-//	}
 
 	public function deletePDF($pdfName) {
 		
@@ -1027,68 +1151,7 @@ class Handler extends General {
 		return false;
 	}
 	
-	public function likePos($id) {
-		
-		function addtostock($id, $connection) {
-			$result = mysqli_query($connection, " SELECT likes FROM stock WHERE id='$id' ");
-		
-			$row = mysqli_fetch_assoc($result);
-			$likes = $row['likes']+1;
-			$addIPS = mysqli_query($connection, " UPDATE stock SET likes='$likes' WHERE id='$id' ");
-			if ($addIPS) return $likes;
-			return false;
-		}
-		
-		$ipsQuer = mysqli_query($this->connection, " SELECT * FROM ips WHERE ip='$this->IP_visiter' ");
-		if ( $ipsQuer->num_rows > 0 ) {
-			
-			$row = mysqli_fetch_assoc($ipsQuer);
-			$str = $row['liked_pos'];
-			$str .= $id.';';
-			$quer = mysqli_query($this->connection, " UPDATE ips SET liked_pos='$str' WHERE ip='$this->IP_visiter' ");
-			if ($quer) {
-				$likes = addtostock($id,$this->connection);
-			} else {
-				printf( "Error Add repair: %s\n", mysqli_error($this->connection) );
-				return false;
-			}
-			
-		} else {
-			$str = $id.';';
-			$quer = mysqli_query($this->connection, " INSERT INTO ips (ip, liked_pos) VALUES ('$this->IP_visiter','$str') ");
-			
-			if ($quer) {
-				$likes = addtostock($id,$this->connection);
-			} else {
-				printf( "Error Add repair: %s\n", mysqli_error($this->connection) );
-				return false;
-			}
-		}
-		
-		return $likes;
-	}
-	public function dislikePos($id) {
-		$result = mysqli_query($this->connection, " SELECT dislikes FROM stock WHERE id='$id' ");
-		
-		$row = mysqli_fetch_assoc($result);
-		$dislikes = $row['dislikes']+1;
-		$addIPS = mysqli_query($this->connection, " UPDATE stock SET dislikes='$dislikes' WHERE id='$id' ");
-		
-		$ipsQuer = mysqli_query($this->connection, " SELECT * FROM ips WHERE ip='$this->IP_visiter' ");
-		if ( $ipsQuer->num_rows > 0 ) {
-			
-			$row = mysqli_fetch_assoc($ipsQuer);
-			$str = $row['liked_pos'];
-			$str .= $id.';';
-			mysqli_query($this->connection, " UPDATE ips SET liked_pos='$str' WHERE ip='$this->IP_visiter' ");
-			
-		} else {
-			$str = $id.';';
-			$quer = mysqli_query($this->connection, " INSERT INTO ips (ip, liked_pos) VALUES ('$this->IP_visiter','$str') ");
-		}
-		
-		return $dislikes;
-	}
+	
 	public function setRepairPaid($repairID, $repairCost)
     {
         $query = mysqli_query($this->connection, " UPDATE repairs SET paid=1, cost='$repairCost' WHERE id='$repairID' ");
@@ -1306,11 +1369,14 @@ class Handler extends General {
      * @return bool|int
      * @throws \Exception
      */
-    public function insertUpdateRows($rows, $table)
+    public function insertUpdateRows(array $rows, string $table)
     {
         if ( empty($rows) || empty($table) ) return false;
         $values = '';
         $fields = [];
+
+        //debug($rows,'rows',1);
+
         foreach ($rows as $row)
         {
             $val = '';
@@ -1334,34 +1400,9 @@ class Handler extends General {
         $update = implode(',', $update);
 
         $sqlStr = "INSERT INTO $table $columns VALUES $values ON DUPLICATE KEY UPDATE $update";
+		//debug($sqlStr,'$sql',1);
 
-        //if ( $sql = $this->sql($sqlStr) ) return $sql;
         return $this->sql($sqlStr);
-
-        //return true;
-        //debug($sql,'$sql',1);
-
-
-        /*
-        $db = Yii::$app->db;
-        $sql = $db->queryBuilder->batchInsert($table, $fields, $rows );
-
-        $update = [];
-        foreach ($fields as $field)
-        {
-            $field  = $db->quoteSql($field);
-            $update[] = $field . '=VALUES(' . $field . ')';
-        }
-        $update = implode(',', $update);
-
-        try {
-            return $db->createCommand($sql . ' ON DUPLICATE KEY UPDATE '. $update )->execute();
-        } catch ( Exception $e) {
-            echo 'insertUpdateRows() Выбросил исключение: ',  $e->getMessage(), "\n";
-        }
-
-        return false;
-        */
     }
 
 }

@@ -4,6 +4,7 @@ namespace Views\_AddEdit\Controllers;
 use Views\_AddEdit\Models\AddEdit;
 use Views\_AddEdit\Models\Handler;
 use Views\_Globals\Controllers\GeneralController;
+use Views\_Globals\Models\User;
 
 class AddEditController extends GeneralController
 {
@@ -105,6 +106,8 @@ class AddEditController extends GeneralController
         $coveringsData = $dataArrays['materialsData']['coverings'];
         $handlingsData = $dataArrays['materialsData']['handlings'];
 
+        $modelPrices = [];
+
         
         if ( $component === 1 )  // чистая форма
         {
@@ -154,6 +157,8 @@ class AddEditController extends GeneralController
             $labels = $addEdit->getLabels($row['labels']);
 
             $statusesWorkingCenters = $addEdit->getStatus($row['status']['id']);
+
+            $modelPrices = $addEdit->getModelPrices();
         }
 
 
@@ -196,9 +201,15 @@ class AddEditController extends GeneralController
         {
             $this->includeJSFile('HandlerFiles.js', ['defer','timestamp'] );
             $fileTypes = ["image/jpeg", "image/png", "image/gif"]; //".3dm", ".stl", ".ai"
-            if ( $permittedFields['3dm'] && empty($rhino_file) ) $fileTypes[] = ".3dm";
+            if ( $permittedFields['rhino3dm'] && empty($rhino_file) ) $fileTypes[] = ".3dm";
             if ( $permittedFields['stl'] && empty($stl_file) ) $fileTypes[] = ".stl";
-            if ( $permittedFields['ai'] && empty($ai_file) ) $fileTypes[] = ".ai";
+            if ( $permittedFields['ai'] && empty($ai_file) ) 
+            {
+                $fileTypes[] = ".ai";   
+                $fileTypes[] = ".aI";   
+                $fileTypes[] = ".Ai";   
+                $fileTypes[] = ".AI";
+            }
             $fileTypes = json_encode($fileTypes,JSON_UNESCAPED_UNICODE);
 
             $js = <<<JS
@@ -224,10 +235,18 @@ JS;
         $this->includePHPFile('num3dVC_input_Proto.php', $compact1);
         $this->includePHPFile('protoGemsVC_Rows.php', $compact1);
         $this->includePHPFile('upDownSaveSideButtons.php');
+
+        $gradingSystem = $addEdit->gradingSystem();
+        if ( User::permission('modelAccount') )
+        {
+            $gradingSystem3D = $addEdit->gradingSystem(1);
+            $this->includePHPFile('grade3DModal.php', compact(['gradingSystem3D']) );
+            $this->includeJSFile('gradingSystem.js', ['defer','timestamp'] );
+        }
         
         $compact2 = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi',
-            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes',
+            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes','modelPrices','gradingSystem',
             'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI',
             'dataArrays','materialsData','coveringsData','handlingsData', 'statusesWorkingCenters','material','covering','labels','complected',
         ]);
@@ -367,5 +386,19 @@ JS;
     protected function actionFormController()
     {
         require_once "formController.php";
+    }
+
+    /**
+    * Проверим оценку на зачисление
+    */
+    protected function isCredited( array $modelPrices = [], int $gradeType ) : bool
+    {
+        //debug($modelPrices,'$modelPrices',1);
+        foreach ( $modelPrices as $modelPrice )
+        {
+            if ( (int)$modelPrice['is3d_grade'] !== $gradeType ) continue;
+            if ( $modelPrice['status'] ) return true;
+        }
+        return false;
     }
 }

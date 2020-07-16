@@ -399,7 +399,7 @@ $permittedFields = User::permissions();
                 <?php endif; ?>
 
 
-                <?php if ( $permittedFields['statuses'] ): ?>
+                <?php if ( User::permission('statuses') ): //$permittedFields['statuses'] ?>
                     <!-- Statuses -->
                     <div class="col-xs-12 status" id="workingCenters">
                         <p title="Текущий статус" style="cursor: default;">
@@ -431,7 +431,7 @@ $permittedFields = User::permissions();
                              */
                             $barubina = 'statusesPanelBodyHidden';
                             $userAccess = (int)$_SESSION['user']['access'];
-                            if ( $userAccess > 1 ) $barubina = '';
+                            if ( $userAccess > 3 ) $barubina = '';
                             ?>
                             <?php foreach ( $statusesWorkingCenters??[] as $wcName => $workingCenter ) :?>
                                 <div class="panel panel-info" style="position:relative;">
@@ -462,13 +462,15 @@ $permittedFields = User::permissions();
                                 <?php $c++; ?>
                                 <?php if ( !($c % 4) ) $c = 0; ?>
                             <?php endforeach; ?>
-
                             <?php ob_end_clean(); ?>
-
+                            
+                            <?php if ( !(User::getAccess() === 2 && $row['status']['id'] == 35) ): // ?>
                             <div class="col-xs-3" style="padding-right: 2px;"><?php echo $columns[0] ?></div>
                             <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[1] ?></div>
                             <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[2] ?></div>
                             <div class="col-xs-3" style="padding-left: 2px;"><?php echo $columns[3] ?></div>
+                            <?php endif; ?>
+
                         </div>
                     </div>
                     <!-- END Statuses -->
@@ -611,6 +613,7 @@ $permittedFields = User::permissions();
                         Внесите стоимость своих работ, по текущей модели.
                     </h4>
                 </div>
+                <?php $wholeTotal = 0; ?>
                 <?php if ( $permittedFields['MA_design'] ): // Дизайнер?>
                 <div class="col-xs-12">
                     <div class="form-group">
@@ -630,23 +633,36 @@ $permittedFields = User::permissions();
                                 </thead>
                                 <tbody id="">
                                 <!-- // автозаполнение -->
-                                <tr>
-                                    <td style="width: 30px">1</td>
-                                    <td>Эскиз</td>
-                                    <td>285</td>
-                                    <td><span class="label label-success ">Оплачено!</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="width: 30px">2</td>
-                                    <td>Сопровождение</td>
-                                    <td>150</td>
-                                    <td><span class="label label-primary ">Зачислено!</span><span class="label label-default ">Не оплачено!</span></td>
-                                </tr>
+                                <?php $pr_total = 0; $pr_paid = 0; $pr_notPaid = 0; $priceNum = 1; ?>
+                                <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
+                                    <?php if ( (int)$modelPrice['is3d_grade'] !== 2 ) continue; ?>
+                                    <?php $pr_total += $modelPrice['value']; ?>
+                                    <tr>
+                                        <td style="width: 30px"><?= $priceNum++ ?></td>
+                                        <td><?= $modelPrice['cost_name'] ?></td>
+                                        <td><?= $modelPrice['value'] ?></td>
+                                        <td>
+                                        <?php if ( (int)$modelPrice['status'] === 1 ): ?>
+                                            <span class="label label-primary ">Зачислено!</span>
+                                        <?php else: ?>
+                                            <span class="label label-default ">Не зачислено!</span>
+                                        <?php endif; ?>
+                                        <?php if ( (int)$modelPrice['paid'] === 1 ): ?>
+                                            <?php $pr_paid += $modelPrice['value']; ?>
+                                            <span class="label label-success ">Оплачено!</span>
+                                        <?php else: ?>
+                                            <?php $pr_notPaid += $modelPrice['value']; ?>
+                                            <span class="label label-default ">Не Оплачено!</span>
+                                        <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                                 <tr class="active text-bold">
                                     <td style="width: 30px"></td>
                                     <td>Всего: </td>
-                                    <td>435</td>
-                                    <td>Оплачено: 285 / Не оплачено: 150</td>
+                                    <td><?= $pr_total; ?></td>
+                                    <?php $wholeTotal += $pr_total; ?>
+                                    <td>Оплачено: <?= $pr_paid; ?> / Не оплачено: <?= $pr_notPaid; ?></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -662,60 +678,76 @@ $permittedFields = User::permissions();
                             <div class="panel-heading" title="Стоимость 3D Модели">
                                 <i class="fas fa-cube"></i>
                                 <strong>3D Модель: Моделирование</strong>
-                                <button class="btn btn-sm btn-default pull-right" style="top:-5px !important; position:relative;" type="button" title="Добавить оценку">
-                                    <span class="glyphicon glyphicon-plus"></span>
-                                </button>
+                                <?php if ( !$this->isCredited($modelPrices, 1) ): ?>
+                                    <button class="btn btn-sm btn-default pull-right" style="top:-5px !important; position:relative;" data-toggle="modal" data-target="#grade3DModal" type="button" title="Добавить оценку">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
+                                <?php endif; ?>
                             </div>
                             <table class="table">
                                 <thead>
                                 <tr class="thead11">
                                     <th>№</th>
                                     <th width="30%">Название</th>
-                                    <th width="30%">Баллы</th>
+                                    <th width="30%">Стоимость</th>
                                     <th>Статус</th>
                                     <th></th>
                                 </tr>
                                 </thead>
-                                <tbody id="">
+                                <tbody class="modeller3D">
                                 <!-- // автозаполнение -->
-                                    <tr>
-                                        <td style="width: 30px">1</td>
-                                        <td>База</td>
-                                        <td>5,6</td>
-                                        <td></td>
+                                <?php $pr_total = 0; $modelPriceStatus = 0; $modelPricePaid = 0; $priceNum = 0; ?>
+                                <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
+                                    <?php if ( (int)$modelPrice['is3d_grade'] !== 1 ) continue; ?>
+                                    <tr data-gradeID="<?= $modelPrice['gs_id'] ?>">
+                                        <td style="width: 30px"><?= ++$priceNum ?></td>
+                                        <td>
+                                            <?php $mpTitle = $modelPrice['cost_name']; foreach ( $gradingSystem as $gsRow ) if ( $gsRow['id'] == $modelPrice['gs_id'] ) $mpTitle = $gsRow['description']; ?>
+                                            <div class="cursorPointer lightUpGSRow" data-toggle="tooltip" data-placement="bottom" title="<?=$mpTitle?>" style="width: 100%">
+                                                <?=$modelPrice['cost_name'] ?>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <?= $modelPrice['value'] ?>
+                                        </td>
+                                        <?php $pr_total += $modelPrice['value']; ?>
+                                        <td>
+                                            <?php if ( !$this->isCredited($modelPrices, 1) ): ?>
+                                                <input hidden class="hidden" value="<?= $modelPrice['id'] ?>"    name="ma3Dgs[mp3DIds][] ">
+                                                <input hidden class="hidden" value="<?= $modelPrice['value'] ?>" name="ma3Dgs[gs3Dpoints][] ">
+                                                <input hidden class="hidden" value="<?= $modelPrice['gs_id'] ?>" name="ma3Dgs[gs3Dids][] ">
+                                            <?php endif; ?>
+                                            <?php $modelPriceStatus = (int)$modelPrice['status'] ?>
+                                            <?php $modelPricePaid = (int)$modelPrice['paid'] ?>
+                                        </td>
                                         <td style="width:100px;">
-                                            <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
+                                            <?php if ( !$modelPriceStatus ): ?>
+                                            <button class="btn btn-sm btn-default ma3DgsDell" type="button" onclick="deleteRow(this);" title="Удалить Оценку">
                                                 <span class="glyphicon glyphicon-trash"></span>
                                             </button>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td style="width: 30px">2</td>
-                                        <td>Моделирование по фото</td>
-                                        <td>1,4</td>
-                                        <td></td>
-                                        <td style="width:100px;">
-                                            <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
-                                                <span class="glyphicon glyphicon-trash"></span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td style="width: 30px">3</td>
-                                        <td>Усложненный конструктив</td>
-                                        <td>2,8</td>
-                                        <td></td>
-                                        <td style="width:100px;">
-                                            <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
-                                                <span class="glyphicon glyphicon-trash"></span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr class="active text-bold">
+                                    <?php endforeach; ?>
+                                    <tr class="active text-bold t-total">
                                         <td style="width: 30px"></td>
                                         <td>Всего: </td>
-                                        <td>980</td>
-                                        <td><span class="label label-default">Не зачислено!</span></td>
+                                        <td><?= $pr_total; ?></td>
+                                        <?php $wholeTotal += $pr_total; ?>
+                                        <td>
+                                            <?php if ( $priceNum ): ?>
+                                                <?php if ( $modelPriceStatus === 1 ): ?>
+                                                    <span class="label label-primary ">Зачислено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не зачислено!</span>
+                                                <?php endif; ?>
+                                                <?php if ( $modelPricePaid === 1 ): ?>
+                                                    <span class="label label-success ">Оплачено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не Оплачено!</span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </td>
                                         <td style="width:100px;"></td>
                                     </tr>
                                 </tbody>
@@ -730,7 +762,7 @@ $permittedFields = User::permissions();
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
                             <div class="panel-heading" title="Стоимость Роста">
-                                <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                                <i class="fas fa-user-check"></i>
                                 <strong>3D Модель: Согласование с технологом</strong>
                             </div>
                             <table class="table">
@@ -744,18 +776,40 @@ $permittedFields = User::permissions();
                                 </thead>
                                 <tbody id="">
                                 <!-- // автозаполнение -->
-                                <tr>
-                                    <td>1</td>
-                                    <td>Приём модели</td>
-                                    <td>100</td>
-                                    <td></td>
-                                </tr>
-                                <tr class="active text-bold">
-                                    <td style="width: 30px"></td>
-                                    <td>Всего: </td>
-                                    <td>100</td>
-                                    <td><span class="label label-default">Не зачислено!</span></td>
-                                </tr>
+                                <?php $pr_total = 0; $modelPriceStatus = 0; $modelPricePaid = 0; $priceNum = 0; ?>
+                                    <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
+                                        <?php if ( (int)$modelPrice['is3d_grade'] !== 4 ) continue; ?>
+                                        <?php $pr_total += $modelPrice['value']; ?>
+                                        <tr>
+                                            <td style="width: 30px"><?= ++$priceNum ?></td>
+                                            <td><?= $modelPrice['cost_name'] ?></td>
+                                            <td><?= $modelPrice['value'] ?></td>
+                                            <td>
+                                            <?php $modelPriceStatus = (int)$modelPrice['status'] ?>
+                                            <?php $modelPricePaid = (int)$modelPrice['paid'] ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    <tr class="active text-bold">
+                                        <td style="width: 30px"></td>
+                                        <td>Всего: </td>
+                                        <td><?= $pr_total; ?></td>
+                                        <?php $wholeTotal += $pr_total; ?>
+                                        <td>
+                                            <?php if ( $priceNum ): ?>
+                                                <?php if ( $modelPriceStatus === 1 ): ?>
+                                                    <span class="label label-primary ">Зачислено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не зачислено!</span>
+                                                <?php endif; ?>
+                                                <?php if ( $modelPricePaid === 1 ): ?>
+                                                    <span class="label label-success ">Оплачено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не Оплачено!</span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -768,8 +822,8 @@ $permittedFields = User::permissions();
                         <div class="form-group">
                             <div class="panel panel-default" style="position: relative;">
                                 <div class="panel-heading" title="Стоимость Роста">
-                                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-                                    <strong>3D Модель: Подпись технолога</strong>
+                                    <i class="fas fa-user-edit"></i>
+                                    <strong>Подпись технолога</strong>
                                 </div>
                                 <table class="table">
                                     <thead>
@@ -782,17 +836,39 @@ $permittedFields = User::permissions();
                                     </thead>
                                     <tbody id="">
                                     <!-- // автозаполнение -->
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Просмотр 3Д модели </td>
-                                        <td>???</td>
-                                        <td></td>
-                                    </tr>
+                                    <?php $pr_total = 0; $modelPriceStatus = 0; $modelPricePaid = 0; $priceNum = 0; ?>
+                                    <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
+                                        <?php if ( (int)$modelPrice['is3d_grade'] !== 7 ) continue; ?>
+                                        <?php $pr_total += $modelPrice['value']; ?>
+                                        <tr>
+                                            <td style="width: 30px"><?= ++$priceNum ?></td>
+                                            <td><?= $modelPrice['cost_name'] ?></td>
+                                            <td><?= $modelPrice['value'] ?></td>
+                                            <td>
+                                            <?php $modelPriceStatus = (int)$modelPrice['status'] ?>
+                                            <?php $modelPricePaid = (int)$modelPrice['paid'] ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
                                     <tr class="active text-bold">
                                         <td style="width: 30px"></td>
                                         <td>Всего: </td>
-                                        <td>100</td>
-                                        <td><span class="label label-default">Не зачислено!</span></td>
+                                        <td><?= $pr_total; ?></td>
+                                        <?php $wholeTotal += $pr_total; ?>
+                                        <td>
+                                            <?php if ( $priceNum ): ?>
+                                                <?php if ( $modelPriceStatus === 1 ): ?>
+                                                    <span class="label label-primary ">Зачислено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не зачислено!</span>
+                                                <?php endif; ?>
+                                                <?php if ( $modelPricePaid === 1 ): ?>
+                                                    <span class="label label-success ">Оплачено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не Оплачено!</span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -820,18 +896,38 @@ $permittedFields = User::permissions();
                                 </thead>
                                 <tbody id="">
                                 <!-- // автозаполнение -->
-                                <tr>
-                                    <td>1</td>
-                                    <td>Поддержки</td>
-                                    <td>35</td>
-                                    <td></td>
-                                </tr>
-                                <tr class="active text-bold">
-                                    <td style="width: 30px"></td>
-                                    <td>Всего: </td>
-                                    <td>35</td>
-                                    <td><span class="label label-primary">Зачислено!</span></td>
-                                </tr>
+                                <?php $pr_total = 0; $modelPriceStatus = 0; $modelPricePaid = 0; $priceNum = 0; ?>
+                                    <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
+                                        <?php if ( (int)$modelPrice['is3d_grade'] !== 3 ) continue; ?>
+                                        <?php $pr_total += $modelPrice['value']; ?>
+                                        <tr>
+                                            <td style="width: 30px"><?= ++$priceNum ?></td>
+                                            <td><?= $modelPrice['cost_name'] ?></td>
+                                            <td><?= $modelPrice['value'] ?></td>
+                                            <td>
+                                                <?php $modelPriceStatus = (int)$modelPrice['status'] ?>
+                                                <?php $modelPricePaid = (int)$modelPrice['paid'] ?>
+                                                <?php if ( $modelPriceStatus === 1 ): ?>
+                                                    <span class="label label-primary ">Зачислено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не зачислено!</span>
+                                                <?php endif; ?>
+                                                <?php if ( $modelPricePaid === 1 ): ?>
+                                                    <span class="label label-success ">Оплачено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не Оплачено!</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    <tr class="active text-bold">
+                                        <td style="width: 30px"></td>
+                                        <td>Всего: </td>
+                                        <td><?= $pr_total; ?></td>
+                                        <?php $wholeTotal += $pr_total; ?>
+                                        <td>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -858,18 +954,40 @@ $permittedFields = User::permissions();
                                 </thead>
                                 <tbody id="">
                                 <!-- // автозаполнение -->
-                                <tr>
-                                    <td>1</td>
-                                    <td>Рост 3D модели</td>
-                                    <td><input type="text" name="" class="form-control" value="120" /></td>
-                                    <td></td>
-                                </tr>
-                                <tr class="active text-bold">
-                                    <td style="width: 30px"></td>
-                                    <td>Всего: </td>
-                                    <td>120</td>
-                                    <td><span class="label label-default">Не зачислено!</span></td>
-                                </tr>
+                                <?php $pr_total = 0; $modelPriceStatus = 0; $modelPricePaid = 0; $priceNum = 0; ?>
+                                    <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
+                                        <?php if ( (int)$modelPrice['is3d_grade'] !== 5 ) continue; ?>
+                                        <?php $pr_total += $modelPrice['value']; ?>
+                                        <tr>
+                                            <td style="width: 30px"><?= ++$priceNum ?></td>
+                                            <td><?= $modelPrice['cost_name'] ?></td>
+                                            <td><?= $modelPrice['value'] ?></td>
+                                            <td>
+                                            <?php $modelPriceStatus = (int)$modelPrice['status'] ?>
+                                            <?php $modelPricePaid = (int)$modelPrice['paid'] ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    <tr class="active text-bold">
+                                        <td style="width: 30px"></td>
+                                        <td>Всего: </td>
+                                        <td><?= $pr_total; ?></td>
+                                        <?php $wholeTotal += $pr_total; ?>
+                                        <td>
+                                            <?php if ( $priceNum ): ?>
+                                                <?php if ( $modelPriceStatus === 1 ): ?>
+                                                    <span class="label label-primary ">Зачислено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не зачислено!</span>
+                                                <?php endif; ?>
+                                                <?php if ( $modelPricePaid === 1 ): ?>
+                                                    <span class="label label-success ">Оплачено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не Оплачено!</span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -896,18 +1014,37 @@ $permittedFields = User::permissions();
                                 </thead>
                                 <tbody id="">
                                 <!-- // автозаполнение -->
-                                <tr>
-                                    <td>1</td>
-                                    <td>Доработка модели</td>
-                                    <td><input type="text" name="" class="form-control" value="700" /></td>
-                                    <td></td>
-                                </tr>
-                                <tr class="active text-bold">
-                                    <td style="width: 30px"></td>
-                                    <td>Всего: </td>
-                                    <td>700</td>
-                                    <td><span class="label label-default">Не зачислено!</span></td>
-                                </tr>
+                                <?php $pr_total = 0; $pr_paid = 0; $pr_notPaid = 0; $priceNum = 1; ?>
+                                    <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
+                                        <?php if ( (int)$modelPrice['is3d_grade'] !== 6 ) continue; ?>
+                                        <?php $pr_total += $modelPrice['value']; ?>
+                                        <tr>
+                                            <td style="width: 30px"><?= $priceNum++ ?></td>
+                                            <td><?= $modelPrice['cost_name'] ?></td>
+                                            <td><?= $modelPrice['value'] ?></td>
+                                            <td>
+                                            <?php if ( (int)$modelPrice['status'] === 1 ): ?>
+                                                <span class="label label-primary ">Зачислено!</span>
+                                            <?php else: ?>
+                                                <span class="label label-default ">Не зачислено!</span>
+                                            <?php endif; ?>
+                                            <?php if ( (int)$modelPrice['paid'] === 1 ): ?>
+                                                <?php $pr_paid += $modelPrice['value']; ?>
+                                                <span class="label label-success ">Оплачено!</span>
+                                            <?php else: ?>
+                                                <?php $pr_notPaid += $modelPrice['value']; ?>
+                                                <span class="label label-default ">Не Оплачено!</span>
+                                            <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    <tr class="active text-bold">
+                                        <td style="width: 30px"></td>
+                                        <td>Всего: </td>
+                                        <td><?= $pr_total; ?></td>
+                                        <?php $wholeTotal += $pr_total; ?>
+                                        <td>Оплачено: <?= $pr_paid; ?> / Не оплачено: <?= $pr_notPaid; ?></td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -915,13 +1052,13 @@ $permittedFields = User::permissions();
                 </div>
                 <?php endif; ?>
 
-                <?php if ( User::getAccess() === 1 ): // Доработка модели?>
+                <?php if ( User::getAccess() === 1 ): // Общая стоимость ?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
                             <div class="panel-heading" title="">
                                 <i class="fas fa-hryvnia"></i>
-                                <strong>Общая стоимость: 2370</strong>
+                                <strong>Общая стоимость: <?= $wholeTotal; ?></strong>
                             </div>
                         </div>
                     </div>
@@ -962,7 +1099,7 @@ $permittedFields = User::permissions();
                 </button>
         </div><!--end col-xs-6-->
         <div class="col-xs-4">
-            <?php if ( $component === 2 && $_SESSION['user']['access'] < 3 ): ?>
+            <?php if ( $component === 2 && User::permission('dellModel') ): //$_SESSION['user']['access'] < 3 ?>
             <a type="button" class="btn btn-danger pull-right" onclick="dell_fromServ(<?=$id;?>, false, false, 1);">
                 <span class="glyphicon glyphicon-remove"></span>
                 Удалить

@@ -562,7 +562,8 @@ class General
     public function checkID( int $id, string $table='stock', string $column='id' ) : bool
     {
         if ( empty($id) || !is_int($id) ) return false;
-        $query = mysqli_query($this->connection, " select 1 from $table where $column='$id' limit 1 ");
+        $sql = " select 1 from $table where $column='$id' limit 1 ";
+        $query = mysqli_query($this->connection, $sql);
         if ( $query->num_rows ) return true;
         return false;
     }
@@ -577,7 +578,7 @@ class General
     {
         if ( !is_string($sqlStr) || empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
         $query = mysqli_query( $this->connection, $sqlStr );
-        if ( !$query ) throw new \Exception("Error in baseSql() " . mysqli_error($this->connection), 555);
+        if ( !$query ) throw new \Exception("Error in baseSql() --!! $sqlStr !!-- " . mysqli_error($this->connection), 555);
 
         return $query;
     }

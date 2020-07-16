@@ -1,5 +1,7 @@
 "use strict";
-
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+});
 // ----- Обработчик кликов на контейнер 25,02,18 ----- //
 document.querySelector('.content').addEventListener('click', function(event) {
 		let click = event.target;
