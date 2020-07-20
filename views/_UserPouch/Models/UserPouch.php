@@ -1,6 +1,7 @@
 <?php
 namespace Views\_UserPouch\Models;
 use Views\_Main\Models\Main;
+use Views\vendor\core\Registry;
 
 class UserPouch extends Main
 {
@@ -70,9 +71,15 @@ class UserPouch extends Main
         foreach ( $grades3D as $modelID => $grades )
         {
             $totalValue = 0;
-            foreach ( $grades as  $grade ) $totalValue += $grade['value'];
+            $ids = '';
+            foreach ( $grades as $grade )
+            {
+                $totalValue += $grade['value'];
+                $ids .= $grade['id'].';';
+            }
             $grades[0]['cost_name'] = '3D Моделирование';
             $grades[0]['value'] = $totalValue;
+            $grades[0]['ids_3d'] = $ids;
 
             $modelPrices[$modelID][] = $grades[0];
         }
@@ -89,12 +96,18 @@ class UserPouch extends Main
      */
     public function getStockInfo() : array
     {
-        //(SELECT DISTINCT pos_id FROM model_prices WHERE user_id={$this->user['id']} $this->paidTab )
         $sqlStock = " SELECT s.id, s.number_3d, img.pos_id, img.img_name, s.vendor_code, s.model_type, s.status FROM stock as s 
                       LEFT JOIN images as img ON (s.id = img.pos_id AND img.main=1)
                       WHERE s.id IN (SELECT DISTINCT pos_id FROM model_prices WHERE $this->worker $this->paidTab $this->date )";
 
-        return $this->findAsArray($sqlStock);
+        $result = $this->findAsArray($sqlStock);
+        foreach ( $result as &$stockModel )
+        {
+            $imgPath = $stockModel['number_3d'] . "/" .$stockModel['id'] . "/images/".$stockModel['img_name'];
+            $imgSrc  = file_exists(_stockDIR_ . $imgPath);
+            $stockModel['img_name']  =  $imgSrc ? _stockDIR_HTTP_ . $imgPath : _stockDIR_HTTP_."default.jpg";
+        }
+        return $result;
     }
 
     /**

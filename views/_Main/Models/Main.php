@@ -1,6 +1,7 @@
 <?php
 namespace Views\_Main\Models;
 use Views\_Globals\Models\General;
+use Views\_Globals\Models\User;
 
 class Main extends General {
 
@@ -823,11 +824,10 @@ class Main extends General {
      * плиткой
      * @param array $rowImages
      * @param array $row - each model data
-     * @param $comlectIdent
-     * true - drawModel вызвана в отрисовке комплекта
+     * @param $comlectIdent true - drawModel вызвана в отрисовке комплекта
      * @throws \Exception
      */
-	private function drawModel(&$row, &$rowImages, $rowStls, $comlectIdent=false)
+	private function drawModel(&$row, &$rowImages, $rowStls, $comlectIdent = false)
 	{
 		//по дефолту
 		$vc_show = "";
@@ -837,7 +837,6 @@ class Main extends General {
         $showimg = '';
         $mainIsset = false;
         $images = [];
-		//$image = [];
 		$rowId = $row['id'];
 
 		foreach ($rowImages as &$thisImage) if ( $thisImage['pos_id'] === $rowId ) $images[] = $thisImage;
@@ -863,18 +862,7 @@ class Main extends General {
                 break;
             }
         }
-        //debug($showimg,'$showimg',1);
 
-        /*
-		if ( array_key_exists($rowId, $rowImages) )
-		{
-			$image = $rowImages[$rowId];
-			$showimg = $row['number_3d'].'/'.$row['id'].'/images/'.$image['img_name'];
-		} else {
-			$showimg = "default.jpg";
-		}*/
-
-		//debug(_stockDIR_.$showimg,'$showimg');
         $path = $row['number_3d'].'/'.$row['id'].'/images/';
 		if ( !file_exists(_stockDIR_. $path . $showimg) ) // file_exists работает только с настоящим путём!! не с HTTP
 		{
@@ -886,29 +874,20 @@ class Main extends General {
 		$btn3D = false;
 		if ( array_key_exists($rowId, $rowStls) ) $btn3D = true;
 
-
 		// смотрим отрисовывать ли нам кнопку едит
 		$editBtn = false;
-		if ( $this->user['access'] > 0 ) 
-		{
-			// весь доступ 3-для влада
-			if ( $this->user['access'] == 1
-                || $this->user['access'] == 3
-                || $this->user['access'] == 4
-                || $this->user['access'] == 5
-				|| $this->user['access'] == 6 ) $editBtn = true;
-
-			// доступ только где юзер 3д моделлер или автор
-			if ( $this->user['access'] == 2 ) 
-			{ 
-				$userRowFIO = $this->user['fio'];
-				$authorFIO = $row['author'];
-				$modellerFIO = $row['modeller3D'];
-				if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE ) {
-					$editBtn = true;
-				}
-			}
-		}
+        if ( User::permission('editModel') )
+        {
+            $editBtn = true;
+        } elseif ( User::permission('editOwnModels') ) {
+            $userRowFIO = $this->user['fio'];
+            $authorFIO = $row['author'];
+            $modellerFIO = $row['modeller3D'];
+            $jewelerName = $row['jewelerName'];
+            if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE || stristr($jewelerName, $userRowFIO) !== FALSE ) {
+                $editBtn = true;
+            }
+        }
 		
 		$status = $this->getStatus($row);
 		$labels = $this->getLabels($row['labels']);	
@@ -927,9 +906,7 @@ class Main extends General {
         // проверка на всю ширину
         $columnsLG = 2;
         if ( $_SESSION['assist']['containerFullWidth'] == 1 )
-        {
             $columnsLG = 1;
-        }
         
 		require _viewsDIR_. "_Main/includes/drawModel.php";
 	}

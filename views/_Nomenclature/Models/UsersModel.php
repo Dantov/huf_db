@@ -186,6 +186,7 @@ class UsersModel extends Handler
         $rulesPreset = [
             'mt_admin' => 1,
             'mt_moder' => 122,
+            'mt_design' => 11,
             'mt_modell' => 2,
             'mt_modellHM' => 5,
             'mt_oper' => 3,
@@ -201,15 +202,18 @@ class UsersModel extends Handler
         }
         return $rulesPreset;
     }
-    protected function permissionsPreset( int $presetID ) : array
+
+    /**
+     * @param int $presetID
+     * @return array
+     * @throws \Exception
+     */
+    protected function permissionsPreset(int $presetID ) : array
     {
         if ( $presetID === 1 )
         {
             $allPerm = $this->findAsArray("SELECT id FROM permissions");
-            foreach ($allPerm as $key => $value) 
-            {
-                $allPerm[$key] = $value['id'];
-            }
+            foreach ($allPerm as $key => $value) $allPerm[$key] = $value['id'];
         }
 
         $result = [
@@ -219,9 +223,13 @@ class UsersModel extends Handler
             122 => [
                 35,36,38,40,42
             ],
+            // дизайнер, (Дзюба)
+            11 => [
+                1,2,3,4,5,6,7,8,9,10,13,15,16,17,18,19,20,21,22,23,24,25,27,28,29,31,32,33,35,36,37,38,40,41,45,46,47,48,49,50,52
+            ],
             // 3D modeller
             2 => [
-                1,2,3,4,5,6,8,9,10,13,15,16,17,18,19,20,21,22,23,24,25,27,28,29,31,32,33,35,36,37,38,45,52
+                1,2,3,4,5,6,8,9,10,13,15,16,17,18,19,20,21,22,23,24,25,27,28,29,31,32,33,35,36,37,38,52,53
             ],
             // 3D Printing
             3 => [
@@ -233,7 +241,7 @@ class UsersModel extends Handler
             ],
             // Модельер-доработчтк
             5 => [
-                7,12,19,20,21,23,24,26,27,28,32,33,35,38,45,51
+                7,12,15,19,20,21,23,24,26,27,28,32,33,35,38,45,51
             ],
             // Технолог ЮВ (Валентин)
             7 => [

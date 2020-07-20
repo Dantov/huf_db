@@ -55,17 +55,12 @@
 
                     <?php $wholeTotal = 0; ?>
                     <?php foreach ( $stockInfo??[] as $stockModel ): ?>
-                        <?php
-                            $panelID = "allModels_" . $stockModel['id']; $collapseID = "collapseAllModels_" . $stockModel['id'];
-                            $imgPath = $stockModel['number_3d'] . "/" .$stockModel['id'] . "/images/".$stockModel['img_name'];
-                            $imgSrc  = file_exists(_stockDIR_ . $imgPath);
-                            $imgSrc  =  $imgSrc ? _stockDIR_HTTP_ . $imgPath : _stockDIR_HTTP_."default.jpg";
-                        ?>
+                        <?php $panelID = "allModels_" . $stockModel['id']; $collapseID = "collapseAllModels_" . $stockModel['id']; ?>
                         <div class="col-xs-12 col-md-4 pr-0 pl-0">
                             <div class="panel panel-default mb-1">
                                 <div class="panel-heading p0" role="tab" id="<?=$panelID?>">
                                     <a class="collapsed panel-title" role="button" data-toggle="collapse" href="#<?=$collapseID?>" aria-expanded="false" aria-controls="<?=$collapseID?>">
-                                        <img src="<?= $imgSrc ?>" width="60px" class="thumbnail mb-0 d-inline" />
+                                        <img src="<?=$stockModel['img_name']?>" width="60px" class="thumbnail mb-0 d-inline" />
                                         <?= $stockModel['number_3d'] . "/" . $stockModel['vendor_code'] . " - " . $stockModel['model_type'] ?>
                                     </a>
                                     <a role="button" title="Просмотр модели" class="btn btn-sm btn-info pull-right" href="/model-view/?id=<?=$stockModel['id']?>"><span class="glyphicon glyphicon-eye-open"></span></a>

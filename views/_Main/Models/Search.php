@@ -133,7 +133,7 @@ class Search extends General
         $assist['startfromPage'] = 0;
 
         $this->session->setKey('countAmount', $countAmount);
-        $this->session->setKey('foundRow', $foundRows);
+        //$this->session->setKey('foundRow', $foundRows);
         $this->session->setKey('re_search', false);
         $this->session->setKey('assist', $assist);
 

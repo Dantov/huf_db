@@ -29,8 +29,9 @@ return [
     ],
     'csrf' => false, // валидация данных для форм и JS
     'classes' => [  // подключаемые классы
-        'cache' => 'dtw\Cache',
-        'validator' => 'libs\valitron\src\Validator',
+        //'cache' => 'dtw\Cache',
+        'appCodes' => 'Views\vendor\libs\classes\AppCodes',
+        'validator' => 'Views\vendor\libs\classes\valitron\src\Validator',
     ],
     'modules' => [
         'admin' => [

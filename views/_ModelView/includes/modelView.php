@@ -61,13 +61,13 @@ $isView = true;
 
                 <div class="panel mb-1 descriptionPanel">
                     <?php if ( User::permission('paymentManager') && (int)$currentStatus['id'] === 35 ): // эскиз?> 
-                        <button type="button" data-toggle="modal" data-target="#sketchApproveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
+                        <button type="button" id="approveSketchBtn" data-toggle="modal" data-target="#approveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
                             <i class="fas fa-magic"></i>
-                            <b>Подтвердить эскиз</b>
+                            <b>Утвердить эскиз</b>
                         </button>
                     <?php endif; ?>
                     <?php if ( User::permission('MA_techJew') && (int)$currentStatus['id'] === 1 ): // На проверке?> 
-                        <button type="button" data-toggle="modal" data-target="#signTechApproveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
+                        <button type="button" id="approve3DTechBtn" data-toggle="modal" data-target="#approveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
                             <span class="glyphicon glyphicon-education"></span>
                             <b>Подпись технолога</b>
                         </button>
@@ -325,18 +325,17 @@ $isView = true;
 <img src="" id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="imgPrev-thumbnail hidden"/>
 
 
-<?php if ( User::permission('paymentManager') ): ?>
-<div class="modal fade" id="sketchApproveModal" tabindex="-1" role="dialog" aria-labelledby="sketchApproveModalLabel">
+<?php if ( User::permission('paymentManager') || User::permission('MA_techJew') ): ?>
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title" id="sketchApproveModalLabel">Утвердить эскиз в работу?</h4>
+        <h4 class="modal-title" id="approveModalLabel">Утвердить эскиз в работу?</h4>
       </div>
-      <div class="modal-body">
-      </div>
+      <div class="modal-body"></div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span> Отмена</button>
-        <button type="button" class="btn btn-primary pull-right" id="sketchApproveSubmit"><i class="fas fa-magic"></i> Утвердить</button>
+        <button type="button" class="btn btn-primary pull-right approveSubmit"></button>
       </div>
     </div>
   </div>

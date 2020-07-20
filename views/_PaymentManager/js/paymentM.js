@@ -2,6 +2,11 @@
 
 function PaymentManager()
 {
+    this.modal = document.querySelector("#paymentModal");
+    this.modalBody = this.modal.querySelector(".modal-body");
+    this.payButton = this.modal.querySelector(".payButton");
+
+    this.priceIDs = [];
 
     this.init();
 }
@@ -12,167 +17,276 @@ PaymentManager.prototype.init = function(button)
     $('#paymentModal').on('show.bs.modal', function (e) {
         //debug(e);
         let button = e.relatedTarget;
-        if ( button.getAttribute('data-priceID') === 'all' )
+        pm.getPricesAllData(button);
+        /*
+        switch ( button.getAttribute('data-prices') )
         {
-            pm.getAllPriceData();
-        } else {
-            pm.getPriceData(button);    
+            case "allInModel": pm.getPricesData(button);    break;
+            case     "single": pm.getPricesData(button);    break;
+            case        "all": pm.getPricesAllData(button); break;
         }
+        */
     });
 
     $('#paymentModal').on('hidden.bs.modal', function (e) {
-        document.getElementById('paymentModal').querySelector('.modal-body').innerHTML = "";
+        pm.modalBody.children[0].innerHTML = "";
+        pm.modal.children[0].classList.remove("modal-lg");
+        pm.priceIDs = [];
     });
+
+    this.payButton.addEventListener('click', function () {
+        pm.payPrices();
+    },false);
 
     debug('PaymentManager init ok!');
 };
 
 PaymentManager.prototype.getPriceData = function(button) 
 {
-    // Надо будет выбрать из БД
-    //let that = this;
-    /*
+    let that = this;
+
     $.ajax({
-        url: "/options/widthControl",
+        url: "/payment-manager/?getPrice=1",
         type: 'POST',
         data: {
-            widthControl: opt
+            priceID: button.getAttribute('data-priceID'),
         },
         dataType:"json",
-        success:function(data) {
-            // if ( data.done === 1 ) console.log('показать во всю ширину');
-            // if ( data.done === 2 ) console.log('Показать по центру');
-            document.location.reload(true);
-        }
-    });
-    */
+        success:function(modelPrice) {
+            debug(modelPrice);
 
-    let inf = button.parentElement.parentElement.parentElement.parentElement;
-    //debug(inf);
-    let modal = document.getElementById('paymentModal').querySelector('.modal-body');
+            /*
+            if ( +modelPrice.status === 1 )
+            {
+                that.priceIDs.push(modelPrice.pID);
+                let newModelRow = document.querySelector('.PM_protoModel').cloneNode(true);
 
-    let modalInfo = inf.querySelector('.modelInfo').cloneNode(true);
-    let priceName_value = button.parentElement.querySelector('.priceName_value').cloneNode(true);
-    let currentWorkerName = document.querySelector('.currentWorkerName').cloneNode(true);
+                newModelRow.classList.remove('hidden','PM_protoModel');
+                let vc = modelPrice.vendorCode ? " / " + modelPrice.vendorCode : "";
+                newModelRow.querySelector('.panel-heading').innerHTML = modelPrice.number_3d + vc + " - " + modelPrice.modelType;
+                newModelRow.querySelector('.panel-body').children[0].src = modelPrice.imgName;
 
-    let br = document.createElement('br');
-    let div = document.createElement('div');
-        div.setAttribute('class','text-bold text-center');
+                let ul = newModelRow.querySelector('.list-group');
+                let span = document.createElement('span');
+                    span.innerHTML = modelPrice.costName + ": <b>" + modelPrice.value + "грн.</b> - " + modelPrice.fio + " " + modelPrice.date;
+                ul.children[0].appendChild(span);
+                that.modalBody.appendChild(newModelRow);
 
-    modal.appendChild(modalInfo);
-    modal.appendChild(br);
-    
-    div.appendChild(priceName_value);
-    modal.appendChild(div);
-    modal.appendChild(br.cloneNode());
-
-    modal.appendChild(currentWorkerName);
-};
-
-PaymentManager.prototype.getAllPriceData = function() 
-{
-    //let that = this;
-    /*
-    debug(opt,'opt');
-    $.ajax({
-        url: "/options/noticeControl",
-        type: 'POST',
-        data: {
-            noticeActivate: opt
-        },
-        dataType:"json",
-        success:function(data) {
-            if ( data.done === 1 ) console.log('Уведомления активированы');
-            if ( data.done === 2 ) console.log('Уведомления отключены');
-        }
-    });*/
-
-    let modal = document.getElementById('paymentModal').querySelector('.modal-body');
-    let modalTitle = document.getElementById('paymentModal').querySelector('.modal-title');
-
-    let row = document.querySelector('.allmodels');
-    let modelsInfo = row.querySelectorAll('.modelInfo');
-    let pricesName_value = row.querySelectorAll('.priceName_value');
-
-    let currentWorkerName = document.querySelector('.currentWorkerName').cloneNode(true);
-    let br = document.createElement('br');
-
-    modalTitle.innerHTML = "Оплатить все модели для " + currentWorkerName.innerHTML;
-
-    for( let i = 0; i < pricesName_value.length; i++ ) 
-    {
-        modal.appendChild(pricesName_value[i].cloneNode(true));
-        modal.appendChild(br.cloneNode());
-    }
-    modal.appendChild(br.cloneNode());
-    modal.appendChild(currentWorkerName);
-
-    //debug(modalsInfo,'modalsInfo');
-    //debug(pricesName_value,'pricesName_value');
-};
-
-PaymentManager.prototype.changeBgImg = function() 
-{
-    /*
-    console.log(this);
-    if ( !this.checked ) {
-        console.log('Ухожу');
-        return;
-    }
-
-    //let src = this.previousElementSibling.getAttribute('src');
-    let src = this.getAttribute('data-class');
-    console.log(src);
-    $.ajax({
-        url: "/options/changeBgImg",
-        type: 'POST',
-        data: {
-            srcBgImg: src
-        },
-        dataType:"json",
-        success:function(data) {
-            if ( data.done ) {
-                //alert('Новый фон установлен!');
-                document.querySelector('body').setAttribute('class',src);
-                //document.location.reload(true);
-            } else {
-                alert('что-то пошло не так!');
+            } else if ( modelPrice.error ) {
+                switch ( modelPrice.error )
+                {
+                    case 321: alert("Ошибка выбора стоимости."); break;
+                }
             }
+            */
         }
     });
-    */
+};
+PaymentManager.prototype.getPricesData = function(button)
+{
+    let that = this;
+
+    $.ajax({
+        url: "/payment-manager/?getPrices",
+        type: 'POST',
+        data: {
+            priceIDs: button.getAttribute('data-priceID'),
+            posID: button.getAttribute('data-posID'),
+        },
+        dataType:"json",
+        success:function(modelPrices) {
+            if ( modelPrices.error )
+            {
+                debug(modelPrices.error.code);
+                debug(modelPrices.error.message);
+                return;
+            }
+            debug(modelPrices);
+
+            let newModelRow = document.querySelector('.PM_protoModel').cloneNode(true);
+
+            newModelRow.classList.remove('hidden','PM_protoModel');
+            let vc = modelPrices[0].vendorCode ? " / " + modelPrices[0].vendorCode : "";
+            newModelRow.querySelector('.panel-heading').innerHTML = modelPrices[0].number_3d + vc + " - " + modelPrices[0].modelType;
+            newModelRow.querySelector('.panel-body').children[0].src = modelPrices[0].imgName;
+
+            let tValue = 0;
+            let ul = newModelRow.querySelector('.list-group');
+
+            $.each(modelPrices, function (i, price) {
+                that.priceIDs.push(price.pID);
+                tValue += +price.value;
+
+                let newLi = document.createElement('li');
+                    newLi.classList.add('list-group-item');
+
+                let p3D = '';
+                if ( +price.is3dGrade === 1 ) p3D = "<u>3D Моделирование: </u>";
+                let span = document.createElement('span');
+                    span.innerHTML = p3D + "<i>" + price.costName + ": </i><b>" + price.value + 'грн.</b>';
+                let spanFIO = document.createElement('span');
+                    spanFIO.classList.add('pull-right', 'small');
+                    spanFIO.innerHTML =  price.fio + " " + price.date;
+
+                let notPayedLabel = newModelRow.querySelector('.notPayed').cloneNode(true);
+                    notPayedLabel.classList.remove('hidden');
+                    notPayedLabel.classList.add('mr-1');
+                let accruedLabel = newModelRow.querySelector('.accrued').cloneNode(true);
+                    accruedLabel.classList.remove('hidden');
+                    accruedLabel.classList.add('mr-1');
+                let div = document.createElement('div');
+                    div.classList.add('pt-1');
+                    div.appendChild(accruedLabel);
+                    div.appendChild(notPayedLabel);
+
+                newLi.appendChild(span);
+                newLi.appendChild(spanFIO);
+                newLi.appendChild(div);
+
+                ul.appendChild(newLi);
+            });
+            let footer = newModelRow.querySelector('.panel-footer');
+                footer.innerHTML = "Всего: " + tValue + "грн.";
+
+            let paidType = button.getAttribute('data-prices');
+            let topText = "";
+            switch (paidType)
+            {
+                case "allInModel": topText = "Оплатить всё в модели"; break;
+                case     "single": topText = "Оплатить <i>" + modelPrices[0].costName + "</i>"; break;
+                case        "all":  topText = "Оплатить всё"; break;
+            }
+            that.modal.querySelector('.modal-title').innerHTML = topText;
+            that.modalBody.appendChild(newModelRow);
+        },
+        error:function (e) {
+            debug(e);
+        }
+    });
+
+};
+PaymentManager.prototype.getPricesAllData = function(button)
+{
+    let that = this;
+
+    $.ajax({
+        url: "/payment-manager/?getPricesAll",
+        type: 'POST',
+        data: {
+            priceIDs: button.getAttribute('data-priceID'),
+            posID: button.getAttribute('data-posID'),
+        },
+        dataType:"json",
+        success:function(models) {
+            if ( models.error )
+            {
+                debug(models.error.code);
+                debug(models.error.message);
+                return;
+            }
+            debug(models);
+
+            let totalValue = 0;
+            $.each(models, function (i, model) {
+
+                let newModelRow = document.querySelector('.PM_protoModel').cloneNode(true);
+
+                newModelRow.classList.remove('hidden','PM_protoModel');
+                let vc = model.vendorCode ? " / " + model.vendorCode : "";
+                newModelRow.querySelector('.panel-heading').innerHTML = model.number_3d + vc + " - " + model.modelType;
+                newModelRow.querySelector('.panel-body').children[0].src = model.imgName;
+
+                let tMValue = 0;
+                let ul = newModelRow.querySelector('.list-group');
+
+                $.each(model.prices, function (i, price) {
+                    that.priceIDs.push(price.pID);
+                    tMValue += +price.value;
+
+                    let newLi = document.createElement('li');
+                    newLi.classList.add('list-group-item');
+
+                    let p3D = '';
+                    if ( +price.is3dGrade === 1 ) p3D = "<u>3D Моделирование: </u>";
+                    let span = document.createElement('span');
+                    span.innerHTML = p3D + "<i>" + price.costName + ": </i><b>" + price.value + 'грн.</b>';
+                    let spanFIO = document.createElement('span');
+                    spanFIO.classList.add('pull-right', 'small');
+                    spanFIO.innerHTML =  price.fio + " " + price.date;
+
+                    let notPayedLabel = newModelRow.querySelector('.notPayed').cloneNode(true);
+                    notPayedLabel.classList.remove('hidden');
+                    notPayedLabel.classList.add('mr-1');
+                    let accruedLabel = newModelRow.querySelector('.accrued').cloneNode(true);
+                    accruedLabel.classList.remove('hidden');
+                    accruedLabel.classList.add('mr-1');
+                    let div = document.createElement('div');
+                    div.classList.add('pt-1');
+                    div.appendChild(accruedLabel);
+                    div.appendChild(notPayedLabel);
+
+                    newLi.appendChild(span);
+                    newLi.appendChild(spanFIO);
+                    newLi.appendChild(div);
+
+                    ul.appendChild(newLi);
+                });
+                totalValue += tMValue;
+
+                let footer = newModelRow.querySelector('.panel-footer');
+                footer.innerHTML = "Всего: " + tMValue + "грн.";
+
+                let paidType = button.getAttribute('data-prices');
+                let topText = "";
+                let lg = "col-lg-12";
+                switch (paidType)
+                {
+                    case "allInModel": topText = "Оплатить всё в модели"; break;
+                    case     "single": topText = "Оплатить <i>" + models[0].prices[0].costName + "</i>"; break;
+                    case        "all":
+                        topText = "Оплатить всё - <b>" + totalValue + "</b>грн.";
+                        that.modal.children[0].classList.add("modal-lg");
+                        lg = 'col-lg-6';
+                        break;
+                }
+                that.modal.querySelector('.modal-title').innerHTML = topText;
+                let col = document.createElement('div');
+                    col.classList.add('col-sm-12', lg);
+                    col.appendChild(newModelRow);
+
+                that.modalBody.children[0].appendChild(col);
+
+            });
+
+        },
+    });
+
 };
 
+PaymentManager.prototype.payPrices = function()
+{
+    let that = this;
+    $.ajax({
+        url: "/payment-manager/?payPrice=1",
+        type: 'POST',
+        data: {
+            prices: that.priceIDs,
+        },
+        dataType:"json",
+        success:function(data) {
+            if ( +data.success === 610 ) {
+                //notPayed paySuccess
+                that.modal.querySelector('.notPayed').classList.add('hidden');
+                that.modal.querySelector('.paySuccess').classList.remove('hidden');
+            } else if (data.error) {
+                alert(data.error.message + " " + data.error.code);
+            }
+        },
+        error: function (err) {
+            alert(err);
+        }
+    });
+
+};
 
 let pm = new PaymentManager();
-
-
-/*
-let width_control = document.getElementById('width_control');
-if ( width_control.checked ) {
-    width_control.addEventListener('click',function(){
-        options.widthControl(2);
-    }, false);
-} else {
-    width_control.addEventListener('click',function(){
-        options.widthControl(1);
-    }, false);
-}
-
-let PN_control = document.getElementById('PN_control');
-if ( PN_control.checked ) {
-    PN_control.addEventListener('click',function(){
-        options.noticeControl(2);
-    }, false);
-} else {
-    PN_control.addEventListener('click',function(){
-        options.noticeControl(1);
-    }, false);
-}
-
-let bgImages = document.querySelectorAll('.bg_img');
-for( let i = 0; i < bgImages.length; i++ ) {
-    bgImages[i].addEventListener('change', options.changeBgImg, false);
-}*/
-
-

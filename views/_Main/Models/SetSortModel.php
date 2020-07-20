@@ -80,8 +80,8 @@ class SetSortModel extends General
         // если в поиске что-то найдено, и он нуждается в обновлении
         if ( $session->getKey('countAmount') && $session->getKey('re_search') ) 
 	    {
-            return '/main/?searchFor=' . $session->getKey('searchFor');
-            //header("location:"  . _rootDIR_HTTP_ . "Views/Glob_Controllers/search.php?searchFor={$_SESSION['searchFor']}");
+            //return '/main/?searchFor=' . $session->getKey('searchFor');
+            return '/globals/?searchFor=' . $session->getKey('searchFor');
 	    }
         return false;
     }
@@ -242,10 +242,9 @@ class SetSortModel extends General
         if ( !empty($searchFor) ) 
         {
             $session->setKey('re_search', true);
-            return '/main/?searchFor=' . $searchFor;
+            //return '/main/?searchFor=' . $searchFor;
+            return '/globals/?searchFor=' . $searchFor;
         }
-        //
-        //header("location:"  . _rootDIR_HTTP_ . "Views/Glob_Controllers/search.php?searchFor={$_SESSION['searchFor']}");
     }
     
     protected function sortDirect($param) 

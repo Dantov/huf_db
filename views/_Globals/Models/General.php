@@ -257,11 +257,11 @@ class General
 		closedir($dir);
 		rmdir($src);
 	}
-	
-	public function unsetSessions() {
-		// удаляем автозаполнение при возврате на главную
-		//if ( isset($_SESSION['general_data']) ) unset($_SESSION['general_data']);
-	}
+
+    public function unsetSessions() {
+        // удаляем автозаполнение при возврате на главную
+        //if ( isset($_SESSION['general_data']) ) unset($_SESSION['general_data']);
+    }
 	
 	public function getStatus($row=[], $selMode='')
     {
@@ -650,6 +650,17 @@ class General
         while($row = mysqli_fetch_assoc($query)) $result[] = $row['Field'];
 
         return $result;
+    }
+
+    /**
+     * @param string $tableName
+     * @return mixed
+     * @throws \Exception
+     */
+    public function countRows(string $tableName) : int
+    {
+        if ( empty($tableName) ) throw new \Exception("Table name is empty!");
+        return $this->findOne("SELECT COUNT(1) as r FROM $tableName")['r'];
     }
 	
 }

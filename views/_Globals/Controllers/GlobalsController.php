@@ -2,21 +2,23 @@
 namespace Views\_Globals\Controllers;
 use Views\_AddEdit\Models\Handler;
 use Views\vendor\core\Controller;
-/**
- * Description of AjaxController
- *
- * @author MA
- */
+
+
 class GlobalsController extends Controller
 {
-    
-    public function action() 
+
+
+    /**
+     * @throws \Exception
+     */
+    public function action()
     {
         $request = $this->request;
-        
+        $session = $this->session;
+
         if ( $request->isAjax() )
         {
-            if ( $searchInNum = (int)$request->post('searchInNum') ) 
+            if ( $searchInNum = (int)$request->post('searchInNum') )
             {
                 $this->searchIn($searchInNum);
             }
@@ -35,6 +37,46 @@ class GlobalsController extends Controller
             }
             exit;
         }
+
+        // ******* SEARCH ******** //
+        if ( $this->getQueryParam('search') === 'resetSearch' )
+        {
+//            $session->dellKey('searchFor');
+//            $session->dellKey('foundRow');
+//            $session->dellKey('countAmount');
+//            $session->setKey('re_search', false);
+//            //return;
+//            $this->redirect('/main/');
+            $this->resetSearch();
+        }
+        if ( !empty($request->post('searchFor')) || !empty($request->get('searchFor')) || $session->getKey('re_search') )
+        {
+            $session->dellKey('foundRow');
+            $session->dellKey('countAmount');
+            $searchFor = $request->post('searchFor') ? $request->post('searchFor') : $request->get('searchFor');
+            $session->setKey('searchFor', $searchFor);
+
+            //$search = new Search($session);
+            //$this->foundRows = $search->search($searchFor);
+            //$search->search($searchFor);
+            //$session->setKey('searchFor',$searchFor);
+
+            $this->redirect('/main/');
+        } elseif ( $request->isPost() && empty($request->post('searchFor')) )
+        {
+            //$this->redirect('/globals/?search=resetSearch'); //'/main/?search=resetSearch'
+            $this->resetSearch();
+        }
+    }
+
+    protected function resetSearch() : void
+    {
+        $session = $this->session;
+        $session->dellKey('searchFor');
+        $session->dellKey('foundRow');
+        $session->dellKey('countAmount');
+        $session->setKey('re_search', false);
+        $this->redirect('/main/');
     }
     
     /**
@@ -59,6 +101,9 @@ class GlobalsController extends Controller
         echo $resp;
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function actionPushNotice()
     {
         $request = $this->request;

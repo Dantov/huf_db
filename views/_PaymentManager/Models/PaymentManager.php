@@ -1,6 +1,7 @@
 <?php
 namespace Views\_PaymentManager\Models;
 use Views\_UserPouch\Models\UserPouch;
+use Views\vendor\core\Registry;
 
 class PaymentManager extends UserPouch
 {
@@ -10,64 +11,8 @@ class PaymentManager extends UserPouch
 		parent::__construct( $paidTab, $worker, $month, $year );
 	}
 
-
-	/**
-     * @return array
-     * @throws \Exception
-     */
-	/*
-    public function getModelPrices() : array
-    {
-        $modelPrices = [];
-        $sql = "SELECT * FROM model_prices WHERE $this->worker $this->paidTab $this->date";
-        $modelPricesQuery = $this->findAsArray($sql);
-
-        //debug($sql,'$sql',1);
-
-        // отделим оценки 3д от остальных
-        $grades3D = [];
-        foreach ( $modelPricesQuery as &$mp )
-        {
-            if ( $mp['is3d_grade'] == 1 )
-            {
-                $grades3D[$mp['pos_id']][] = $mp;
-                continue;
-            }
-            $modelPrices[$mp['pos_id']][] = $mp;
-        }
-        // сливаем массивы оценок 3д в один массив
-        foreach ( $grades3D as $modelID => $grades )
-        {
-            $totalValue = 0;
-            foreach ( $grades as  $grade ) $totalValue += $grade['value'];
-            $grades[0]['cost_name'] = '3D Моделирование';
-            $grades[0]['value'] = $totalValue;
-
-            $modelPrices[$modelID][] = $grades[0];
-        }
-
-        //debug($grades3D, '$grades3D');
-        //debug($modelPrices, '$modelPrices',1);
-        unset($grades3D);
-        return $modelPrices;
-    }*/
-
-    /**
-     * @return array
-     * @throws \Exception
-     *//*
-    public function getStockInfo() : array
-    {
-        $sqlStock = " SELECT s.id, s.number_3d, img.pos_id, img.img_name, s.vendor_code, s.model_type, s.status FROM stock as s 
-                      LEFT JOIN images as img ON (s.id = img.pos_id AND img.main=1)
-                      WHERE s.id IN (SELECT DISTINCT pos_id FROM model_prices WHERE $this->worker $this->paidTab $this->date)";
-        //debug($sqlStock,'',1);
-        return $this->findAsArray($sqlStock);
-    }
-*/
     public function getActiveUsers()
     {
-    	//debug( $this->getUsers(),'getUsers' );
         $allUsers = $this->getUsers();
 
         // ID раб. участков из которых нужны юзеры
@@ -85,11 +30,97 @@ class PaymentManager extends UserPouch
                 }
             }
         }
-        //debug( $users,'users',1 );
-
         return $users;
     }
 
+    /**
+     * @param array $pricesIDs
+     * @param int $posID
+     * @return array
+     * @throws \Exception
+     */
+    public function getPricesByID( array $pricesIDs, int $posID ) : array
+    {
+        $in = "";
+        foreach ( $pricesIDs as $pID )
+            if ( !empty($pID) ) $in .= (int)$pID . ',';
+        if ( !empty($in) ) $in = "(" . rtrim($in,',') . ")";
 
+        $sql = "
+            SELECT mp.id as pID, mp.pos_id as posID, mp.user_id as uID, mp.gs_id as gsID, mp.is3d_grade as is3dGrade, mp.cost_name as costName, mp.value as value, mp.status as status,
+              mp.paid as paid, mp.pos_id as posID, mp.date as date, i.img_name as imgName, u.fio, st.number_3d as number_3d, st.vendor_code as vendorCode, st.model_type as modelType
+                FROM model_prices as mp
+                  LEFT JOIN images as i ON mp.pos_id = i.pos_id AND i.main='1'
+                  LEFT JOIN users as u ON mp.user_id = u.id
+                  LEFT JOIN stock as st ON mp.pos_id = st.id
+			          WHERE mp.id IN $in AND mp.status='1' AND mp.pos_id='$posID'";
+
+        $prices = [];
+        try {
+            $prices = $this->findAsArray($sql);
+        } catch (\Exception $e) {
+            $codes = Registry::init()->appCodes;
+            return ['error'=>$codes->getCodeMessage($codes::SERVER_ERROR)];
+        } finally {
+            foreach ( $prices as &$price ) $price['date'] = $this->formatDate($price['date']);
+
+            $imagePath = $prices[0]['number_3d'].'/'.$prices[0]['posID'].'/images/'.$prices[0]['imgName'];
+            $prices[0]['imgName'] = _stockDIR_HTTP_ . $imagePath;
+            if ( !file_exists(_stockDIR_ . $imagePath) ) $prices[0]['imgName'] = _stockDIR_HTTP_."default.jpg";
+
+            return $prices;
+        }
+    }
+
+    /**
+     * @param array $pricesIDs
+     * @param array $modelsID
+     * @return array
+     * @throws \Exception
+     */
+    public function getPricesByIDAll(array $pricesIDs, array $modelsID ) : array
+    {
+        $inPrices = "";
+        foreach ( $pricesIDs as $pID )
+            if ( !empty($pID) ) $inPrices .= (int)$pID . ',';
+        if ( !empty($inPrices) ) $inPrices = "(" . rtrim($inPrices,',') . ")";
+
+        $inModels = "";
+        foreach ( $modelsID as $mID )
+            if ( !empty($mID) ) $inModels .= (int)$mID . ',';
+        if ( !empty($inModels) ) $inModels = "(" . rtrim($inModels,',') . ")";
+
+        $stockSql = "SELECT i.img_name as imgName, st.id as id, st.number_3d as number_3d, st.vendor_code as vendorCode, st.model_type as modelType
+                    FROM stock as st
+                      LEFT JOIN images as i ON i.pos_id = st.id AND i.main='1'
+                          WHERE st.id IN $inModels";
+
+        $pricesSql = "SELECT mp.id as pID, mp.pos_id as posID, mp.user_id as uID, mp.gs_id as gsID, mp.is3d_grade as is3dGrade, mp.cost_name as costName, 
+                             mp.value as value, mp.status as status, mp.paid as paid, mp.pos_id as posID, mp.date as date, u.fio
+                        FROM model_prices as mp
+                          LEFT JOIN users as u ON mp.user_id = u.id
+                              WHERE mp.id IN $inPrices AND mp.status='1' AND mp.pos_id IN $inModels";
+        $prices = [];
+        $stock = [];
+        try {
+            $stock = $this->findAsArray($stockSql);
+            $prices = $this->findAsArray($pricesSql);
+        } catch (\Exception $e) {
+            $codes = Registry::init()->appCodes;
+            return ['error'=>$codes->getCodeMessage($codes::SERVER_ERROR)];
+        } finally {
+            foreach ( $stock as &$model )
+            {
+                $imagePath = $model['number_3d'].'/'.$model['id'].'/images/'.$model['imgName'];
+                $model['imgName'] = _stockDIR_HTTP_ . $imagePath;
+                if ( !file_exists(_stockDIR_ . $imagePath) ) $model['imgName'] = _stockDIR_HTTP_."default.jpg";
+
+                foreach ( $prices as $price )
+                    if ( $price['posID'] == $model['id'] ) $model['prices'][] = $price;
+            }
+
+            return $stock;
+        }
+    }
 
 }

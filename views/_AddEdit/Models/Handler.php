@@ -1,6 +1,7 @@
 <?php
 namespace Views\_AddEdit\Models;
 use Views\_Globals\Models\{General,User};
+use Views\vendor\core\Registry;
 
 /**
  * общий класс, для манипуляций с базой данных MYSQL, и файлами на сервере
@@ -14,6 +15,9 @@ class Handler extends General {
 	private $model_typeEn;
 	private $isEdit;
 
+    const PAY_SUCCESS = 610;
+	const NO_PERMISSION_TO_PAY = 611;
+	const PAYING_ERROR = 612;
 
     public  $date;
 	public  $forbiddenSymbols;
@@ -224,36 +228,27 @@ class Handler extends General {
         return trim($str_labels,';');
     }
 
-	public function updateStatus($status, $creator_name="")
+    /**
+     * @param $status
+     * @param string $creator_name
+     * @throws \Exception
+     */
+    public function updateStatus(int $status, $creator_name="")
 	{
-		if (empty($status)) return;
-		$quer_status =  mysqli_query($this->connection, " SELECT status FROM stock WHERE id='$this->id' " );
+		if ( empty($status) ) return;
+        $statusOld =  $this->findOne(" SELECT status FROM stock WHERE id='$this->id' " );
 
-		$_status_old = mysqli_fetch_assoc($quer_status);
-
-		// если старый статус строка - нужен КОСТЫЛЬ!!
-		if ( !((int)$_status_old['status']) )
-        {
-            foreach ($this->statuses as $tStatus)
-            {
-                if ( $tStatus['name_ru'] == $_status_old['status'] )
-                {
-                    $_status_old['status'] = $tStatus['id'];
-                    break;
-                }
-            }
-        }
-
-		if ( $_status_old['status'] != $status )
+		if ( $statusOld['status'] != $status )
 		{
-			$updQuery = " UPDATE stock SET status='$status', status_date='$this->date' WHERE id='$this->id' ";
-			$quertext = mysqli_query($this->connection, $updQuery);
+		    if ( empty($this->date) ) $this->date = date("Y-m-d");
+			$quertext = $this->baseSql(" UPDATE stock SET status='$status', status_date='$this->date' WHERE id='$this->id' ");
+
 			//04,07,19 - вносим новый статус в таблицу statuses
-			if (empty($creator_name)) $creator_name = "Guest";
+			if (empty($creator_name)) $creator_name = User::getFIO();
 			$statusT = [
 				'pos_id' => $this->id,
 				'status' => $status,
-				'creator_name'   => $creator_name,
+				'creator_name'  => $creator_name,
 				'UPdate'   => $this->date
 			];
 			$this->addStatusesTable($statusT);
@@ -302,7 +297,6 @@ class Handler extends General {
 
 		return true;
 	}
-
 	
 	public function updateCreater(&$creator_name) {
 		$quer_CN =  mysqli_query($this->connection, " SELECT creator_name FROM stock WHERE id='$this->id' " );
@@ -311,24 +305,6 @@ class Handler extends General {
 			$quertext = mysqli_query($this->connection, " UPDATE stock SET creator_name='$creator_name' WHERE id='$this->id' ");
 		}
 	}
-
-	/*
-	private function findLastNum() {
-		$findQuer = mysqli_query($this->connection, " SELECT img_name FROM images WHERE pos_id='$this->id' ");
-		if ($findQuer) {
-			while ($found_row[] = mysqli_fetch_assoc($findQuer)) {};
-			// уменьшаем на 1 т.к. созданный таким способом масив, содержит пустой последний элемент
-			$numrows = count($found_row) - 1; //- это реальная длинна массива
-			// уменьшаем еще раз т.к посл. элем. массива = его длинна - 1
-			$img_name_str = $found_row[$numrows-1]['img_name'];
-			
-			$str1 = explode(".",$img_name_str);
-			$str2 = explode("-",$str1[0]);
-			$last_number = $str2[2];
-			return $last_number;
-		}
-	}
-	*/
 	
 	public function addImageFiles($files, $imgRows)
     {
@@ -824,13 +800,24 @@ class Handler extends General {
         return $result;
 	}
 
-	public function isStatusPresent( int $statusID = 0 ) : bool
+    /**
+     * @param int $statusID
+     * @return bool
+     * @throws \Exception
+     */
+    public function isStatusPresent(int $statusID = 0 ) : bool
 	{
 		$query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$this->id' AND status='$statusID' " );
 		if ( $query->num_rows ) return true;
         return false;
 	}
-	public function addDesignPrices( string $priceType ) : int
+
+    /**
+     * @param string $priceType
+     * @return int
+     * @throws \Exception
+     */
+    public function addDesignPrices(string $priceType ) : int
 	{
 		if ( $priceType === 'sketch' )
 		{
@@ -858,12 +845,25 @@ class Handler extends General {
 
 			return $this->sql($sql);
 		}
+        if ( $priceType === 'designOK' )
+        {
+            if ( $this->isStatusPresent(35) )
+            {
+                $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND is3d_grade='2' ";
+                if ( $this->baseSql($sql) ) return 1;
+            }
+        }
 
 		return -1;
 	}
 
 
-	public function addModeller3DPrices( array $ma3Dgs ) : int //array $gs3Dpoints, array $gs3Dids, array $mp3DIds
+    /**
+     * @param array $ma3Dgs
+     * @return int
+     * @throws \Exception
+     */
+    public function addModeller3DPrices(array $ma3Dgs ) : int //array $gs3Dpoints, array $gs3Dids, array $mp3DIds
 	{
 		//debug($ma3Dgs,'');
 
@@ -897,9 +897,14 @@ class Handler extends General {
 		}
 
 		return $this->insertUpdateRows($rows, 'model_prices');
-	} 
+	}
 
-	public function addTechPrices( string $priceType ) : int 
+    /**
+     * @param string $priceType
+     * @return int
+     * @throws \Exception
+     */
+    public function addTechPrices(string $priceType ) : int
 	{
 		if ( $priceType === 'onVerify' )
 		{
@@ -933,7 +938,7 @@ class Handler extends General {
 		{
 			if ( $this->isStatusPresent(1) && $this->isStatusPresent(101) )
 			{
-				$sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='7' OR is3d_grade='1') ";
+				$sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='1') ";
 				if ( $this->baseSql($sql) ) return 1;
 			}
 		}
@@ -941,7 +946,12 @@ class Handler extends General {
 		return -1;
 	}
 
-	public function addPrint3DPrices( string $priceType ) : int 
+    /**
+     * @param string $priceType
+     * @return int
+     * @throws \Exception
+     */
+    public function addPrint3DPrices(string $priceType ) : int
 	{
 		if ( $priceType === 'supports' ) // внесем прайс поддержек
 		{
@@ -966,12 +976,52 @@ class Handler extends General {
 				if ( $this->baseSql($sql) ) return 1;
 			}
 		}
-		if ( $priceType === 'printing' ) // внесение стоимостей роста
-		{
 
-		}
+        return -1;
 	}
-	public function addPrintingPrices( array $printingPrices ) : int
+
+    /**
+     * @param string $priceType
+     * @param array $price
+     * @return bool
+     * @throws \Exception
+     */
+    public function addModJewPrices(string $priceType, array $price = [])
+    {
+        if ( $priceType === 'add' )
+        {
+            $userID = User::getID(); // Будет зачислено тому кто поставил статус
+            $queryGS = $this->findOne("SELECT id as gs_id, grade_type as is3d_grade, description as cost_name, points as value FROM grading_system WHERE id='95'");
+
+            if ( trueIsset($price['id']) ) $queryGS['id'] = (int)$price['id'];
+            $queryGS['value'] = (int)$price['value'];
+            $queryGS['user_id'] = $userID;
+            $queryGS['pos_id'] = $this->id;
+            $queryGS['date'] = $this->date;
+
+            $row = [$queryGS];
+
+            $this->insertUpdateRows($row, 'model_prices');
+        }
+
+        if ( $priceType === 'MMdone' ) // зачислим прайсы стоимости
+        {
+            if ( $this->isStatusPresent(6) ) // готовая ММ
+            {
+                $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND is3d_grade='6' ";
+                if ( $this->baseSql($sql) ) return 1;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * для внесения стоимости роста ( пока не работает, возможно на будущее )
+     * @param array $printingPrices
+     * @return int
+     * @throws \Exception
+     */
+    public function addPrintingPrices(array $printingPrices ) : int
 	{
 		// возьмет массив стоимостей роста из поста
 		/*
@@ -1011,12 +1061,32 @@ class Handler extends General {
 
 		return -1;
 	}
-	
-	public function getModelsByType($modelType)
+
+    /**
+     * Для оплаты разных стоимостей через Менеджер оплат
+     * @param array $priceIDs
+     * @return int
+     * @throws \Exception
+     */
+	public function payPrices( array $priceIDs ) : array
     {
-		
-		//include(_globDIR_.'db.php');
-		
+        $appCodes = Registry::init()->appCodes;
+        if ( !User::permission('paymentManager') ) return ['error'=>$appCodes->getMessage(self::NO_PERMISSION_TO_PAY)];
+        $in = "(";
+        foreach ($priceIDs as $pID) $in .= $pID.',';
+        $in = rtrim($in,',') . ")";
+
+        $sql = " UPDATE model_prices SET paid='1' WHERE id IN $in ";
+        $this->baseSql($sql);
+
+        if ( mysqli_affected_rows($this->connection) ) return ['success'=>$appCodes->getMessage(self::PAY_SUCCESS)];
+
+        return ['error'=>$appCodes->getMessage(self::PAYING_ERROR)];
+    }
+
+	
+	public function getModelsByType( string $modelType )
+    {
 		$names_quer = mysqli_query($this->connection, " SELECT id,number_3d,vendor_code FROM stock WHERE collections='Детали' AND model_type='$modelType' ");
 		
 		$resp = [];
@@ -1090,10 +1160,19 @@ class Handler extends General {
      * @return bool
      * @throws \Exception
      */
-    public function deleteFile( $fileName, $fileType )
+    public function deleteFile( string $fileName, string $fileType )
     {
-        if ( !is_string($fileName) || empty($fileName) || !is_string($fileType) || empty($fileType)  )
-            throw new \Exception('Имя и тип файла должен быть не пусты и string.',444);
+        if ( empty($fileName) || empty($fileType) )
+            throw new \Exception('Имя и тип файла должен быть не пусты.',444);
+
+        if ( !User::permission('files') ) return false;
+        switch ($fileType)
+        {
+            case "stl":   if ( !User::permission('stl') )      return false; break;
+            case "image": if ( !User::permission('images') )   return false; break;
+            case "ai":    if ( !User::permission('ai') )       return false; break;
+            case "3dm":   if ( !User::permission('rhino3dm') ) return false; break;
+        }
 
         $configs = [
             'stl' => [

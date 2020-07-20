@@ -180,14 +180,14 @@ $permittedFields = User::permissions();
                     </div>
                 <?php endif; ?>
 
-                <?php if ( $permittedFields['print_cost'] ): ?>
+                <?php if ( false ): // $permittedFields['print_cost']?>
                     <div class="col-xs-2 ">
                         <label for="model_weight"><span class="glyphicon glyphicon-usd"></span>	Стоимость печати:</label>
                         <input type="text" class="form-control" name="print_cost" value="<?=$row['print_cost'];?>" />
                     </div>
                 <?php endif; ?>
 
-                <?php if ( $permittedFields['model_cost'] ): ?>
+                <?php if ( false ): // $permittedFields['model_cost']?>
                     <div class="col-xs-2 ">
                         <label for="work_cost"><span class="glyphicon glyphicon-usd"></span> Стоимость доработки:</label>
                         <input type="text" class="form-control" name="model_cost" value="<?=$row['model_cost'];?>" />
@@ -399,7 +399,7 @@ $permittedFields = User::permissions();
                 <?php endif; ?>
 
 
-                <?php if ( User::permission('statuses') ): //$permittedFields['statuses'] ?>
+                <?php if ( User::permission('statuses') ): ?>
                     <!-- Statuses -->
                     <div class="col-xs-12 status" id="workingCenters">
                         <p title="Текущий статус" style="cursor: default;">
@@ -415,31 +415,21 @@ $permittedFields = User::permissions();
                             <button id="closeAll" title="Закрыть Все" onclick="event.preventDefault()" style="margin-bottom: 10px" class="pull-right hidden btn btn-sm btn-primary"><span class="glyphicon glyphicon-menu-down"></span> Закрыть Все</button>
                         <div class="clearfix"></div>
                         </p>
+                        <?php if ( $toShowStatuses ): ?>
                         <div class="row">
-                            <?php
+                        <?php
                             $countWC = count($statusesWorkingCenters?:[]);
-                            $columns = [
-                                0=>'',
-                                1=>'',
-                                2=>'',
-                                3=>'',
-                            ];
+                            $columns = [0=>'', 1=>'', 2=>'', 3=>''];
                             $c = 0;
                             ob_start();
-                            /**
-                             * У людей проблемы с открытием статусов на компах под Win Xp chrome 40 - 49
-                             */
-                            $barubina = 'statusesPanelBodyHidden';
-                            $userAccess = (int)$_SESSION['user']['access'];
-                            if ( $userAccess > 3 ) $barubina = '';
-                            ?>
+                        ?>
                             <?php foreach ( $statusesWorkingCenters??[] as $wcName => $workingCenter ) :?>
                                 <div class="panel panel-info" style="position:relative;">
                                     <div class="panel-heading">
                                         <?=$wcName?>
                                         <button title="Раскрыть" onclick="event.preventDefault()" data-status="0" class="btn btn-sm btn-info statusesChevron"><span class="glyphicon glyphicon-menu-left"></span></button>
                                     </div>
-                                    <div class="panel-body pb-0 statusesPanelBody <?=$barubina?>">
+                                    <div class="panel-body pb-0 statusesPanelBody statusesPanelBodyHidden">
                                         <?php foreach ( $workingCenter as $subUnit ) :?>
                                             <div class="list-group">
                                                 <a class="list-group-item active"><?=$subUnit['descr']?></a>
@@ -463,18 +453,17 @@ $permittedFields = User::permissions();
                                 <?php if ( !($c % 4) ) $c = 0; ?>
                             <?php endforeach; ?>
                             <?php ob_end_clean(); ?>
-                            
-                            <?php if ( !(User::getAccess() === 2 && $row['status']['id'] == 35) ): // ?>
                             <div class="col-xs-3" style="padding-right: 2px;"><?php echo $columns[0] ?></div>
                             <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[1] ?></div>
                             <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[2] ?></div>
                             <div class="col-xs-3" style="padding-left: 2px;"><?php echo $columns[3] ?></div>
-                            <?php endif; ?>
-
                         </div>
+                        <?php else:?>
+                            <p>Изменение статусов не доступно. Предыдущий участок не выпустил модель.</p>
+                        <?php endif; //$toShowStatuses?>
                     </div>
                     <!-- END Statuses -->
-                <?php endif; ?>
+                <?php endif; //statuses?>
 
             </div><!--end row-->
         </div>
@@ -935,7 +924,7 @@ $permittedFields = User::permissions();
                 </div>
                 <?php endif; ?>
 
-                <?php if ( $permittedFields['MA_3dPrinting'] ): // Рост ?>
+                <?php if ( false ): // Рост $permittedFields['MA_3dPrinting'] ?>
                 <div class="col-xs-12">
                     <div class="form-group">
                         <div class="panel panel-default" style="position: relative;">
@@ -1002,6 +991,11 @@ $permittedFields = User::permissions();
                             <div class="panel-heading" title="Стоимость Доработки">
                                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                                 <strong>Доработка модели</strong>
+                                <?php if ( !$this->isCredited($modelPrices, 6) ): ?>
+                                    <button class="btn btn-sm btn-default pull-right addModellerJewPrice" style="top:-5px !important; position:relative;" type="button" title="Добавить стоимость">
+                                        <span class="glyphicon glyphicon-plus"></span>
+                                    </button>
+                                <?php endif; ?>
                             </div>
                             <table class="table">
                                 <thead>
@@ -1010,42 +1004,67 @@ $permittedFields = User::permissions();
                                     <th width="30%">Название</th>
                                     <th width="30%">Стоимость</th>
                                     <th>Статус</th>
+                                    <th></th>
                                 </tr>
                                 </thead>
-                                <tbody id="">
+                                <tbody class="modellerJewPrices">
                                 <!-- // автозаполнение -->
-                                <?php $pr_total = 0; $pr_paid = 0; $pr_notPaid = 0; $priceNum = 1; ?>
+                                <?php $pr_total = 0; $modelPriceStatus = 0; $modelPricePaid = 0; $priceNum = 1; ?>
                                     <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
                                         <?php if ( (int)$modelPrice['is3d_grade'] !== 6 ) continue; ?>
                                         <?php $pr_total += $modelPrice['value']; ?>
+                                        <?php $modelPriceStatus = (int)$modelPrice['status'] ?>
+                                        <?php $modelPricePaid = (int)$modelPrice['paid'] ?>
                                         <tr>
                                             <td style="width: 30px"><?= $priceNum++ ?></td>
                                             <td><?= $modelPrice['cost_name'] ?></td>
-                                            <td><?= $modelPrice['value'] ?></td>
                                             <td>
-                                            <?php if ( (int)$modelPrice['status'] === 1 ): ?>
-                                                <span class="label label-primary ">Зачислено!</span>
-                                            <?php else: ?>
-                                                <span class="label label-default ">Не зачислено!</span>
-                                            <?php endif; ?>
-                                            <?php if ( (int)$modelPrice['paid'] === 1 ): ?>
-                                                <?php $pr_paid += $modelPrice['value']; ?>
-                                                <span class="label label-success ">Оплачено!</span>
-                                            <?php else: ?>
-                                                <?php $pr_notPaid += $modelPrice['value']; ?>
-                                                <span class="label label-default ">Не Оплачено!</span>
-                                            <?php endif; ?>
+                                                <?php if ( $modelPriceStatus === 1 ): ?>
+                                                    <?= $modelPrice['value'] ?>
+                                                <?php else: ?>
+                                                    <input class="form-control"  name="modellerJewPrice[value]" value="<?= $modelPrice['value'] ?>" />
+                                                    <input hidden class="hidden" name="modellerJewPrice[id]" value="<?= $modelPrice['id'] ?>" />
+                                                <?php endif; ?>
                                             </td>
+                                            <td></td>
+                                            <td></td>
                                         </tr>
                                     <?php endforeach; ?>
-                                    <tr class="active text-bold">
+                                    <tr class="active text-bold t-total">
                                         <td style="width: 30px"></td>
                                         <td>Всего: </td>
                                         <td><?= $pr_total; ?></td>
                                         <?php $wholeTotal += $pr_total; ?>
-                                        <td>Оплачено: <?= $pr_paid; ?> / Не оплачено: <?= $pr_notPaid; ?></td>
+                                        <td>
+                                            <?php if ( $priceNum ): ?>
+                                                <?php if ( $modelPriceStatus === 1 ): ?>
+                                                    <span class="label label-primary ">Зачислено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не зачислено!</span>
+                                                <?php endif; ?>
+                                                <?php if ( $modelPricePaid === 1 ): ?>
+                                                    <span class="label label-success ">Оплачено!</span>
+                                                <?php else: ?>
+                                                    <span class="label label-default ">Не Оплачено!</span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td></td>
                                     </tr>
                                 </tbody>
+                            </table>
+                            <table class="hidden">
+                                <tr class="gs_protoModJewRow">
+                                    <td style="width: 30px"></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td style="width:100px;">
+                                        <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="Удалить Оценку">
+                                            <span class="glyphicon glyphicon-trash"></span>
+                                        </button>
+                                    </td>
+                                </tr>
                             </table>
                         </div>
                     </div>

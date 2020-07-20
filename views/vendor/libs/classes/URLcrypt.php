@@ -1,6 +1,6 @@
 <?php
 
-namespace Views\vendor\core;
+namespace Views\vendor\libs\classes;
 
 
 class URLCrypt
@@ -29,23 +29,24 @@ class URLCrypt
         foreach ( $getVars as $varName => $varValue ) $uri .= $varName . "=" . $varValue . "&";
         $uri = rtrim($uri,'&');
 
-        $uri = self::myencode($uri, self::$secretKey);
+        $uri = self::strEncode($uri, self::$secretKey);
 
 
         return "?" . $queryVar . "=" .$uri;
     }
 
-    public static function decode( $ciphertext ) : string
+    public static function decode( $cipherText ) : string
     {
 
-        return self::mydecode($ciphertext,self::$secretKey);
+        return self::strDecode($cipherText,self::$secretKey);
     }
 
-    private static function myencode(string $unencoded, string $key)
+    public static function strEncode(string $unEncoded, string $key = '')
     {
+        if ( empty($key) ) $key = self::$secretKey;
         //Шифруем
         //debug($unencoded,'origin');
-        $string = base64_encode($unencoded);
+        $string = base64_encode($unEncoded);
         //debug($string,'base64_decode');
 
         $arr = [];
@@ -62,17 +63,18 @@ class URLCrypt
         return $newStr;
     }
 
-    private static function mydecode( $encoded, $key )
+    public static function strDecode( string $encoded, string $key = '' )
     {
+        if ( empty($key) ) $key = self::$secretKey;
         //Символы, из которых состоит base64-ключ
-        $strofsym="qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM=";
-        for ( $x = 0; $x < strlen($strofsym); $x++ )
+        $strOfSym="qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM=";
+        for ( $x = 0; $x < strlen($strOfSym); $x++ )
         {
             // шифруем каждый символ
             //Хеш, который соответствует символу, на который его заменят.
-            $tmp = hash('sha1',$key . hash('sha1',$strofsym[$x] . $key) );
+            $tmp = hash('sha1',$key . hash('sha1',$strOfSym[$x] . $key) );
             //Заменяем №3,6,1,2 из хеша на символ
-            $encoded = str_replace($tmp[7].$tmp[4].$tmp[9].$tmp[2], $strofsym[$x], $encoded);
+            $encoded = str_replace($tmp[7].$tmp[4].$tmp[9].$tmp[2], $strOfSym[$x], $encoded);
             //debug($encoded,'$encoded');
         }
         return base64_decode($encoded);

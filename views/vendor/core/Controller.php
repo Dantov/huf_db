@@ -96,12 +96,12 @@ class Controller
         if ( array_key_exists($param, $this->queryParams) ) return $this->queryParams[$param];
         return null;
     }
-
-    /*
-    public function beforeAction(){}
-    public function action(){}
-    public function afterAction(){}
-    */
+    public function isQueryParam(string $param) : bool
+    {
+        if ( empty($param) ) return false;
+        if ( array_key_exists($param, $this->queryParams) ) return true;
+        return false;
+    }
 
     public function setTitle()
     {

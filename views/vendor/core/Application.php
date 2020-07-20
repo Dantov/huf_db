@@ -41,11 +41,9 @@ class Application
             {
                 $class = $this->controllerPath = "Views\_Main\Controllers\MainController";
                 $this->controllerName = "main";
-
             } else {
                 throw new \Exception( "Controller " . $class . " not found!" , 111);
             }
-
         }
 
         $controller = new $class($this->controllerName);
@@ -69,6 +67,7 @@ class Application
      */
     public function run()
     {
+        Registry::init();
         $this->getController();
     }
 }

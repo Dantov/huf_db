@@ -85,6 +85,12 @@ class Sessions
         return false;
     }
 
+    public function hasKey($name) : bool
+    {
+        $this->startSession();
+        return trueIsset( $_SESSION[$name] );
+    }
+
     public function getAll()
     {
         $this->startSession();

@@ -624,21 +624,39 @@ class AddEdit extends General
 		return $labels;
 	}
 
+
     /**
     * Возьмем систему оценок
     */
     public $gsArray = [];
-    public function gradingSystem( int $gradeType = 0 ) : array
+    /**
+     * @param int $gradeType
+     * @return array
+     * @throws \Exception
+     */
+    public function gradingSystem(int $gradeType = 0 ) : array
     {
-        //if ( !empty($this->gsArray) ) return $this->gsArray;
+        if ( empty($this->gsArray) )
+            $this->gsArray = $this->findAsArray("SELECT * FROM grading_system");
 
-        $gs = $this->findAsArray("SELECT * FROM grading_system");
-        if ( !$gradeType ) return $this->gsArray = $gs;
+        if ( !$gradeType ) return $this->gsArray;
     
         $res = [];
-        foreach ($gs as $gsRow) 
+        foreach ($this->gsArray as $gsRow)
             if ( $gsRow['grade_type'] == $gradeType ) $res[] = $gsRow;
 
         return $res;
+    }
+
+    /**
+     * @param int $statusID
+     * @return bool
+     * @throws \Exception
+     */
+    public function isStatusPresent(int $statusID = 0 ) : bool
+    {
+        $query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$this->id' AND status='$statusID' " );
+        if ( $query->num_rows ) return true;
+        return false;
     }
 }

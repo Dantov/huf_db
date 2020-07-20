@@ -4,6 +4,7 @@ namespace Views\_Main\Controllers;
 use Views\_Main\Models\{Main, SetSortModel, Search, ToExcel};
 use Views\_Globals\Controllers\GeneralController;
 use Views\_Globals\Models\SelectionsModel;
+use Views\vendor\core\Registry;
 
 
 class MainController extends GeneralController
@@ -90,7 +91,20 @@ class MainController extends GeneralController
             exit;
         }
 
+
         // ******* SEARCH ******** //
+        //if ( $session->hasKey('searchFor') ) $this->foundRows = $session->getKey('foundRows');
+        if ( $session->hasKey('searchFor') || $session->getKey('re_search') )
+        {
+            //debug($session->getKey('searchFor'),'searchFor');
+            //debug($session->getKey('re_search'),'re_search',1);
+
+            $search = new Search($session);
+            $this->foundRows = $search->search( $session->getKey('searchFor') );
+
+            //debug($this->foundRows,'',1);
+        }
+        /*
         if ( $this->getQueryParam('search') === 'resetSearch' )
         {
             $session->dellKey('searchFor');
@@ -114,6 +128,8 @@ class MainController extends GeneralController
         {
             $this->redirect('/main/?search=resetSearch');
         }
+        */
+
 
         // ******* SORT ******** //
         if ( !empty($params) )
@@ -131,9 +147,7 @@ class MainController extends GeneralController
     {
         $session = $this->session;
 		$_SESSION['id_notice'] = 0;
-		$main = new Main( $session->getKey('assist'), $session->getKey('user'), $session->getKey('foundRow') );
-		
-		$main->unsetSessions();
+		$main = new Main( $session->getKey('assist'), $session->getKey('user'), $this->foundRows ); //$session->getKey('foundRow')
 
 		if (!_DEV_MODE_) $main->backup(10);
 
@@ -167,7 +181,8 @@ class MainController extends GeneralController
 		}
 
 		//если нет поиска, выбираем из базы
-		if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) ) $main->getModelsFormStock();
+		//if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) ) $main->getModelsFormStock();
+		if ( !trueIsset($this->foundRows) ) $main->getModelsFormStock();
 
 		// начинаем вывод моделей
 		if ( !isset($_SESSION['nothing']) ) {

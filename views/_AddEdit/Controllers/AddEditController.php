@@ -76,7 +76,7 @@ class AddEditController extends GeneralController
         $id = $this->stockID;
         $component = $this->component;
         $addEdit = new AddEdit($id);
-    
+
         // список разрешенных для ред полей
         $permittedFields = $addEdit->permittedFields();
 
@@ -111,6 +111,7 @@ class AddEditController extends GeneralController
         
         if ( $component === 1 )  // чистая форма
         {
+            if ( !User::permission('addModel') ) $this->redirect('/main/');
             $this->title = 'Добавить новую модель';
             $haveStl = 'hidden';
             $haveAi = 'hidden';
@@ -118,14 +119,28 @@ class AddEditController extends GeneralController
             $labels = $addEdit->getLabels();
         }
 
-
         if ( $component === 2 )  // редактирование
         {
             if ( $id > 0 )
-            if ( !$addEdit->checkID($id) )
-                $this->redirect('/main/');
-
+            if ( !$addEdit->checkID($id) ) $this->redirect('/main/');
             $row = $addEdit->getGeneralData();
+
+            $editPerm = false;
+            if ( User::permission('editModel') )
+            {
+                $editPerm = true;
+            } elseif ( User::permission('editOwnModels') ) {
+                $userRowFIO = $_SESSION['user']['fio'];
+                $authorFIO = $row['author'];
+                $modellerFIO = $row['modeller3D'];
+                $jewelerName = $row['jewelerName'];
+                if ( stristr($authorFIO, $userRowFIO)   !== FALSE ||
+                     stristr($modellerFIO, $userRowFIO) !== FALSE ||
+                     stristr($jewelerName, $userRowFIO) !== FALSE )
+                    $editPerm = true;
+            }
+            if (!$editPerm) $this->redirect('/main/');
+
             $this->title = 'Редактировать ' . $row['number_3d'] . '-' . $row['model_type'];
 
             $complected = $addEdit->getComplected($component);
@@ -164,6 +179,8 @@ class AddEditController extends GeneralController
 
         if ( $component === 3 ) // добавление комплекта
         {
+            if ( !User::permission('addComplect') ) $this->redirect('/main/');
+
             $row = $addEdit->getGeneralData();
             $complected = $addEdit->getComplected($component);
 
@@ -236,16 +253,35 @@ JS;
         $this->includePHPFile('protoGemsVC_Rows.php', $compact1);
         $this->includePHPFile('upDownSaveSideButtons.php');
 
+
         $gradingSystem = $addEdit->gradingSystem();
-        if ( User::permission('modelAccount') )
+        if ( User::permission('MA_modeller3D') )
         {
             $gradingSystem3D = $addEdit->gradingSystem(1);
             $this->includePHPFile('grade3DModal.php', compact(['gradingSystem3D']) );
-            $this->includeJSFile('gradingSystem.js', ['defer','timestamp'] );
         }
+        if ( User::permission('modelAccount') ) $this->includeJSFile('gradingSystem.js', ['defer','timestamp'] );
+
+
+
+
+        // Сделал привязку к конкретной дате, старые модели сделаны до неё не будут проверены на наличие нужных статусов
+        // это сделано что бы участки могли принять их в ремонт, в случае чего
+        $comp_date =  new \DateTime($row['date']) < new \DateTime("2020-06-01") ? false : true;
+        $toShowStatuses = true;
+        if ( $comp_date )
+        {
+            // Что бы предотвратить изменения статусов у модели, если не поставлен статус сдачи пред. участка
+            // при постановке нужных статусов, некоторым людям начислятся деньги в кошельке работника
+            // user access => status id
+            $changeStatusesAccess = [ 2 => 35, 3 => 2, 5 => 5 ];
+            if ( User::getAccess() !== 1 )
+                $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $addEdit->isStatusPresent((int)$changeStatusesAccess[User::getAccess()]);
+        }
+
         
         $compact2 = compact([
-            'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi',
+            'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi','toShowStatuses',
             'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes','modelPrices','gradingSystem',
             'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI',
             'dataArrays','materialsData','coveringsData','handlingsData', 'statusesWorkingCenters','material','covering','labels','complected',
@@ -365,10 +401,22 @@ JS;
      */
     protected function actionDeletePosition($modelID)
     {
+        $result['dell'] = 'Ошибка при удалении!';
+        if ( !User::permission('dellModel') )
+        {
+            echo json_encode($result);
+            exit;
+        }
+
         if ( $modelID > 0 && $modelID < 999999 )
         {
             $handler = new Handler($modelID);
             $handler->connectToDB();
+            if ( !$handler->checkID($modelID) )
+            {
+                echo json_encode($result);
+                exit;
+            }
 
             $resultDell = $handler->deleteModel();
 
@@ -389,8 +437,11 @@ JS;
     }
 
     /**
-    * Проверим оценку на зачисление
-    */
+     * Проверим оценку на зачисление. Что бы не изменять оценки после зачисления
+     * @param array $modelPrices
+     * @param int $gradeType
+     * @return bool
+     */
     protected function isCredited( array $modelPrices = [], int $gradeType ) : bool
     {
         //debug($modelPrices,'$modelPrices',1);
@@ -401,4 +452,5 @@ JS;
         }
         return false;
     }
+
 }

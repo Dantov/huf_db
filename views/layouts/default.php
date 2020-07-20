@@ -76,14 +76,16 @@ JS;
                         </li>
                     </ul>
 
-                    <form action="/main/search=<?=$_SESSION['searchFor']?>" method="post" <?=$searchStyle?> class="navbar-form navbar-left topSearchForm">
+                    <!-- /main/search= -->
+                    <form action="/globals/search=<?=$_SESSION['searchFor']?>" method="post" <?=$searchStyle?> class="navbar-form navbar-left topSearchForm">
                         <?php if ( trueIsset( $session->getKey('countAmount') ) ) : ?>
                             <span class="cursorArrow" title="Найдено позиций"><?=$session->getKey('countAmount')?></span>
                         <?php endif; ?>
                         <div class="input-group">
                         <span class="input-group-btn">
                             <?php if ( $session->getKey('searchFor') ): ?>
-                                <a href="/main/?search=resetSearch" class="btn btn-link" type="button" name="resetSearch" title="Сбросить поиск"><i class="fas fa-broom"></i></a>
+                                <!-- /main/?search=resetSearch= -->
+                                <a href="/globals/?search=resetSearch" class="btn btn-link" type="button" name="resetSearch" title="Сбросить поиск"><i class="fas fa-broom"></i></a>
                             <?php endif; ?>
                             <button class="btn btn-link" type="submit" name="search" title="Нажать для поиска">
                                 <span class="glyphicon glyphicon-search"></span>

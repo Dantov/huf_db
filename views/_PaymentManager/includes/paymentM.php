@@ -1,10 +1,10 @@
 <?php
-    use Views\vendor\core\URLCrypt;
+    use Views\vendor\libs\classes\URLCrypt;
 	$currentWorker = $this->session->getKey('currentWorker'); 
 	$tabID = (int)$this->request->get('tab');
 
 	$tabName = '';
-    switch ($tab) 
+    switch ($tab??'all')
     {
         case 'all': $tabName = "Всех моделей"; break;
         case 'paid': $tabName = "Оплаченных"; break;
@@ -70,19 +70,14 @@
                 <p></p>
                 <div class="row pl-3 pr-3 allmodels">
 
-                    <?php $wholeTotal = 0; ?>
+                    <?php $wholeTotal = 0; $priceIDsAll = ''; ?>
                     <?php foreach ( $stockInfo??[] as $stockModel ): ?>
-                        <?php
-                        $panelID = "allModels_" . $stockModel['id']; $collapseID = "collapseAllModels_" . $stockModel['id'];
-                        $imgPath = $stockModel['number_3d'] . "/" .$stockModel['id'] . "/images/".$stockModel['img_name'];
-                        $imgSrc  = file_exists(_stockDIR_ . $imgPath);
-                        $imgSrc  =  $imgSrc ? _stockDIR_HTTP_ . $imgPath : _stockDIR_HTTP_."default.jpg";
-                        ?>
+                        <?php $panelID = "allModels_" . $stockModel['id']; $collapseID = "collapseAllModels_" . $stockModel['id']; $modelIDs .= $stockModel['id'] . ";" ?>
                         <div class="col-xs-12 col-md-4 pr-0 pl-0">
                             <div class="panel panel-default mb-1">
                                 <div class="panel-heading p0" role="tab" id="<?=$panelID?>">
                                     <a class="collapsed panel-title modelInfo" role="button" data-toggle="collapse" href="#<?=$collapseID?>" aria-expanded="false" aria-controls="<?=$collapseID?>">
-                                        <img src="<?= $imgSrc ?>" width="60px" class="thumbnail mb-0 d-inline" />
+                                        <img src="<?=$stockModel['img_name']?>" width="60px" height="60px" class="thumbnail mb-0 d-inline" />
                                         <?= $stockModel['number_3d'] . "/" . $stockModel['vendor_code'] . " - " . $stockModel['model_type'] ?>
                                     </a>
                                     <a role="button" title="Просмотр модели" class="btn btn-sm btn-info pull-right" href="/model-view/?id=<?=$stockModel['id']?>"><span class="glyphicon glyphicon-eye-open"></span></a>
@@ -92,8 +87,9 @@
                                         <?php $total = 0; ?>
                                         <?php foreach ( $modelPrices??[] as $modelID => $prices ): ?>
                                             <?php if ( $modelID != $stockModel['id'] ) continue; ?>
+                                            <?php $priceIDs = ''?>
                                             <?php foreach ( $prices as $price ): ?>
-                                                <?php $total += $price['value']; $wholeTotal += $price['value']; ?>
+                                                <?php $total += $price['value']; $wholeTotal += $price['value']; $singlePriceIDs=''; ?>
                                                 <li class="list-group-item">
                                                     <span class="priceName_value" ><?= $price['cost_name'] . " - " .  $price['value'] . "грн.  -  " . date_create( $price['date'] )->Format('d.m.Y'); ?></span>
                                                     <br>
@@ -107,16 +103,27 @@
                                                     <?php else: ?>
                                                         <span class="label label-default ">Не Оплачено!</span>
                                                         <?php if ( $price['status'] ): ?>
-                                                        	<button type="button" data-toggle="modal" data-priceID="<?=$price['id']?>" data-target="#paymentModal" class="btn btn-sm btn-default absolute" style="right: 10px; top: 50%; margin-top: -15px;" title="Оплатить"><span class="glyphicon glyphicon-usd"></span></button>
+                                                            <?php $priceIDs .=  $price['is3d_grade'] == 1 ? $price['ids_3d'] : $price['id'] . ';' ?>
+                                                            <?php $priceIDsAll .= $singlePriceIDs .=  $price['is3d_grade'] == 1 ? $price['ids_3d'] : $price['id'] . ';' ?>
+                                                            <?php $sPriceID_crypt = URLCrypt::strEncode($singlePriceIDs); ?>
+                                                            <?php $modelID_crypt = URLCrypt::strEncode($stockModel['id']); ?>
+                                                        	 <button type="button" data-toggle="modal" data-prices="single" data-priceID="<?=$sPriceID_crypt?>" data-posID="<?=$modelID_crypt?>" data-target="#paymentModal" class="btn btn-sm btn-default absolute" style="right: 10px; top: 50%; margin-top: -15px;" title="Оплатить">
+                                                                <span class="glyphicon glyphicon-usd"></span>
+                                                            </button>
                                                         <?php endif; ?>
                                                     <?php endif; ?>
-
                                                 </li>
                                             <?php endforeach; ?>
                                         <?php endforeach; ?>
                                     </ul>
-
-                                    <div class="panel-footer text-bold">Всего: <?= $total?> грн. </div>
+                                    <div class="panel-footer text-bold relative">
+                                        <span>Всего: <?= $total?> грн.</span>
+                                        <?php if ( $tabID === 3 ): ?>
+                                            <?php $priceIDs_crypt = URLCrypt::strEncode($priceIDs); ?>
+                                            <?php $modelID_crypt = URLCrypt::strEncode($stockModel['id']); ?>
+                                            <button type="button" data-toggle="modal" data-prices="allInModel" data-priceID="<?=$priceIDs_crypt?>" data-posID="<?=$modelID_crypt?>" data-target="#paymentModal" class="btn btn-sm btn-success absolute" style="right: 10px; top: 50%; margin-top: -15px;" title="Оплатить Все"><span class="glyphicon glyphicon-usd"></span></button>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -127,7 +134,12 @@
                         	<span>Всего: <?= $wholeTotal ?> </span>
                         	<?php if ( $tabID === 3 ): ?>
                         		<span class="pull-right">
-                        			<button type="button" data-toggle="modal" data-priceID="all" data-target="#paymentModal" class="btn btn-sm btn-danger relative" style="top: -4px;" title="Оплатить Все"><span class="glyphicon glyphicon-usd"></span> Оплатить Все</button>
+                                   <?php $priceIDsAll = URLCrypt::strEncode($priceIDsAll); ?>
+                                   <?php $modelIDs = URLCrypt::strEncode($modelIDs); ?>
+                        			<button type="button" data-toggle="modal" data-prices="all" data-priceID="<?=$priceIDsAll?>" data-posID="<?=$modelIDs?>" data-target="#paymentModal" class="btn btn-sm btn-danger relative" style="top: -4px;" title="Оплатить Все">
+                                        <span class="glyphicon glyphicon-usd"></span>
+                                        Оплатить Все
+                                    </button>
                         		</span>
                         	<?php endif; ?>
                         </div>

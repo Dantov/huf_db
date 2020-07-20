@@ -1,5 +1,7 @@
 <?php
 namespace Views\_ModelView\Controllers;
+use Views\_AddEdit\Models\Handler;
+use Views\_Globals\Models\User;
 use Views\_ModelView\Models\{ModelView,DocumentPDF};
 use Views\_Globals\Controllers\GeneralController;
 
@@ -71,6 +73,15 @@ class ModelViewController extends GeneralController
                     exit;
                 }
             }
+
+            if ( $this->getQueryParam('approve') )
+            {
+                if (  trueIsset($request->post('approve')) && trueIsset($request->post('id')) )
+                {
+                    $this->approves($request->post('approve'), $request->post('id'));
+                }
+
+            }
             exit;
         }
 
@@ -85,7 +96,6 @@ class ModelViewController extends GeneralController
     public function action()
     {
         $id = $this->stockID;
-
         $modelView = new ModelView($id);
         if (!$modelView->checkID($id)) $this->redirect('/');
 
@@ -166,27 +176,17 @@ class ModelViewController extends GeneralController
         }
 
         $editBtn = false;
-        if ( isset($_SESSION['user']['access']) && $_SESSION['user']['access'] > 0 )
+        if ( User::permission('editModel') )
         {
-            $userAccess = (int)$_SESSION['user']['access'];
-            if ( (int)$_SESSION['user']['access'] === 1 || (int)$_SESSION['user']['id'] === 33 ) { // весь доступ
+            $editBtn = true;
+        } elseif ( User::permission('editOwnModels') ) {
+            $userRowFIO = $_SESSION['user']['fio'];
+            $authorFIO = $row['author'];
+            $modellerFIO = $row['modeller3D'];
+            $jewelerName = $row['jewelerName'];
+            if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE || stristr($jewelerName, $userRowFIO) !== FALSE ) {
                 $editBtn = true;
             }
-            if ( (int)$_SESSION['user']['access'] === 2 )  // доступ только где юзер 3д моделлер или автор
-            {
-                $userRowFIO = $_SESSION['user']['fio'];
-                $authorFIO = $row['author'];
-                $modellerFIO = $row['modeller3D'];
-                if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE ) {
-                    $editBtn = true;
-                }
-            }
-
-            if ( (int)$_SESSION['user']['access'] === 3
-                || (int)$_SESSION['user']['access'] === 4
-                || (int)$_SESSION['user']['access'] === 5
-                || (int)$_SESSION['user']['access'] === 6
-            ) $editBtn = true;
         }
 
         $this->includeJSFile('show_pos_scrpt.js', ['defer','timestamp'] );
@@ -202,6 +202,11 @@ JS;
 
         $this->includePHPFile('imageWrapper.php');
         $this->includePHPFile('progressModal.php','','',_globDIR_.'includes/');
+
+        $appForSketch =  User::permission('paymentManager') && (int)$currentStatus['id'] === 35;
+        $appFor3DTech =  User::permission('MA_techJew') && (int)$currentStatus['id'] === 1;
+        if ( $appForSketch || $appFor3DTech )
+            $this->includeJSFile('approveBtns.js',['defer','timestamp']);
 
         $compacted = compact([
             'id','row','coll_id','getStl','button3D','dopBottomScripts','complectes','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
@@ -225,9 +230,6 @@ JS;
             echo json_encode($resp_arr);
             exit;
         }
-//        debug($zip_name,'$zip_name');
-//        debug($zip_id,'$zip_id');
-//        debug($zip_num3d,'$zip_num3d',1);
 
         $path = $zip_num3d .'/'.$zip_id.'/stl/';
         $pathHTTP = _stockDIR_HTTP_.$path;
@@ -281,6 +283,34 @@ JS;
             }
             echo json_encode($arr);
         }
+        exit;
+    }
+
+    /**
+     * @param string $approve
+     * @param int $id
+     * @return array
+     * @throws \Exception
+     */
+    protected function approves(string $approve, int $id )
+    {
+        $handler = new Handler($id);
+        $handler->connectDBLite();
+        if (!$handler->checkID($id)) echo json_encode( ['error'=>'!!'] );
+
+        if ( $approve === 'approveSketch' )
+        {
+            //Дизайн утверждён
+            $handler->updateStatus(89, User::getFIO());
+            if ($handler->addDesignPrices('designOK' )) echo json_encode(['done'=>89]);
+        }
+        if ( $approve === 'signByTech' )
+        {
+            //Подпись технолога
+            $handler->updateStatus(101, User::getFIO());
+            if ($handler->addTechPrices('SignedTechJew' )) echo json_encode(['done'=>101]);
+        }
+
         exit;
     }
 

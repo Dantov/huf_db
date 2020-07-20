@@ -81,9 +81,11 @@ class Request {
 
     public function post($name)
     {
-        if ( !$this->isPost() ) return false;
+        //if ( !$this->isPost() ) return false;
+        if ( !$this->isPost() ) return [];
         if ( isset( $_POST[$name] ) ) return $_POST[$name];
-        return false;
+        //return false;
+        return [];
     }
 
     public function get($name)
