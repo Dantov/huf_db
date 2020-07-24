@@ -10,6 +10,12 @@ class UserPouch extends Main
     public $paidTab;
     public $date;
 
+    /**
+     * нужня для статистики
+     * @var array
+     */
+    public $stockData;
+
     public function __construct( string $paidTab='', int $worker = 0, int $month = 0, int $year = 0  )
     {
         parent::__construct();
@@ -51,11 +57,10 @@ class UserPouch extends Main
      */
     public function getModelPrices() : array
     {
-        $modelPrices = [];
-        //$sql = "SELECT * FROM model_prices WHERE user_id={$this->user['id']} {$this->paidTab} ";
         $sql = "SELECT * FROM model_prices WHERE $this->worker $this->paidTab $this->date ";
         $modelPricesQuery = $this->findAsArray($sql);
 
+        $modelPrices = [];
         $grades3D = [];
         foreach ( $modelPricesQuery as &$mp )
         {
@@ -84,8 +89,6 @@ class UserPouch extends Main
             $modelPrices[$modelID][] = $grades[0];
         }
 
-        //debug($grades3D, '$grades3D');
-        //debug($modelPrices, '$modelPrices',1);
         unset($grades3D);
         return $modelPrices;
     }
@@ -107,38 +110,45 @@ class UserPouch extends Main
             $imgSrc  = file_exists(_stockDIR_ . $imgPath);
             $stockModel['img_name']  =  $imgSrc ? _stockDIR_HTTP_ . $imgPath : _stockDIR_HTTP_."default.jpg";
         }
-        return $result;
+        return $this->stockData = $result;
     }
 
     /**
+     * Статистика берет прайсы из табл model_prices, сортирует оплаченные, не опл. зачисленные
+     * Проблема: если модель удалена, по какой-то причине, прайсы остаются. И статистика их просчитывает
+     * но сама модель больше не выведется в Оплаченых/не оплаченых/всех. В итоге статистика может врать.
      * @return array
      * @throws \Exception
      */
-    public function getStatistic( $worker = '' ) : array
+    public function getStatistic() : array
     {
-        if ( empty($worker) ) $worker = "user_id={$this->user['id']}";
         $result = [
             'paid' => 0,
             'notpaid' => 0,
             'waiting' => 0,
         ];
-        // $sql = "SELECT * FROM model_prices WHERE $worker";
+
         $sql = "SELECT * FROM model_prices WHERE $this->worker $this->paidTab $this->date ";
         $modelPricesQuery = $this->findAsArray( $sql );
-        //debug($modelPricesQuery, '$modelPricesQuery');
+
+
         foreach ( $modelPricesQuery as $price )
         {
-            if ( $price['paid'] == 1 ) $result['paid'] += $price['value'];
-            //if ( $price['paid'] == 0 ) $result['notpaid'] += $price['value'];
-            if ( $price['status'] == 0 )
+            if ( (int)$price['paid'] === 1 )
+                $result['paid'] += $price['value'];
+
+            // пропустим не зачисленные или не оплаченные прайсы,
+            // если модели нет в стоке (была удалена а прайсы остались)
+            if ( !in_array_recursive($price['pos_id'], $this->stockData) )
+                continue;
+
+            if ( (int)$price['status'] === 0 )
             {
                 $result['waiting'] += $price['value'];
-            } elseif ( $price['paid'] == 0 ) {
+            } elseif ( (int)$price['paid'] === 0 ) {
                 $result['notpaid'] += $price['value'];
             }
         }
-
-        //debug($result, '$result',1);
 
         return $result;
     }

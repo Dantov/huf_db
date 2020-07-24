@@ -2,6 +2,7 @@
 namespace Views\_Globals\Controllers;
 use Views\_Globals\Models\{General, User};
 use Views\vendor\core\{Controller, Cookies, Config};
+use Views\vendor\libs\classes\AppCodes;
 
 class GeneralController extends Controller
 {
@@ -153,5 +154,35 @@ JS;
         $this->navBar = $navBar;
     }
 
+
+    /**
+     * @param $e \object
+     * @throws \Exception
+     */
+    protected function serverError_ajax($e)
+    {
+        try {
+            if ( _DEV_MODE_ )
+            {
+                $err = [
+                    'code' => $e->getCode(),
+                    'message' => $e->getMessage(),
+                ];
+                exit(json_encode(['error' => $err]));
+            } else {
+                exit(json_encode(['error' => AppCodes::getMessage(AppCodes::SERVER_ERROR)]));
+            }
+        } catch ( \Exception $eAppCodes ) {
+            if ( _DEV_MODE_ ) {
+                $errArrCodes = [
+                    'code' => $eAppCodes->getCode(),
+                    'message' => $eAppCodes->getMessage(),
+                ];
+                exit(json_encode(['error' => $errArrCodes]));
+            } else {
+                exit(json_encode(['error' => ['message'=>'Server Error', 'code'=>500]]));
+            }
+        }
+    }
 
 }

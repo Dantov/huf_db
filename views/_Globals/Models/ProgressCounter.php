@@ -41,7 +41,7 @@ class ProgressCounter extends General
 
     function __construct()
     {
-
+        parent::__construct();
         $this->progressResponse = [
             'progressBarPercent' => 0,
             'user' => [
@@ -76,7 +76,6 @@ class ProgressCounter extends General
         if ( !$this->socketClientResource ) return;
 
         $this->progressResponse['progressBarPercent'] = $newPercent;
-
 
         fwrite($this->socketClientResource, json_encode($this->progressResponse));
     }

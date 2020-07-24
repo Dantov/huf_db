@@ -16,6 +16,7 @@ class URLCrypt
     }
 
     /**
+     * URLCrypt::encode('pm',["tab"=>$tabID, "worker"=>0, "month"=>$monthID, "year"=>$yearID])
      * @param string $queryVar
      * @param array $getVars
      * @return string
@@ -53,7 +54,7 @@ class URLCrypt
         $newStr = '';
         for ( $x = 0; $x < strlen($string); $x++ )
         {
-            $arr[$x] = hash( 'sha1',$key . hash('sha1',$string[$x] . $key ) );
+            $arr[$x] = hash( 'sha1',$key . hash('sha3-256',$string[$x] . $key ) );
             //debug($arr[$x],'$arr[$x]');
 
             //Склеиваем символы
@@ -72,7 +73,7 @@ class URLCrypt
         {
             // шифруем каждый символ
             //Хеш, который соответствует символу, на который его заменят.
-            $tmp = hash('sha1',$key . hash('sha1',$strOfSym[$x] . $key) );
+            $tmp = hash('sha1',$key . hash('sha3-256',$strOfSym[$x] . $key) );
             //Заменяем №3,6,1,2 из хеша на символ
             $encoded = str_replace($tmp[7].$tmp[4].$tmp[9].$tmp[2], $strOfSym[$x], $encoded);
             //debug($encoded,'$encoded');

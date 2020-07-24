@@ -1,28 +1,27 @@
 <?php
 namespace Views\_AddEdit\Models;
-use Views\_Globals\Models\{General,User};
+use Views\_Globals\Models\{
+    General, PushNotice, User
+};
 use Views\vendor\core\Registry;
+use Views\vendor\libs\classes\AppCodes;
 
 /**
  * общий класс, для манипуляций с базой данных MYSQL, и файлами на сервере
  */
 class Handler extends General {
 	
-	private $id;
+	protected $id;
 	private $number_3d;
 	private $vendor_code;
 	private $model_type;
 	private $model_typeEn;
 	private $isEdit;
 
-    const PAY_SUCCESS = 610;
-	const NO_PERMISSION_TO_PAY = 611;
-	const PAYING_ERROR = 612;
-
     public  $date;
 	public  $forbiddenSymbols;
 
-	function __construct( $id=false ) 
+	function __construct( $id = false )
 	{
 		parent::__construct();
 		if ( $id ) $this->id = $id;
@@ -241,7 +240,7 @@ class Handler extends General {
 		if ( $statusOld['status'] != $status )
 		{
 		    if ( empty($this->date) ) $this->date = date("Y-m-d");
-			$quertext = $this->baseSql(" UPDATE stock SET status='$status', status_date='$this->date' WHERE id='$this->id' ");
+			    $this->baseSql(" UPDATE stock SET status='$status', status_date='$this->date' WHERE id='$this->id' ");
 
 			//04,07,19 - вносим новый статус в таблицу statuses
 			if (empty($creator_name)) $creator_name = User::getFIO();
@@ -255,10 +254,15 @@ class Handler extends General {
 		}
 	}
 
+    /**
+     * @param array $statusT
+     * @return bool|int
+     * @throws \Exception
+     */
     public function addStatusesTable($statusT = [])
     {
         //04,07,19 - вносим новый статус в таблицу statuses
-        if ( empty($statusT) ) return;
+        if ( empty($statusT) ) return false;
 
         $pos_id = $statusT['pos_id'];
         $status = $statusT['status'];
@@ -800,291 +804,28 @@ class Handler extends General {
         return $result;
 	}
 
+
     /**
+     * Бал ли такой статус у модели?
      * @param int $statusID
      * @return bool
      * @throws \Exception
      */
+    /*
     public function isStatusPresent(int $statusID = 0 ) : bool
 	{
 		$query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$this->id' AND status='$statusID' " );
 		if ( $query->num_rows ) return true;
         return false;
-	}
-
-    /**
-     * @param string $priceType
-     * @return int
-     * @throws \Exception
-     */
-    public function addDesignPrices(string $priceType ) : int
-	{
-		if ( $priceType === 'sketch' )
-		{
-			$userID = User::getID();
-			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='91'");
-			$points = (int)($queryGS['points'] * 100);
-			$cost_name = $queryGS['description'];
-			$grade_type = $queryGS['grade_type'];
-
-			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
-				VALUES ('$userID', 91, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-
-			return $this->sql($sql);
-		}
-		if ( $priceType === 'escort3D' )
-		{
-			$userID = 4;
-			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='92'");
-			$points = (int)($queryGS['points'] * 100);
-			$cost_name = $queryGS['description'];
-			$grade_type = $queryGS['grade_type'];
-
-			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
-				VALUES ('$userID', 92, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-
-			return $this->sql($sql);
-		}
-        if ( $priceType === 'designOK' )
-        {
-            if ( $this->isStatusPresent(35) )
-            {
-                $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND is3d_grade='2' ";
-                if ( $this->baseSql($sql) ) return 1;
-            }
-        }
-
-		return -1;
-	}
+	}*/
 
 
-    /**
-     * @param array $ma3Dgs
-     * @return int
-     * @throws \Exception
-     */
-    public function addModeller3DPrices(array $ma3Dgs ) : int //array $gs3Dpoints, array $gs3Dids, array $mp3DIds
-	{
-		//debug($ma3Dgs,'');
 
-		$mp3DIds = $ma3Dgs['mp3DIds'];
-		$gs3Dpoints = $ma3Dgs['gs3Dpoints'];
-		
-		// пришло на удаление
-		$toDell = $ma3Dgs['toDell'];
-		if ( trueIsset($toDell) )
-		{
-			$inD  = '';
-			foreach ($toDell as $toDellID) $inD .= $toDellID . ',';
-			$inD = '(' . rtrim($inD, ',') . ')';
-			$this->baseSql(" DELETE FROM model_prices WHERE id IN $inD ");
-		}
-		
-		$gs3Dids = $ma3Dgs['gs3Dids'];
-		$in = '';
-		foreach ($gs3Dids as $gs3Did) $in .= $gs3Did . ',';
-		$in = '(' . rtrim($in, ',') . ')';
 
-		$rows = $this->findAsArray(" SELECT id as gs_id, grade_type as is3d_grade, work_name as cost_name FROM grading_system WHERE id IN $in ");
 
-		foreach ($rows as $k => &$gsRow)
-		{
-			$gsRow['user_id'] = User::getID();
-			$gsRow['value'] = $gs3Dpoints[$k];
-			$gsRow['id'] = $mp3DIds[$k];
-			$gsRow['pos_id'] = $this->id;
-			$gsRow['date'] = $this->date;
-		}
 
-		return $this->insertUpdateRows($rows, 'model_prices');
-	}
 
-    /**
-     * @param string $priceType
-     * @return int
-     * @throws \Exception
-     */
-    public function addTechPrices(string $priceType ) : int
-	{
-		if ( $priceType === 'onVerify' )
-		{
-			$userID = User::getID(); // Будет зачислено тому кто поставил статус, если у него есть MA_techCoord
-			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='93'");
-			$points = (int)($queryGS['points'] * 100);
-			$cost_name = $queryGS['description'];
-			$grade_type = $queryGS['grade_type'];
 
-			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
-				VALUES ('$userID', 93, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-
-			return $this->sql($sql);
-		}
-
-		if ( $priceType === 'SignedTechJew' )
-		{
-			$userID = User::getID(); // Будет зачислено тому кто поставил статус, если у него есть MA_techJew
-			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='94'");
-			$points = (int)($queryGS['points'] * 100);
-			$cost_name = $queryGS['description'];
-			$grade_type = $queryGS['grade_type'];
-
-			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
-				VALUES ('$userID', 94, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-
-			return $this->sql($sql);
-		}
-
-		if ( $priceType === 'signed' ) // зачислим технологу и проверяющему и 3д модельеру
-		{
-			if ( $this->isStatusPresent(1) && $this->isStatusPresent(101) )
-			{
-				$sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='1') ";
-				if ( $this->baseSql($sql) ) return 1;
-			}
-		}
-
-		return -1;
-	}
-
-    /**
-     * @param string $priceType
-     * @return int
-     * @throws \Exception
-     */
-    public function addPrint3DPrices(string $priceType ) : int
-	{
-		if ( $priceType === 'supports' ) // внесем прайс поддержек
-		{
-			$userID = User::getID(); // Будет зачислено тому кто поставил статус
-			$queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='88'");
-			$gradeID = (int)$queryGS['id'];
-			$points = (int)($queryGS['points'] * 100);
-			$cost_name = $queryGS['description'];
-			$grade_type = $queryGS['grade_type'];
-
-			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
-				VALUES ('$userID', '$gradeID', '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-
-			return $this->sql($sql);
-		}
-
-		if ( $priceType === 'printed' ) // зачислим прайсы стоимости роста и поддержек
-		{
-			if ( $this->isStatusPresent(2) )
-			{
-				$sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='3' OR is3d_grade='5') ";
-				if ( $this->baseSql($sql) ) return 1;
-			}
-		}
-
-        return -1;
-	}
-
-    /**
-     * @param string $priceType
-     * @param array $price
-     * @return bool
-     * @throws \Exception
-     */
-    public function addModJewPrices(string $priceType, array $price = [])
-    {
-        if ( $priceType === 'add' )
-        {
-            $userID = User::getID(); // Будет зачислено тому кто поставил статус
-            $queryGS = $this->findOne("SELECT id as gs_id, grade_type as is3d_grade, description as cost_name, points as value FROM grading_system WHERE id='95'");
-
-            if ( trueIsset($price['id']) ) $queryGS['id'] = (int)$price['id'];
-            $queryGS['value'] = (int)$price['value'];
-            $queryGS['user_id'] = $userID;
-            $queryGS['pos_id'] = $this->id;
-            $queryGS['date'] = $this->date;
-
-            $row = [$queryGS];
-
-            $this->insertUpdateRows($row, 'model_prices');
-        }
-
-        if ( $priceType === 'MMdone' ) // зачислим прайсы стоимости
-        {
-            if ( $this->isStatusPresent(6) ) // готовая ММ
-            {
-                $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND is3d_grade='6' ";
-                if ( $this->baseSql($sql) ) return 1;
-            }
-        }
-        return -1;
-    }
-
-    /**
-     * для внесения стоимости роста ( пока не работает, возможно на будущее )
-     * @param array $printingPrices
-     * @return int
-     * @throws \Exception
-     */
-    public function addPrintingPrices(array $printingPrices ) : int
-	{
-		// возьмет массив стоимостей роста из поста
-		/*
-		[ 'vax' => [ 0 => 89, 1 => 123], 'polymer' => []
-		*/
-		$mpID = $this->findOne(" SELECT id FROM model_prices WHERE is3d_grade='5' ")['id'];
-
-		$userID = User::getID(); // Будет зачислено тому кто поставил статус
-		$gradeID = '';
-		$points = '';
-		if ( trueIsset($printingPrices['vax']) )
-		{
-			$gradeID = $printingPrices['vax'][0];
-			$points = $printingPrices['vax'][1];
-		}
-		if ( trueIsset($printingPrices['polymer']) )
-		{
-			$gradeID = $printingPrices['polymer'][0];
-			$points = $printingPrices['polymer'][1];
-		}
-		$queryGS = $this->findOne("SELECT grade_type, description FROM grading_system WHERE id='$gradeID'");
-		$grade_type = $queryGS['grade_type'];
-		$cost_name = $queryGS['description'];
-
-		//если нет оценки по росту, то внесем её
-		if ( !$mpID )
-		{
-			$sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
-					VALUES ('$userID', '$gradeID', '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-			if ( $this->sql($sql) ) return 1;
-		} else {
-			// иначе обновим её
-			$sql = " UPDATE model_prices SET gs_id='$gradeID', cost_name='$cost_name', value='$points', date='$this->date'
-			WHERE id='$mpID' ";
-			if ( $this->baseSql($sql) ) return 1;
-		}
-
-		return -1;
-	}
-
-    /**
-     * Для оплаты разных стоимостей через Менеджер оплат
-     * @param array $priceIDs
-     * @return int
-     * @throws \Exception
-     */
-	public function payPrices( array $priceIDs ) : array
-    {
-        $appCodes = Registry::init()->appCodes;
-        if ( !User::permission('paymentManager') ) return ['error'=>$appCodes->getMessage(self::NO_PERMISSION_TO_PAY)];
-        $in = "(";
-        foreach ($priceIDs as $pID) $in .= $pID.',';
-        $in = rtrim($in,',') . ")";
-
-        $sql = " UPDATE model_prices SET paid='1' WHERE id IN $in ";
-        $this->baseSql($sql);
-
-        if ( mysqli_affected_rows($this->connection) ) return ['success'=>$appCodes->getMessage(self::PAY_SUCCESS)];
-
-        return ['error'=>$appCodes->getMessage(self::PAYING_ERROR)];
-    }
-
-	
 	public function getModelsByType( string $modelType )
     {
 		$names_quer = mysqli_query($this->connection, " SELECT id,number_3d,vendor_code FROM stock WHERE collections='Детали' AND model_type='$modelType' ");
@@ -1135,7 +876,7 @@ class Handler extends General {
 		mysqli_query($this->connection, " DELETE FROM repairs        WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM pushnotice     WHERE pos_id='$this->id' ");
 		mysqli_query($this->connection, " DELETE FROM description    WHERE pos_id='$this->id' ");
-		//mysqli_query($this->connection, " DELETE FROM model_prices   WHERE pos_id='$this->id' ");
+		mysqli_query($this->connection, " DELETE FROM model_prices   WHERE pos_id='$this->id' AND paid='0'"); // удалим только не оплаченные
 
 		$path = $row['number_3d'].'/'.$this->id;
 		

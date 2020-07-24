@@ -648,15 +648,4 @@ class AddEdit extends General
         return $res;
     }
 
-    /**
-     * @param int $statusID
-     * @return bool
-     * @throws \Exception
-     */
-    public function isStatusPresent(int $statusID = 0 ) : bool
-    {
-        $query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$this->id' AND status='$statusID' " );
-        if ( $query->num_rows ) return true;
-        return false;
-    }
 }

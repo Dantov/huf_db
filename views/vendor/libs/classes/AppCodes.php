@@ -13,26 +13,34 @@ class AppCodes
 {
 
     private $STARTED = false;
-    const SUCH_APP_CODE_NOT_PRESENT = 1002;
+
 
     /** ERRORS **/
+    const SUCH_APP_CODE_NOT_PRESENT = 1002;
     const SERVER_ERROR = 999;
+    const NOTHING_DONE = 998;
 
     const MODEL_DOES_NOT_EXIST = 2001;
     const PRICE_DOES_NOT_EXIST = 2002;
     const WRONG_PRICE = 2003;
     const NO_PERMISSION = 2004;
+    const PRICE_NOT_CREDITED = 2005;
     const NO_PERMISSION_TO_PAY = 611;
     const PAYING_ERROR = 612;
 
 
     /** SUCCESS **/
     const PAY_SUCCESS = 610;
+    const PRICE_CREDITED = 3001;
 
 
 
     /** MESSAGES ARRAY **/
     const MESSAGES = [
+        self::NOTHING_DONE => [
+            'code' => self::NOTHING_DONE,
+            'message'=>'Nothing done.'
+        ],
         self::SUCH_APP_CODE_NOT_PRESENT => [
             'code' => self::SUCH_APP_CODE_NOT_PRESENT,
             'message'=>'No such code'
@@ -69,6 +77,14 @@ class AppCodes
             'code' => self::NO_PERMISSION,
             'message'=>'Ошибка! Не достаточно прав для совершения операции.'
         ],
+        self::PRICE_CREDITED => [
+            'code' => self::PRICE_CREDITED,
+            'message'=>'Стоимость успешно начислена!'
+        ],
+        self::PRICE_NOT_CREDITED => [
+            'code' => self::PRICE_NOT_CREDITED,
+            'message'=>'Ошибка! Стоимость не зачислена. Попробуйте позже.'
+        ],
     ];
 
     public function __construct()
@@ -103,6 +119,7 @@ class AppCodes
     public static function getMessage(int $code) : array
     {
         if ( array_key_exists($code, self::MESSAGES) ) return self::MESSAGES[$code];
+
         throw new \Exception( "class: " . __CLASS__ .
             " method: " . __METHOD__. " " .
             self::MESSAGES[self::SUCH_APP_CODE_NOT_PRESENT]['message'] . " '" . $code . "'",

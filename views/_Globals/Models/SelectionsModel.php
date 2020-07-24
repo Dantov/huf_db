@@ -14,6 +14,7 @@ class SelectionsModel extends General
 
     public function __construct($session)
     {
+        parent::__construct();
         $this->session = $session;
     }
 

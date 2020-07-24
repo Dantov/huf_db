@@ -1,9 +1,12 @@
 <?php
 namespace Views\_ModelView\Controllers;
-use Views\_AddEdit\Models\Handler;
+
+use Views\_AddEdit\Models\HandlerPrices;
+use Views\_Globals\Models\PushNotice;
 use Views\_Globals\Models\User;
 use Views\_ModelView\Models\{ModelView,DocumentPDF};
 use Views\_Globals\Controllers\GeneralController;
+use Views\vendor\libs\classes\AppCodes;
 
 
 class ModelViewController extends GeneralController
@@ -20,68 +23,60 @@ class ModelViewController extends GeneralController
         $request = $this->request;
         if ( $request->isAjax() )
         {
-            if ( (int)$request->post('zipExtract') === 1 )
+            try
             {
-                $this->actionExtractStlFiles();
-            }
-            if ( (int)$request->post('zipDelete') === 1 )
-            {
-                $this->actionDellStlFiles();
-            }
-            if ( (int)$request->post('zipDelete') === 1 )
-            {
-                $this->actionDellStlFiles();
-            }
+                if ( (int)$request->post('zipExtract') === 1 )
+                    $this->actionExtractStlFiles();
+                if ( (int)$request->post('zipDelete') === 1 )
+                    $this->actionDellStlFiles();
+                if ( (int)$request->post('zipDelete') === 1 )
+                    $this->actionDellStlFiles();
 
-            if ( $this->getQueryParam('document-pdf') )
-            {
-                ini_set('max_execution_time', 180); // макс. время выполнения скрипта в секундах
-                ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
-
-                $docPdf = new DocumentPDF($request->post('id'), $request->post('userName'), $request->post('tabID'), $request->post('document'));
-
-                if ( $request->post('document') === 'passport' )
+                if ( $this->getQueryParam('document-pdf') )
                 {
-                    $docPdf->printPassport();
-                    $fileName = $docPdf->exportToFile('passport');
+                    ini_set('max_execution_time', 180); // макс. время выполнения скрипта в секундах
+                    ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
 
-                    echo json_encode($fileName);
-                    exit;
-                }
-                if ( $request->post('document') === 'runner' )
-                {
-                    $docPdf->printRunner();
-                    $fileName = $docPdf->exportToFile('runner');
+                    $docPdf = new DocumentPDF($request->post('id'), $request->post('userName'), $request->post('tabID'), $request->post('document'));
 
-                    echo json_encode($fileName);
-                    exit;
-                }
-                if ( $request->post('document') === 'both' )
-                {
-                    $docPdf->printPassport();
-                    $docPdf->printRunner();
-                    $fileName = $docPdf->exportToFile('passportRunner');
+                    if ( $request->post('document') === 'passport' )
+                    {
+                        $docPdf->printPassport();
+                        $fileName = $docPdf->exportToFile('passport');
 
-                    echo json_encode($fileName);
-                    exit;
-                }
-                if ( $request->post('document') === 'picture' )
-                {
-                    $docPdf->printPicture( (int)$request->post('pictID') );
-                    $fileName = $docPdf->exportToFile('picture');
-                    echo json_encode($fileName);
-                    exit;
-                }
-            }
+                        echo json_encode($fileName);
+                    }
+                    if ( $request->post('document') === 'runner' )
+                    {
+                        $docPdf->printRunner();
+                        $fileName = $docPdf->exportToFile('runner');
 
-            if ( $this->getQueryParam('approve') )
-            {
-                if (  trueIsset($request->post('approve')) && trueIsset($request->post('id')) )
-                {
-                    $this->approves($request->post('approve'), $request->post('id'));
+                        echo json_encode($fileName);
+                    }
+                    if ( $request->post('document') === 'both' )
+                    {
+                        $docPdf->printPassport();
+                        $docPdf->printRunner();
+                        $fileName = $docPdf->exportToFile('passportRunner');
+
+                        echo json_encode($fileName);
+                    }
+                    if ( $request->post('document') === 'picture' )
+                    {
+                        $docPdf->printPicture( (int)$request->post('pictID') );
+                        $fileName = $docPdf->exportToFile('picture');
+                        echo json_encode($fileName);
+                    }
                 }
 
+                if ( $this->getQueryParam('approve') )
+                    if (  trueIsset($request->post('approve')) && trueIsset($request->post('id')) )
+                        $this->approves($request->post('approve'), $request->post('id'));
+
+            } catch (\Error | \Exception  $e) {
+                $this->serverError_ajax($e);
             }
+
             exit;
         }
 
@@ -161,14 +156,14 @@ class ModelViewController extends GeneralController
         $statuses = $modelView->getStatuses();
         $currentStatus = $modelView->getStatus($row);
 
-        //debug( $currentStatus,'',1);
-
         $stat_name = $currentStatus['stat_name'];
         $stat_date = $currentStatus['stat_date'];
         $stat_class = $currentStatus['class'];
         $stat_title = $currentStatus['title'];
         $stat_glyphi = 'glyphicon glyphicon-' . $currentStatus['glyphi'];
 
+        $isStatusPresentTechJew = in_array_recursive(101,$statuses);
+        $isStatusPresentDesign = in_array_recursive(89,$statuses);
 
         $thisPage = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
         if ( $thisPage !== $_SERVER["HTTP_REFERER"] ) {
@@ -206,15 +201,33 @@ JS;
         $appForSketch =  User::permission('paymentManager') && (int)$currentStatus['id'] === 35;
         $appFor3DTech =  User::permission('MA_techJew') && (int)$currentStatus['id'] === 1;
         if ( $appForSketch || $appFor3DTech )
+        {
+            $this->includePHPFile('approve_modal.php');
             $this->includeJSFile('approveBtns.js',['defer','timestamp']);
+        }
 
         $compacted = compact([
             'id','row','coll_id','getStl','button3D','dopBottomScripts','complectes','images','mainImg', 'labels', 'str_mat','str_Covering','gemsTR',
-            'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','ai_file','stl_file','thisPage','editBtn',
-            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers','rhino_file','usedInModels','descriptions','currentStatus']);
+            'dopVCTr','stts','stat_name','stat_date','stat_class','stat_title','stat_glyphi','statuses','ai_file','stl_file','thisPage','editBtn', 'isStatusPresentDesign',
+            'btnlikes','repairs3D','repairsJew','repairs', 'matsCovers','rhino_file','usedInModels','descriptions','currentStatus', 'isStatusPresentTechJew',
+        ]);
 
         return $this->render('modelView', $compacted);
     }
+
+    /**
+     * @param string $string
+     * @param int $length
+     * @param bool $isLongStr
+     * @return bool|string
+     */
+    public function cutLongNames(string $string, int $length = 20, bool $isLongStr = false )
+    {
+        if ( empty($string) ) return '';
+        if ( $isLongStr && $length && $string ) return mb_strlen($string) > $length ? true : false;
+        return mb_strlen($string) < $length ? $string : mb_substr($string,0,$length-3) . "...";
+    }
+
 
     protected function actionExtractStlFiles()
     {
@@ -289,29 +302,53 @@ JS;
     /**
      * @param string $approve
      * @param int $id
-     * @return array
      * @throws \Exception
      */
     protected function approves(string $approve, int $id )
     {
-        $handler = new Handler($id);
+        $handler = new HandlerPrices($id);
         $handler->connectDBLite();
-        if (!$handler->checkID($id)) echo json_encode( ['error'=>'!!'] );
+        if (!$handler->checkID($id))
+            exit(json_encode(['error' => AppCodes::getMessage(AppCodes::MODEL_DOES_NOT_EXIST)]));
 
-        if ( $approve === 'approveSketch' )
-        {
-            //Дизайн утверждён
-            $handler->updateStatus(89, User::getFIO());
-            if ($handler->addDesignPrices('designOK' )) echo json_encode(['done'=>89]);
-        }
-        if ( $approve === 'signByTech' )
-        {
-            //Подпись технолога
-            $handler->updateStatus(101, User::getFIO());
-            if ($handler->addTechPrices('SignedTechJew' )) echo json_encode(['done'=>101]);
+        $pn = new PushNotice();
+
+        //Дизайн утверждён (Худ. совет.)
+        if ($approve === 'approveSketch') {
+
+            if (!User::permission('paymentManager'))
+                exit(json_encode(['error' => AppCodes::getMessage(AppCodes::NO_PERMISSION)]));
+            if ( !$handler->isStatusPresent(89) && $handler->isStatusPresent(35) )
+            {
+                if ( $handler->addDesignPrices('designOK') !== -1 )
+                {
+                    $handler->updateStatus(89, User::getFIO());
+
+                    $pn->addPushNotice($id, 2, null, null, null, null, 89, User::getFIO());
+                    exit(json_encode(['success' => AppCodes::getMessage(AppCodes::PRICE_CREDITED)]));
+                }
+                exit(json_encode(['error' => AppCodes::getMessage(AppCodes::PRICE_NOT_CREDITED)]));
+            }
         }
 
-        exit;
+        //Подпись технолога (Занин)
+        if ($approve === 'signByTech') {
+            if (!User::permission('MA_techJew'))
+                exit(json_encode(['error' => AppCodes::getMessage(AppCodes::NO_PERMISSION)]));
+
+            if (!$handler->isStatusPresent(101) && $handler->isStatusPresent(89) )
+            {
+                if ( $handler->addTechPrices('SignedTechJew') !== -1 )
+                {
+                    $handler->updateStatus(101, User::getFIO());
+
+                    $pn->addPushNotice($id, 2, null, null, null, null, 101, User::getFIO());
+                    exit(json_encode(['success' => AppCodes::getMessage(AppCodes::PRICE_CREDITED)]));
+                }
+                exit(json_encode(['error' => AppCodes::getMessage(AppCodes::PRICE_NOT_CREDITED)]));
+            }
+        }
+
+        exit(json_encode(['success' => AppCodes::getMessage(AppCodes::NOTHING_DONE)]));
     }
-
 }

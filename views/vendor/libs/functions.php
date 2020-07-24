@@ -19,7 +19,6 @@ if ( _DEV_MODE_ )
     }
 }
 
-
 if (!function_exists('array_key_first'))
 {
     function array_key_first(array $array)
@@ -182,4 +181,20 @@ function getMonthRu( int $num ) : string
     );
 
     return $_monthsList[(string)$num];
+}
+
+function in_array_recursive( $needle, array &$array, bool $strict = false ) : bool
+{
+    foreach ( $array as $value )
+    {
+        $found = $strict ? $needle === $value : $needle == $value;
+        if($found) return true;
+
+        if ( is_array($value) )
+            $found = in_array_recursive($needle,$value);
+
+        if($found) return true;
+    }
+
+    return isset($found) ? $found : false;
 }

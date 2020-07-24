@@ -1,11 +1,11 @@
 <?php
 namespace Views\_EditStatuses\Controllers;
 
-use Views\_AddEdit\Models\Handler;
+use Views\_AddEdit\Models\HandlerPrices;
 use Views\_EditStatuses\Models\EditStatusesModel;
 use Views\_Globals\Controllers\GeneralController;
 use Views\_Globals\Models\{
-    ProgressCounter, PushNotice, SelectionsModel
+    ProgressCounter, PushNotice, SelectionsModel, User
 };
 
 
@@ -65,60 +65,84 @@ class EditStatusesController extends GeneralController
         $request = $this->request;
         $session = $this->session;
         $selectionMode = $session->getKey('selectionMode');
-
         $status = $request->post('status');
-        $date = $request->post('date');
-        if ( empty($selectionMode['models']) || empty($status) || empty($date) )
+        $date = date('Y-m-d');
+
+        if ( empty($selectionMode['models']) || empty($status) )
         {
             $result['done'] = false;
             echo json_encode($result);
             exit;
         }
+
         $progress = new ProgressCounter();
         if ( isset($_POST['userName']) && isset($_POST['tabID']) )
         {
             $progress->setProgress($request->post('userName'), $request->post('tabID'));
         }
+        $progressCounter = 0;
+        $overallProcesses = count($selectionMode['models']??[]);
 
         $pn = new PushNotice();
-        $handler = new Handler(false);
+        $handler = new HandlerPrices(false);
         $handler->connectDBLite();
 
-        $creator_name = $_SESSION['user']['fio'];
-        $where = "WHERE id IN (";
+        $payments = $handler;
+
+        // флаги редакт. модели
+        $isEdit = 1; // Нужен!!!
+        $component = 2;
+
+        $in = "";
 
         foreach ( $selectionMode['models'] as $model )
         {
+            $modelID = $model['id'];
+            $payments->setId($modelID);
+            // пропустим итерацию, если статусы в данной модели менять запрещено!
+            $modelDate =  $handler->findOne("SELECT date FROM stock WHERE id='$modelID'")['date'];
+            if ( !$handler->statusesChangePermission($modelDate, $component) ) //
+                continue;
+            $isCurrentStatusPresent = $payments->isStatusPresent($status);
+
             $statusT = [
-                'pos_id' => $model['id'],
+                'pos_id' => $modelID,
                 'status' => $status,
-                'creator_name' => $creator_name,
+                'creator_name' => User::getFIO(),
                 'UPdate'   => $date
             ];
             $handler->addStatusesTable($statusT);
 
-            $names = explode(' | ', $model['name']);
+            
+            //Зачисление стоимостей на каждую модель, если позволяет статус
+            require _viewsDIR_ . "_AddEdit/Controllers/paymentsController.php";
 
-            //public function addPushNotice($id, $isEdit=1, $number_3d, $vendor_code, $model_type, $date, $status, $creator_name)
-            $addPush = $pn->addPushNotice($model['id'], 2, $names[0], $names[1], $model['type'], $date, $status, $creator_name);
+            $names = explode(' | ', $model['name']);
+            $addPush = $pn->addPushNotice($modelID, 2, $names[0], $names[1], $model['type'], $date, $status, User::getFIO());
             if ( !$addPush )
             {
                 $result['addPush'] = 'Error adding push notice';
             } else {
                 $result['addPush'] = 'OK';
             }
+            $in .= $model['id'] . ",";
 
-            $where .= "{$model['id']},";
+            //============= counter point ==============//
+            $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
         }
 
-        $where = trim($where,',');
-        $where .= ")";
-        $updateRow = "UPDATE stock SET status='$status', status_date='$date' $where";
-        $query = $handler->baseSql($updateRow);
+        $update = false;
+        $in = rtrim($in,',');
+        if ( !empty($in) )
+        {
+            $in = "(" . rtrim($in,',') . ")";
+            $sql = "UPDATE stock SET status='$status', status_date='$date' WHERE id IN $in";
+            $update = $handler->baseSql($sql);
+        }
 
         $handler->closeDB();
 
-        if ( $query )
+        if ( $update )
         {
             $result['done'] = 1;
             $selection = new SelectionsModel($session);
@@ -128,9 +152,7 @@ class EditStatusesController extends GeneralController
         }
 
         $progress->progressCount( 100 );
-
-        echo json_encode($result);
-        exit;
+        exit( json_encode($result) );
     }
 
 }

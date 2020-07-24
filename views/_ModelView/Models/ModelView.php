@@ -418,6 +418,7 @@ class ModelView extends General {
             {
                 if ( $statuses_row['status'] === $status['id'] )
                 {
+                    $result[$c]['ststus_id'] = $status['id'];
                     $result[$c]['class'] = $status['class'];
                     $result[$c]['classMain'] = $status['name_en'];
                     $result[$c]['glyphi'] = $status['glyphi'];
@@ -433,4 +434,5 @@ class ModelView extends General {
         }
         return $result;
     }
+
 }

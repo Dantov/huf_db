@@ -1,44 +1,21 @@
 "use strict";
+$(function () {
+	let tooltips = $('[data-toggle="tooltip"]');
+    tooltips.tooltip();
 
-cutLongNames( document.querySelector('.table_gems'), 21 );
-cutLongNames( document.querySelector('.table_vc_links'), 21 );
-function cutLongNames( table, numCut ) {
-	if ( !table ) return;
-	let td_arr = table.getElementsByTagName('td');
-	
-	for ( let i = 0; i < td_arr.length; i++ ) {
-		
-		if ( table.classList.contains('table_vc_links') ) {
-			if ( td_arr[i].firstElementChild ) continue;
-		}
-		
-		let str = td_arr[i].innerHTML;
-		if ( str.length > numCut ) {
-			td_arr[i].setAttribute('realstr',str);
-			td_arr[i].setAttribute('class','cutedTD');
-			
-			str = str.slice(0,numCut) + "...";
-			
-			td_arr[i].innerHTML = str;
-			td_arr[i].addEventListener('mouseover',function(){
-				this.setAttribute('cutstr',this.innerHTML);
-				let coords = main.getCoords(this);
-				let longTD = document.querySelector('#longTD');
-					longTD.innerHTML = this.getAttribute('realstr');
-					longTD.classList.remove('hidden');
-					longTD.style.top = coords.top+'px';
-					longTD.style.left = coords.left+'px';
-					longTD.addEventListener('mouseout',function(){
-						this.classList.add('hidden');
-					},false);
-					
-			}, false);
-		}
-	}
-}
+    // Скопирует оригинальную строку в буфер
+    tooltips.each(function (i,elem) {
+        elem.addEventListener('click',function () {
+        	let inner = this.innerHTML;
+        	this.innerHTML = this.getAttribute('data-original-title');
+        	copyInnerHTMLToClipboard(this);
+        	this.innerHTML = inner;
+        },false);
+    });
+});
 
 
-//--------- Рисуем бордер слева или справа ----------//
+//--------- Увеличит картинку на высоту правого блока ----------//
 let descr = document.getElementById('descr');
 
 let descrH = descr.offsetHeight;
@@ -62,8 +39,6 @@ window.addEventListener('load', function () {
 	} );
 
 });
-
-
 
 
 //--------- отображаем превью при наведении ----------//
@@ -180,58 +155,4 @@ if ( butt3D )
             }
         })
     };
-}
-
-
-
-
-
-
-
-
-
-
-
-// ========== LIKES ========== //
-let btnlikes = document.querySelectorAll('.btnlikes');
-if ( btnlikes[0] ) {
-	btnlikes[0].addEventListener('click', likesDislikes, false);
-	btnlikes[1].addEventListener('click', likesDislikes, false);
-}
-function likesDislikes() {
-	let id = document.querySelector('.container').getAttribute('id').split('_');
-
-	let obj = {
-		likeDisl: 0,
-		id: id[1]
-	};
-	let nums;
-
-	if ( this.classList.contains("likeBtn") ) {
-		obj.likeDisl = 1; // облайкали
-		nums = document.getElementById("numLikes");
-	} else if ( this.classList.contains("disLikeBtn") ) {
-		obj.likeDisl = 2; //обдислайкали
-		nums = document.getElementById("numDisLikes");
-	}
-	let that = this;
-	$.ajax({
-		type: 'POST',
-		url: "controllers/likesController.php",
-		data: obj,
-		dataType:"json",
-		success:function(data) {
-
-			nums.innerHTML = data.done;
-
-			btnlikes[0].removeEventListener('click', likesDislikes, false);
-			btnlikes[1].removeEventListener('click', likesDislikes, false);
-
-			btnlikes[0].classList.remove('btnlikes');
-			btnlikes[0].classList.add('btnlikesoff');
-			btnlikes[1].classList.remove('btnlikes');
-			btnlikes[1].classList.add('btnlikesoff');
-
-		}
-	});
 }

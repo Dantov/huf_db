@@ -97,3 +97,39 @@ function redirect(url) {
     }
     return false;
 }
+
+function cursorSet(cursorStyle, elem) {
+    /*
+    auto        move           no-drop      col-resize
+    all-scroll  pointer        not-allowed  row-resize
+    crosshair   progress       e-resize     ne-resize
+    default     text           n-resize     nw-resize
+    help        vertical-text  s-resize     se-resize
+    inherit     wait           w-resize     sw-resize
+    */
+    let cursorStyles = [];
+    if (elem)
+    {
+        if (elem.style) elem.style.cursor = cursorStyle;
+    } else if (document) {
+        if (document.documentElement)
+            if (document.documentElement.style)
+                document.documentElement.style.cursor = cursorStyle;
+    }
+}
+function cursorHide()
+{
+    document.documentElement.style.cursor = "none";
+}
+function cursorRestore(elem)
+{
+    let cursorStyles = [];
+    if (elem)
+    {
+        if (elem.style) elem.style.cursor = "";
+    } else if (document) {
+        if (document.documentElement)
+            if (document.documentElement.style)
+                document.documentElement.style.cursor = "";
+    }
+}

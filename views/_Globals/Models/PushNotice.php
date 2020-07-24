@@ -55,14 +55,23 @@ class PushNotice extends General
         return $noticesResult;
     }
 
-    public function addPushNotice($id, $isEdit=1, $number_3d, $vendor_code, $model_type, $date, $status, $creator_name)
+    /**
+     * @param int $id
+     * @param int $isEdit
+     * @param null $number_3d
+     * @param null $vendor_code
+     * @param null $model_type
+     * @param null $date
+     * @param null $status
+     * @param null $creator_name
+     * @return bool|int
+     * @throws \Exception
+     */
+    public function addPushNotice(int $id, $isEdit=1, $number_3d=null, $vendor_code=null, $model_type=null, $date=null, $status=null, $creator_name=null)
     {
         if (!$id) return false;
-        if (!$date)
-        {
-            $dateTime = new \DateTime();
-            $date = $dateTime->format('Y-m-d');
-        }
+        if (!$date) $date = date('Y-m-d');
+        if (!$creator_name) $creator_name = User::getFIO();
 
         // полезем за картинкой
         $imgQuery = mysqli_query($this->connection, " SELECT img_name FROM images WHERE main='1' AND pos_id=$id " );
@@ -71,15 +80,19 @@ class PushNotice extends General
         {
             $pushImg = mysqli_fetch_assoc($imgQuery);
             $file = $number_3d.'/'.$id.'/images/'.$pushImg['img_name'];
-            //$pathToImg = _stockDIR_HTTP_ . $file;
-            $pathToImg = "http://192.168.0.245/Stock/" . $file;
+
+            $pathToImg = _WORK_PLACE_ ? "http://192.168.0.245/Stock/" . $file : _stockDIR_HTTP_ . $file ;
+
             if ( !file_exists(_stockDIR_ . $file) ) $pathToImg = _stockDIR_HTTP_."default.jpg";
         }
 
-        if ( !isset($status) )
+        if ( !$status || !$number_3d || !$vendor_code || !$model_type )
         {
-            $stockQuery = mysqli_query($this->connection, " SELECT status FROM stock WHERE id=$id " );
-            if ($stockQuery->num_rows) $status = mysqli_fetch_assoc($stockQuery)['status'];
+            $stockQuery = $this->findOne( " SELECT  number_3d,vendor_code,model_type,status FROM stock WHERE id=$id " );
+            if ( !$status ) $status = $stockQuery['status'];
+            if ( !$number_3d ) $number_3d = $stockQuery['number_3d'];
+            if ( !$vendor_code ) $vendor_code = $stockQuery['vendor_code'];
+            if ( !$model_type ) $model_type = $stockQuery['model_type'];
         }
 
         // Добавляем в базу

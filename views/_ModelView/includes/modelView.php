@@ -60,17 +60,23 @@ $isView = true;
             <div role="tabpanel" class="tab-pane active in fade pt-1" id="info">
 
                 <div class="panel mb-1 descriptionPanel">
-                    <?php if ( User::permission('paymentManager') && (int)$currentStatus['id'] === 35 ): // эскиз?> 
-                        <button type="button" id="approveSketchBtn" data-toggle="modal" data-target="#approveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
-                            <i class="fas fa-magic"></i>
-                            <b>Утвердить эскиз</b>
-                        </button>
+                    <?php if ( User::permission('paymentManager') && in_array(37,User::getLocations()) && (int)$currentStatus['id'] === 35 ): // эскиз?>
+                         <?php if ( !$isStatusPresentDesign ):?>
+                            <button type="button" id="approveSketchBtn" data-toggle="modal" data-target="#approveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
+                                <i class="fas fa-magic"></i>
+                                <b>Утвердить эскиз</b>
+                            </button>
+                        <?php endif; ?>
                     <?php endif; ?>
-                    <?php if ( User::permission('MA_techJew') && (int)$currentStatus['id'] === 1 ): // На проверке?> 
+
+                    <?php // Стоит На проверке и есть утвержд. эскиз ?>
+                    <?php if ( User::permission('MA_techJew') && in_array(39,User::getLocations()) && (int)$currentStatus['id'] === 1 ): ?>
+                        <?php if ( !$isStatusPresentTechJew && $isStatusPresentDesign ): ?>
                         <button type="button" id="approve3DTechBtn" data-toggle="modal" data-target="#approveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
                             <span class="glyphicon glyphicon-education"></span>
                             <b>Подпись технолога</b>
                         </button>
+                        <?php endif; ?>
                     <?php endif; ?>
                     <div class="panel-heading <?=$stat_class;?> cursorArrow mb-2" title="<?=$stat_title;?>"><span class="<?=$stat_glyphi?>"></span> <?=$stat_name;?><span title="Дата последнего изменения статуса"><?=$stat_date?" - " . $stat_date:''?></span></div>
                     <ul class="list-group">
@@ -280,8 +286,14 @@ $isView = true;
                             <td><?=$gem['gem_size']?></td>
                             <td><?=$gem['gem_value']?></td>
                             <td><?=$gem['gem_cut']?></td>
-                            <td><?=$gem['gem_name']?></td>
-                            <td><?=$gem['gem_color']?></td>
+                            <?php $isLongStr = $this->cutLongNames($gem['gem_name'], 20, true) ?>
+                            <td class="<?= $isLongStr?'bg-info cursorPointer':''?>">
+                                <div data-toggle="<?= $isLongStr?'tooltip':''?>" title="<?= $isLongStr?$gem['gem_name']:''?>"><?= $this->cutLongNames($gem['gem_name']) ?></div>
+                            </td>
+                            <?php $isLongStr = $this->cutLongNames($gem['gem_color'], 20, true) ?>
+                            <td class="<?= $isLongStr?'bg-info cursorPointer':''?>">
+                                <div data-toggle="<?= $isLongStr?'tooltip':''?>" title="<?= $isLongStr?$gem['gem_color']:''?>"><?= $this->cutLongNames($gem['gem_color']) ?></div>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -302,9 +314,15 @@ $isView = true;
                     <tbody class="tbody_vc_links">
                     <?php foreach ( $dopVCTr?:[] as $vcLink  ) : ?>
                         <tr class="text-bold">
-                            <td><?=$vcLink['vc_names']?></td>
-                            <td><?=$vcLink['vc_link'];?></td>
-                            <td><?=$vcLink['vc_descript']?></td>
+                            <?php $isLongStr = $this->cutLongNames($vcLink['vc_names'], 20, true) ?>
+                            <td class="<?= $isLongStr?'bg-info cursorPointer':''?>">
+                                <div data-toggle="<?= $isLongStr?'tooltip':''?>" title="<?= $isLongStr ? $vcLink['vc_names']:''?>"><?= $this->cutLongNames($vcLink['vc_names']) ?></div>
+                            </td>
+                            <td><?= $vcLink['vc_link'] ?></td>
+                            <?php $isLongStr = $this->cutLongNames($vcLink['vc_descript'], 20, true) ?>
+                            <td class="<?= $isLongStr?'bg-info cursorPointer':''?>">
+                                <div data-toggle="<?= $isLongStr?'tooltip':''?>" title="<?= $isLongStr ? $vcLink['vc_descript']:''?>"><?= $this->cutLongNames($vcLink['vc_descript']) ?></div>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -323,21 +341,3 @@ $isView = true;
 <!-- lond cut div -->
 <div id="longTD" class="longTD hidden"></div>
 <img src="" id="imageBoxPrev" style="max-height:250px; max-width:200px;" class="imgPrev-thumbnail hidden"/>
-
-
-<?php if ( User::permission('paymentManager') || User::permission('MA_techJew') ): ?>
-<div class="modal fade" id="approveModal" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="approveModalLabel">Утвердить эскиз в работу?</h4>
-      </div>
-      <div class="modal-body"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-triangle-left" aria-hidden="true"></span> Отмена</button>
-        <button type="button" class="btn btn-primary pull-right approveSubmit"></button>
-      </div>
-    </div>
-  </div>
-</div>
-<?php endif; ?>

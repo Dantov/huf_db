@@ -61,6 +61,9 @@ class UserPouchController extends GeneralController
         $workerID = $this->workerID;
         $monthID = $this->month;
         $yearID = $this->year;
+
+        $this->includeJSFile('UserPouch.js',['defer','timestamp']);
+
         $compacts = compact([
             'modelPrices','stockInfo','tab','statistic','workerID','monthID','yearID',
         ]);

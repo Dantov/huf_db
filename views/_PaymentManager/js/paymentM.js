@@ -18,153 +18,74 @@ PaymentManager.prototype.init = function(button)
         //debug(e);
         let button = e.relatedTarget;
         pm.getPricesAllData(button);
-        /*
-        switch ( button.getAttribute('data-prices') )
-        {
-            case "allInModel": pm.getPricesData(button);    break;
-            case     "single": pm.getPricesData(button);    break;
-            case        "all": pm.getPricesAllData(button); break;
-        }
-        */
     });
 
     $('#paymentModal').on('hidden.bs.modal', function (e) {
-        pm.modalBody.children[0].innerHTML = "";
+        let f = pm.modalBody.querySelector('.columnFirst');
+        let s = pm.modalBody.querySelector('.columnSecond');
+        f.innerHTML = "";
+        s.innerHTML = "";
+        f.classList.remove('col-md-12', 'col-md-6');
+        s.classList.remove('col-md-12', 'col-md-6');
         pm.modal.children[0].classList.remove("modal-lg");
         pm.priceIDs = [];
     });
 
     this.payButton.addEventListener('click', function () {
-        pm.payPrices();
+        pm.payPrices(this);
     },false);
+
+    this.addCollapsesEvent();
 
     debug('PaymentManager init ok!');
 };
-
-PaymentManager.prototype.getPriceData = function(button) 
+/**
+ * Накинем обработчик на панель, что бы открывалась не только лишь по клику на ссылке collapse
+ */
+PaymentManager.prototype.addCollapsesEvent = function()
 {
-    let that = this;
+    let allModels = document.getElementById('allModels');
+    let panelHeadings = allModels.querySelectorAll('.panel-heading');
 
-    $.ajax({
-        url: "/payment-manager/?getPrice=1",
-        type: 'POST',
-        data: {
-            priceID: button.getAttribute('data-priceID'),
-        },
-        dataType:"json",
-        success:function(modelPrice) {
-            debug(modelPrice);
+    $.each(panelHeadings, function (i, ph) {
+        // при клике на панель, раскрыли панель и подсветили её
+        ph.addEventListener('click',function (e) {
+            let click = e.target;
+            if ( click.classList.contains('modelHref') ) return;
+            $(this.nextElementSibling).collapse('toggle');
+            let panel = this.parentElement;
 
-            /*
-            if ( +modelPrice.status === 1 )
+            panel.classList.toggle('panel-default');
+            panel.classList.toggle('panel-info');
+            panel.classList.toggle('panel-primary');
+        });
+        // Подсветили строку модели по mouse over
+        ph.addEventListener('mouseover',function (e) {
+            let click = e.target;
+            if ( click.classList.contains('modelHref') ) return;
+
+            let panel = this.parentElement;
+            if ( !panel.classList.contains('panel-primary') )
             {
-                that.priceIDs.push(modelPrice.pID);
-                let newModelRow = document.querySelector('.PM_protoModel').cloneNode(true);
-
-                newModelRow.classList.remove('hidden','PM_protoModel');
-                let vc = modelPrice.vendorCode ? " / " + modelPrice.vendorCode : "";
-                newModelRow.querySelector('.panel-heading').innerHTML = modelPrice.number_3d + vc + " - " + modelPrice.modelType;
-                newModelRow.querySelector('.panel-body').children[0].src = modelPrice.imgName;
-
-                let ul = newModelRow.querySelector('.list-group');
-                let span = document.createElement('span');
-                    span.innerHTML = modelPrice.costName + ": <b>" + modelPrice.value + "грн.</b> - " + modelPrice.fio + " " + modelPrice.date;
-                ul.children[0].appendChild(span);
-                that.modalBody.appendChild(newModelRow);
-
-            } else if ( modelPrice.error ) {
-                switch ( modelPrice.error )
-                {
-                    case 321: alert("Ошибка выбора стоимости."); break;
-                }
+                panel.classList.toggle('panel-default');
+                panel.classList.toggle('panel-info');
             }
-            */
-        }
+        });
+        // Убрали подсветку по mouse out
+        ph.addEventListener('mouseout',function (e) {
+            let click = e.target;
+            if ( click.classList.contains('modelHref') ) return;
+
+            let panel = this.parentElement;
+            if ( !panel.classList.contains('panel-primary') )
+            {
+                panel.classList.toggle('panel-default');
+                panel.classList.toggle('panel-info');
+            }
+        });
     });
 };
-PaymentManager.prototype.getPricesData = function(button)
-{
-    let that = this;
 
-    $.ajax({
-        url: "/payment-manager/?getPrices",
-        type: 'POST',
-        data: {
-            priceIDs: button.getAttribute('data-priceID'),
-            posID: button.getAttribute('data-posID'),
-        },
-        dataType:"json",
-        success:function(modelPrices) {
-            if ( modelPrices.error )
-            {
-                debug(modelPrices.error.code);
-                debug(modelPrices.error.message);
-                return;
-            }
-            debug(modelPrices);
-
-            let newModelRow = document.querySelector('.PM_protoModel').cloneNode(true);
-
-            newModelRow.classList.remove('hidden','PM_protoModel');
-            let vc = modelPrices[0].vendorCode ? " / " + modelPrices[0].vendorCode : "";
-            newModelRow.querySelector('.panel-heading').innerHTML = modelPrices[0].number_3d + vc + " - " + modelPrices[0].modelType;
-            newModelRow.querySelector('.panel-body').children[0].src = modelPrices[0].imgName;
-
-            let tValue = 0;
-            let ul = newModelRow.querySelector('.list-group');
-
-            $.each(modelPrices, function (i, price) {
-                that.priceIDs.push(price.pID);
-                tValue += +price.value;
-
-                let newLi = document.createElement('li');
-                    newLi.classList.add('list-group-item');
-
-                let p3D = '';
-                if ( +price.is3dGrade === 1 ) p3D = "<u>3D Моделирование: </u>";
-                let span = document.createElement('span');
-                    span.innerHTML = p3D + "<i>" + price.costName + ": </i><b>" + price.value + 'грн.</b>';
-                let spanFIO = document.createElement('span');
-                    spanFIO.classList.add('pull-right', 'small');
-                    spanFIO.innerHTML =  price.fio + " " + price.date;
-
-                let notPayedLabel = newModelRow.querySelector('.notPayed').cloneNode(true);
-                    notPayedLabel.classList.remove('hidden');
-                    notPayedLabel.classList.add('mr-1');
-                let accruedLabel = newModelRow.querySelector('.accrued').cloneNode(true);
-                    accruedLabel.classList.remove('hidden');
-                    accruedLabel.classList.add('mr-1');
-                let div = document.createElement('div');
-                    div.classList.add('pt-1');
-                    div.appendChild(accruedLabel);
-                    div.appendChild(notPayedLabel);
-
-                newLi.appendChild(span);
-                newLi.appendChild(spanFIO);
-                newLi.appendChild(div);
-
-                ul.appendChild(newLi);
-            });
-            let footer = newModelRow.querySelector('.panel-footer');
-                footer.innerHTML = "Всего: " + tValue + "грн.";
-
-            let paidType = button.getAttribute('data-prices');
-            let topText = "";
-            switch (paidType)
-            {
-                case "allInModel": topText = "Оплатить всё в модели"; break;
-                case     "single": topText = "Оплатить <i>" + modelPrices[0].costName + "</i>"; break;
-                case        "all":  topText = "Оплатить всё"; break;
-            }
-            that.modal.querySelector('.modal-title').innerHTML = topText;
-            that.modalBody.appendChild(newModelRow);
-        },
-        error:function (e) {
-            debug(e);
-        }
-    });
-
-};
 PaymentManager.prototype.getPricesAllData = function(button)
 {
     let that = this;
@@ -184,7 +105,11 @@ PaymentManager.prototype.getPricesAllData = function(button)
                 debug(models.error.message);
                 return;
             }
-            debug(models);
+
+            let toFirstColumn = Math.floor(models.length / 2);
+
+            let colFirst = that.modalBody.querySelector('.columnFirst');
+            let colSecond = that.modalBody.querySelector('.columnSecond');
 
             let totalValue = 0;
             $.each(models, function (i, model) {
@@ -193,13 +118,25 @@ PaymentManager.prototype.getPricesAllData = function(button)
 
                 newModelRow.classList.remove('hidden','PM_protoModel');
                 let vc = model.vendorCode ? " / " + model.vendorCode : "";
-                newModelRow.querySelector('.panel-heading').innerHTML = model.number_3d + vc + " - " + model.modelType;
+                newModelRow.querySelector('.panel-heading').children[0].innerHTML = model.number_3d + vc + " - " + model.modelType;
                 newModelRow.querySelector('.panel-body').children[0].src = model.imgName;
+
+                let modelPanelID = "modelPanel_" + i;
+                let collapsePanelID = "collapsePanelID_" + i;
+                let ph = newModelRow.querySelector('.panel-heading');
+                    ph.id = modelPanelID;
+                    ph.children[0].setAttribute('href','#' + collapsePanelID);
+                    ph.children[0].setAttribute('aria-controls', collapsePanelID);
+                    ph.nextElementSibling.setAttribute('id', collapsePanelID);
+                    ph.nextElementSibling.setAttribute('aria-labelledby', modelPanelID);
+                    ph.addEventListener('click',function (e) {
+                        $(this.nextElementSibling).collapse('toggle');
+                    });
 
                 let tMValue = 0;
                 let ul = newModelRow.querySelector('.list-group');
 
-                $.each(model.prices, function (i, price) {
+                $.each(model.prices, function (c, price) {
                     that.priceIDs.push(price.pID);
                     tMValue += +price.value;
 
@@ -217,13 +154,19 @@ PaymentManager.prototype.getPricesAllData = function(button)
                     let notPayedLabel = newModelRow.querySelector('.notPayed').cloneNode(true);
                     notPayedLabel.classList.remove('hidden');
                     notPayedLabel.classList.add('mr-1');
+
                     let accruedLabel = newModelRow.querySelector('.accrued').cloneNode(true);
                     accruedLabel.classList.remove('hidden');
                     accruedLabel.classList.add('mr-1');
+
+                    let paySuccessLabel = newModelRow.querySelector('.paySuccess').cloneNode(true);
+                    paySuccessLabel.classList.add('mr-1');
+
                     let div = document.createElement('div');
                     div.classList.add('pt-1');
                     div.appendChild(accruedLabel);
                     div.appendChild(notPayedLabel);
+                    div.appendChild(paySuccessLabel);
 
                     newLi.appendChild(span);
                     newLi.appendChild(spanFIO);
@@ -238,46 +181,81 @@ PaymentManager.prototype.getPricesAllData = function(button)
 
                 let paidType = button.getAttribute('data-prices');
                 let topText = "";
-                let lg = "col-lg-12";
+                let md12 = "col-md-12";
                 switch (paidType)
                 {
-                    case "allInModel": topText = "Оплатить всё в модели"; break;
-                    case     "single": topText = "Оплатить <i>" + models[0].prices[0].costName + "</i>"; break;
+                    case "allInModel":
+                        topText = "Оплатить всё в модели";
+                        $(newModelRow.querySelector('.collapse')).collapse('toggle');
+                        break;
+                    case     "single":
+                        topText = "Оплатить <i>" + models[0].prices[0].costName + "</i>";
+                        $(newModelRow.querySelector('.collapse')).collapse('toggle');
+                        break;
                     case        "all":
                         topText = "Оплатить всё - <b>" + totalValue + "</b>грн.";
                         that.modal.children[0].classList.add("modal-lg");
-                        lg = 'col-lg-6';
+                        md12 = "col-md-6";
                         break;
                 }
                 that.modal.querySelector('.modal-title').innerHTML = topText;
-                let col = document.createElement('div');
-                    col.classList.add('col-sm-12', lg);
-                    col.appendChild(newModelRow);
-
-                that.modalBody.children[0].appendChild(col);
-
+                if ( i <= toFirstColumn )
+                {
+                    colFirst.classList.add(md12);
+                    colFirst.appendChild(newModelRow);
+                } else {
+                    colSecond.classList.add(md12);
+                    colSecond.appendChild(newModelRow);
+                }
             });
-
         },
     });
 
 };
 
-PaymentManager.prototype.payPrices = function()
+PaymentManager.prototype.payPrices = function(payButton)
 {
+    payButton.classList.add('disabled');
+    cursorSet('wait');
+    let notPayed = this.modalBody.querySelectorAll('.notPayed');
+    $.each(notPayed, function (i, label) {
+        label.classList.add('hidden');
+    });
+
     let that = this;
     $.ajax({
-        url: "/payment-manager/?payPrice=1",
+        url: "/payment-manager/?payPrice",
         type: 'POST',
         data: {
             prices: that.priceIDs,
         },
         dataType:"json",
         success:function(data) {
-            if ( +data.success === 610 ) {
-                //notPayed paySuccess
-                that.modal.querySelector('.notPayed').classList.add('hidden');
-                that.modal.querySelector('.paySuccess').classList.remove('hidden');
+            if ( data.success ) {
+
+                setTimeout(function () {
+                    let paySuccess = that.modalBody.querySelectorAll('.paySuccess');
+                    $.each(paySuccess, function (i, label) {
+                        label.classList.remove('hidden');
+                    });
+                    payButton.previousElementSibling.classList.add('hidden');
+                }, 500);
+
+                setTimeout(function () {
+                    $('#paymentModal').modal('hide');
+
+                    let paymentModalResult = document.getElementById('paymentModalResult');
+                    let span = document.createElement('span');
+                        span.innerHTML = data.success.message;
+                    paymentModalResult.querySelector('.modal-title').appendChild(span);
+                    $('#paymentModalResult').modal({
+                        keyboard: false,
+                        backdrop: 'static',
+                    });
+                    $('#paymentModalResult').modal('show');
+                    cursorRestore();
+                }, 1000);
+
             } else if (data.error) {
                 alert(data.error.message + " " + data.error.code);
             }

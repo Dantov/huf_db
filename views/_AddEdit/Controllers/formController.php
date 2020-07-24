@@ -2,8 +2,10 @@
 namespace Views\_AddEdit\Controllers;
 
 use Views\_AddEdit\Models\Handler;
+use Views\_AddEdit\Models\HandlerPrices;
 use Views\_Globals\Models\{ProgressCounter,PushNotice,SelectionsModel,User};
 use Views\vendor\core\{Request,Sessions};
+use Views\vendor\libs\classes\AppCodes;
 
 $request = new Request();
 $progress = new ProgressCounter();
@@ -34,11 +36,10 @@ $handler = new Handler($id);
 try {
     $handler->connectToDB();
 } catch ( \Exception $e) {
-    exit($e->getMessage() . "connectToDB Failed in" . __METHOD__ );
+    exit($e->getMessage() . " connectToDB Failed in " . __METHOD__ );
 }
 
-// $handler->addModeller3DPrices( $request->post('ma3Dgs') );
-// exit();
+
 
 $date = trim($_POST['date']);
 if ( $isEdit === true ) {
@@ -74,8 +75,6 @@ $handler -> addVCtoComplects($vendor_code, $number_3d);
 // формируем строку model_material
 //$model_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
 
-// формируем строку model_covering
-//$model_covering = $handler->makeModelCovering($_POST['rhodium'],$_POST['golding'],$_POST['blacking'],$_POST['rhodium_fill'],$_POST['onProngs'],$_POST['onParts'],$_POST['rhodium_PrivParts']);
 
 $str_labels =  $handler->makeLabels($_POST['labels']);
 
@@ -93,38 +92,51 @@ $creator_name    = $_SESSION['user']['fio'];
 $status = $_POST['status']; // число
 
 $datas = "";
+if ( !empty($number_3d) && $permissions['number_3d'] )
+    $datas .= "number_3d='$number_3d',";
 
-if ( !empty($number_3d) && $permissions['number_3d'] ) $datas .= "number_3d='$number_3d',";
+if ( $permissions['vendor_code']  )
+    $datas .= "vendor_code='$vendor_code',";
 
-if ( $permissions['vendor_code']  ) $datas .= "vendor_code='$vendor_code',";
+if ( !empty($collection) && $permissions['collections'] )
+    $datas .= "collections='$collection',";
 
-if ( !empty($collection) && $permissions['collections'] ) $datas .= "collections='$collection',";
+if ( !empty($author) && $permissions['author'] )
+    $datas .= "author='$author',";
 
-if ( !empty($author) && $permissions['author'] ) $datas .= "author='$author',";
+if ( !empty($modeller3d) && $permissions['modeller3d'] )
+    $datas .= "modeller3D='$modeller3d',";
 
-if ( !empty($modeller3d) && $permissions['modeller3d'] ) $datas .= "modeller3D='$modeller3d',";
-if ( $permissions['jewelerName'] ) $datas .= "jewelerName='$jewelerName',";
+if ( $permissions['jewelerName'] )
+    $datas .= "jewelerName='$jewelerName',";
 
-if ( !empty($model_type) && $permissions['model_type'] ) $datas .= "model_type='$model_type',";
-if ( $permissions['size_range'] ) $datas .= "size_range='$size_range',";
+if ( !empty($model_type) && $permissions['model_type'] )
+    $datas .= "model_type='$model_type',";
 
-if ( !empty($print_cost) && $permissions['print_cost'] ) $datas .= "print_cost='$print_cost',";
-if ( !empty($model_cost) && $permissions['model_cost'] ) $datas .= "model_cost='$model_cost',";
+if ( $permissions['size_range'] )
+    $datas .= "size_range='$size_range',";
 
-//if ( $permissions['covering'] ) $datas .= "model_covering='$model_covering',";
-//if ( $permissions['material'] ) $datas .= "model_material='$model_material',";
+if ( !empty($print_cost) && $permissions['print_cost'] )
+    $datas .= "print_cost='$print_cost',";
 
-if ( !empty($model_weight) && $permissions['model_weight'] ) $datas .= "model_weight='$model_weight',";
+if ( !empty($model_cost) && $permissions['model_cost'] )
+    $datas .= "model_cost='$model_cost',";
 
-if ( $permissions['description'] ) $datas .= "description='".trim($description)."',";
-if ( $permissions['labels'] ) $datas .= "labels='$str_labels',";
+if ( !empty($model_weight) && $permissions['model_weight'] )
+    $datas .= "model_weight='$model_weight',";
+
+if ( $permissions['description'] )
+    $datas .= "description='".trim($description)."',";
+
+if ( $permissions['labels'] )
+    $datas .= "labels='$str_labels',";
 
 $datas = trim($datas,',');
 
 //============= counter point ==============//
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 
-$isStatusPresent = null;
+$isCurrentStatusPresent = null;
 
 // добавляем новую модель
 if ( $isEdit === false )
@@ -149,18 +161,19 @@ if ( $isEdit === false )
     $updateModelData = $handler->updateDataModel($datas, $id);
 } else {
     // редактирование старой
-    if ( $status )
-        $isStatusPresent = $handler->isStatusPresent($status); 
+    if ( $status && User::permission('statuses') )
+        $isCurrentStatusPresent = $handler->isStatusPresent($status);
 
     $updateModelData = $handler->updateDataModel($datas);
-    $handler->updateCreater($creator_name);    // добавим создателя, если его не было
-    $handler->updateStatus($status, $creator_name); // обновляем статус
+    $handler->updateCreater($creator_name);      // добавим создателя, если его не было
+
+    if ( $status && User::permission('statuses') )
+        $handler->updateStatus($status, $creator_name); // обновляем статус
 }
 
 if ( !$updateModelData )
-{
     exit('$updateModelData Error');
-}
+
 //============= counter point ==============//
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 
@@ -343,87 +356,9 @@ $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses
 
 
 
-
 /// --------- Добавляем Стоимости ----------///
-try {
-    if (User::permission('MA_design'))
-    {
-        if (!$isEdit) // новая модель
-        {
-            if ((int)$status === 35)
-                if (!$isStatusPresent)
-                    if ($handler->addDesignPrices('sketch') === -1) $resp_arr['MA_design'] = "not adding price";
-        }
-    }
-    if (User::permission('paymentManager')) // зачислили дизайнеру
-    {
-        if ((int)$status === 89)
-            if (!$isStatusPresent)
-                if ($handler->addDesignPrices('designOK') === -1) $resp_arr['MA_design'] = "not adding price";
-    }
-    if (User::permission('MA_modeller3D'))
-    {
-        if ($isEdit) {
-            if ((int)$status === 47)
-                // если статуса 'Готово 3D' еще не было, добавим Дизайнеру за сопровождение
-                if (!$isStatusPresent)
-                    if ($handler->addDesignPrices('escort3D') === -1) $resp_arr['MA_modeller3D'] = "not adding price";
-        }
-        // инициируем вставку оценок моделироания только ели есть MA_modeller3D
-        if (trueIsset($request->post('ma3Dgs')['gs3Dids']))
-            $handler->addModeller3DPrices($request->post('ma3Dgs'));
-    }
-    if (User::permission('MA_techCoord'))
-    {
-        if ($isEdit) {
-            if ((int)$status === 1) // На проверке
-                if (!$isStatusPresent)
-                    if ($handler->addTechPrices('onVerify') === -1) $resp_arr['MA_techCoord'] = "not adding price";
-
-            if ((int)$status === 2) // Проверено
-                if (!$isStatusPresent)
-                    if ($handler->addTechPrices('signed') === -1) $resp_arr['MA_techCoord'] = "not adding price";
-        }
-    }
-    if (User::permission('MA_techJew')) { // Технолог Юв (Валик)
-        if ($isEdit) {
-            if ((int)$status === 101) // Подписано технологом
-                if (!$isStatusPresent)
-                    if ($handler->addTechPrices('SignedTechJew') === -1) $resp_arr['MA_techCoord'] = "not adding price";
-        }
-    }
-    if (User::permission('MA_3dSupport'))
-    {
-        if ($isEdit) {
-            if ((int)$status === 3) // Поддержки
-                if (!$isStatusPresent)
-                    if ($handler->addPrint3DPrices('supports') === -1) $resp_arr['MA_3dSupport'] = "not adding price";
-        }
-    }
-    if (User::permission('MA_3dPrinting'))
-    {
-        if ($isEdit) {
-//        if ( $handler->isStatusPresent(2) ) // Есть Подписано - зачисляем стоимость печати
-//            $handler->addPrintingPrices( $_POST['printingPrices']??[] );
-
-            if ((int)$status === 5) //Выращено
-                if (!$isStatusPresent)
-                    if ($handler->addPrint3DPrices('printed') === -1) $resp_arr['MA_3dPrinting'] = "not adding price";
-        }
-    }
-    if (User::permission('MA_modellerJew'))
-    {
-        if ($isEdit) {
-            // инициируем вставку оценок модельера-доработчика
-            if (trueIsset($request->post('modellerJewPrice')))
-                $handler->addModJewPrices('add', $request->post('modellerJewPrice') );
-
-            if ((int)$status === 6) //Готовая ММ
-                if (!$isStatusPresent)
-                    if ($handler->addModJewPrices('MMdone') === -1) $resp_arr['MA_3dPrinting'] = "not adding price";
-        }
-    }
-} catch (\Exception $e) { throw new \Exception($e); }
+$payments = new HandlerPrices($id, $handler->connection);
+require_once "paymentsController.php";
 /// --------- END Стоимости ----------///
 
 

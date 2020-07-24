@@ -9,13 +9,14 @@ class General
 
 	protected $alphabet = [];
 	protected $server;
-	protected $connection;
+
 	protected static $connectObj;
 	protected $rootDir;
 	protected $stockDir;
 
     public static $serviceArr;
 
+    public $connection;
 	public $user;
 	public $users;
 	public $statuses;
@@ -109,20 +110,17 @@ class General
 
 
     /**
+     * @param bool $full
      * @return mixed
+     * @throws \Exception
      */
     public function getUsers( bool $full=false )
     {
-        if ( isset($this->users) ) return $this->users;
+        if ( trueIsset($this->users) ) return $this->users;
         $logPass = '';
         if ( $full ) $logPass = "login, pass,";
-        $usersQuery = mysqli_query($this->connection, " SELECT id, $logPass fio,fullFio,location,access FROM users ");
-        if ( !$usersQuery->num_rows ) new \Exception('Users not found at all!',500);
-        while( $user = mysqli_fetch_assoc($usersQuery) )
-        {
-            $this->users[] = $user;
-        }
-        return $this->users;
+
+        return $this->users = $this->findAsArray(" SELECT id, $logPass fio,fullFio,location,access FROM users ");
     }
 
 
@@ -133,27 +131,6 @@ class General
      */
     public function permittedFields() : array
     {
-        /*
-        $this->getUser();
-
-        $permissions = $this->findAsArray("SELECT id,name,description FROM permissions");
-        $userPermissions = $this->findAsArray("SELECT permission_id FROM user_permissions WHERE user_id='{$this->user['id']}'");
-        foreach ( $userPermissions as $key => &$userPF ) $userPermissions[$key] = $userPF['permission_id'];
-
-        $permittedFields = [];
-        foreach ( $permissions as $permittedField )
-        {
-            $pfID = $permittedField['id'];
-            if ( in_array( $pfID, $userPermissions ) )
-            {
-                $permittedFields[$permittedField['name']] = true;
-            } else {
-                $permittedFields[$permittedField['name']] = false;
-            }
-        }
-
-        return $permittedFields;
-        */
         return User::permissions();
     }
 
@@ -257,11 +234,6 @@ class General
 		closedir($dir);
 		rmdir($src);
 	}
-
-    public function unsetSessions() {
-        // удаляем автозаполнение при возврате на главную
-        //if ( isset($_SESSION['general_data']) ) unset($_SESSION['general_data']);
-    }
 	
 	public function getStatus($row=[], $selMode='')
     {
@@ -574,9 +546,9 @@ class General
      * @return bool|\mysqli_result
      * @throws \Exception
      */
-    public function baseSql($sqlStr)
+    public function baseSql(string $sqlStr)
     {
-        if ( !is_string($sqlStr) || empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
+        if ( empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
         $query = mysqli_query( $this->connection, $sqlStr );
         if ( !$query ) throw new \Exception("Error in baseSql() --!! $sqlStr !!-- " . mysqli_error($this->connection), 555);
 
@@ -661,6 +633,60 @@ class General
     {
         if ( empty($tableName) ) throw new \Exception("Table name is empty!");
         return $this->findOne("SELECT COUNT(1) as r FROM $tableName")['r'];
+    }
+
+    /**
+     * @param string $modelDate
+     * @param int $component
+     * @return bool
+     * @throws \Exception
+     */
+    public function statusesChangePermission(string $modelDate, int $component) : bool
+    {
+        if ( empty($modelDate) ) return false;
+
+        // Сделал привязку к конкретной дате, старые модели сделаны до неё не будут проверены на наличие нужных статусов
+        // это сделано что бы участки могли принять старые модели в ремонт, в случае чего
+        $comp_date =  new \DateTime($modelDate) < new \DateTime("2020-07-01") ? false : true;
+
+        // user access => status id
+        //Пример: 2 => 89 - 3д моделлер может менять статус только после Утверждения дизайна
+        $changeStatusesAccess = [ 2 => 89, 3 => 2, 5 => 5, 11 => 89 ];
+
+
+        $toShowStatuses = true;
+        if ( $comp_date && ($component !== 1) )
+        {
+            // Что бы предотвратить изменения статусов у модели, если не поставлен статус сдачи пред. участка
+            // при постановке нужных статусов, некоторым людям начислятся деньги в кошельке работника
+
+            if ( User::getAccess() !== 1 )
+                $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $this->isStatusPresent( (int)$changeStatusesAccess[User::getAccess()] );
+        }
+
+
+        return $toShowStatuses;
+    }
+
+    /**
+     * @param int $statusID
+     * @param int $pos_id
+     * @return bool
+     * @throws \Exception
+     */
+    public function isStatusPresent(int $statusID = 0, int $pos_id = 0 ) : bool
+    {
+        if ( $pos_id === 0 )
+            if ( trueIsset($this->id) )
+            {
+                $pos_id = $this->id;
+            } else {
+                throw new \Exception('Model ID is empty! Check stock table for this id: ' . $this->id, 0);
+            }
+
+        $query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$pos_id' AND status='$statusID' " );
+        if ( $query->num_rows ) return true;
+        return false;
     }
 	
 }

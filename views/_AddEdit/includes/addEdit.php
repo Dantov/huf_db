@@ -409,57 +409,57 @@ $permittedFields = User::permissions();
                     </span>
                             <span class="label label-warning" style="font-weight: bold;font-size: medium;" title="<?= $row['status']['title']??'' ?>" >
                         <span style="color: #1C1C1C" class="glyphicon glyphicon-<?= $row['status']['glyphi']??''?>"></span>
-                        <span id="currentStatus" ><?=$row['status']['name_ru']?></span>
+                        <span id="currentStatus" ><?=$row['status']['name_ru']??''?></span>
                     </span>
                             <button id="openAll" title="Раскрыть Все" onclick="event.preventDefault()" style="margin-bottom: 10px" class="pull-right btn btn-sm btn-info"><span class="glyphicon glyphicon-menu-left"></span> Раскрыть Все</button>
                             <button id="closeAll" title="Закрыть Все" onclick="event.preventDefault()" style="margin-bottom: 10px" class="pull-right hidden btn btn-sm btn-primary"><span class="glyphicon glyphicon-menu-down"></span> Закрыть Все</button>
                         <div class="clearfix"></div>
                         </p>
                         <?php if ( $toShowStatuses ): ?>
-                        <div class="row">
-                        <?php
-                            $countWC = count($statusesWorkingCenters?:[]);
-                            $columns = [0=>'', 1=>'', 2=>'', 3=>''];
-                            $c = 0;
-                            ob_start();
-                        ?>
-                            <?php foreach ( $statusesWorkingCenters??[] as $wcName => $workingCenter ) :?>
-                                <div class="panel panel-info" style="position:relative;">
-                                    <div class="panel-heading">
-                                        <?=$wcName?>
-                                        <button title="Раскрыть" onclick="event.preventDefault()" data-status="0" class="btn btn-sm btn-info statusesChevron"><span class="glyphicon glyphicon-menu-left"></span></button>
+                            <div class="row">
+                            <?php
+                                $countWC = count($statusesWorkingCenters?:[]);
+                                $columns = [0=>'', 1=>'', 2=>'', 3=>''];
+                                $c = 0;
+                                ob_start();
+                            ?>
+                                <?php foreach ( $statusesWorkingCenters??[] as $wcName => $workingCenter ) :?>
+                                    <div class="panel panel-info" style="position:relative;">
+                                        <div class="panel-heading">
+                                            <?=$wcName?>
+                                            <button title="Раскрыть" onclick="event.preventDefault()" data-status="0" class="btn btn-sm btn-info statusesChevron"><span class="glyphicon glyphicon-menu-left"></span></button>
+                                        </div>
+                                        <div class="panel-body pb-0 statusesPanelBody statusesPanelBodyHidden">
+                                            <?php foreach ( $workingCenter as $subUnit ) :?>
+                                                <div class="list-group">
+                                                    <a class="list-group-item active"><?=$subUnit['descr']?></a>
+                                                    <?php foreach ( $subUnit['statuses'] as $status ) :?>
+                                                        <a class="list-group-item">
+                                                            <input type="radio" <?=$status['check'];?> name="status" id="<?=$status['name_en'];?>" aria-label="..." value="<?=$status['id'];?>">
+                                                            <label for="<?=$status['name_en'];?>" title="<?=$status['title'];?>">
+                                                                <span class="glyphicon glyphicon-<?=$status['glyphi'];?>"></span>
+                                                                <?=$status['name_ru'];?>
+                                                            </label>
+                                                        </a>
+                                                    <?php endforeach; ?>
+                                                    <a title="Ответственный" class="list-group-item list-group-item-success"><?=$subUnit['user']?></a>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
                                     </div>
-                                    <div class="panel-body pb-0 statusesPanelBody statusesPanelBodyHidden">
-                                        <?php foreach ( $workingCenter as $subUnit ) :?>
-                                            <div class="list-group">
-                                                <a class="list-group-item active"><?=$subUnit['descr']?></a>
-                                                <?php foreach ( $subUnit['statuses'] as $status ) :?>
-                                                    <a class="list-group-item">
-                                                        <input type="radio" <?=$status['check'];?> name="status" id="<?=$status['name_en'];?>" aria-label="..." value="<?=$status['id'];?>">
-                                                        <label for="<?=$status['name_en'];?>" title="<?=$status['title'];?>">
-                                                            <span class="glyphicon glyphicon-<?=$status['glyphi'];?>"></span>
-                                                            <?=$status['name_ru'];?>
-                                                        </label>
-                                                    </a>
-                                                <?php endforeach; ?>
-                                                <a title="Ответственный" class="list-group-item list-group-item-success"><?=$subUnit['user']?></a>
-                                            </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                                <?php $columns[$c] .= ob_get_contents(); ?>
-                                <?php ob_clean(); ?>
-                                <?php $c++; ?>
-                                <?php if ( !($c % 4) ) $c = 0; ?>
-                            <?php endforeach; ?>
-                            <?php ob_end_clean(); ?>
-                            <div class="col-xs-3" style="padding-right: 2px;"><?php echo $columns[0] ?></div>
-                            <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[1] ?></div>
-                            <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[2] ?></div>
-                            <div class="col-xs-3" style="padding-left: 2px;"><?php echo $columns[3] ?></div>
-                        </div>
+                                    <?php $columns[$c] .= ob_get_contents(); ?>
+                                    <?php ob_clean(); ?>
+                                    <?php $c++; ?>
+                                    <?php if ( !($c % 4) ) $c = 0; ?>
+                                <?php endforeach; ?>
+                                <?php ob_end_clean(); ?>
+                                <div class="col-xs-3" style="padding-right: 2px;"><?php echo $columns[0] ?></div>
+                                <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[1] ?></div>
+                                <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[2] ?></div>
+                                <div class="col-xs-3" style="padding-left: 2px;"><?php echo $columns[3] ?></div>
+                            </div>
                         <?php else:?>
-                            <p>Изменение статусов не доступно. Предыдущий участок не выпустил модель.</p>
+                            <p class="bg-danger p1 text-bold text-justify">Изменение статусов недоступно! Предыдущий участок не выпустил модель, или модель не утверждена.</p>
                         <?php endif; //$toShowStatuses?>
                     </div>
                     <!-- END Statuses -->
@@ -1009,14 +1009,14 @@ $permittedFields = User::permissions();
                                 </thead>
                                 <tbody class="modellerJewPrices">
                                 <!-- // автозаполнение -->
-                                <?php $pr_total = 0; $modelPriceStatus = 0; $modelPricePaid = 0; $priceNum = 1; ?>
+                                <?php $pr_total = 0; $modelPriceStatus = 0; $modelPricePaid = 0; $priceNum = 0; ?>
                                     <?php foreach ( $modelPrices??[] as $modelPrice ): ?>
                                         <?php if ( (int)$modelPrice['is3d_grade'] !== 6 ) continue; ?>
                                         <?php $pr_total += $modelPrice['value']; ?>
                                         <?php $modelPriceStatus = (int)$modelPrice['status'] ?>
                                         <?php $modelPricePaid = (int)$modelPrice['paid'] ?>
                                         <tr>
-                                            <td style="width: 30px"><?= $priceNum++ ?></td>
+                                            <td style="width: 30px"><?= ++$priceNum ?></td>
                                             <td><?= $modelPrice['cost_name'] ?></td>
                                             <td>
                                                 <?php if ( $modelPriceStatus === 1 ): ?>
