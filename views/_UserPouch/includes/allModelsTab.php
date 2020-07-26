@@ -1,4 +1,5 @@
 <?php
+use Views\_Globals\Widgets\Paginator;
 use Views\_Globals\Models\User;
 use Views\vendor\libs\classes\URLCrypt;
 
@@ -17,7 +18,7 @@ $paymentManager = User::permission('paymentManager');
         <div class="panel panel-default mb-1">
             <div class="panel-heading p0 cursorPointer relative" role="tab" id="<?=$panelID?>">
                 <span class="panel-title modelInfo" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="<?=$collapseID?>">
-                    <img src="<?=$stockModel['img_name']?>" width="60px" height="60px" class="thumbnail mb-0 d-inline" />
+                    <img src="<?=$stockModel['img_name']?>" class="thumbnail mb-0 d-inline" style="max-height: 60px; max-height: 60px;" />
                     <?= $stockModel['number_3d'] . "/" . $stockModel['vendor_code'] . " - " . $stockModel['model_type'] ?>
                 </span>
                 <a role="button" title="Просмотр модели" class="btn btn-sm btn-info modelHref absolute" style="top: 0; right: 0" href="/model-view/?id=<?=$stockModel['id']?>"><span class="glyphicon glyphicon-eye-open modelHref"></span></a>
@@ -75,21 +76,43 @@ $paymentManager = User::permission('paymentManager');
     <div class="col-xs-12 col-sm-6 col-md-4 pr-0 pl-0"><?= $columns[0] ?></div>
     <div class="col-xs-12 col-sm-6 col-md-4 pr-0 pl-0"><?= $columns[1] ?></div>
     <div class="col-xs-12 col-sm-6 col-md-4 pr-0 pl-0"><?= $columns[2] ?></div>
-    <div class="col-xs-12 pl-0 pr-0">
-        <div class="alert alert-info text-bold" role="alert">
-            <span>Всего: <?= $wholeTotal ?>грн. </span><span>| Моделей: <?= $countStock ?> | Стоимостей: <?= $totalCosts ?></span>
-            <?php if ( $tabID === 3 && $paymentManager ): ?>
+    <div class="col-xs-12">
+        <div class="row alert alert-info text-bold pl-3 pr-3 mt-2 p1" role="alert">
+            <div class="col-sm-12 col-md-4 pr-0 pl-0 pt-2">
+                <span title="Показано моделей и прайсов в них" class="cursorArrow" data-toggle="tooltip">
+                    <i>Моделей: </i><?=$countStock?> | <i>Прайсов: </i><?=$totalCosts?> | <i>Сумма: </i><?=number_format($wholeTotal,0,',',' ');?> грн.
+                </span>    
+            </div>
+            <div class="col-sm-12 col-md-4 pr-0 pl-0"><?php
+                echo Paginator::widget([
+                    'pagination'=> $pagination,
+                    'options'=>[
+                        'template' => _globDIR_ . "includes/paginator_tpl.php",
+                        'squaresPerPage'=>5,
+                        'size'=>'small', // large | small
+                        'color'=>'',
+                        'class'=> '',
+                    ],
+                ]);
+            ?></div>
+            <div class="col-sm-12 col-md-4 pr-0 pl-0 pt-2 text-right">
+                <span title="Всего оцененных изделий" class="cursorArrow" data-toggle="tooltip">
+                    Всего: <i>Моделей</i> - <?=$totalM?> | <i>Прайсов</i> - <?=$totalMP?>
+                </span>
+                <?php if ( $tabID === 3 && $paymentManager ): ?>
                 <span class="pull-right">
                 <?php $priceIDsAll = $priceIDsAll ? URLCrypt::strEncode($priceIDsAll):'' ?>
                     <?php $modelIDs = $modelIDs ? URLCrypt::strEncode($modelIDs):'' ?>
                     <?php if ( $modelIDs ): ?>
-                        <button type="button" data-toggle="modal" data-prices="all" data-priceID="<?=$priceIDsAll?>" data-posID="<?=$modelIDs?>" data-target="#paymentModal" class="btn btn-sm btn-danger relative" style="top: -4px;" title="Оплатить Все">
+                        <button type="button" data-toggle="modal" data-prices="all" data-priceID="<?=$priceIDsAll?>" data-posID="<?=$modelIDs?>" data-target="#paymentModal" class="btn btn-sm btn-danger relative ml-1" style="top: -4px;" title="Оплатить Все">
                             <span class="glyphicon glyphicon-usd"></span>
                             Оплатить Все
                         </button>
                     <?php endif; ?>
                 </span>
+                <div class="clearfix"></div>
             <?php endif; ?>
+            </div>
         </div>
     </div>
 </div>

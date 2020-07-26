@@ -1,14 +1,30 @@
 <?php
-	$currentWorker = $this->session->getKey('currentWorker'); 
-	$tabID = (int)$this->request->get('tab');
+use Views\vendor\core\HtmlHelper;
+use Views\vendor\libs\classes\URLCrypt;
+$currentWorker = $this->session->getKey('currentWorker'); 
+$tabID = (int)$this->request->get('tab');
 
-	$tabName = '';
-    switch ($tab??'all')
-    {
-        case 'all': $tabName = "Всех моделей"; break;
-        case 'paid': $tabName = "Оплаченных"; break;
-        case 'notpaid': $tabName = "Не оплаченных"; break;
-    }
+HtmlHelper::defineURLParams([
+	'tab'    => $tabID,
+	'worker' => $workerID,
+	'year'   => $monthID,
+	'month'  => $yearID,
+	'page'   => $page,
+]);
+//
+$tabName = '';
+switch ($tab??'all')
+{
+    case 'all': $tabName = "Всех моделей"; break;
+    case 'paid': $tabName = "Оплаченных"; break;
+    case 'notpaid': $tabName = "Не оплаченных"; break;
+}
+/*
+$data = "worker=0&page=1&year=2020";
+foreach (hash_algos() as $v) {
+        $r = hash($v, HtmlHelper::URL('/',['worker'=>0]), false);
+        debug($r, "name: '" . $v . "' len: " . strlen($r) . " - ");
+}*/
 ?>
 <div class="row">
     <p class="lead text-info text-center"><span class="glyphicon glyphicon-credit-card" aria-hidden="true"></span> Менеджер Оплат</p>
@@ -21,10 +37,10 @@
 					<span class="currentWorkerName"><?= $currentWorker['fio'] ?></span> <span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu">
-					<li><a href="/payment-manager/?tab=<?=$tabID?>&worker=0&month=<?=$monthID?>&year=<?=$yearID?>">Все работники</a></li>
+					<li><a href="<?= URLCrypt::encode('q', HtmlHelper::URL('/',['worker'=>0])) ?>">Все работники</a></li>
 					<li role="separator" class="divider"></li>
 					<?php foreach ($usersList as $user): ?>
-						<li><a href="/payment-manager/?tab=<?=$tabID?>&worker=<?=$user['id']?>&month=<?=$monthID?>&year=<?=$yearID?>"><?=$user['fio']?></a></li>
+						<li><a href="<?=HtmlHelper::URL('/',['worker'=>$user['id']])?>"><?=$user['fio']?></a></li>
 					<?php endforeach; ?>
 					<!--<li role="separator" class="divider"></li>-->
 				</ul>
@@ -34,11 +50,11 @@
 					<?= $monthID ? getMonthRu($monthID) : "Все месяцы"?> <span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu">
-					<li><a href="/payment-manager/?tab=<?=$tabID?>&worker=<?=$workerID?>&month=<?=date('n')?>&year=<?=$yearID?>">Текущий месяц</a></li>
-					<li><a href="/payment-manager/?tab=<?=$tabID?>&worker=<?=$workerID?>&month=0&year=<?=$yearID?>">Все</a></li>
+					<li><a href="<?=HtmlHelper::URL('/',['month'=>date('n')])?>">Текущий месяц</a></li>
+					<li><a href="<?=HtmlHelper::URL('/',['month'=>0])?>">Все</a></li>
 					<li role="separator" class="divider"></li>
 					<?php for ( $m = 1; $m <= 12; $m++ ) : ?>
-						<li><a href="/payment-manager/?tab=<?=$tabID?>&worker=<?=$workerID?>&month=<?=$m?>&year=<?=$yearID?>"><?=getMonthRu($m)?></a></li>
+						<li><a href="<?=HtmlHelper::URL('/',['month'=>$m])?>"><?=getMonthRu($m)?></a></li>
 				    <?php endfor; ?>
 				</ul>
 			</div>
@@ -47,20 +63,20 @@
 					<?= $yearID ?: "Текущий год" ?> <span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu">
-					<li><a href="/payment-manager/?tab=<?=$tabID?>&worker=<?=$workerID?>&month=<?=$monthID?>&year=<?=date('Y')?>">Текущий год</a></li>
+					<li><a href="<?=HtmlHelper::URL('/',['year'=>date('Y')])?>">Текущий год</a></li>
 					<li role="separator" class="divider"></li>
 					<?php for( $y = 2020; $y <= date('Y'); $y++ ): ?>
-						<li><a href="/payment-manager/?tab=<?=$tabID?>&worker=<?=$workerID?>&month=<?=$monthID?>&year=<?=$y?>"><?=$y?></a></li>
+						<li><a href="<?=HtmlHelper::URL('/',['year'=>$y])?>"><?=$y?></a></li>
 					<?php endfor; ?>
-                    <li><a href="/payment-manager/?tab=<?=$tabID?>&worker=<?=$workerID?>&month=<?=$monthID?>&year=2019">2019</a></li>
+                    <li><a href="<?=HtmlHelper::URL('/',['year'=>2019])?>">2019</a></li>
 				</ul>
 			</div>
 		</div>
 
         <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="<?= $tab == 'all'? 'active':'' ?>"><a href="/payment-manager/?tab=1&worker=<?=$currentWorker['id']?>&month=<?=$monthID?>&year=<?=$yearID?>">Все Модели</a></li>
-            <li role="presentation" class="<?= $tab == 'paid'? 'active':'' ?>"><a href="/payment-manager/?tab=2&worker=<?=$currentWorker['id']?>&month=<?=$monthID?>&year=<?=$yearID?>" >Оплаченные</a></li>
-            <li role="presentation" class="<?= $tab == 'notpaid'? 'active':'' ?>"><a href="/payment-manager/?tab=3&worker=<?=$currentWorker['id']?>&month=<?=$monthID?>&year=<?=$yearID?>">Не оплаченные</a></li>
+            <li role="presentation" class="<?= $tab == 'all'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>1])?>">Все Модели</a></li>
+            <li role="presentation" class="<?= $tab == 'paid'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>2])?>" >Оплаченные</a></li>
+            <li role="presentation" class="<?= $tab == 'notpaid'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>3])?>">Не оплаченные</a></li>
             <li role="presentation" class=""><a href="#statistic" aria-controls="statistic" role="tab" data-toggle="tab">Статистика</a></li>
         </ul>
 

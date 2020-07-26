@@ -11,6 +11,8 @@ function Approves()
     this.modalBody = this.modal.querySelector('.modal-body');
     this.approveSubmit = this.modal.querySelector('.approveSubmit');
 
+    this.operationStatus = false;
+
     this.respText = '';
 
     this.url = '/model-view/?approve=1';
@@ -40,6 +42,27 @@ Approves.prototype.init = function()
     this.approveSubmit.addEventListener('click',function () {
         that.signModel(this);
     },false);
+
+    $("#alertResponse").iziModal({
+        title: 'Ок',
+        subtitle: '',
+        timeout: 5000,
+        zindex: 1100,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        restoreDefaultContent: false,
+    });
+
+    $(document).on('closing', '#alertResponse', function (e) {
+        if ( that.operationStatus === false )
+        {
+            //pm.approveSubmit.classList.remove('disabled');
+        }
+    });
+    $(document).on('closed', '#alertResponse', function (e) {
+        if ( that.operationStatus === true )
+            document.location.reload(true);
+    });
 
     debug('Approves init ok!');
 };
@@ -121,50 +144,72 @@ Approves.prototype.signModel = function(btn)
 };
 Approves.prototype.resultModalCall = function( modalObj, callType, message, code )
 {
-    if ( !modalObj ) return;
+    // if ( !modalObj ) return;
 
-    let resModalTitle = modalObj.querySelector('#approveResultLabel');
-    let resModalBody = modalObj.querySelector('.modal-body');
+    // let resModalTitle = modalObj.querySelector('#approveResultLabel');
+    // let resModalBody = modalObj.querySelector('.modal-body');
 
-    let i = document.createElement('i');
-    let span = document.createElement('span');
+    // let i = document.createElement('i');
+    // let span = document.createElement('span');
 
     switch (callType)
     {
         case "success":
         {
-            resModalTitle.parentElement.classList.add('bg-success');
-            resModalTitle.classList.add('text-bold');
-            i.setAttribute('class','far fa-check-square');
-            span.innerHTML = " Операция завершена успешно! ";
+            this.operationStatus = true;
+            $('#alertResponse').iziModal('setHeaderColor', '#5cb85c');
+            $('#alertResponse').iziModal('setIcon', 'far fa-check-circle');
+            $('#alertResponse').iziModal('setTitle', message);
+            $('#alertResponse').iziModal('setSubtitle', 'Операция прошла успешно!');
+            // resModalTitle.parentElement.classList.add('bg-success');
+            // resModalTitle.classList.add('text-bold');
+            // i.setAttribute('class','far fa-check-square');
+            // span.innerHTML = " Операция завершена успешно! ";
+
         } break;
         case "error":
         {
-            resModalTitle.parentElement.classList.add('bg-warning');
-            resModalTitle.classList.add('text-bold');
-            i.setAttribute('class','fas fa-exclamation-triangle');
-            span.innerHTML = " Операция завершена с ошибкой! " + code;
+            $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+            $('#alertResponse').iziModal('setIcon', 'fas fa-exclamation-triangle');
+            $('#alertResponse').iziModal('setTitle', 'Операция завершена с ошибкой! ' + message );
+            $('#alertResponse').iziModal('setSubtitle', "Код " + code);
+        
+            // resModalTitle.parentElement.classList.add('bg-warning');
+            // resModalTitle.classList.add('text-bold');
+            // i.setAttribute('class','fas fa-exclamation-triangle');
+            // span.innerHTML = " Операция завершена с ошибкой! " + code;
         } break;
         case "serverError":
         {
-            resModalTitle.parentElement.classList.add('bg-danger');
-            resModalTitle.classList.add('text-bold');
-            i.setAttribute('class','fas fa-bug');
-            span.innerHTML = " Ошибка! " + code;
+            $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+            $('#alertResponse').iziModal('setIcon', 'fas fa-exclamation-triangle');
+            $('#alertResponse').iziModal('setTitle', 'Ошибка на сервере! ' + message );
+            $('#alertResponse').iziModal('setSubtitle', "Код " + code);
+
+            // resModalTitle.parentElement.classList.add('bg-danger');
+            // resModalTitle.classList.add('text-bold');
+            // i.setAttribute('class','fas fa-bug');
+            // span.innerHTML = " Ошибка! " + code;
         } break;
         default:
         {
-            resModalTitle.parentElement.classList.add('bg-info');
-            i.setAttribute('class','fas fa-exclamation-circle');
-            span.innerHTML = " " + code;
+            $('#alertResponse').iziModal('setIcon', 'fas fa-exclamation-circle');
+            $('#alertResponse').iziModal('setTitle', '' + message);
+            $('#alertResponse').iziModal('setSubtitle', code);
+            // resModalTitle.parentElement.classList.add('bg-info');
+            // i.setAttribute('class','fas fa-exclamation-circle');
+            // span.innerHTML = " " + code;
         } break;
     }
 
-    resModalTitle.appendChild(i);
-    resModalTitle.appendChild(span);
-    if ( message )
-        resModalBody.innerHTML = message;
-    $(modalObj).modal('show');
+    //resModalTitle.appendChild(i);
+    //resModalTitle.appendChild(span);
+
+
+    // if ( message )
+    //     resModalBody.innerHTML = message;
+    //$(modalObj).modal('show');
+    $("#alertResponse").iziModal("open");
 };
 
 let approves = new Approves();

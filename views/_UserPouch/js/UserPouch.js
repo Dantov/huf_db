@@ -8,7 +8,9 @@ function UserPouch()
 UserPouch.prototype.init = function()
 {
     this.addCollapsesEvent();
-
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
     debug('UserPouch init ok!');
 };
 

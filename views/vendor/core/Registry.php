@@ -8,9 +8,14 @@ namespace Views\vendor\core;
  */
 class Registry
 {
+    private static $dateCreate = null;
+    private static $calledInClass = null;
 
     private static $instance = null;
     private static $Objects = [];
+
+    // Пути, где находятся классы
+    private static $ObjectsPath = [];
 
     /**
      * Registry constructor.
@@ -21,6 +26,7 @@ class Registry
         $classes = Config::get('classes');
         foreach ( $classes as $class => $path )
         {
+            self::$ObjectsPath[$class] = $path;
             self::$Objects[$class] = new $path;
         }
     }
@@ -36,8 +42,21 @@ class Registry
             return self::$instance;
         } else {
             self::$instance = new self;
+            self::$dateCreate = date("Y-m-d");
+            // записать переменые даты создания, где вызван 
+            // self::$calledInClass; $dateCreate
             return self::$instance;
         }
+    }
+
+    public function __toString()
+    {
+        $str = "";
+        foreach ( $calledInClass as $class => $path )
+        {
+            $str .= $class . "; ";
+        }
+        return $str;
     }
 
     public function __set(string $name, string $path) : bool
@@ -55,6 +74,11 @@ class Registry
             return self::$Objects[$name];
 
         return null;
+    }
+
+    public function showAll()
+    {
+        return self::$ObjectsPath;
     }
 
     /**

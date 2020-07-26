@@ -19,15 +19,15 @@ CollectionsModal.prototype.init = function()
         overlayClose: true,
         closeButton: true,
         afterRender: function () {
-            document.getElementById('modalCollectionsContent').classList.remove('hidden');
-
+            //document.getElementById('modalCollectionsContent').classList.remove('hidden');
             let modalContent = document.querySelector('#modalCollectionsContent');
-            modalContent.addEventListener('click', function (event) {
-                let click = event.target;
-                if ( !click.hasAttribute('elemToAdd') ) return;
+                modalContent.classList.remove('hidden');
+                modalContent.addEventListener('click', function (event) {
+                    let click = event.target;
+                    if ( !click.hasAttribute('elemToAdd') ) return;
 
-                that.currentInput.value = click.innerHTML;
-            });
+                    that.currentInput.value = click.innerHTML;
+                });
         },
     });
 

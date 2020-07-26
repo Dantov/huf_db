@@ -1,19 +1,18 @@
 <?php
 namespace Views\_PaymentManager\Controllers;
-use Views\_AddEdit\Models\Handler;
+
 use Views\_AddEdit\Models\HandlerPrices;
 use Views\_Globals\Models\User;
 use Views\_UserPouch\Controllers\UserPouchController;
 use Views\_PaymentManager\Models\PaymentManager;
-use Views\vendor\core\Registry;
-use Views\vendor\core\Router;
-use Views\vendor\libs\classes\AppCodes;
-use Views\vendor\libs\classes\URLCrypt;
+use Views\vendor\core\{Registry, Router};
+use Views\vendor\libs\classes\{AppCodes,URLCrypt};
+use Views\_Globals\Widgets\Pagination;
 
 class PaymentManagerController extends UserPouchController
 {
 
-    public $title = 'Менеджмент Зарплат ХЮФ';
+    public $title = 'ХЮФ::Менеджмент Зарплат';
 
     /**
      * @throws \Exception
@@ -23,18 +22,24 @@ class PaymentManagerController extends UserPouchController
         $request = $this->request;
         if ( $request->isAjax() )
         {
-            if ( $this->isQueryParam('getPricesAll') && $request->post('priceIDs') && $request->post('posID') )
-                $this->getPricesByID( $request->post('priceIDs'), $request->post('posID') );
+            try {
+                if ( $this->isQueryParam('getPricesAll') && $request->post('priceIDs') && $request->post('posID') )
+                    $this->getPricesByID( $request->post('priceIDs'), $request->post('posID') );
 
-            if ( $this->isQueryParam('payPrice') && $request->post('prices') )
-                $this->payPrices( $request->post('prices') );
+                if ( $this->isQueryParam('payPrice') && $request->post('prices') )
+                    $this->payPrices( $request->post('prices') );
+
+            } catch (\Error | \Exception  $e) {
+                $this->serverError_ajax($e);
+            }
             exit;
         }
 
+        $q = $this->getQueryParam('q');
+        //debug($q,'Q');
+        //debug(URLCrypt::decode($q),'parsed',1);
 
-        //debug( $request->get('pm'),'PM');
-        //debug( URLCrypt::decode($request->get('pm')),'',1);
-
+        $this->page = (int)$request->get('page');
         $this->workerID = (int)$request->get('worker');
         $this->tab = $this->getView( (int)$request->get('tab') );
         $this->month = (int)$request->get('month');
@@ -46,12 +51,15 @@ class PaymentManagerController extends UserPouchController
      */
     public function action()
     {
-        $thisPage = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-        if ( $thisPage !== $_SERVER["HTTP_REFERER"] ) {
-            $prevPage = $_SERVER["HTTP_REFERER"];
-        }
-
         $pm = new PaymentManager($this->tab, $this->workerID, $this->month, $this->year);
+
+        ///*** Паганация *** ///
+        $totalM = $pm->totalModelsHasPrices();
+        $totalMP = $pm->totalPrices();
+        $perpage = 18;
+        $pagination = new Pagination( $totalM, $perpage, $this->page );
+        $pm->start = $pagination->getStart();
+        $pm->perPage = $perpage;
 
         $stockInfo = $pm->getStockInfo();
         $modelPrices = $pm->getModelPrices();
@@ -66,9 +74,11 @@ class PaymentManagerController extends UserPouchController
         $workerID = $this->workerID;
         $monthID = $this->month;
         $yearID = $this->year;
+        $page = $this->page;
 
         $compacts = compact([
-            'modelPrices','stockInfo','tab','statistic','usersList','workerID','monthID','yearID',
+            'modelPrices','stockInfo','tab','statistic','usersList','workerID','monthID','yearID','pagination','totalM','totalMP',
+            'page',
         ]);
         return $this->render('paymentM', $compacts);
     }
@@ -138,6 +148,7 @@ class PaymentManagerController extends UserPouchController
             exit( json_encode( ['error'=>AppCodes::getMessage(AppCodes::NO_PERMISSION_TO_PAY)] ) );
         //debug($priceIDs,'$priceIDs',1);
 
+        //throw new \Error("hw_DocByAnchor(connection, anchorID)", 551);
         $h = new HandlerPrices();
         $h->connectToDB();
         foreach ($priceIDs as &$pID)

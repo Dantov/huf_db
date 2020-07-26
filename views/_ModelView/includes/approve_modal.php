@@ -13,6 +13,11 @@
     </div>
 </div>
 
+<div id="alertResponse" aria-hidden="true" aria-labelledby="alertResponse" role="dialog" class="iziModal">
+  <div id="alertResponseContent" style="padding: 10px" class="hidden">
+  </div>
+</div>
+
 <div class="modal fade" id="approveResultModal" tabindex="-1" role="dialog" aria-labelledby="approveResultLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

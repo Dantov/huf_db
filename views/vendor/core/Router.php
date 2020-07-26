@@ -24,6 +24,11 @@ class Router
      */
     protected static $controllerName = '';
 
+    /**
+     * оригинальное имя контроллера из url, нужен для сооздания URL
+     */
+    protected static $controllerNameOrigin = '';
+
 
     /**
      * @param $uri
@@ -35,7 +40,7 @@ class Router
         $routs = explode('?', trim($uri,'/') );
         //debug($routs,'$routs');
 
-        $controller = explode('/', trim($routs[0],'/') )[0];
+        self::$controllerNameOrigin = $controller = explode('/', trim($routs[0],'/') )[0];
         //debug($controller,'$controller');
         if ( !empty($controller) ) {
             self::$controllerName = str_ireplace(' ','', ucwords(str_ireplace('-',' ', $controller)) );
@@ -80,5 +85,9 @@ class Router
     public static function getControllerName()
     {
         return self::$controllerName;
+    }
+    public static function getControllerNameOrigin()
+    {
+        return self::$controllerNameOrigin;
     }
 }

@@ -6,7 +6,7 @@ use Views\vendor\libs\classes\URLCrypt;
 
 class PaymentManager extends UserPouch
 {
-	
+
 	public function __construct( string $paidTab='', int $worker = 0, int $month = 0, int $year = 0 )
 	{
 		parent::__construct( $paidTab, $worker, $month, $year );
@@ -17,9 +17,9 @@ class PaymentManager extends UserPouch
         $allUsers = $this->getUsers();
 
         // ID раб. участков из которых нужны юзеры
-        $areas = [28,1,2,3,4]; 
+        $areas = [28,1,2,3,4];
         $users = [];
-        foreach ($allUsers as &$user) 
+        foreach ($allUsers as &$user)
         {
             $user['location'] = explode(',', $user['location']);
             foreach ($user['location'] as $location) 
@@ -35,6 +35,7 @@ class PaymentManager extends UserPouch
     }
 
     /**
+     * Для AJAX
      * @param array $pricesIDs
      * @param array $modelsID
      * @return array
@@ -58,9 +59,11 @@ class PaymentManager extends UserPouch
                           WHERE st.id IN $inModels";
 
         $pricesSql = "SELECT mp.id as pID, mp.pos_id as posID, mp.user_id as uID, mp.gs_id as gsID, mp.is3d_grade as is3dGrade, mp.cost_name as costName, 
-                             mp.value as value, mp.status as status, mp.paid as paid, mp.pos_id as posID, mp.date as date, u.fio
+                             mp.value as value, mp.status as status, mp.paid as paid, mp.pos_id as posID, mp.date as date, u.fio, 
+                             gs.description as gsDescr
                         FROM model_prices as mp
                           LEFT JOIN users as u ON mp.user_id = u.id
+                          LEFT JOIN grading_system as gs ON gs.id = mp.gs_id
                               WHERE mp.id IN $inPrices AND mp.status='1' AND mp.pos_id IN $inModels";
         $prices = [];
         $stock = [];

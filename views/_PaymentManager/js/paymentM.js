@@ -8,7 +8,14 @@ function PaymentManager()
 
     this.priceIDs = [];
 
+    this.panelsToRemove = [];
+
+    this.operationStatus = false;
     this.init();
+
+    $(function () {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
 }
 
 PaymentManager.prototype.init = function(button) 
@@ -36,6 +43,33 @@ PaymentManager.prototype.init = function(button)
     },false);
 
     this.addCollapsesEvent();
+
+    $("#alertResponse").iziModal({
+        title: 'Ок',
+        subtitle: '',
+        headerColor: '#5cb85c',
+        timeout: 5000,
+        zindex: 1100,
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        restoreDefaultContent: false,
+    });
+
+
+    $(document).on('closing', '#alertResponse', function (e) {
+        if ( pm.operationStatus === false )
+        {
+            pm.payButton.classList.remove('disabled');
+        }
+    });
+    $(document).on('closed', '#alertResponse', function (e) {
+        if ( pm.operationStatus !== true ) return;
+        
+        $.each(pm.panelsToRemove, function (i, panel) {
+            panel.remove();
+        });
+        //document.location.reload(true);
+    });
 
     debug('PaymentManager init ok!');
 };
@@ -99,19 +133,42 @@ PaymentManager.prototype.getPricesAllData = function(button)
         },
         dataType:"json",
         success:function(models) {
+            // ******* ERROR ****** //
             if ( models.error )
             {
-                debug(models.error.code);
-                debug(models.error.message);
+                that.operationStatus = false;
+                //$('#paymentModal').modal('hide');
+                $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+                $('#alertResponse').iziModal('setIcon', 'fas fa-exclamation-triangle');
+                $('#alertResponse').iziModal('setTitle', 'Ошибка! ' + models.error.message );
+                $('#alertResponse').iziModal('setSubtitle', "Код " + models.error.code);
+                $("#alertResponse").iziModal("open");
+
                 return;
             }
 
+            if ( button.getAttribute('data-prices') === 'all' )
+            {
+                that.panelsToRemove = document.querySelectorAll('.allModels .panel');
+            } else if (button.getAttribute('data-prices') === 'allInModel') {
+                let el = button;
+                do {
+                    if ( el.classList.contains('panel') ) 
+                    {
+                        that.panelsToRemove.push(el);
+                        break;
+                    }
+                } while (el = el.parentElement);
+            } else {
+                
+            }
+            
+            // ******* SUCCESS ****** //
             let toFirstColumn = Math.floor(models.length / 2);
-
             let colFirst = that.modalBody.querySelector('.columnFirst');
             let colSecond = that.modalBody.querySelector('.columnSecond');
-
             let totalValue = 0;
+
             $.each(models, function (i, model) {
 
                 let newModelRow = document.querySelector('.PM_protoModel').cloneNode(true);
@@ -141,12 +198,16 @@ PaymentManager.prototype.getPricesAllData = function(button)
                     tMValue += +price.value;
 
                     let newLi = document.createElement('li');
-                    newLi.classList.add('list-group-item');
+                        newLi.classList.add('list-group-item');
+                        newLi.classList.add('cursorArrow');
 
                     let p3D = '';
                     if ( +price.is3dGrade === 1 ) p3D = "<u>3D Моделирование: </u>";
                     let span = document.createElement('span');
-                    span.innerHTML = p3D + "<i>" + price.costName + ": </i><b>" + price.value + 'грн.</b>';
+                        span.setAttribute('data-toggle', 'tooltip');
+                        span.setAttribute('data-placement', 'bottom');
+                        span.setAttribute('title', price.gsDescr);
+                        span.innerHTML = p3D + "<i>" + price.costName + ": </i><b>" + price.value + 'грн.</b>';
                     let spanFIO = document.createElement('span');
                     spanFIO.classList.add('pull-right', 'small');
                     spanFIO.innerHTML =  price.fio + " " + price.date;
@@ -207,8 +268,24 @@ PaymentManager.prototype.getPricesAllData = function(button)
                     colSecond.classList.add(md12);
                     colSecond.appendChild(newModelRow);
                 }
+                $(function () {
+                    $('[data-toggle="tooltip"]').tooltip();
+                });
             });
         },
+
+        error:function(err) {
+            that.operationStatus = false;
+
+            //$('#paymentModal').modal('hide');
+            $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+            $('#alertResponse').iziModal('setIcon', 'fas fa-bug');
+            $('#alertResponse').iziModal('setTitle', 'Ошибка на сервере! Попробуйте позже.');
+            $('#alertResponse').iziModal('setSubtitle', "Код: " + err.status);
+       
+            $('#alertResponse').iziModal("open");
+            cursorRestore();
+        }
     });
 
 };
@@ -217,11 +294,7 @@ PaymentManager.prototype.payPrices = function(payButton)
 {
     payButton.classList.add('disabled');
     cursorSet('wait');
-    let notPayed = this.modalBody.querySelectorAll('.notPayed');
-    $.each(notPayed, function (i, label) {
-        label.classList.add('hidden');
-    });
-
+    
     let that = this;
     $.ajax({
         url: "/payment-manager/?payPrice",
@@ -232,6 +305,12 @@ PaymentManager.prototype.payPrices = function(payButton)
         dataType:"json",
         success:function(data) {
             if ( data.success ) {
+                that.operationStatus = true;
+
+                let notPayed = that.modalBody.querySelectorAll('.notPayed');
+                $.each(notPayed, function (i, label) {
+                    label.classList.add('hidden');
+                });
 
                 setTimeout(function () {
                     let paySuccess = that.modalBody.querySelectorAll('.paySuccess');
@@ -239,29 +318,42 @@ PaymentManager.prototype.payPrices = function(payButton)
                         label.classList.remove('hidden');
                     });
                     payButton.previousElementSibling.classList.add('hidden');
-                }, 500);
+                }, 400);
 
                 setTimeout(function () {
                     $('#paymentModal').modal('hide');
 
-                    let paymentModalResult = document.getElementById('paymentModalResult');
-                    let span = document.createElement('span');
-                        span.innerHTML = data.success.message;
-                    paymentModalResult.querySelector('.modal-title').appendChild(span);
-                    $('#paymentModalResult').modal({
-                        keyboard: false,
-                        backdrop: 'static',
-                    });
-                    $('#paymentModalResult').modal('show');
+                    $('#alertResponse').iziModal('setHeaderColor', '#5cb85c');
+                    $('#alertResponse').iziModal('setIcon', 'far fa-check-circle');
+                    $('#alertResponse').iziModal('setTitle', 'Операция прошла успешно!');
+                    $('#alertResponse').iziModal('setSubtitle', data.success.message);
+                    $('#alertResponse').iziModal('pauseProgress');
+                    $("#alertResponse").iziModal("open");
                     cursorRestore();
-                }, 1000);
+                }, 800);
 
             } else if (data.error) {
-                alert(data.error.message + " " + data.error.code);
+                that.operationStatus = false;
+                //$('#paymentModal').modal('hide');
+                $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+                $('#alertResponse').iziModal('setIcon', 'fas fa-exclamation-triangle');
+                $('#alertResponse').iziModal('setTitle', 'Операция завершена с ошибкой! ' + data.error.code);
+                $('#alertResponse').iziModal('setSubtitle', data.error.message);
+                $("#alertResponse").iziModal("open");
+                cursorRestore();
             }
         },
-        error: function (err) {
-            alert(err);
+        error:function(err) {
+            that.operationStatus = false;
+            //$('#paymentModal').modal('hide');
+            $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+            $('#alertResponse').iziModal('setIcon', 'fas fa-bug');
+            $('#alertResponse').iziModal('setTitle', 'Ошибка на сервере! Попробуйте позже.');
+            $('#alertResponse').iziModal('setSubtitle', "Код: " + err.status);
+
+            //$('#alertResponse #alertResponseContent').html(err.responseText).removeClass('hidden');
+            $('#alertResponse').iziModal("open");
+            cursorRestore();
         }
     });
 

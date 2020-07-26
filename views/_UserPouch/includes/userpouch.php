@@ -1,5 +1,14 @@
 <?php
+    use Views\vendor\core\HtmlHelper;
+
     $tabID = (int)$this->request->get('tab');
+
+    HtmlHelper::defineURLParams([
+        'tab'   => $tabID,
+        'year'  => $monthID,
+        'month' => $yearID,
+        'page'  => $page,
+    ]);
 
     $tabName = '';
     switch ($tab) 
@@ -20,11 +29,11 @@
                     <?= $monthID ? getMonthRu($monthID) : "Все месяцы"?> <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a href="/user-pouch/?tab=<?=$tabID?>&month=<?=date('n')?>&year=<?=$yearID?>">Текущий месяц</a></li>
-                    <li><a href="/user-pouch/?tab=<?=$tabID?>&month=0&year=<?=$yearID?>">Все</a></li>
+                    <li><a href="<?=HtmlHelper::URL('/',['month'=>date('n')])?>">Текущий месяц</a></li>
+                    <li><a href="<?=HtmlHelper::URL('/',['month'=>0])?>">Все</a></li>
                     <li role="separator" class="divider"></li>
                     <?php for ( $m = 1; $m <= 12; $m++ ) : ?>
-                        <li><a href="/user-pouch/?tab=<?=$tabID?>&month=<?=$m?>&year=<?=$yearID?>"><?=getMonthRu($m)?></a></li>
+                        <li><a href="<?=HtmlHelper::URL('/',['month'=>$m])?>"><?=getMonthRu($m)?></a></li>
                     <?php endfor; ?>
                 </ul>
             </div>
@@ -33,19 +42,19 @@
                     <?= $yearID ?: "Текущий год" ?> <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a href="/user-pouch/?tab=<?=$tabID?>&month=<?=$monthID?>&year=<?=date('Y')?>">Текущий год</a></li>
+                    <li><a href="<?=HtmlHelper::URL('/',['year'=>date('Y')])?>">Текущий год</a></li>
                     <li role="separator" class="divider"></li>
                     <?php for( $y = 2020; $y <= date('Y'); $y++ ): ?>
-                        <li><a href="/user-pouch/?tab=<?=$tabID?>&month=<?=$monthID?>&year=<?=$y?>"><?=$y?></a></li>
+                        <li><a href="<?=HtmlHelper::URL('/',['year'=>$y])?>"><?=$y?></a></li>
                     <?php endfor; ?>
                 </ul>
             </div>
         </div>
 
         <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="<?= $tab == 'all'? 'active':'' ?>"><a href="/user-pouch/?tab=1&month=<?=$monthID?>&year=<?=$yearID?>">Все Модели</a></li>
-            <li role="presentation" class="<?= $tab == 'paid'? 'active':'' ?>"><a href="/user-pouch/?tab=2&month=<?=$monthID?>&year=<?=$yearID?>" >Оплаченные</a></li>
-            <li role="presentation" class="<?= $tab == 'notpaid'? 'active':'' ?>"><a href="/user-pouch/?tab=3&month=<?=$monthID?>&year=<?=$yearID?>">Не оплаченные</a></li>
+            <li role="presentation" class="<?= $tab == 'all'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>1])?>">Все Модели</a></li>
+            <li role="presentation" class="<?= $tab == 'paid'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>2])?>" >Оплаченные</a></li>
+            <li role="presentation" class="<?= $tab == 'notpaid'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>3])?>">Не оплаченные</a></li>
             <li role="presentation" class=""><a href="#statistic" aria-controls="statistic" role="tab" data-toggle="tab">Статистика</a></li>
         </ul>
         <div class="tab-content">
@@ -58,7 +67,6 @@
                 <div class="panel panel-default">
                     <div class="panel-heading text-center text-bold">
                         Всего из <?= $tabName ?> для <?= $this->session->getKey('user')['fio'] ?>
-                            
                     </div>
                     <div class="panel-body">
                         <p>Статистика начислений. Сколько начислено, получено, в ожидании и т.д. </p>

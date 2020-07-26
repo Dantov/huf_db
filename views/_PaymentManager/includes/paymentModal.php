@@ -25,23 +25,9 @@
   </div>
 </div>
 
-<div class="modal fade" id="paymentModalResult" tabindex="-1" role="dialog" aria-labelledby="paymentModalResultLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-success">
-                <h3 class="modal-title" id="paymentModalResultLabel">
-                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-                </h3>
-            </div>
-            <div class="modal-body"></div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-warning centered" data-dismiss="modal" onclick="document.location.reload(true);">
-                    <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
-                    OK
-                </button>
-            </div>
-        </div>
-    </div>
+<div id="alertResponse" aria-hidden="true" aria-labelledby="alertResponse" role="dialog" class="iziModal">
+  <div id="alertResponseContent" style="padding: 10px" class="hidden">
+  </div>
 </div>
 
 <div class="panel panel-success mb-1 hidden PM_protoModel">
@@ -60,3 +46,4 @@
         </div>
     </div>
 </div>
+

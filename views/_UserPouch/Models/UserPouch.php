@@ -6,9 +6,23 @@ use Views\vendor\core\Registry;
 class UserPouch extends Main
 {
 
+    /**
+     * $start - от пагинации, позиция с которой начать выборку 
+     */
+    public $start;
+    /**
+     * $perPage - кол-во выбираемых позиций для отобр. на одной странице
+     */
+    public $perPage;
+
     public $worker;
     public $paidTab;
     public $date;
+
+    /**
+     * для каких моделей выбрать прайсы
+    */
+    protected $inModels;
 
     /**
      * нужня для статистики
@@ -30,6 +44,18 @@ class UserPouch extends Main
 
         $this->worker = !$worker ? 1 : 'user_id=' . $worker; // WHERE 1 - все работники
         $this->addQueryByDate($month, $year);
+    }
+
+    public function totalModelsHasPrices() : int
+    {
+        $sql = " SELECT COUNT(1) as c FROM stock as s
+                    WHERE s.id IN (SELECT DISTINCT pos_id FROM model_prices WHERE $this->worker $this->paidTab $this->date )";
+        return $this->findOne($sql)['c'];
+    }
+    public function totalPrices() : int
+    {
+        $sql = " SELECT COUNT(1) as c FROM model_prices";
+        return $this->findOne($sql)['c'];
     }
 
     protected function addQueryByDate(int $month = 0, int $year = 0) : void
@@ -57,8 +83,9 @@ class UserPouch extends Main
      */
     public function getModelPrices() : array
     {
-        $sql = "SELECT * FROM model_prices WHERE $this->worker $this->paidTab $this->date ";
+        $sql = "SELECT * FROM model_prices WHERE $this->worker $this->paidTab $this->date AND pos_id IN $this->inModels";
         $modelPricesQuery = $this->findAsArray($sql);
+        //debug($modelPricesQuery,'$modelPricesQuery',1);
 
         $modelPrices = [];
         $grades3D = [];
@@ -99,11 +126,38 @@ class UserPouch extends Main
      */
     public function getStockInfo() : array
     {
+        /*
+        in (
+      SELECT * FROM (
+            SELECT id 
+            FROM posts 
+            ORDER BY timestamp desc limit 0, 15
+      ) 
+      as t);
+      SELECT DISTINCT pos_id FROM model_prices 
+                                    WHERE $this->worker $this->paidTab $this->date 
+                                    LIMIT $this->start, $this->perPage)
+        */
+        $sqlPosIDDist = "SELECT DISTINCT pos_id FROM model_prices 
+                         WHERE $this->worker $this->paidTab $this->date LIMIT $this->start, $this->perPage";
+
+        $result = $this->findAsArray($sqlPosIDDist);
+        //debug($sqlPosIDDist,'$sqlPosIDDist');
+        
+        foreach ( $result as &$posIDMP ) $in .= $posIDMP['pos_id'].',';
+        $this->inModels = $in = !trueIsset($in) ? '(0)' : '(' . rtrim($in, ',') . ')';
+        //debug($in,'$in');
         $sqlStock = " SELECT s.id, s.number_3d, img.pos_id, img.img_name, s.vendor_code, s.model_type, s.status FROM stock as s 
                       LEFT JOIN images as img ON (s.id = img.pos_id AND img.main=1)
-                      WHERE s.id IN (SELECT DISTINCT pos_id FROM model_prices WHERE $this->worker $this->paidTab $this->date )";
-
+                      WHERE s.id IN $in ORDER BY s.id DESC";
+                                     /*
+                                            ( SELECT * FROM (
+                                                SELECT DISTINCT pos_id FROM model_prices 
+                                                    WHERE $this->worker $this->paidTab $this->date
+                                                    LIMIT $this->start, $this->perPage ) as temp )
+                                    */
         $result = $this->findAsArray($sqlStock);
+        //debug($result,'$result',1);
         foreach ( $result as &$stockModel )
         {
             $imgPath = $stockModel['number_3d'] . "/" .$stockModel['id'] . "/images/".$stockModel['img_name'];

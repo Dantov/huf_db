@@ -1,6 +1,6 @@
 <?php
 
-namespace dtw;
+namespace Views\vendor\libs\classes;
 
 /*
  * класс кеширования

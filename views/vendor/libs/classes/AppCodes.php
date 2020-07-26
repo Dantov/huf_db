@@ -28,6 +28,11 @@ class AppCodes
     const NO_PERMISSION_TO_PAY = 611;
     const PAYING_ERROR = 612;
 
+    const URL_PARAMS_EMPTY = 2055;
+    const QUERY_VAR_EMPTY = 2055;
+    const URL_EMPTY = 2055;
+    
+
 
     /** SUCCESS **/
     const PAY_SUCCESS = 610;
@@ -84,6 +89,18 @@ class AppCodes
         self::PRICE_NOT_CREDITED => [
             'code' => self::PRICE_NOT_CREDITED,
             'message'=>'Ошибка! Стоимость не зачислена. Попробуйте позже.'
+        ],
+        self::URL_PARAMS_EMPTY => [
+            'code' => self::URL_PARAMS_EMPTY,
+            'message'=>'Параметры URL пусты.'
+        ],
+        self::URL_EMPTY => [
+            'code' => self::URL_EMPTY,
+            'message'=>'URL пуст.'
+        ],
+        self::QUERY_VAR_EMPTY => [
+            'code' => self::QUERY_VAR_EMPTY,
+            'message'=>'Переменная запроса в URL пуста.'
         ],
     ];
 
