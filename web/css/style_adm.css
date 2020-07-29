@@ -10,6 +10,7 @@ src: url("../fonts/OpenSans-SemiBold.ttf") format("truetype");
 font-style: all;
 font-weight: normal;
 }
+
 * {
 	margin: 0;
 	padding: 0;

@@ -57,6 +57,7 @@ JS;
                     <ul class="nav nav-pills navbar-left inlblock" id="navnav">
                         <li role="presentation" class="<?=$this->varBlock['activeMenu']?>"><a href="/main">База</a></li>
                             <div class="btn-group">
+                                <?php if ( User::permission('addModel') || User::permission('nomtnclature') ): ?>
                                 <button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-menu-hamburger"></span></button>
                                 <ul class="dropdown-menu">
                                     <?php if ( User::permission('addModel') ): ?>
@@ -68,6 +69,7 @@ JS;
                                         <li><a href="/nomenclature/"><span class="glyphicon glyphicon-list-alt"></span>&#160; Номенклатура</a></li>
                                     <?php endif;?>
                                 </ul>
+                                <?php endif;?>
                             </div>
                         <li role="presentation">
                             <button id="collSelect" data-izimodal-open="#collectionsModal" type="button" title="Выбрать Коллекцию" style="font-size: 18px; padding: 5px 8px 0 8px;" class="btn btn-link dropdown-toggle" data-toggle="dropdown" aria-expanded="false">

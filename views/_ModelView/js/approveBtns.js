@@ -44,8 +44,6 @@ Approves.prototype.init = function()
     },false);
 
     $("#alertResponse").iziModal({
-        title: 'Ок',
-        subtitle: '',
         timeout: 5000,
         zindex: 1100,
         timeoutProgressbar: true,
@@ -157,7 +155,7 @@ Approves.prototype.resultModalCall = function( modalObj, callType, message, code
         case "success":
         {
             this.operationStatus = true;
-            $('#alertResponse').iziModal('setHeaderColor', '#5cb85c');
+            $('#alertResponse').iziModal('setHeaderColor', '#d09d16');
             $('#alertResponse').iziModal('setIcon', 'far fa-check-circle');
             $('#alertResponse').iziModal('setTitle', message);
             $('#alertResponse').iziModal('setSubtitle', 'Операция прошла успешно!');

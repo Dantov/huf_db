@@ -7,6 +7,7 @@
 
 namespace Views\_Globals\Models;
 
+use Views\vendor\core\Sessions;
 
 class SelectionsModel extends General
 {
@@ -15,7 +16,7 @@ class SelectionsModel extends General
     public function __construct($session)
     {
         parent::__construct();
-        $this->session = $session;
+        $this->session = new Sessions();
     }
 
     public function selectionModeToggle($selToggle)
@@ -30,13 +31,20 @@ class SelectionsModel extends General
         if ( $selToggle === 2 ) {
             $selectionMode['activeClass'] = "";
             $resp = 'off';
+            if (isset($selectionMode['showModels']))
+            {
+                unset($selectionMode['showModels']);
+                $assist = $this->session->getKey('assist');
+                $assist['collectionName'] = 'Все Коллекции';
+                $this->session->setKey('assist', $assist);
+            }
+
         }
 
         $selectionMode['models'] = [];
 
         $this->session->setKey('selectionMode', $selectionMode);
-        echo json_encode($resp);
-        exit;
+        exit( json_encode($resp) );
     }
 
     public function checkBoxToggle($checkBox)
@@ -60,14 +68,16 @@ class SelectionsModel extends General
         $resp['name'] = $_POST['modelName'];
         $resp['type'] = $type;
 
-        echo json_encode($resp);
-        exit;
+        exit( json_encode($resp) );
     }
 
     public function checkSelectedModels()
     {
-        echo json_encode($_SESSION['selectionMode']['models']);
-        exit;
+        $selectionMode = $this->session->getKey('selectionMode');
+        if ( trueIsset($selectionMode['models']) )
+            exit( json_encode($selectionMode['models']) );
+
+        exit(json_encode([]));
     }
 
     /**
@@ -75,43 +85,41 @@ class SelectionsModel extends General
      */
     public function getSelectedModels()
     {
-        if ( empty($_SESSION['selectionMode']['models']) )
-        {
-            echo json_encode('false');
-            exit;
-        }
+        $selectionMode = $this->session->getKey('selectionMode');
+        $selectedModels = $selectionMode['models'];
 
-        $selectedModels = $_SESSION['selectionMode']['models'];
-        unset($_SESSION['foundRow']);
+        if ( empty($selectionMode['models']) )
+            exit( json_encode('false') );
 
-        $orderBy = $_SESSION['assist']['reg'];
-        $sortDirect = $_SESSION['assist']['sortDirect'];
+        $assist = $this->session->getKey('assist');
+        $orderBy = $assist['reg'];
+        $sortDirect = $assist['sortDirect'];
 
         $statQuery = "";
-        if ( isset($_SESSION['assist']['regStat']) && $_SESSION['assist']['regStat'] != "Нет" )
+        if ( isset($assist['regStat']) && $assist['regStat'] != "Нет" )
         {
-            $regStat = $_SESSION['assist']['regStat'];
+            $regStat = $assist['regStat'];
             $statQuery = "AND status='$regStat'";
         }
 
-        $modelIds = '(';
+        $modelIds = '';
         foreach( $selectedModels as $model ) $modelIds .= $model['id'] .',';
-        $modelIds = trim($modelIds,',') . ')';
+        if ( !empty($modelIds) ) {
+            $modelIds = '(' . rtrim($modelIds,',') . ')';
+        } else {
+            $modelIds = '(0)';
+        }
         $selectRow = "SELECT * FROM stock WHERE id IN $modelIds $statQuery ORDER BY $orderBy $sortDirect";
 
-        //debug($selectRow);
+        $assist['collectionName'] = 'Выделенное';
+        $assist['collection_id'] = -1;
+        $assist['page'] = 0;
+        $assist['startfromPage'] = 0;
+        $selectionMode['showModels'] = 1;
+        $this->session->setKey('assist', $assist);
+        $this->session->setKey('selectionMode', $selectionMode);
 
         $this->connectDBLite();
-        $_SESSION['foundRow'] = $this->findAsArray($selectRow);
-
-        //debug($_SESSION['foundRow'],'foundRow=',1);
-
-        $_SESSION['countAmount'] = count($_SESSION['foundRow']);
-        $_SESSION['assist']['page'] = 0;
-        $_SESSION['assist']['startfromPage'] = 0;
-        $_SESSION['re_search'] = false;
-
-        $_SESSION['assist']['collectionName'] = 'Выделенное';
-        $_SESSION['assist']['collection_id'] = -1;
+        return $this->findAsArray($selectRow);
     }
 }

@@ -19,6 +19,8 @@ class AppCodes
     const SUCH_APP_CODE_NOT_PRESENT = 1002;
     const SERVER_ERROR = 999;
     const NOTHING_DONE = 998;
+    const PAGE_NOT_FOUND = 404;
+    const CONFIG_EMPTY = 997;
 
     const MODEL_DOES_NOT_EXIST = 2001;
     const PRICE_DOES_NOT_EXIST = 2002;
@@ -28,16 +30,21 @@ class AppCodes
     const NO_PERMISSION_TO_PAY = 611;
     const PAYING_ERROR = 612;
 
+    const EXCEL_EXPORT_ERROR = 2006;
+
     const URL_PARAMS_EMPTY = 2055;
     const QUERY_VAR_EMPTY = 2055;
     const URL_EMPTY = 2055;
-    
+
+    /** DB ERRORS **/
+    const DB_CONFIG_EMPTY = 4001;
+    const USER_DB_CONFIG_EMPTY = 4002;
+    const DB_CONFIG_ACCESS_FIELD_EMPTY = 4003;
 
 
     /** SUCCESS **/
     const PAY_SUCCESS = 610;
     const PRICE_CREDITED = 3001;
-
 
 
     /** MESSAGES ARRAY **/
@@ -101,6 +108,30 @@ class AppCodes
         self::QUERY_VAR_EMPTY => [
             'code' => self::QUERY_VAR_EMPTY,
             'message'=>'Переменная запроса в URL пуста.'
+        ],
+        self::EXCEL_EXPORT_ERROR => [
+            'code' => self::EXCEL_EXPORT_ERROR,
+            'message'=>'Ошибка при создании Excel документа.'
+        ],
+        self::PAGE_NOT_FOUND => [
+            'code' => self::PAGE_NOT_FOUND,
+            'message'=>'Ошибка на сервере. Такого места нет!'
+        ],
+        self::CONFIG_EMPTY => [
+            'code' => self::CONFIG_EMPTY,
+            'message'=>'Массив конфигурации не должен быть пуст!'
+        ],
+        self::DB_CONFIG_EMPTY => [
+            'code' => self::DB_CONFIG_EMPTY,
+            'message'=>'Массив конфигурации БД не должен быть пуст!'
+        ],
+        self::USER_DB_CONFIG_EMPTY => [
+            'code' => self::DB_CONFIG_EMPTY,
+            'message'=>'Не найден пользователь для подключения к БД!'
+        ],
+        self::DB_CONFIG_ACCESS_FIELD_EMPTY => [
+            'code' => self::DB_CONFIG_ACCESS_FIELD_EMPTY,
+            'message'=>'Не найден список доступов для подключения к БД!'
         ],
     ];
 

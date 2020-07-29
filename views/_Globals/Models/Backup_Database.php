@@ -10,10 +10,13 @@ namespace Views\_Globals\Models;
 /**
  * Define database parameters here
  */
+use Views\vendor\core\db\Database;
+/*
 define("DB_USER", 'adm_test');
 define("DB_PASSWORD", 'V7L0QJk3YOHvMqnC');
 define("DB_NAME", 'huf_models');
 define("DB_HOST", 'localhost');
+*/
 define("BACKUP_DIR", _rootDIR_ . 'backup/baseSQL'); // Comment this line to use same script's directory ('.')
 define("TABLES", '*'); // Full backup
 //define("TABLES", 'table1, table2, table3'); // Partial backup
@@ -83,8 +86,10 @@ class Backup_Database {
 
     /**
      * Constructor initializes database
+     * @throws \Exception
      */
-    public function __construct($host, $username, $passwd, $dbName, $charset = 'utf8') {
+    public function __construct($host, $username, $passwd, $dbName, $charset = 'utf8')
+    {
         $this->host            = $host;
         $this->username        = $username;
         $this->passwd          = $passwd;
@@ -104,7 +109,13 @@ class Backup_Database {
         $this->output          = '';
     }
 
-    protected function initializeDatabase() {
+    /**
+     * @return \mysqli
+     * @throws \Exception
+     */
+    protected function initializeDatabase()
+    {
+        /*
         try {
             $conn = mysqli_connect($this->host, $this->username, $this->passwd, $this->dbName);
             if (mysqli_connect_errno()) {
@@ -120,6 +131,8 @@ class Backup_Database {
         }
 
         return $conn;
+        */
+        return (Database::instance())->getConnection();
     }
 
     /**

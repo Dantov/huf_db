@@ -122,7 +122,7 @@ $session = $this->session;
 					<li role="presentation">
 						<a title="Снять выделение со всех моделей" class="selectsUncheckAll">Снять выделение</a></li>
 					<li role="presentation">
-						<a title="Отобразить только выделенные модели" class="selectsShowModels">Показать</a></li>
+						<a title="Отобразить только выделенные модели" href="/main/?selected-models-show" class="selectsShowModels">Показать</a></li>
 					<li role="presentation">
 						<a title="Изменить статус для всех выделенных моделей" class="editStatusesSelectedModels">Проставить статус</a></li>
 					<li role="presentation" class="divider"></li>
@@ -164,11 +164,11 @@ $session = $this->session;
 		<div class="pull-left">
 			<h3 style="margin: 0 0 0 15px; padding-top:4px;">
                 <?php if ( $searchFor = $session->getKey('searchFor') ): ?>
-                    <a type="button" title="сбросить" href="/main/?coll_show=-1">
+                    <a type="button" title="сбросить" href="/globals/?search=resetSearch">
                         <span id="collectionName">Поиск по: &#171;<?=$searchFor?>&#187;</span>
                     </a>
                 <?php else: ?>
-                    <a type="button" title="<?=$collectionName ?>" href="/?coll_show=<?=$session->getKey('assist')['collection_id']?>">
+                    <a type="button" title="<?=$collectionName ?>" href="/main/?coll_show=<?=$session->getKey('assist')['collection_id']?>">
                         <span id="collectionName"><?=$collectionName?></span>
                     </a>
                 <?php endif; ?>

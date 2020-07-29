@@ -3,13 +3,12 @@ namespace Views\_AddEdit\Models;
 use Views\_Globals\Models\{
     General, PushNotice, User
 };
-use Views\vendor\core\Registry;
-use Views\vendor\libs\classes\AppCodes;
 
 /**
  * общий класс, для манипуляций с базой данных MYSQL, и файлами на сервере
  */
-class Handler extends General {
+class Handler extends General
+{
 	
 	protected $id;
 	private $number_3d;
@@ -178,35 +177,11 @@ class Handler extends General {
 		}
 	}
 
-	/*
-	public function makeModelMaterial(&$mod_mat,&$samplegold,&$whitegold,&$redgold,&$eurogold) {
-		$model_mat_arr = array();
-		if ( !empty($mod_mat) )    $model_mat_arr[] = $mod_mat;
-		if ( !empty($samplegold) ) $model_mat_arr[] = $samplegold;
-		if ( !empty($whitegold) )  $model_mat_arr[] = $whitegold;
-		if ( !empty($redgold) )    $model_mat_arr[] = $redgold;
-		if ( !empty($eurogold) )   $model_mat_arr[] = $eurogold;
-		$model_material = implode(';',$model_mat_arr);
-		return $model_material;
-	}
-
-	public function makeModelCovering(&$rhodium,&$golding,&$blacking,&$rhodium_fill,&$onProngs,&$onParts,&$rhodium_PrivParts) {
-		$mod_cov_arr = array();
-		if ( !empty($rhodium) )      $mod_cov_arr[] = $rhodium;
-		if ( !empty($golding) )      $mod_cov_arr[] = $golding;
-		if ( !empty($blacking) )     $mod_cov_arr[] = $blacking;
-		if ( !empty($rhodium_fill) ) $mod_cov_arr[] = $rhodium_fill;
-		if ( !empty($onProngs) )     $mod_cov_arr[] = $onProngs;
-		if ( !empty($onParts) )      $mod_cov_arr[] = $onParts;
-		
-		if ( !empty($rhodium_PrivParts) )  $rhodium_PP = strip_tags(trim($rhodium_PrivParts));
-		
-		$model_covering  = implode(';',$mod_cov_arr);
-		$model_covering .= !empty($rhodium_PP ) ? ";-".$rhodium_PP : "";
-		
-		return $model_covering;
-	}*/
-
+    /**
+     * @param array $labels
+     * @return string
+     * @throws \Exception
+     */
     public function makeLabels($labels=[])
     {
         if (empty($labels)) return '';
@@ -543,10 +518,6 @@ class Handler extends General {
 
 			if ( $gemsName == "" ) continue;
 			
-			//$sql = " INSERT INTO gems (gems_names, gems_cut, value, gems_sizes, gems_color, pos_id ) 
-						      // VALUES ('$gemsName', '$gemsCut', '$gemsVal', '$gemsDiam', '$gemsColor', '$this->id')";
-			//debug($sql,'',1);
-			
 			$quer_gem = mysqli_query($this->connection, " INSERT INTO gems (gems_names, 
 																	 gems_cut,
 																	 value,
@@ -805,27 +776,6 @@ class Handler extends General {
 	}
 
 
-    /**
-     * Бал ли такой статус у модели?
-     * @param int $statusID
-     * @return bool
-     * @throws \Exception
-     */
-    /*
-    public function isStatusPresent(int $statusID = 0 ) : bool
-	{
-		$query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$this->id' AND status='$statusID' " );
-		if ( $query->num_rows ) return true;
-        return false;
-	}*/
-
-
-
-
-
-
-
-
 	public function getModelsByType( string $modelType )
     {
 		$names_quer = mysqli_query($this->connection, " SELECT id,number_3d,vendor_code FROM stock WHERE collections='Детали' AND model_type='$modelType' ");
@@ -849,8 +799,12 @@ class Handler extends General {
 		}
 		return $resp;
 	}
-	
-	public function deleteModel()
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function deleteModel()
     {
         chdir(_stockDIR_);
 
@@ -858,29 +812,53 @@ class Handler extends General {
 		$row = mysqli_fetch_assoc($selQuery);
 
 		$result = [
+		    'success' => 0,
+            'error'=>'',
+            'errorNo'=>0,
 		    'number_3d'   => $row['number_3d'],
 		    'vendor_code' => $row['vendor_code'],
 		    'model_type'  => $row['model_type'],
             'dell' => $row['number_3d']." / ".$row['vendor_code']." - ".$row['model_type'],
         ];
 
-		mysqli_query($this->connection, " DELETE FROM stock          WHERE     id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM metal_covering WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM images         WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM gems           WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM vc_links       WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM statuses       WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM ai_files       WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM stl_files      WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM rhino_files    WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM repairs        WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM pushnotice     WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM description    WHERE pos_id='$this->id' ");
-		mysqli_query($this->connection, " DELETE FROM model_prices   WHERE pos_id='$this->id' AND paid='0'"); // удалим только не оплаченные
+		//$dellStock = mysqli_query($this->connection, " DELETE FROM stock          WHERE     id='$this->id' ");
+        try {
+            if ( $this->deleteFromTable('stock','id',$this->id) )
+            {
+                $this->deleteFromTable('metal_covering','id',$this->id);
+                mysqli_query($this->connection, " DELETE FROM images         WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM gems           WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM vc_links       WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM statuses       WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM ai_files       WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM stl_files      WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM rhino_files    WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM repairs        WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM pushnotice     WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM description    WHERE pos_id='$this->id' ");
+                mysqli_query($this->connection, " DELETE FROM model_prices   WHERE pos_id='$this->id' AND paid='0'"); // удалим только не оплаченные
+                $result = ['success' => 1];
+            } else {
+                $result['error'] = "something wrong";
+                return $result;
+            }
+        } catch (\Exception | \Error $e) {
+            $result['error'] = $e->getMessage();
+            $result['errorNo'] = $e->getCode();
+            return $result;
+        }
 
 		$path = $row['number_3d'].'/'.$this->id;
-		
-		if ( file_exists($path) ) $this->rrmdir($path);
+        if (file_exists($path))
+        {
+            try {
+                $this->rrmdir($path);
+            } catch (\Exception | \Error $e) {
+                $result['error'] = $e->getMessage();
+                $result['errorNo'] = $e->getCode();
+                return $result;
+            }
+        }
 
         $files = [];
 		if ( file_exists( $row['number_3d']) ) $files = scandir( $row['number_3d'] );
@@ -1048,41 +1026,6 @@ class Handler extends General {
     }
 
     /**
-     * Пакетное удаление
-     *
-     * @param $toRemove
-     * @param $tableName
-     * @return array|bool
-     * @throws \Exception
-     */
-    public function removeRows($toRemove, $tableName)
-    {
-    	if ( empty($toRemove) || !is_array($toRemove)) return [];
-        if ( empty($tableName) || !is_string($tableName) ) throw new \Exception("Error removeRows() table name might be a string!", 1);
-        
-        $ids = '';
-        foreach ( $toRemove as $id )
-        {
-            if ( !empty($id) ) $ids .= $id . ',';
-        }
-
-        if (empty($ids)) return false;
-
-        $ids = '(' . trim($ids,',') . ')';
-
-        try {
-            $rem = $this->baseSql( "DELETE from $tableName WHERE id IN $ids" );
-            if ( isset($rem['error']) ) throw new \Exception("Error removeRows() : " . $rem['error'], 1);
-            return true;
-
-        } catch ( \Exception $e) {
-            echo 'removeRows() Выбросил исключение: ',  $e->getMessage(), "\n";
-        }
-
-        return false;
-    }
-
-    /**
      * Формируте массив строк для пакетной вставки картинок
      * @param $data
      * @return array|bool
@@ -1163,66 +1106,6 @@ class Handler extends General {
         }
 
         return ['newImages'=>$newImgRows,'updateImages'=>$imgRows];
-    }
-
-    /**
-     * Example:
-     * INSERT INTO mytable (id, a, b, c)
-     * VALUES  (1, 'a1', 'b1', 'c1'),
-     * (2, 'a2', 'b2', 'c2'),
-     * (3, 'a3', 'b3', 'c3'),
-     * (4, 'a4', 'b4', 'c4'),
-     * (5, 'a5', 'b5', 'c5'),
-     * (6, 'a6', 'b6', 'c6')
-     * ON DUPLICATE KEY UPDATE
-     * id=VALUES(id),
-     * a=VALUES(a),
-     * b=VALUES(b),
-     * c=VALUES(c)
-     *
-     * @param array $rows
-     * массив строк
-     *
-     * @param string $table
-     * имя таблицы
-     *
-     * @return bool|int
-     * @throws \Exception
-     */
-    public function insertUpdateRows(array $rows, string $table)
-    {
-        if ( empty($rows) || empty($table) ) return false;
-        $values = '';
-        $fields = [];
-
-        //debug($rows,'rows',1);
-
-        foreach ($rows as $row)
-        {
-            $val = '';
-            foreach ($row as $field => $value)
-            {
-                $fields[$field] = $field;
-
-                $val .= "'".$value."'" . ',';
-            }
-            $values  .= '(' . trim($val,',') . '),';
-        }
-        $values  =  trim($values,',');
-        $columns = '';
-        $update = [];
-        foreach ($fields as $field)
-        {
-            $columns .= $field . ',';
-            $update[] = $field . '=VALUES(' . $field . ')';
-        }
-        $columns = '(' . trim($columns,',') . ')';
-        $update = implode(',', $update);
-
-        $sqlStr = "INSERT INTO $table $columns VALUES $values ON DUPLICATE KEY UPDATE $update";
-		//debug($sqlStr,'$sql',1);
-
-        return $this->sql($sqlStr);
     }
 
 }

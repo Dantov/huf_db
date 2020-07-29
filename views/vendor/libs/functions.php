@@ -185,7 +185,7 @@ function getMonthRu( int $num ) : string
 
 function in_array_recursive( $needle, array &$array, bool $strict = false ) : bool
 {
-    foreach ( $array as $value )
+    foreach ( $array as $key => $value )
     {
         $found = $strict ? $needle === $value : $needle == $value;
         if($found) return true;

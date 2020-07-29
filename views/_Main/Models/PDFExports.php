@@ -44,7 +44,7 @@ class PDFExports extends Main {
      * @param string $collectionName
      * @throws \Exception
      */
-	function __construct( $assist, $user, $foundRow, $searchFor='', $collectionName='' )
+	function __construct( $assist, $user, $foundRow = [], $searchFor='', $collectionName='' )
 	{
 		parent::__construct( $assist, $user, $foundRow);
 		$this->toPdf = true;

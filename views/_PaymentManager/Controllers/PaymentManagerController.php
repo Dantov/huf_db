@@ -35,10 +35,6 @@ class PaymentManagerController extends UserPouchController
             exit;
         }
 
-        $q = $this->getQueryParam('q');
-        //debug($q,'Q');
-        //debug(URLCrypt::decode($q),'parsed',1);
-
         $this->page = (int)$request->get('page');
         $this->workerID = (int)$request->get('worker');
         $this->tab = $this->getView( (int)$request->get('tab') );

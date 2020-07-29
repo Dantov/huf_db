@@ -39,9 +39,9 @@ class Config
      * @return array|mixed
      * @throws \Exception
      */
-    public static function get($key='')
+    public static function get(string $key='')
     {
-        if ( !empty($key) && is_string($key) )
+        if ( !empty($key) )
         {
             if ( array_key_exists($key,self::$config) )
             {
@@ -54,6 +54,14 @@ class Config
         }
 
         return self::$config ?? self::$defaultConfig;
+    }
+
+    public static function set( string $key, $value )
+    {
+        if ( empty($key) || empty($value) ) return false;
+
+        self::$config[$key] = $value;
+        return true;
     }
 
 }

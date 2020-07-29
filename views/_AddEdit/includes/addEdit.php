@@ -1100,7 +1100,7 @@ $permittedFields = User::permissions();
     <?php if ( !$permittedFields['model_type'] ): ?>
         <input type="hidden" id="modelType" value="<?=$row['model_type'];?>"/>
     <?php endif;?>
-    <input type="hidden" name="id" value="<?=($component===3)?0:$id?>"/>
+    <input type="hidden" name="id" value="<?=($component===3)?0:$id // закодировать?>"/>
     <input type="hidden" name="edit" id="edit" value="<?=$component;?>"/>
     <input type="hidden" name="date" value="<?=date('Y-m-d'); ?>" />
 

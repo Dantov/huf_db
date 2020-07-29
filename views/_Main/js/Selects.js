@@ -19,10 +19,12 @@ function Selects() {
         event.preventDefault();
         that.unselectAllBoxes();
     },false);
+    /*
     this.sgUL.querySelector('.selectsShowModels').addEventListener('click', function(event){
         event.preventDefault();
         that.showSelectedModels();
     },false);
+    */
     this.sgUL.querySelector('.editStatusesSelectedModels').addEventListener('click', function(event){
         event.preventDefault();
        if ( that.selectedElements.length )
@@ -65,9 +67,12 @@ Selects.prototype.checkSelectedModels = function() {
         },
         dataType: "json",
         success: function (data) {
-            for (let key in data) {
-                that.selectedElements.push(data[key]);
-            }
+            $.each(data, function (key, elem) {
+                that.selectedElements.push(elem);
+            });
+            // for (let key in data) {
+            //     that.selectedElements.push(data[key]);
+            // }
             console.log(that.selectedElements);
         }
     })
@@ -164,7 +169,7 @@ Selects.prototype.unselectAllBoxes = function(click) {
 };
 Selects.prototype.selectBox = function(click) {
 
-    console.log(click);
+    //console.log(click);
     
     let checked = 1;
     if ( !click.checked ) checked = 2;
@@ -203,11 +208,14 @@ Selects.prototype.selectBox = function(click) {
                 // console.log('obj.id=' + obj.id);
                 // debug(models,'selectedElements');
                 
-                let dellIndex;
-                $.each(models, function(i, model) {
-                    debug(i);
-                    if ( obj.id == li_arr[i].getAttribute('data-id') ) li_arr[i].remove();
-                    if ( obj.id == models[i].id ) dellIndex = i;
+                let dellIndex = null;
+                $.each(models, function(i) {
+                    //debug(i);
+                    if ( +obj.id === +li_arr[i].getAttribute('data-id') )
+                        li_arr[i].remove();
+
+                    if ( +obj.id === +models[i].id )
+                        dellIndex = i;
                 });
                 models.splice(dellIndex, 1);
 
@@ -238,7 +246,7 @@ Selects.prototype.showSelectedModels = function() {
                 }
             },
             error:function (e) {
-                debug(e,'Error in showSelectedModels');
+                debug(e.responseText,'Error in showSelectedModels');
             }
         });
     }

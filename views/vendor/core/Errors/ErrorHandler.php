@@ -95,6 +95,14 @@ class ErrorHandler
         }
     }
 
+    /**
+     * @param $errno
+     * @param $message
+     * @param $errfile
+     * @param $errline
+     * @return bool
+     * @throws \Exception
+     */
     public function errorHandler($errno, $message, $errfile, $errline)
     {
         // пишем в лог, если включено
@@ -140,13 +148,23 @@ class ErrorHandler
         die;
     }
 
+    /**
+     * @param $errno
+     * @param $message
+     * @param $errfile
+     * @param $errline
+     * @throws \Exception
+     */
     protected function errorsLog($errno, $message, $errfile, $errline)
     {
         $type = isset($this->errorCodes[$errno]) ? $this->errorCodes[$errno] : "";
 
+
         $gen = new \Views\_Globals\Models\General();
-        $gen->connectToDB();
+        $gen->connectDBLite();
+
         $user = $gen->user;
+
 
         $text  = "\n===========================================\n";
         $text .= "New Error from: {$user['fio']} IP: {$user['IP']}\n";

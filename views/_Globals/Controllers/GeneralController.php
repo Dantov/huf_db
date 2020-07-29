@@ -1,7 +1,9 @@
 <?php
 namespace Views\_Globals\Controllers;
 use Views\_Globals\Models\{General, User};
-use Views\vendor\core\{Controller, Cookies, Config};
+use Views\vendor\core\{
+    Controller, Cookies, Config, db\Database
+};
 use Views\vendor\libs\classes\AppCodes;
 
 class GeneralController extends Controller
@@ -29,6 +31,14 @@ class GeneralController extends Controller
             const _WORK_PLACE_ = {$wp};
 JS;
         $this->includeJS($js,[],$this->HEAD);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function afterAction()
+    {
+        (Database::instance())->destroy();
     }
 
     protected function accessControl()

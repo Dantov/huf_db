@@ -78,6 +78,10 @@ class Main extends General {
 	}
 
 
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     public function getStatusesSelect()
 	{
         $this->getUsers();
@@ -120,6 +124,7 @@ class Main extends General {
         return $workingCentersDB;
     }
 
+    /*
 	public function getCollections()
 	{
 		//$collectionList = '';
@@ -183,7 +188,7 @@ class Main extends General {
 		$res['other_cn'] = $other_cn;
 		
 		return $res;
-	}
+	}*/
 	
 	public function getModelsFormStock()
     {

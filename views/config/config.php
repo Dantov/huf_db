@@ -3,15 +3,10 @@
 return [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
-    'uploadPath' => '/uploads',
+    'uploadPath' => '/Stock',
     'cachePath' => '/runtime/cache',
     'layout' => 'default',
-    'baseController' => 'main',
-    'multiLanguage'=> [
-        'enable' => false, // false - disable
-        //'language' => require_once 'languages.php', // список доступных языков
-        'default' => 'ru',
-    ],
+    'defaultController' => 'main',
     'version' => '2.002b',
     'dataCompression' => true,
 
@@ -25,20 +20,13 @@ return [
     'errors' => [
         'enable' => true, // включает перехват ошибок фреймворком DTW.  false - отключает
         'logs'   => '/runtime/logs', // false - отключает логи
-        'mode'   => _DEV_MODE_ ? 3 : 1,
+        'mode'   => _DEV_MODE_ ? 3 : 0,
     ],
     'csrf' => false, // валидация данных для форм и JS
     'classes' => [  // подключаемые классы
         //'cache' => 'dtw\Cache',
         'appCodes' => 'Views\vendor\libs\classes\AppCodes',
         'validator' => 'Views\vendor\libs\classes\valitron\src\Validator',
-    ],
-    'modules' => [
-        'admin' => [
-            'alias' => 'admin', // alias namespaces for module admin
-            'defaultController' => 'user', // default route
-            'layout' => 'admin',  // default layout
-        ],
     ],
     'db' => require_once "db_config.php",
     'libraries' => [

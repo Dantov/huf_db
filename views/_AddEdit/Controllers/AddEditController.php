@@ -45,9 +45,7 @@ class AddEditController extends GeneralController
             if ( $request->post('dellPosition') )
             {
                 if ( $id = (int)$request->post('id') )
-                {
                     $this->actionDeletePosition($id);
-                }
             }
 
             if ( $request->isPost() && $request->post('save') )
@@ -286,9 +284,46 @@ JS;
         if ( User::getAccess() !== 1 )
             $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $addEdit->isStatusPresent( (int)$changeStatusesAccess[User::getAccess()] );
 */
-        
+
+
+
+
+        define('ENCRYPTION_KEY', 'ab86d144e3f080b61c7c2e43');
+
+// Encrypt
+        function Encrypt11($plaintext)
+        {
+            //$plaintext = "Тестируем обратимое шифрование на php 7";
+            $ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
+            $iv = openssl_random_pseudo_bytes($ivlen);
+            $ciphertext_raw = openssl_encrypt($plaintext, $cipher, ENCRYPTION_KEY, $options=OPENSSL_RAW_DATA, $iv);
+            $hmac = hash_hmac('sha256', $ciphertext_raw, ENCRYPTION_KEY, $as_binary=true);
+            $ciphertext = base64_encode( $iv.$hmac.$ciphertext_raw );
+            return $ciphertext;
+        }
+
+// Decrypt
+        function Decrypt11($ciphertext)
+        {
+            $c = base64_decode($ciphertext);
+            $ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
+            $iv = substr($c, 0, $ivlen);
+            $hmac = substr($c, $ivlen, $sha2len=32);
+            $ciphertext_raw = substr($c, $ivlen+$sha2len);
+            $plaintext = openssl_decrypt($ciphertext_raw, $cipher, ENCRYPTION_KEY, $options=OPENSSL_RAW_DATA, $iv);
+            $calcmac = hash_hmac('sha256', $ciphertext_raw, ENCRYPTION_KEY, $as_binary=true);
+            if (hash_equals($hmac, $calcmac))
+            {
+                return $plaintext;
+            }
+            return false;
+        }
+        $cT = Encrypt11("mysimplepass");
+        $dcT = Decrypt11($cT);
+
+
         $compact2 = compact([
-            'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi','toShowStatuses',
+            'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi','toShowStatuses','cT','dcT',
             'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes','modelPrices','gradingSystem',
             'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI',
             'dataArrays','materialsData','coveringsData','handlingsData', 'statusesWorkingCenters','material','covering','labels','complected',
@@ -343,6 +378,10 @@ JS;
         return $res;
     }
 
+    /**
+     * @param $modelsTypeRequest
+     * @throws \Exception
+     */
     protected function actionVendorCodeNames($modelsTypeRequest)
     {
         $handler = new Handler();
@@ -355,6 +394,10 @@ JS;
         echo json_encode($resp);
     }
 
+    /**
+     * @param $post
+     * @throws \Exception
+     */
     protected function actionPaidRepair($post)
     {
         $repairPaid = (int)$post['paid'];
@@ -406,35 +449,31 @@ JS;
      * @param $modelID
      * @throws \Exception
      */
-    protected function actionDeletePosition($modelID)
+    protected function actionDeletePosition( int $modelID ) : void
     {
-        $result['dell'] = 'Ошибка при удалении!';
+        $resultDell['dell'] = 'Ошибка при удалении!';
         if ( !User::permission('dellModel') )
-        {
-            echo json_encode($result);
-            exit;
-        }
+            exit( json_encode($resultDell) );
 
-        if ( $modelID > 0 && $modelID < 999999 )
+
+        if ( $modelID > 0 && $modelID < PHP_INT_MAX )
         {
             $handler = new Handler($modelID);
             $handler->connectToDB();
             if ( !$handler->checkID($modelID) )
-            {
-                echo json_encode($result);
-                exit;
-            }
+                exit( json_encode($resultDell) );
 
             $resultDell = $handler->deleteModel();
-
-            $pn = new \Views\_Globals\Models\PushNotice();
-            $pn->addPushNotice($modelID, 3, $resultDell['number_3d'], $resultDell['vendor_code'], $resultDell['model_type'], $handler->date, false, $handler->user['fio']);
-
+            if ( $resultDell['success'] == 1 )
+            {
+                $pn = new \Views\_Globals\Models\PushNotice();
+                $pn->addPushNotice($modelID, 3, $resultDell['number_3d'], $resultDell['vendor_code'], $resultDell['model_type'], $handler->date, false, $handler->user['fio']);
+                $this->session->setKey('re_search', true);
+            }
             $handler->closeDB();
-            $this->session->setKey('re_search', true);
 
-            $result['dell'] = $resultDell['dell'];
-            echo json_encode($result);
+            //$result['dell'] = $resultDell['dell'];
+            exit( json_encode($resultDell) );
         }
     }
 

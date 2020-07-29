@@ -12,6 +12,10 @@ class PaymentManager extends UserPouch
 		parent::__construct( $paidTab, $worker, $month, $year );
 	}
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function getActiveUsers()
     {
         $allUsers = $this->getUsers();
@@ -64,7 +68,7 @@ class PaymentManager extends UserPouch
                         FROM model_prices as mp
                           LEFT JOIN users as u ON mp.user_id = u.id
                           LEFT JOIN grading_system as gs ON gs.id = mp.gs_id
-                              WHERE mp.id IN $inPrices AND mp.status='1' AND mp.pos_id IN $inModels";
+                              WHERE mp.id IN $inPrices AND (mp.status='1' AND mp.paid=0 AND mp.pos_id IN $inModels)";
         $prices = [];
         $stock = [];
         try {

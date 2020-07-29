@@ -1,6 +1,7 @@
 <?php
 namespace Views\vendor\core;
 use Views\vendor\core\Errors\ErrorHandler;
+use Views\vendor\libs\classes\AppCodes;
 
 class Application
 {
@@ -17,6 +18,9 @@ class Application
      */
     public function __construct($config=[])
     {
+//        $d = new \DateTime();
+//        debug(__CLASS__ . " created in " . $d->format("d.m.Y - H:i:s u") );
+
         if ( is_array($config) && !empty($config) ) $this->config = $config;
 
         Config::initConfig($config);
@@ -26,6 +30,11 @@ class Application
         Router::parseRout($_SERVER['REQUEST_URI']);
         $this->controllerPath = Router::getRout();
         $this->controllerName = Router::getControllerName();
+    }
+    public function __destruct()
+    {
+//        $d = new \DateTime();
+//        debug(__CLASS__ . " destr in " . $d->format("d.m.Y - H:i:s u") );
     }
 
 
@@ -39,11 +48,18 @@ class Application
         {
             if ( !_DEV_MODE_ )
             {
-                $class = $this->controllerPath = "Views\_Main\Controllers\MainController";
-                $this->controllerName = "main";
+                Router::parseRout( "/" . $this->config['defaultController'] . "/");
+                $class = $this->controllerPath = Router::getRout();
+                $this->controllerName = Router::getControllerName();
+//                $class = $this->controllerPath = "Views\_Main\Controllers\MainController";
+//                $this->controllerName = "main";
+                if ( !file_exists( _rootDIR_ .'/'. str_replace('\\','/', $class) . '.php' ) )
+                    throw new \Exception( AppCodes::getMessage(AppCodes::PAGE_NOT_FOUND)['message'] , AppCodes::PAGE_NOT_FOUND);
+
             } else {
-                throw new \Exception( "Controller " . $class . " not found!" , 111);
+                throw new \Exception( __CLASS__ . " - 'Controller " . $class . "' not found!" , 111);
             }
+
         }
 
         $controller = new $class($this->controllerName);

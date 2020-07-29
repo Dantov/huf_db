@@ -195,7 +195,7 @@ class ModelView extends General {
 
         $addEdit->connectDBLite();
         $mats = $addEdit->getMaterials($this->row);
-        $addEdit->closeDB();
+        //$addEdit->closeDB();
         return $mats;
 	}
 

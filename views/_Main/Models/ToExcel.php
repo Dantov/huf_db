@@ -1,9 +1,7 @@
 <?php
 namespace Views\_Main\Models;
 
-//session_start();
-//require_once  _viewsDIR_ . 'Main/classes/Main.php';
-//require_once _vendorDIR_ . "autoload.php";
+use Views\vendor\core\Sessions;
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -42,6 +40,9 @@ class ToExcel extends Main
 
     public $collectionName;
 
+    // нужен чтобы запросить в контроллере, при создании имени файла
+    public $foundRows = [];
+
     function __construct()
     {
         // уходим если нет моделей для вывода
@@ -51,16 +52,23 @@ class ToExcel extends Main
             return;
         }
 
-        parent::__construct($_SESSION['assist'], false, $_SESSION['foundRow']);
-        $this->connectToDB();
+        $session = new Sessions();
+        $assist = $session->getKey('assist');
+        $searchFor = $session->getKey('searchFor');
 
-        if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) )
+        if ( $searchFor || $session->getKey('re_search') )
         {
-            $this->getModelsFormStock();
-            $this->collectionName = $_SESSION['assist']['collectionName'];
+            $search = new Search($session);
+            $this->foundRows = $search->search( $searchFor );
+
+            $this->collectionName = (int)$assist['searchIn'] === 1 ? 'Поиск по: '.$searchFor : $assist['collectionName'].'" Поиск по: '.$searchFor.':';
+
         } else {
-            $this->collectionName = (int)$_SESSION['assist']['searchIn'] === 1 ? 'Поиск по: '.$_SESSION['searchFor'] : $_SESSION['assist']['collectionName'].'" Поиск по: '.$_SESSION['searchFor'].':';
+            $this->getModelsFormStock();
+            $this->collectionName = $assist['collectionName'];
         }
+
+        parent::__construct($assist, false, $this->foundRows);
 
         $this->progressResponse = [
             'progressBarPercent' => 0,
@@ -145,6 +153,10 @@ class ToExcel extends Main
         return $borders;
     }
 
+    /**
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \Exception
+     */
     public function getXlsx()
     {
 
@@ -160,17 +172,10 @@ class ToExcel extends Main
         //debug($workingCenters,'',1);
 
         $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-        try
-        {
-            $sheet = $spreadsheet->getActiveSheet();
-        } catch (Exception $e) {
-            echo 'Ошибка при создании getActiveSheet()' . $e->getMessage();
-            exit();
-        }
 
         $startRow = 2;
-
         $sheet->setCellValue('A'.$startRow, 'Артикул');
         $sheet->setCellValue('B'.$startRow, 'Кол-во');
         $sheet->setCellValue('C'.$startRow, 'Р-Ряд');
@@ -185,7 +190,7 @@ class ToExcel extends Main
                 $sheet->mergeCellsByColumnAndRow($columnIndex1,$startRow,$columnIndex1Plus,$startRow);
                 $sheet->mergeCellsByColumnAndRow($columnIndex1,$startRow+1,$columnIndex1Plus,$startRow+1);
                 $sheet->mergeCellsByColumnAndRow($columnIndex1,$startRow+2,$columnIndex1Plus,$startRow+2);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 echo "/n Error in mergeCellsByColumnAndRow() " . $e->getMessage() . "/n" . "Line: ". $e->getLine();
             }
         }
@@ -239,11 +244,8 @@ class ToExcel extends Main
 
         // кол-во получившихся колонок
         $allAvailableColumns = ($wcCount*2)+3;
-        try
-        {
-            $sheet->getStyleByColumnAndRow(1, $startRow, $allAvailableColumns, $startRow)->getFont()->applyFromArray($fontStyleTop);
-            $sheet->getStyleByColumnAndRow(1, $startRow+1, $allAvailableColumns, $startRow+3)->getFont()->applyFromArray($fontStyleRow3);
-        } catch (Exception $e) {}
+        $sheet->getStyleByColumnAndRow(1, $startRow, $allAvailableColumns, $startRow)->getFont()->applyFromArray($fontStyleTop);
+        $sheet->getStyleByColumnAndRow(1, $startRow+1, $allAvailableColumns, $startRow+3)->getFont()->applyFromArray($fontStyleRow3);
 
 
         $borderStyleArray = array(
@@ -351,13 +353,7 @@ class ToExcel extends Main
 
             // в комменте полный список размеров
             if ( !empty($ModelRow[$i]['size_range']) )
-            {
-                try {
-                    $sheet->getCommentByColumnAndRow(3, $rowS)->getText()->createTextRun($ModelRow[$i]['size_range']);
-                } catch (Exception $e) {
-                    echo "/n". "Error in createTextRun " . $e->getMessage() . "/n";
-                }
-            }
+                $sheet->getCommentByColumnAndRow(3, $rowS)->getText()->createTextRun($ModelRow[$i]['size_range']);
 
             //колонки остальные
             $columnIndex = 4; // начиная с 4й колонки
@@ -387,17 +383,13 @@ class ToExcel extends Main
 					->getStartColor()
 					->setRGB('2d2d2d');
 
-					try {
-						$sheet->getStyleByColumnAndRow($columnIndex, $rowS)
-						->getFont()
-						->applyFromArray([
-							'color' => [
-								'rgb' => 'fff'
-							]
-						]);
-					} catch (Exception $e) {
-						echo "/n Error getStyleByColumnAndRow()". $e->getMessage() . "/n";
-					}
+                    $sheet->getStyleByColumnAndRow($columnIndex, $rowS)
+                    ->getFont()
+                    ->applyFromArray([
+                        'color' => [
+                            'rgb' => 'fff'
+                        ]
+                    ]);
 				} else {
 					$sheet->setCellValueByColumnAndRow($columnIndex, $rowS, $wCenterL['start']['date']);
 				}
@@ -412,18 +404,13 @@ class ToExcel extends Main
                         ->getStartColor()
                         ->setRGB('dc5d26');
 
-                    try {
-                        $sheet->getStyleByColumnAndRow($columnIndex, $rowS)
-                            ->getFont()
-                            ->applyFromArray([
-                                'color' => [
-                                    'rgb' => 'FFFFFF'
-                                ]
-                            ]);
-                    } catch (Exception $e) { 
-                    	echo "/n Error getStyleByColumnAndRow()". $e->getMessage() . "/n"; 
-                    }
-
+                    $sheet->getStyleByColumnAndRow($columnIndex, $rowS)
+                        ->getFont()
+                        ->applyFromArray([
+                            'color' => [
+                                'rgb' => 'FFFFFF'
+                            ]
+                        ]);
                 } else {
                     $sheet->setCellValueByColumnAndRow($columnIndex, $rowS, $wCenterL['end']['date']);
                 }
@@ -492,34 +479,29 @@ class ToExcel extends Main
 	public function getXlsxFwc()
 	{
 		$spreadsheet = new Spreadsheet();
-		try {
-			$sheet = $spreadsheet->getActiveSheet();
-		} catch (Exception $e) {
-			exit( 'Ошибка при создании getActiveSheet()' . $e->getMessage() );
-		}
+		$sheet = $spreadsheet->getActiveSheet();
 
 		$startRow = 1;
 		// Титул
         $sheet->mergeCellsByColumnAndRow(1,$startRow,8,$startRow);
         $sheet->setCellValueByColumnAndRow(1, $startRow, 'Конечный Рабочий Центр Нахождения');
         // Шрифт 2й строки
-        try
-        {
-            $fontStyleTop = array(
-                'name'      	=> 'Calibri',
-                'size'     	    => 12,
-                'bold'      	=> true,
-                'italic'    	=> false,
-                //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
-                'strike'    	=> false,
-                'superScript' 	=> false,
-                'subScript' 	=> false,
-                'color'     	=> array(
-                    'rgb' => '460e15'
-                )
-            );
-            $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleTop);
-        } catch (Exception $e) {}
+
+        $fontStyleTop = array(
+            'name'      	=> 'Calibri',
+            'size'     	    => 12,
+            'bold'      	=> true,
+            'italic'    	=> false,
+            //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
+            'strike'    	=> false,
+            'superScript' 	=> false,
+            'subScript' 	=> false,
+            'color'     	=> array(
+                'rgb' => '460e15'
+            )
+        );
+        $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleTop);
+
         // высоты строк
 		$sheet->getRowDimension($startRow)->setRowHeight(25);
 
@@ -532,23 +514,22 @@ class ToExcel extends Main
 		$sheet->getRowDimension($startRow)->setRowHeight(20);
 
         // Шрифт 1й строки
-        try
-        {
-            $fontStyleTop = array(
-                'name'      	=> 'Calibri',
-                'size'     	    => 12,
-                'bold'      	=> true,
-                'italic'    	=> false,
-                //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
-                'strike'    	=> false,
-                'superScript' 	=> false,
-                'subScript' 	=> false,
-                'color'     	=> array(
-                    'rgb' => 'E0FFFF'
-                )
-            );
-            $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleTop);
-        } catch (Exception $e) {}
+
+        $fontStyleTop = array(
+            'name'      	=> 'Calibri',
+            'size'     	    => 12,
+            'bold'      	=> true,
+            'italic'    	=> false,
+            //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
+            'strike'    	=> false,
+            'superScript' 	=> false,
+            'subScript' 	=> false,
+            'color'     	=> array(
+                'rgb' => 'E0FFFF'
+            )
+        );
+        $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleTop);
+
 
         // фоновый цвет 2й строки
         $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)
@@ -575,16 +556,14 @@ class ToExcel extends Main
         }
 
         // Шрифт 3й строки
-        try
-        {
-            $fontStyleRow2 = [
-                'size'  => 10,
-                'color' => [
-                    'rgb' => '2F4F4F'
-                ]
-            ];
-            $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleRow2);
-        } catch (Exception $e) {}
+        $fontStyleRow2 = [
+            'size'  => 10,
+            'color' => [
+                'rgb' => '2F4F4F'
+            ]
+        ];
+        $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)->getFont()->applyFromArray($fontStyleRow2);
+
 
 
         $borderStyleArray = array(
@@ -658,11 +637,8 @@ class ToExcel extends Main
             if ( isset($lastStatus['status']['title']) )
             {
                 $title = $lastStatus['status']['title']." - ".$lastStatus['name']?:"";
-                try {
-                    $sheet->getCommentByColumnAndRow(4, $startRow)->getText()->createTextRun($title);
-                } catch (Exception $e) {
-                    echo "/n". "Error in createTextRun " . $e->getMessage() . "/n";
-                }
+                $sheet->getCommentByColumnAndRow(4, $startRow)->getText()->createTextRun($title);
+
             }
 
             // выравнивание
@@ -734,75 +710,70 @@ class ToExcel extends Main
     /**
      * Таблица просроченных
      *
+     * @throws \PhpOffice\PhpSpreadsheet\Exception
+     * @throws \Exception
      */
 	public function getXlsxExpired()
 	{
         $spreadsheet = new Spreadsheet();
-        try {
-            $sheet = $spreadsheet->getActiveSheet();
-        } catch (Exception $e) {
-            exit( 'Ошибка при создании getActiveSheet()' . $e->getMessage() );
-        }
+
+        $sheet = $spreadsheet->getActiveSheet();
+
 
         //========= Шапка таблицы ========//
         $sheet->setTitle('Отчёт Таблица Просроченных');
 
         $startRow = 1;
         // Титул
-        try{
-            $sheet->mergeCellsByColumnAndRow(1,$startRow,5,$startRow);
-        } catch (Exception $e) {}
+
+        $sheet->mergeCellsByColumnAndRow(1,$startRow,5,$startRow);
+
         $sheet->setCellValueByColumnAndRow(1, $startRow, 'Таблица Просроченных');
         // Шрифт 2й строки
-        try
-        {
-            $fontStyleTop = array(
-                'name'      	=> 'Calibri',
-                'size'     	    => 12,
-                'bold'      	=> true,
-                'italic'    	=> false,
-                //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
-                'strike'    	=> false,
-                'superScript' 	=> false,
-                'subScript' 	=> false,
-                'color'     	=> array(
-                    'rgb' => '460e15'
-                )
-            );
-            $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleTop);
-        } catch (Exception $e) {}
+
+        $fontStyleTop = array(
+            'name'      	=> 'Calibri',
+            'size'     	    => 12,
+            'bold'      	=> true,
+            'italic'    	=> false,
+            //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
+            'strike'    	=> false,
+            'superScript' 	=> false,
+            'subScript' 	=> false,
+            'color'     	=> array(
+                'rgb' => '460e15'
+            )
+        );
+        $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleTop);
+
         // высоты строк
         $sheet->getRowDimension($startRow)->setRowHeight(25);
 
         $startRow++;
-        try {
-            $sheet->mergeCellsByColumnAndRow(1,$startRow,3,$startRow);
-            $sheet->mergeCellsByColumnAndRow(4,$startRow,5,$startRow);
-        } catch (Exception $e) {}
 
+        $sheet->mergeCellsByColumnAndRow(1,$startRow,3,$startRow);
+        $sheet->mergeCellsByColumnAndRow(4,$startRow,5,$startRow);
 
         $sheet->setCellValueByColumnAndRow(1, $startRow, $this->collectionName);
         $sheet->setCellValueByColumnAndRow(4, $startRow, 'Дата: '. $this->formatDate(time()));
         $sheet->getRowDimension($startRow)->setRowHeight(20);
 
         // Шрифт 1й строки
-        try
-        {
-            $fontStyleTop = array(
-                'name'      	=> 'Calibri',
-                'size'     	    => 12,
-                'bold'      	=> true,
-                'italic'    	=> false,
-                //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
-                'strike'    	=> false,
-                'superScript' 	=> false,
-                'subScript' 	=> false,
-                'color'     	=> array(
-                    'rgb' => 'E0FFFF'
-                )
-            );
-            $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleTop);
-        } catch (Exception $e) {}
+        $fontStyleTop = array(
+            'name'      	=> 'Calibri',
+            'size'     	    => 12,
+            'bold'      	=> true,
+            'italic'    	=> false,
+            //'underline' 	=> Style\Font::UNDERLINE_DOUBLE,
+            'strike'    	=> false,
+            'superScript' 	=> false,
+            'subScript' 	=> false,
+            'color'     	=> array(
+                'rgb' => 'E0FFFF'
+            )
+        );
+        $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleTop);
+
 
         // фоновый цвет 2й строки
         $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)
@@ -828,16 +799,14 @@ class ToExcel extends Main
         $sheet->getColumnDimensionByColumn(5)->setWidth(20);
 
         // Шрифт 3й строки
-        try
-        {
-            $fontStyleRow2 = [
-                'size'  => 12,
-                'color' => [
-                    'rgb' => '2F4F4F'
-                ]
-            ];
-            $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleRow2);
-        } catch (Exception $e) {}
+        $fontStyleRow2 = [
+            'size'  => 12,
+            'color' => [
+                'rgb' => '2F4F4F'
+            ]
+        ];
+        $sheet->getStyleByColumnAndRow(1, $startRow, 5, $startRow)->getFont()->applyFromArray($fontStyleRow2);
+
 
 
         $borderStyleArray = array(
@@ -973,6 +942,9 @@ class ToExcel extends Main
 	}
 
 
+    /**
+     * @param $spreadsheet
+     */
     protected function output($spreadsheet)
     {
         $writer = new Xlsx($spreadsheet);
@@ -980,16 +952,15 @@ class ToExcel extends Main
         try {
             $writer->save('php://output');
         } catch (\Exception $e) {
-            echo json_encode(['error' => ['message'=>$e->getMessage(), 'file'=>$e->getFile(), 'line' => $e->getLine()], 'message'=>'Error in save() XLSX']);
-            exit;
+            exit (json_encode(['error' => ['message'=>$e->getMessage(), 'file'=>$e->getFile(), 'line' => $e->getLine(), 'code'=>$e->getCode()], 'message'=>'Error in save() XLSX']));
         }
 
         $xlsData = ob_get_contents();
         ob_end_clean();
 
         $this->progressCount(100);
-        echo json_encode('data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'.base64_encode($xlsData));
-        exit;
+        exit( json_encode('data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' . base64_encode($xlsData)) );
+
     }
 
 

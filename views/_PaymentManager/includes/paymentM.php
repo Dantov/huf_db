@@ -19,12 +19,6 @@ switch ($tab??'all')
     case 'paid': $tabName = "Оплаченных"; break;
     case 'notpaid': $tabName = "Не оплаченных"; break;
 }
-/*
-$data = "worker=0&page=1&year=2020";
-foreach (hash_algos() as $v) {
-        $r = hash($v, HtmlHelper::URL('/',['worker'=>0]), false);
-        debug($r, "name: '" . $v . "' len: " . strlen($r) . " - ");
-}*/
 ?>
 <div class="row">
     <p class="lead text-info text-center"><span class="glyphicon glyphicon-credit-card" aria-hidden="true"></span> Менеджер Оплат</p>
@@ -37,7 +31,7 @@ foreach (hash_algos() as $v) {
 					<span class="currentWorkerName"><?= $currentWorker['fio'] ?></span> <span class="caret"></span>
 				</button>
 				<ul class="dropdown-menu">
-					<li><a href="<?= URLCrypt::encode('q', HtmlHelper::URL('/',['worker'=>0])) ?>">Все работники</a></li>
+					<li><a href="<?= HtmlHelper::URL('/',['worker'=>0]) ?>">Все работники</a></li>
 					<li role="separator" class="divider"></li>
 					<?php foreach ($usersList as $user): ?>
 						<li><a href="<?=HtmlHelper::URL('/',['worker'=>$user['id']])?>"><?=$user['fio']?></a></li>

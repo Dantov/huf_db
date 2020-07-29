@@ -45,16 +45,12 @@ PaymentManager.prototype.init = function(button)
     this.addCollapsesEvent();
 
     $("#alertResponse").iziModal({
-        title: 'Ок',
-        subtitle: '',
-        headerColor: '#5cb85c',
         timeout: 5000,
         zindex: 1100,
         timeoutProgressbar: true,
         pauseOnHover: true,
-        restoreDefaultContent: false,
+        restoreDefaultContent: true,
     });
-
 
     $(document).on('closing', '#alertResponse', function (e) {
         if ( pm.operationStatus === false )
@@ -64,11 +60,13 @@ PaymentManager.prototype.init = function(button)
     });
     $(document).on('closed', '#alertResponse', function (e) {
         if ( pm.operationStatus !== true ) return;
-        
+        /*
         $.each(pm.panelsToRemove, function (i, panel) {
             panel.remove();
         });
-        //document.location.reload(true);
+		pm.payButton.classList.remove('disabled');
+		pm.payButton.previousElementSibling.classList.remove('hidden');*/
+        document.location.reload(true);
     });
 
     debug('PaymentManager init ok!');
@@ -138,12 +136,12 @@ PaymentManager.prototype.getPricesAllData = function(button)
             {
                 that.operationStatus = false;
                 //$('#paymentModal').modal('hide');
-                $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
-                $('#alertResponse').iziModal('setIcon', 'fas fa-exclamation-triangle');
-                $('#alertResponse').iziModal('setTitle', 'Ошибка! ' + models.error.message );
-                $('#alertResponse').iziModal('setSubtitle', "Код " + models.error.code);
-                $("#alertResponse").iziModal("open");
-
+                let aR = $('#alertResponse');
+                    aR.iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+                    aR.iziModal('setIcon', 'fas fa-exclamation-triangle');
+                    aR.iziModal('setTitle', 'Ошибка! ' + models.error.message );
+                    aR.iziModal('setSubtitle', "Код " + models.error.code);
+                    aR.iziModal("open");
                 return;
             }
 
@@ -160,7 +158,14 @@ PaymentManager.prototype.getPricesAllData = function(button)
                     }
                 } while (el = el.parentElement);
             } else {
-                
+				let el = button;
+                do {
+                    if ( el.classList.contains('list-group-item') ) 
+                    {
+                        that.panelsToRemove.push(el);
+                        break;
+                    }
+                } while (el = el.parentElement);
             }
             
             // ******* SUCCESS ****** //
@@ -276,14 +281,14 @@ PaymentManager.prototype.getPricesAllData = function(button)
 
         error:function(err) {
             that.operationStatus = false;
-
             //$('#paymentModal').modal('hide');
-            $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
-            $('#alertResponse').iziModal('setIcon', 'fas fa-bug');
-            $('#alertResponse').iziModal('setTitle', 'Ошибка на сервере! Попробуйте позже.');
-            $('#alertResponse').iziModal('setSubtitle', "Код: " + err.status);
-       
-            $('#alertResponse').iziModal("open");
+            let aR = $('#alertResponse');
+                aR.iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+                aR.iziModal('setIcon', 'fas fa-bug');
+                aR.iziModal('setTitle', 'Ошибка на сервере! Попробуйте позже.');
+                aR.iziModal('setSubtitle', "Код: " + err.status);
+
+                aR.iziModal("open");
             cursorRestore();
         }
     });
@@ -322,37 +327,39 @@ PaymentManager.prototype.payPrices = function(payButton)
 
                 setTimeout(function () {
                     $('#paymentModal').modal('hide');
+                    let aR = $('#alertResponse');
+                        aR.iziModal('setHeaderColor', '#d09d16');
+                        aR.iziModal('setTitle', 'Операция прошла успешно!');
+                        aR.iziModal('setSubtitle', data.success.message);
+                        aR.iziModal('setIcon', 'far fa-check-circle');
 
-                    $('#alertResponse').iziModal('setHeaderColor', '#5cb85c');
-                    $('#alertResponse').iziModal('setIcon', 'far fa-check-circle');
-                    $('#alertResponse').iziModal('setTitle', 'Операция прошла успешно!');
-                    $('#alertResponse').iziModal('setSubtitle', data.success.message);
-                    $('#alertResponse').iziModal('pauseProgress');
-                    $("#alertResponse").iziModal("open");
+                        aR.iziModal("open");
                     cursorRestore();
                 }, 800);
 
             } else if (data.error) {
                 that.operationStatus = false;
                 //$('#paymentModal').modal('hide');
-                $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
-                $('#alertResponse').iziModal('setIcon', 'fas fa-exclamation-triangle');
-                $('#alertResponse').iziModal('setTitle', 'Операция завершена с ошибкой! ' + data.error.code);
-                $('#alertResponse').iziModal('setSubtitle', data.error.message);
-                $("#alertResponse").iziModal("open");
+                let aR = $('#alertResponse');
+                aR.iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+                aR.iziModal('setIcon', 'fas fa-exclamation-triangle');
+                aR.iziModal('setTitle', 'Операция завершена с ошибкой! ' + data.error.code);
+                aR.iziModal('setSubtitle', data.error.message);
+
+                aR.iziModal("open");
                 cursorRestore();
             }
         },
         error:function(err) {
             that.operationStatus = false;
             //$('#paymentModal').modal('hide');
-            $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
-            $('#alertResponse').iziModal('setIcon', 'fas fa-bug');
-            $('#alertResponse').iziModal('setTitle', 'Ошибка на сервере! Попробуйте позже.');
-            $('#alertResponse').iziModal('setSubtitle', "Код: " + err.status);
+            let aR = $('#alertResponse');
+            aR.iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+            aR.iziModal('setIcon', 'fas fa-bug');
+            aR.iziModal('setTitle', 'Ошибка на сервере! Попробуйте позже.');
+            aR.iziModal('setSubtitle', "Код: " + err.status);
 
-            //$('#alertResponse #alertResponseContent').html(err.responseText).removeClass('hidden');
-            $('#alertResponse').iziModal("open");
+            aR.iziModal("open");
             cursorRestore();
         }
     });

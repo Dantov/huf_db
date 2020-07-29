@@ -1,10 +1,13 @@
 <?php
 namespace Views\_Main\Controllers;
 
+use Views\_Globals\Models\PushNotice;
+use Views\_Globals\Models\User;
 use Views\_Main\Models\{Main, SetSortModel, Search, ToExcel};
 use Views\_Globals\Controllers\GeneralController;
 use Views\_Globals\Models\SelectionsModel;
 use Views\vendor\core\Registry;
+use Views\vendor\libs\classes\AppCodes;
 
 
 class MainController extends GeneralController
@@ -40,104 +43,88 @@ class MainController extends GeneralController
             if ( $request->post('selections') )
             {
                 $selections = new SelectionsModel($session);
-                if ( $selToggle = (int)$request->post('toggle') ) $selections->selectionModeToggle($selToggle);
-                if ( $checkBox = (int)$request->post('checkBox') ) $selections->checkBoxToggle($checkBox);
-                if ( $request->post('checkSelectedModels') ) $selections->checkSelectedModels();
-                if ( $request->post('selectedModels') === 'show' )
-                {
-                    $selections->getSelectedModels();
-                    echo json_encode('ok');
-                    exit;
-                }
+                if ( $selToggle = (int)$request->post('toggle') )
+                    $selections->selectionModeToggle($selToggle);
+
+                if ( $checkBox = (int)$request->post('checkBox') )
+                    $selections->checkBoxToggle($checkBox);
+
+                if ( $request->post('checkSelectedModels') )
+                    $selections->checkSelectedModels();
             }
 
             // ******* Exports PDF/Excel ******** //
             if ( (int)$request->post('collectionPDF') === 1 ) $this->collectionPDF();
             if ( (int)$request->get('excel') === 1 )
             {
-                $excel = new ToExcel();
-                if ( (int)$request->get('getXlsx') === 1 )
-                {
-                    $excel->setProgress($_GET['userName'], $_GET['tabID']);
-                    $excel->getXlsx();
-                    exit;
-                }
-                if ( (int)$request->get('getXlsxFwc') === 1 )
-                {
-                    $excel->setProgress($_GET['userName'], $_GET['tabID']);
-                    $excel->getXlsxFwc();
-                    exit;
-                }
-                if ( (int)$request->get('getXlsxExpired') === 1 )
-                {
-                    $excel->setProgress($_GET['userName'], $_GET['tabID']);
-                    $excel->getXlsxExpired();
-                    exit;
-                }
-                if ( (int)$request->get('getFileName') === 1 )
-                {
-                    if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) )
+                try {
+                    $excel = new ToExcel();
+                    if ( (int)$request->get('getXlsx') === 1 )
                     {
-                        $collectionName = $_SESSION['assist']['collectionName'];
-                    } else {
-                        $collectionName = (int)$_SESSION['assist']['searchIn'] === 1 ? $_SESSION['searchFor'] : $_SESSION['assist']['collectionName'].'_-_'.$_SESSION['searchFor'];
+                        $excel->setProgress($_GET['userName'], $_GET['tabID']);
+                        $excel->getXlsx();
                     }
-                    $date = date('d.m.Y');
-                    $res['fileName'] = $excel->translit($collectionName) . '_'. $date;
-                    echo json_encode($res);
-                    exit;
+                    if ( (int)$request->get('getXlsxFwc') === 1 )
+                    {
+                        $excel->setProgress($_GET['userName'], $_GET['tabID']);
+                        $excel->getXlsxFwc();
+                    }
+                    if ( (int)$request->get('getXlsxExpired') === 1 )
+                    {
+                        $excel->setProgress($_GET['userName'], $_GET['tabID']);
+                        $excel->getXlsxExpired();
+                    }
+                    // Возврат имени файлв для Excel
+                    if ( (int)$request->get('getFileName') === 1 )
+                    {
+                        $assist = $session->getKey('assist');
+                        $searchFor = $session->getKey('searchFor');
+                        if ( trueIsset($excel->foundRows) )
+                        {
+                            $collectionName = $assist['collectionName'];
+                        } else {
+                            $collectionName = (int)$assist['searchIn'] === 1 ? $searchFor : $assist['collectionName'].'_-_'.$searchFor;
+                        }
+                        $date = date('d.m.Y');
+                        $res['fileName'] = $excel->translit($collectionName) . '_'. $date;
+                        exit( json_encode($res) );
+                    }
+                } catch (\Exception | \Error $e)
+                {
+                    if ( _DEV_MODE_ )
+                    {
+                        $resp = ['error'=>$e->getMessage(), $e->getCode()];
+                    } else {
+                        $resp = ['error'=>AppCodes::getMessage(AppCodes::EXCEL_EXPORT_ERROR)['message'], AppCodes::EXCEL_EXPORT_ERROR];
+                    }
+                    exit( json_encode($resp) );
                 }
             }
             exit;
-        }
+        }   // ---- Exit AJAX ---- //
 
-
-        // ******* SEARCH ******** //
-        //if ( $session->hasKey('searchFor') ) $this->foundRows = $session->getKey('foundRows');
-        if ( $session->hasKey('searchFor') || $session->getKey('re_search') )
-        {
-            //debug($session->getKey('searchFor'),'searchFor');
-            //debug($session->getKey('re_search'),'re_search',1);
-
-            $search = new Search($session);
-            $this->foundRows = $search->search( $session->getKey('searchFor') );
-
-            //debug($this->foundRows,'',1);
-        }
-        /*
-        if ( $this->getQueryParam('search') === 'resetSearch' )
-        {
-            $session->dellKey('searchFor');
-            $session->dellKey('foundRow');
-            $session->dellKey('countAmount');
-            $session->setKey('re_search', false);
-            return;
-        }
-        if ( !empty($request->post('searchFor')) || !empty($request->get('searchFor')) || ($session->getKey('re_search') === true) )
-        {
-            $session->dellKey('foundRow');
-            $session->dellKey('countAmount');
-            $searchFor = $request->post('searchFor') ? $request->post('searchFor') : $request->get('searchFor');
-            $session->setKey('searchFor', $searchFor);
-
-            $search = new Search($session);
-            $this->foundRows = $search->search($searchFor);
-
-            $session->setKey('searchFor',$searchFor);
-        } elseif ( $request->isPost() && empty($request->post('searchFor')) )
-        {
-            $this->redirect('/main/?search=resetSearch');
-        }
-        */
-
-
-        // ******* SORT ******** //
+        // ******* SORT ******* //
         if ( !empty($params) )
         {
-            $setSort = new SetSortModel($this->session);
+            $setSort = new SetSortModel();
             // вернет адрес для редиректа, или false если редирект не нужен
             if ( $url = $setSort->setSort($params) ) $this->redirect($url);
         }
+
+        // ******* SEARCH ******* //
+        if ( $session->hasKey('searchFor') || $session->getKey('re_search') )
+        {
+            $search = new Search();
+            $this->foundRows = $search->search( $session->getKey('searchFor') );
+        }
+
+        // ******* SELECTED MODELS ******* //
+        if ( $this->isQueryParam('selected-models-show') || $session->getKey('selectionMode')['showModels'] )
+        {
+            $selections = new SelectionsModel($session);
+            $this->foundRows = $selections->getSelectedModels();
+        }
+
     }
 
     /**
@@ -160,7 +147,6 @@ class MainController extends GeneralController
 		$activeWorkingCenters2 = $variables['activeWorkingCenters2'];
 		$activeList  = $variables['activeList'];
 		$collectionName = $variables['collectionName'];
-		//$collectionList = $main->getCollections();
 
 		// выборка статусов
 		$status = $main->getStatusesSelect();
@@ -174,15 +160,15 @@ class MainController extends GeneralController
 		}
 		
 		// почистим старые уведомления
-		if ( $_SESSION['user']['id'] == 1 ) 
+		if (User::getAccess() === 1 )
 		{
-			$pn = new \Views\_Globals\Models\PushNotice();
+			$pn = new PushNotice();
 			$pn->clearOldNotices();
 		}
 
 		//если нет поиска, выбираем из базы
-		//if ( !isset($_SESSION['foundRow']) || empty($_SESSION['foundRow']) ) $main->getModelsFormStock();
-		if ( !trueIsset($this->foundRows) ) $main->getModelsFormStock();
+		if ( !trueIsset($this->foundRows) )
+		    $main->getModelsFormStock();
 
 		// начинаем вывод моделей
 		if ( !isset($_SESSION['nothing']) ) {
@@ -192,8 +178,8 @@ class MainController extends GeneralController
             // Когда ?page=num больше кол-ва найденнных моделей. Вываливает ошибку mysql, из-зп того что $posIds пустой
             if ( count($main->row) < ($_SESSION['assist']['page'] * $_SESSION['assist']['maxPos']) )$this->redirect('/main/?page=0');
 
-			// **************=================*****************//
-			// Плиткой
+
+			// ============== Плиткой ============== //
 			if ( $drawBy_ === 1 )
 			{
 				$getterModels = $main->getModelsByTiles();
@@ -204,7 +190,8 @@ class MainController extends GeneralController
 				$statsbottom = "<i>Сортировка по: </i>".$showsort." || "."<i>Найдено (Изделий):</i> ".$wholePos." || "."<i>Показано:</i> ".$iter;
 			}
 
-			// разбивка по комплектам
+
+			// ============== Комплектами ============== //
 			if ( $drawBy_ === 2 ) {
 
 				$getterModels = $main->getModelsByRows();
@@ -217,9 +204,9 @@ class MainController extends GeneralController
 
 				$statsbottom = "<i>Сортировка по: </i>".$showsort." || "."<i>Найдено (Комплектов):</i> ".$wholePos." <i>(Изделий):</i> ".$posIter." || "."<i>Показано: Комплектов &mdash; </i>".$ComplShown.". <i>Изделий &mdash; </i>".$iter;
 			}
-			// **************=================*****************//
 
-			// Рабочие Центры
+
+            // ============== Рабочие Центры ============== //
 			if ( $drawBy_ === 3 || $drawBy_ === 4 ) {
 				// менюшка для выборки по рабочим центрам
 				if ( $drawBy_ === 4 ) {
@@ -236,7 +223,9 @@ class MainController extends GeneralController
 			}
             if ( $drawBy_ === 3 ) $this->varBlock['container'] = 2; //уберем класс container в шаблоне чтоб стало шире
 
-			//Табличка участов с просроченными
+
+
+            // ============== Табличка участов с просроченными ============== //
 			if ( $drawBy_ === 5 ) {
 				$getterModels = $main->getWorkingCentersExpired();
 				$showModels = $getterModels['showByWorkingCenters'];
@@ -255,10 +244,9 @@ class MainController extends GeneralController
 			if ($wholePos > $_SESSION['assist']['maxPos'])
 				$pagination = $main->drawPagination();
 		}
+
 		$this->includePHPFile('modalStatuses.php',compact(['status','selectedStatusName']));
 		$this->includePHPFile('progressModal.php','','',_globDIR_. 'includes/');
-		//php include_once _globDIR_ . 'includes/progressModal.php'
-
 		$this->includeJSFile('Selects.js',['defer','timestamp']);
 		
 		$compacted = compact(['variables','chevron_','chevTitle','showsort','activeSquer','activeWorkingCenters',

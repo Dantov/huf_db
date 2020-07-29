@@ -1,12 +1,25 @@
 <?php
 namespace Views\_Main\Controllers;
-use Views\_Main\Models\{PDFExports,HufDB_PDF};
-
+use Views\_Main\Models\{PDFExports,HufDB_PDF,Search};
+use Views\vendor\core\Sessions;
 
 ini_set('max_execution_time',600); //10min // макс. время выполнения скрипта в секундах
 ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
 
-$collectPDF = new PDFExports( $_SESSION['assist'], $_SESSION['user'], $_SESSION['foundRow'], $_SESSION['searchFor'], $_SESSION['assist']['collectionName'] );
+$session = new Sessions();
+$collectPDF = null;
+if ( $session->hasKey('searchFor') || $session->getKey('re_search') )
+{
+    try {
+        $search = new Search($session);
+        $foundRows = $search->search( $session->getKey('searchFor') );
+
+        $collectPDF = new PDFExports( $_SESSION['assist'], $_SESSION['user'], $foundRows, $session->getKey('searchFor'), $_SESSION['assist']['collectionName'] );
+    } catch (\Exception | \Error $e)
+    {
+        exit( json_encode(['error'=>$e->getMessage(), 'code'=>$e->getCode()]) );
+    }
+}
 
 if ( empty($collectPDF->getRow()) ) $collectPDF->getModelsFormStock();
 $complects = $collectPDF->countComplects();
@@ -59,6 +72,7 @@ $pdf->setImageScale(PDF_IMAGE_SCALE_RATIO);
 
 // set some language-dependent strings (optional)
 if (@file_exists(_vendorDIR_ .'/TCPDF/rus.php')) {
+    $l = [];
     require_once( _vendorDIR_ .'/TCPDF/rus.php');
     $pdf->setLanguageArray($l);
 }
@@ -92,15 +106,15 @@ if (@file_exists(_vendorDIR_ .'/TCPDF/rus.php')) {
 	$complectCounter = 0;
 	$pageIter = 1;         // счетчик отрисованных страниц
 	$pageRowsIter = 0;     // счетчик отрисованных строк на всей странице
-	$modelsIter = 0;       // счетчик отрисованных моделей в комплекте
-	$model_Img_Iter = 0;   // счетчик отрисованных картинок для всех моделей в строке
+	//$modelsIter = 0;       // счетчик отрисованных моделей в комплекте
+	//$model_Img_Iter = 0;   // счетчик отрисованных картинок для всех моделей в строке
 
     $complIterShow = 0;
 
 	$max_RowsPerPage = 8;
 	$max_RowsPer_Half_Page = 4;
 	
-	$max_modelsPerRow = 4;
+	//$max_modelsPerRow = 4;
 	$max_ImagesPerRow = 4;
 	
 	// проверять псле каждой отрисованной картинки не заходит ли она за max_ImagesPerRow
@@ -118,6 +132,7 @@ if (@file_exists(_vendorDIR_ .'/TCPDF/rus.php')) {
 	$Y_Img = 17; //начальные коорд. картинки по Y
 	//------------конец исходные данные----------------//
 
+    $det_name = null;
 
 /**
  * верхний (главный) цикл - отрисовывает строки и страницы

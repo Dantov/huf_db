@@ -1,22 +1,29 @@
 <?php
 namespace Views\_Globals\Models;
 
+use Views\vendor\core\Config;
+use Views\vendor\core\db\Database;
+use Views\vendor\core\Errors\Exceptions\DBConnectException;
+use Views\vendor\core\Model;
+use Views\vendor\core\Sessions;
+use Views\vendor\libs\classes\AppCodes;
 
-use Matrix\Exception;
-
-class General
+class General extends Model
 {
 
 	protected $alphabet = [];
 	protected $server;
-
-	protected static $connectObj;
 	protected $rootDir;
 	protected $stockDir;
 
+    /**
+     * @var array
+     * config array for current user
+     */
+	protected $dbConfig;
+
     public static $serviceArr;
 
-    public $connection;
 	public $user;
 	public $users;
 	public $statuses;
@@ -26,6 +33,7 @@ class General
 	public $workingCentersDB;
 	public $workingCentersSorted;
     public $localSocket = '';
+    public $session = null;
 
     public function __construct( $server=false )
     {
@@ -35,35 +43,63 @@ class General
         $this->IP_visiter = _WORK_PLACE_ ? $_SERVER['HTTP_X_REAL_IP'] : $_SERVER['REMOTE_ADDR'];
         $this->localSocket = _WORK_PLACE_ ? 'tcp://192.168.0.245:1234' : 'tcp://127.0.0.1:1234';
 
+        $this->session = new Sessions();
+
         $this->alphabet = alphabet();
     }
 
-    public function connectDBLite()
+    /**
+     * @return \mysqli
+     * @throws \Exception
+     */
+    public function connectDBLite() : \mysqli
     {
-        if ( $this->connection ) return $this->connection;
-        $dbConfig = require _CONFIG_ . "db_config.php";
-        $connection = mysqli_connect($dbConfig['host'], $dbConfig['username'], $dbConfig['password'], $dbConfig['dbname']);
+        // По ID юзера из сессии - определим через какого юзера подключаться к БД
+        //$userDBConfig = [];
+        if ( is_object($this->connection) && ( $this->connection instanceof \mysqli) )
+            return $this->connection;
 
-        if (!$connection) {
-            $errno = mysqli_connect_errno();
-            $errtext = mysqli_connect_error();
-            header("location: " . _views_HTTP_ . "errors/errMysqlConn.php?errno=$errno&errtext=$errtext");
-            return false;
+        $this->dbConfig = Config::get('db');
+        if ( !trueIsset($this->dbConfig) )
+            throw new DBConnectException(AppCodes::DB_CONFIG_EMPTY );
+
+        $user = $this->session->hasKey('user') ? $this->session->getKey('user') : null;
+        $userAccess = 0;
+        if ( trueIsset( $user ) )
+            $userAccess = (int)$user['access'] ?? 0;
+
+        foreach ( $this->dbConfig as $userDbName => $userConnArr )
+        {
+            if ( isset($userConnArr['access']) )
+            {
+                if ( in_array( $userAccess, $userConnArr['access'] ) )
+                {
+                    $this->dbConfig = $userConnArr;
+                    Config::set('db', [ $userDbName => $userConnArr ]);
+                    return parent::connectDB( $userConnArr );
+                    //$userDBConfig = $userConnArr;
+                }
+            } else {
+                throw new DBConnectException(AppCodes::DB_CONFIG_ACCESS_FIELD_EMPTY);
+            }
         }
-        mysqli_set_charset($connection, $dbConfig['charset']);
+        //if ( empty($userDBConfig) )
 
-        self::$connectObj = $connection;
-        $this->connection = $connection;
-        return $connection;
+        throw new DBConnectException(AppCodes::USER_DB_CONFIG_EMPTY);
+
+        //Config::set('db', [$userDBConfig]);
+        //$this->dbConfigs = $userDBConfig;
+        //return parent::connectDB( $userDBConfig );
     }
 
     /**
-     * @return bool|\mysqli
+     * @return \mysqli
      * @throws \Exception
      */
-    public function connectToDB()
+    public function connectToDB() : \mysqli
     {
         $connection = $this->connectDBLite();
+
         $this->getUser();
 
         if ( !isset(self::$serviceArr) ) self::$serviceArr = self::getServiceArr();
@@ -73,10 +109,6 @@ class General
         $this->getWorkingCentersDB();
 
         return $connection;
-    }
-
-    public function closeDB() {
-        mysqli_close($this->connection);
     }
 
 	public function formatDate($date)
@@ -457,7 +489,11 @@ class General
 		return false;
 	}
 
-	public function backup($maxAllowedFiles = 10)
+    /**
+     * @param int $maxAllowedFiles
+     * @throws \Exception
+     */
+    public function backup($maxAllowedFiles = 10)
 	{
 		$localtime = localtime(time(), true);
 		// бэкапимся только с 4х до 6
@@ -470,7 +506,8 @@ class General
 		
 		if ( strtotime($lastDate) < strtotime($today)  )
 		{
-			$backupDatabase = new Backup_Database(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, CHARSET);
+            $dbConfig = $this->dbConfig;
+			$backupDatabase = new Backup_Database($dbConfig['host'], $dbConfig['username'], $dbConfig['password'], $dbConfig['dbname']);
 			
 			$this->checkBackupFiles( (int)$maxAllowedFiles, BACKUP_DIR);
 			
@@ -487,7 +524,6 @@ class General
 
 		}
 	}
-	
 	protected function checkBackupFiles($maxAllowedFiles, $backupDir)
 	{
 		$dir = opendir( $backupDir );
@@ -524,116 +560,6 @@ class General
 	}
 
 
-    /**
-     *  Проверим на существование конкретной модели
-     * @param int $id
-     * @param string $table
-     * @param string $column
-     * @return bool
-     */
-    public function checkID( int $id, string $table='stock', string $column='id' ) : bool
-    {
-        if ( empty($id) || !is_int($id) ) return false;
-        $sql = " select 1 from $table where $column='$id' limit 1 ";
-        $query = mysqli_query($this->connection, $sql);
-        if ( $query->num_rows ) return true;
-        return false;
-    }
-
-
-    /**
-     * @param $sqlStr
-     * @return bool|\mysqli_result
-     * @throws \Exception
-     */
-    public function baseSql(string $sqlStr)
-    {
-        if ( empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
-        $query = mysqli_query( $this->connection, $sqlStr );
-        if ( !$query ) throw new \Exception("Error in baseSql() --!! $sqlStr !!-- " . mysqli_error($this->connection), 555);
-
-        return $query;
-    }
-
-    /**
-     * @param $sqlStr
-     * @return bool
-     * @throws \Exception
-     */
-    public function sql($sqlStr)
-    {
-        $query = $this->baseSql( $sqlStr );
-        if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
-
-        return $this->connection->insert_id ? $this->connection->insert_id : -1;
-    }
-
-    /**
-     * @param $sqlStr
-     * @return array
-     * @throws \Exception
-     */
-	public function findAsArray($sqlStr)
-    {
-        $query = $this->baseSql( $sqlStr );
-
-        if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
-        if ( !$query->num_rows ) return [];
-
-        $result = [];
-        while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;
-        return $result;
-    }
-
-    /**
-     * @param $sqlStr
-     * @return array|bool
-     * @throws \Exception
-     */
-    public function findOne(string $sqlStr) : array
-    {
-        if ( !is_string($sqlStr) || empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
-
-        $result = [];
-
-        $query = $this->baseSql($sqlStr . " LIMIT 1");
-        if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), 555);
-
-        while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;
-        if ( !empty($result) ) return $result[0];
-
-        return [];
-    }
-
-    /**
-     * @param $tableName
-     * @return array|bool
-     * @throws \Exception
-     */
-    public function getTableSchema($tableName)
-    {
-        if ( !is_string($tableName) || empty($tableName) ) throw new \Exception('Table name not valid!', 555);
-        
-        $query = $this->baseSql('DESCRIBE ' . $tableName);
-        if ( !$query ) return [ 'error' => mysqli_error($this->connection) ];
-
-        $result = [];
-
-        while($row = mysqli_fetch_assoc($query)) $result[] = $row['Field'];
-
-        return $result;
-    }
-
-    /**
-     * @param string $tableName
-     * @return mixed
-     * @throws \Exception
-     */
-    public function countRows(string $tableName) : int
-    {
-        if ( empty($tableName) ) throw new \Exception("Table name is empty!");
-        return $this->findOne("SELECT COUNT(1) as r FROM $tableName")['r'];
-    }
 
     /**
      * @param string $modelDate

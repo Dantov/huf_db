@@ -49,7 +49,7 @@
                             <div class="list-group">
                                 <a class="list-group-item list-group-item-success"><?=$subUnit['descr']?></a>
                                 <?php foreach ( $subUnit['statuses'] as $status ) :?>
-                                    <a title="<?=$status['title'];?>" class="list-group-item wc-status-item" href="/?regStat=<?=$status['id']?>">
+                                    <a title="<?=$status['title'];?>" class="list-group-item wc-status-item" href="/main/?regStat=<?=$status['id']?>">
                                         <span class="glyphicon glyphicon-<?=$status['glyphi']?>"></span>
                                         <span><?=$status['name_ru']?></span>
                                     </a>

@@ -53,26 +53,32 @@ $key = hash('sha256', 'this is a secret key', true);
 $input = "Let us meet at 9 o'clock at the secret place.";
 
 
-
-define('ENCRYPTION_KEY', 'ab86d1434aa4e3f080b6E1c7c0A452e4398DC');
+define('ENCRYPTION_KEY', 'ab86d144e3f080b61c7c2e43');
 // Encrypt
-$plaintext = "480";
-$ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
-$iv = openssl_random_pseudo_bytes($ivlen);
-$ciphertext_raw = openssl_encrypt($plaintext, $cipher, ENCRYPTION_KEY, $options=OPENSSL_RAW_DATA, $iv);
-$hmac = hash_hmac('sha256', $ciphertext_raw, ENCRYPTION_KEY, $as_binary=true);
-$ciphertext = base64_encode( $iv.$hmac.$ciphertext_raw );
-echo $ciphertext.'<br>';
+function Encrypt11($plaintext)
+{
+    //$plaintext = "Тестируем обратимое шифрование на php 7";
+    $ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
+    $iv = openssl_random_pseudo_bytes($ivlen);
+    $ciphertext_raw = openssl_encrypt($plaintext, $cipher, ENCRYPTION_KEY, $options=OPENSSL_RAW_DATA, $iv);
+    $hmac = hash_hmac('sha256', $ciphertext_raw, ENCRYPTION_KEY, $as_binary=true);
+    $ciphertext = base64_encode( $iv.$hmac.$ciphertext_raw );
+    return $ciphertext;
+}
 
 // Decrypt
-$c = base64_decode($ciphertext);
-$ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
-$iv = substr($c, 0, $ivlen);
-$hmac = substr($c, $ivlen, $sha2len=32);
-$ciphertext_raw = substr($c, $ivlen+$sha2len);
-$plaintext = openssl_decrypt($ciphertext_raw, $cipher, ENCRYPTION_KEY, $options=OPENSSL_RAW_DATA, $iv);
-$calcmac = hash_hmac('sha256', $ciphertext_raw, ENCRYPTION_KEY, $as_binary=true);
-if (hash_equals($hmac, $calcmac))
+function Decrypt11($ciphertext)
 {
-    echo $plaintext;
+    $c = base64_decode($ciphertext);
+    $ivlen = openssl_cipher_iv_length($cipher="AES-128-CBC");
+    $iv = substr($c, 0, $ivlen);
+    $hmac = substr($c, $ivlen, $sha2len=32);
+    $ciphertext_raw = substr($c, $ivlen+$sha2len);
+    $plaintext = openssl_decrypt($ciphertext_raw, $cipher, ENCRYPTION_KEY, $options=OPENSSL_RAW_DATA, $iv);
+    $calcmac = hash_hmac('sha256', $ciphertext_raw, ENCRYPTION_KEY, $as_binary=true);
+    if (hash_equals($hmac, $calcmac))
+    {
+        return $plaintext;
+    }
+    return false;
 }

@@ -6,17 +6,13 @@ class Search extends General
 {
 
     public $searchFor = '';
-    protected $session;
 
     /**
      * Search constructor.
-     * @param $session
      * @throws \Exception
      */
-    public function __construct($session)
+    public function __construct()
     {
-        if ( !is_object($session) ) throw new \Exception( __METHOD__. " Error: Сессий нет, а они здесь нужны!", 01);
-        $this->session = $session;
 
         parent::__construct();
         $this->connectDBLite();

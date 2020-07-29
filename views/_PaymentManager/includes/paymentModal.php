@@ -25,10 +25,7 @@
   </div>
 </div>
 
-<div id="alertResponse" aria-hidden="true" aria-labelledby="alertResponse" role="dialog" class="iziModal">
-  <div id="alertResponseContent" style="padding: 10px" class="hidden">
-  </div>
-</div>
+<div id="alertResponse" data-izimodal-group="alerts"></div>
 
 <div class="panel panel-success mb-1 hidden PM_protoModel">
     <div class="panel-heading cursorPointer relative" role="tab" id="">

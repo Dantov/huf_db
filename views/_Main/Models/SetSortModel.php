@@ -8,18 +8,15 @@ use Views\_Globals\Models\General;
  */
 class SetSortModel extends General
 {
-    protected $session;
 
     /**
      * @var $sessions
      * @throws \Exception
      */
-    public function __construct($session)
+    public function __construct()
     {
+        parent::__construct();
         $this->connectDBLite();
-
-        if ( !is_object($session) ) throw new \Exception( __METHOD__. " Error: Сессий нет, а они здесь нужны!", 01);
-        $this->session = $session;
     }
 
     /**
@@ -91,13 +88,23 @@ class SetSortModel extends General
      */
     protected function killSearch()
     {
-        $session = $this->session;
+        $selectionMode = $this->session->getKey('selectionMode');
+        if ( isset($selectionMode['showModels']) )
+        {
+            unset($selectionMode['showModels']);
 
-        $session->dellKey('foundRow');
-        $session->dellKey('countAmount');
-        $session->dellKey('searchFor');
+            $assist = $this->session->getKey('assist');
+            $assist['collectionName'] = 'Все Коллекции';
 
-        $session->dellKey('re_search'); //было добавлено!!! 04,05,20
+            $this->session->setKey('assist', $assist);
+            $this->session->setKey('selectionMode', $selectionMode);
+        }
+
+        $this->session->dellKey('foundRow');
+        $this->session->dellKey('countAmount');
+        $this->session->dellKey('searchFor');
+
+        $this->session->dellKey('re_search'); //было добавлено!!! 04,05,20
     }
     
     protected function setPagination($param, $value) 

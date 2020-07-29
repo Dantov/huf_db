@@ -28,7 +28,7 @@ class AddEdit extends General
         $this->connectToDB();
     }
 
-    public function connectToDB()
+    public function connectToDB() : \mysqli
     {
         parent::connectToDB();
 
