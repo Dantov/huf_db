@@ -328,11 +328,6 @@ class Controller
         foreach ($options as $key => $option) {
             if ( $key === 'id' ) $optionsStr .= ' id="'.$option.'" ';
             if ( $key === 'class' ) $optionsStr .= ' class="'.$option.'" ';
-            if ( $key === 'path' )
-            {
-                $script['src'] = $option . $fileName;
-                continue;
-            }
 
             switch ($option)
             {

@@ -140,6 +140,7 @@ Approves.prototype.signModel = function(btn)
         }
     });
 };
+
 Approves.prototype.resultModalCall = function( modalObj, callType, message, code )
 {
     // if ( !modalObj ) return;
@@ -180,7 +181,7 @@ Approves.prototype.resultModalCall = function( modalObj, callType, message, code
         case "serverError":
         {
             $('#alertResponse').iziModal('setHeaderColor', 'rgb(189, 91, 91)');
-            $('#alertResponse').iziModal('setIcon', 'fas fa-exclamation-triangle');
+            $('#alertResponse').iziModal('setIcon', 'fas fa-bug');
             $('#alertResponse').iziModal('setTitle', 'Ошибка на сервере! ' + message );
             $('#alertResponse').iziModal('setSubtitle', "Код " + code);
 

@@ -3,7 +3,6 @@
 namespace Views\vendor\libs\classes;
 
 use Views\vendor\core\Crypt;
-use Views\vendor\libs\classes\AppCodes;
 
 class URLCrypt extends Crypt
 {
@@ -21,10 +20,11 @@ class URLCrypt extends Crypt
     }
 
     /**
-     * 
+     *
      * @param string $queryVar
-     * @param array $getVars
+     * @param string $url
      * @return string
+     * @throws \Exception
      */
     public static function encode( string $queryVar, string $url ) : string
     {   
@@ -38,18 +38,14 @@ class URLCrypt extends Crypt
         if ( !trueIsset($exp[1]) ) 
             throw new \Exception(AppCodes::getMessage(AppCodes::URL_PARAMS_EMPTY)['message'], AppCodes::URL_PARAMS_EMPTY);
 
-
-        $params = self::strEncode($exp[1], 's', "crc32","crc32");
-        //$params = base64_encode($exp[1]);
-        //$r = hash($v, $data, false);
+        $params = self::strEncode($exp[1]); // 's', "crc32","crc32"
 
         return "?" . $queryVar . "=" .$params;
     }
 
     public static function decode( $cipherText ) : string
     {
-        //return base64_decode($cipherText);
-        return self::strDecode($cipherText, 's', "crc32","crc32");
+        return self::strDecode($cipherText); // 's', "crc32","crc32"
     }
 
 }

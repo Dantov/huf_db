@@ -3,46 +3,92 @@
 function UsersEditing()
 {
     this.modal = document.querySelector('#userEditModal');
+    this.submitUserButton = this.modal.querySelector('.submitUserData');
+
     this.editUser_ID = null;
     this.addUser = null;
-
-    this.init();
+    this.deletedPermlist = [];
+    this.operationStatus = false;
 }
-
-UsersEditing.prototype.init = function(button)
+UsersEditing.prototype.init = function()
 {
     let that = this;
+    let userEditModal = $('#userEditModal');
 
-    $('#userEditModal').on('show.bs.modal', function (e) {
+    userEditModal.on('show.bs.modal', function (e) {
 
-        that.editUser_ID = +e.relatedTarget.getAttribute('data-id');
+        that.editUser_ID = e.relatedTarget.getAttribute('data-id');
 
         if ( that.editUser_ID )
         {
-            that.showUserEditModal(e);
+            that.showUserEditModal();
         } else {
             that.userAddModal();
         }
+    });
+    userEditModal.on('hide.bs.modal', function (e) {
+        let wcListUL = document.querySelector('.wcList');
+        let userMTProd = document.querySelector('#userMTProd');
+        let userPermList = document.querySelector('.userPermList');
+        let addedPermListUL = document.querySelector('.addedPermissionsList');
 
+        if ( wcListUL )
+            wcListUL.innerHTML = "";
+        if ( userMTProd )
+            userMTProd.innerHTML = "";
+        if ( userPermList )
+            userPermList.innerHTML = "";
+        if ( addedPermListUL )
+            addedPermListUL.innerHTML = "";
+
+        this.deletedPermlist = [];
+        this.editUser_ID = null;
+        this.addUser = null;
+        this.operationStatus = false;
+    });
+    // Обработчик на панель в Юзер модале
+    let permissionsPanel = document.getElementById('permissionsPanel');
+    if ( permissionsPanel )
+    {
+        permissionsPanel.addEventListener('click',function (e) {
+            $(this.nextElementSibling).collapse('toggle');
+            let panel = this.parentElement;
+            panel.classList.toggle('panel-success');
+            panel.classList.toggle('panel-primary');
+        });
+    }
+
+
+    $("#alertResponse").iziModal({
+        timeout: 5000,
+        zindex: 1100,
+        width: '700px',
+        timeoutProgressbar: true,
+        pauseOnHover: true,
+        restoreDefaultContent: true,
+    });
+    $(document).on('closing', '#alertResponse', function (e) {
+        if ( that.operationStatus === false )
+        {
+            that.submitUserButton.classList.remove('disabled');
+        }
+    });
+    $(document).on('closed', '#alertResponse', function (e) {
+        if ( that.operationStatus === true )
+            document.location.reload(true);
     });
 
-    $('#userEditModal').on('hidden.bs.modal', function (e) {
-        //let button = e.relatedTarget;
-        that.hideUserEditModal();
-    });
 
-    $('#userOKModal').on('show.bs.modal', function (e) {
-        let modal = e.target;
-        modal.querySelector('.modal-body').innerHTML = "Данные внесены успешно";
-    });
-
-    this.editUserButtonInit();
     this.addWCList();
-
-    this.userDellInit();
+    this.addPermission();
+    this.buttonSubmitUserInit();
+    this.buttonDellUserInit();
 
     debug('UserEdit init ok!');
 };
+
+
+
 
 UsersEditing.prototype.addWCList = function()
 {
@@ -65,25 +111,62 @@ UsersEditing.prototype.addWCList = function()
             });
     });
 };
-
 UsersEditing.prototype.deleteWCListItem = function( buttonDell )
 {
     buttonDell.parentElement.remove();
 };
 
+
+UsersEditing.prototype.addPermission = function()
+{
+    let that = this;
+    let addPermList = this.modal.querySelector('.addPermList');
+    if ( addPermList )
+    {
+        addPermList.addEventListener('click',function (event) {
+            if ( !event.target.classList.contains('addPermission') ) return;
+
+            let a = event.target;
+            let pID = a.getAttribute('data-permID');
+            let pName = a.innerHTML;
+
+            let newPLi = document.querySelector('.wcListProto').cloneNode(true);
+                newPLi.children[0].innerHTML = pName;
+                newPLi.children[1].name = "addPermList[]";
+                newPLi.children[1].value = pID;
+                newPLi.children[2].setAttribute('class','close remAddedPerm');
+                newPLi.classList.remove('wcListProto','hidden');
+
+            let addedPermission = document.querySelector('.addedPermissionsList').appendChild(newPLi);
+                addedPermission.querySelector('.remAddedPerm').addEventListener('click', function () {
+                    that.deletePermListItem(this);
+                });
+        });
+    }
+};
+UsersEditing.prototype.deletePermListItem = function( buttonDell )
+{
+    if ( buttonDell.classList.contains('remCurrentPerm') )
+        this.deletedPermlist.push(buttonDell.getAttribute('data-cpID'));
+
+    buttonDell.parentElement.remove();
+};
+
+
+
+
 UsersEditing.prototype.showUserEditModal = function(e)
 {
-
     let submitUserData = this.modal.querySelector('.submitUserData');
         submitUserData.classList.remove('disabled');
         submitUserData.children[1].innerHTML = 'Изменить';
+
     this.modal.querySelector('#userEditModalLabel').innerHTML='Редактировать данные пользователя';
 
     if ( this.modal.querySelector('.deleteUser') )
     {
         this.modal.querySelector('.deleteUser').classList.remove('hidden');
     }
-
 
     let rowID = this.editUser_ID;
     let that = this;
@@ -98,8 +181,17 @@ UsersEditing.prototype.showUserEditModal = function(e)
         dataType:"json",
         success:function(data) {
             debug(data);
-            that.editUser_ID = data.id;
 
+            if ( data.debug )
+            {
+                debugModal( data.debug );
+                return;
+            }
+
+            if ( data.error )
+                that.resultModalCall( 'error', data.error.message, data.error.code, data.error );
+
+            that.editUser_ID = data.id;
             let fio = [];
             if ( data.fullFio )
             {
@@ -125,50 +217,52 @@ UsersEditing.prototype.showUserEditModal = function(e)
                 userPass.setAttribute('value', data.pass);
                 userPass.value = data.pass;
 
+
             if ( data.location )
             {
                 let wcListUL = document.querySelector('.wcList');
                 let locations = data.location.split(',');
                 $.each(workingCentersDB, function(name, wcList)
                 {
-                    $.each(wcList, function(iter, wc)
+                    $.each(wcList, function(i, wc)
                     {
-                        if ( locations.includes(iter) )
+                        if ( locations.includes(i) )
                         {
                             let newWcLi = document.querySelector('.wcListProto').cloneNode(true);
-                            newWcLi.children[0].innerHTML = wc.name + ": " + wc.descr;
-                            newWcLi.children[1].value = iter;
-                            newWcLi.classList.remove('wcListProto','hidden');
+                                newWcLi.children[0].innerHTML = wc.name + ": " + wc.descr;
+                                newWcLi.children[1].value = i;
+                                newWcLi.classList.remove('wcListProto','hidden');
+                                newWcLi.classList.add('bg-info');
                             let addedWCLi = wcListUL.appendChild(newWcLi);
-                            addedWCLi.querySelector('.deleteWCListItem').addEventListener('click', function () {
-                                that.deleteWCListItem(this);
+                                addedWCLi.querySelector('.deleteWCListItem').addEventListener('click', function () {
+                                    that.deleteWCListItem(this);
                             });
                         }
                     });
                 });
             }
 
-            if ( data.access )
+            if ( data.presets )
             {
-                let acc = {
-                    mt_admin: 1,
-                    mt_moder: 122,
-                    mt_modell: 2,
-                    mt_modellHM: 5,
-                    mt_oper: 3,
-                    mt_prod: 4,
-                    mt_tech: 7,
-                    mt_pdo: 8,
-                };
-                let userMTProd = document.querySelector('#userMTProd');
-                $.each(acc, function(name, num)
-                {
-                    if ( +num === +data.access )
+                let userMTProd = document.querySelector('#userMTProd'); // select
+                let selected = false;
+                $.each(data.presets, function (name, preset) {
+                    selected = false;
+
+                    if (+preset.id === +data.access)
+                        selected = true;
+                    //debug(+name,'nnn');
+
+                    if ( !isInteger(+name) || selected )
                     {
-                        $.each(userMTProd.options, function(i, option)
-                        {
-                            if ( option.value === name ) option.selected = true;
-                        });
+                        let option = document.createElement('option');
+                        option.setAttribute('value', name);
+                        option.setAttribute('title', preset.description);
+                        option.innerHTML = preset.name;
+                        if (selected)
+                            option.selected = true;
+
+                        userMTProd.appendChild(option);
                     }
                 });
             }
@@ -176,39 +270,55 @@ UsersEditing.prototype.showUserEditModal = function(e)
             if ( data.permissions )
             {
                 let permListUL = document.querySelector('.userPermList');
+                let pCount = 0;
                 $.each(data.permissions, function(iter, perm)
                 {
-                    
-                    let newPermLi = document.querySelector('.permListItemProto').cloneNode(true);
-                    newPermLi.children[0].innerHTML = perm.description;
-                    newPermLi.children[1].value = iter;
-                    newPermLi.classList.remove('permListItemProto','hidden');
-                    let addPermLi = permListUL.appendChild(newPermLi);
-                    addPermLi.querySelector('.deletePermListItem').addEventListener('click', function () {
-                        //that.deleteWCListItem(this);
-                    });
-                    
-                });
-                
-            }
+                    let newPermLi = document.querySelector('.wcListProto').cloneNode(true);
+                        newPermLi.children[0].innerHTML = perm.description;
+                        newPermLi.children[1].remove();
+                        newPermLi.children[1].setAttribute('data-cpID', perm.id);
+                        newPermLi.children[1].setAttribute('class','close remCurrentPerm');
+                        newPermLi.classList.remove('wcListProto','hidden');
 
+                    let addPermLi = permListUL.appendChild(newPermLi);
+                        addPermLi.querySelector('.remCurrentPerm').addEventListener('click', function () {
+                            that.deletePermListItem(this);
+                        });
+                    pCount++;
+                });
+                $('#permissionsPanel .count').html("(" + pCount + ")") ;
+            }
+        },
+        error:function (error) {
+            that.resultModalCall( 'serverError', error.responseText, error.status );
         }
-    });
+    }); //AJAX
 };
-UsersEditing.prototype.editUserButtonInit = function()
+
+/**
+ * Накинем обработчик на кнопку Отправить данные Юзера
+ */
+UsersEditing.prototype.buttonSubmitUserInit = function()
 {
     let that = this;
-    this.modal.querySelector('.submitUserData').addEventListener('click', function() {
+    this.submitUserButton.addEventListener('click', function() {
 
         let button = this;
 
         let editUser_form = new FormData( document.getElementById('editUser_form') );
+        editUser_form.append('editUser_ID', that.editUser_ID);
         if ( that.addUser )
         {
-            editUser_form.append('userAdd', '1');
-        }  else {
-            editUser_form.append('editUser_ID', that.editUser_ID);
-            editUser_form.append('userEdit', '1');
+            editUser_form.append('userAddEdit', '1');
+        } else {
+            editUser_form.append('userAddEdit', '2');
+
+            if ( that.deletedPermlist )
+            {
+                $.each(that.deletedPermlist, function (i, permID) {
+                    editUser_form.append('deletedPermlist[]',permID);
+                });
+            }
         }
 
         $.ajax({
@@ -223,79 +333,97 @@ UsersEditing.prototype.editUserButtonInit = function()
             success:function(data) {
                 data = JSON.parse(data);
                 debug(data);
-
-                $('#userEditModal').modal('hide');
-                if ( data.success == 349 || data.success == 350 )
+                if ( data.debug )
                 {
-                    if ( data.success != -1 ) $('#userOKModal').modal('show');
-
-                } else if ( data.error ) {
-                    let text = "";
-                    switch ( data.error  )
-                    {
-                        case 345: text = "Поле Фамилия должно быть заполнено"; break;
-                        case 344: text = "Поля Логин и Пароль должны быть заполнены"; break;
-                        case 346: text = "Ошибка! Нет такого пользователя."; break;
-
-                        case 347: text = "Ошибка! Попробуйте позже."; break;
-                        case 348: text = "Ошибка! Доступ запрещен."; break;
-                    }
-                    alert(text);
+                    debugModal( data.debug );
+                    return;
                 }
+
+                if ( data.success )
+                {
+                    $('#userEditModal').modal('hide');
+                    that.resultModalCall( 'success', data.success.message, data.success.code );
+                } else if ( data.error ) {
+                    that.resultModalCall( 'error', data.error.message, data.error.code, data.error );
+                }
+            },
+            error:function (error) {
+                that.resultModalCall( 'serverError', error.responseText, error.status );
             }
         });
     });
 };
-UsersEditing.prototype.hideUserEditModal = function()
-{
-    debug('hideUserEditModal');
-    this.editUser_ID = 0;
-    this.addUser = false;
-    document.querySelector('.wcList').innerHTML = '';
-    if ( document.querySelector('.userPermList') )
-        document.querySelector('.userPermList').innerHTML = '';
-    
-    this.modal.querySelector('.submitUserData').classList.remove('disabled');
-    if ( this.modal.querySelector('.deleteUser') )
-    {
-        this.modal.querySelector('.deleteUser').classList.remove('disabled');
-    }
-};
+
+
 
 UsersEditing.prototype.userAddModal = function()
 {
-    debug('userAddModal');
     this.editUser_ID = 0;
+    this.addUser = true;
 
+    this.modal.querySelector('#userEditModalLabel').innerHTML='Добавить Нового Пользователя';
     this.modal.querySelector('#userName').innerHTML = "ФИО";
     this.modal.querySelector('#userFirstName').value = "";
     this.modal.querySelector('#userSecondName').value = '';
     this.modal.querySelector('#userThirdName').value = '';
-
-    let userLog = this.modal.querySelector('#userLog');
-    let userPass = this.modal.querySelector('#userPass');
-        userLog.value = "";
-        userPass.value = "";
-    
+    this.modal.querySelector('#userLog').value = "";
+    this.modal.querySelector('#userPass').value = "";
     this.modal.querySelector('.wcList').innerHTML = '';
 
-    this.modal.querySelector('.submitUserData').children[1].innerHTML = 'Добавить';
-    this.modal.querySelector('#userEditModalLabel').innerHTML='Добавить Нового Пользователя';
+    if ( this.modal.querySelector('.userPermList') )
+        this.modal.querySelector('.userPermList').innerHTML = '';
 
-    this.addUser = true;
+    if ( this.modal.querySelector('.addedPermissionsList') )
+        this.modal.querySelector('.addedPermissionsList').innerHTML = '';
 
     if ( this.modal.querySelector('.deleteUser') )
-    {
         this.modal.querySelector('.deleteUser').classList.add('hidden');
-    }
-};
-UsersEditing.prototype.userDellInit = function()
-{
 
-    if ( this.modal.querySelector('.deleteUser') )
+    this.modal.querySelector('.submitUserData').children[1].innerHTML = 'Добавить';
+    let that = this;
+    $.ajax({
+        url: "/nomenclature/addUser_presets",
+        type: 'POST',
+        data: {
+            getPresets: 1,
+        },
+        dataType:"json",
+        success:function(data) {
+            debug(data);
+            if ( data.presets )
+            {
+                let userMTProd = that.modal.querySelector('#userMTProd'); // select
+                $.each(data.presets, function (name, preset) {
+                    let option = document.createElement('option');
+                        option.setAttribute('value', name);
+                        option.setAttribute('title', preset.description);
+                        option.innerHTML = preset.name;
+                    if (+preset.id === 0)
+                        option.selected = true;
+                    userMTProd.appendChild(option);
+                });
+            } else if ( data.error ) {
+                that.resultModalCall( 'error', data.error.message, data.error.code, data.error );
+            }
+
+        },
+        error: function (error) {
+            that.resultModalCall( 'serverError', error.responseText, error.status );
+        }
+    });
+};
+
+
+/**
+ * Накинем обработчик на кнопку удаления Юзера
+ */
+UsersEditing.prototype.buttonDellUserInit = function()
+{
+    let dellButton = this.modal.querySelector('.deleteUser');
+    if ( dellButton )
     {
         let that = this;
-        this.modal.querySelector('.deleteUser').addEventListener('click', function() {
+        dellButton.addEventListener('click', function() {
             let button = this;
             if ( confirm('Удалить Пользователя безвозвратно?') )
             {
@@ -307,39 +435,97 @@ UsersEditing.prototype.userDellInit = function()
                         userID: that.editUser_ID,
                         userMTProd: that.modal.querySelector('#userMTProd').value,
                     },
+                    dataType: 'json',
                     beforeSend: function() {
                         button.classList.add('disabled');
                         that.modal.querySelector('.submitUserData').classList.add('disabled');
                     },
                     success:function(data) {
-                        data = JSON.parse(data);
                         debug(data);
-
-                        $('#userEditModal').modal('hide');
-                        let text = "";
                         if ( data.success )
                         {
-                            text = "Пользователь Удален";
-                            //if ( data.success != -1 ) $('#userOKModal').modal('show');
+                            $('#userEditModal').modal('hide');
+                            that.resultModalCall( 'success', data.success.message, data.success.code );
 
                         } else if ( data.error ) {
-
-                            switch ( data.error  )
-                            {
-                                case 347: text = "Ошибка! Попробуйте позже."; break;
-                                case 348: text = "Ошибка! Доступ запрещен."; break;
-                            }
+                            that.resultModalCall( 'error', data.error.message, data.error.code, data.error );
                         }
-                        alert(text);
-                        document.location.reload(true);
+                    },
+                    error: function (error) {
+                        that.resultModalCall( 'serverError', error.responseText, error.status );
                     }
                 });
             }
 
         });
     }
-
 };
 
+UsersEditing.prototype.resultModalCall = function( callType, message, code, respObject )
+{
+
+    let alertResponse = $('#alertResponse');
+    alertResponse.iziModal('setWidth', '600');
+    switch (callType)
+    {
+        case "success":
+        {
+            this.operationStatus = true;
+            alertResponse.iziModal('setHeaderColor', '#d09d16');
+            alertResponse.iziModal('setIcon', 'far fa-check-circle');
+            alertResponse.iziModal('setTitle', message);
+            alertResponse.iziModal('setSubtitle', 'Операция прошла успешно!');
+        } break;
+        case "error":
+        {
+            alertResponse.iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+            alertResponse.iziModal('setIcon', 'fas fa-exclamation-triangle');
+            alertResponse.iziModal('setTitle', 'Операция завершена с ошибкой!' + " Код: " +  code );
+            alertResponse.iziModal('setSubtitle', message );
+            if ( respObject.file )
+            {
+                alertResponse.iziModal('setWidth', "90%");
+                alertResponse.iziModal('resetProgress');
+                let text = '<div class="p1">';
+                if ( respObject.file )
+                    text += '<p class="textSizeMiddle bg-warning p1">File: <b>'+ respObject.file +' __ on line: '+ respObject.line +'</b></p>';
+
+                if ( respObject.previous )
+                    text += '<p>Previous: <b>'+ respObject.previous +'</b></p>';
+                
+                if ( respObject.trace )
+                {
+                    text += '<p class="bg-info p1"> <b>Trace:</b> <br>';
+                    $.each(respObject.trace, function (i, tarceObj) {
+                        text += '<p class="mb-1 brb-2-secondary">File: <b>'+ tarceObj.file +' __ on line: '+ tarceObj.line +'</b><br>';
+                        text += 'Class: <b>'+ tarceObj.class +' '+ tarceObj.type +'<i>'+  tarceObj.function + '()</i></b></p>';
+                    });
+                    text += '</p>';
+                }
+                alertResponse.iziModal('setContent', text);
+            }
+        } break;
+        case "serverError":
+        {
+            alertResponse.iziModal('setHeaderColor', 'rgb(189, 91, 91)');
+            alertResponse.iziModal('setIcon', 'fas fa-bug');
+            alertResponse.iziModal('setTitle', 'Ошибка на сервере! Попробуйте позже.');
+            alertResponse.iziModal('setSubtitle', "Код: " + code);
+            alertResponse.iziModal('setWidth', "100%");
+            alertResponse.iziModal('pauseProgress');
+
+            alertResponse.iziModal('setContent', '<div>'+ message +'</div>');
+        } break;
+        default:
+        {
+        } break;
+    }
+    alertResponse.iziModal("open");
+};
 
 let usersEditing = new UsersEditing();
+usersEditing.init();
+
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+});

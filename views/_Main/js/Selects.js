@@ -25,14 +25,18 @@ function Selects() {
         that.showSelectedModels();
     },false);
     */
-    this.sgUL.querySelector('.editStatusesSelectedModels').addEventListener('click', function(event){
-        event.preventDefault();
-       if ( that.selectedElements.length )
-       {
-           redirect('/edit-statuses/');
-       }
+    if ( this.sgUL.querySelector('.editStatusesSelectedModels') )
+    {
+        this.sgUL.querySelector('.editStatusesSelectedModels').addEventListener('click', function(event){
+            event.preventDefault();
+            if ( that.selectedElements.length )
+            {
+                redirect('/edit-statuses/');
+            }
 
-    },false);
+        },false);
+    }
+
 
     this.checkSelectionMode();
 }

@@ -17,10 +17,13 @@ class AppCodes
 
     /** ERRORS **/
     const SUCH_APP_CODE_NOT_PRESENT = 1002;
-    const SERVER_ERROR = 999;
-    const NOTHING_DONE = 998;
-    const PAGE_NOT_FOUND = 404;
+    const PERMISSION_DENIED = 996;
     const CONFIG_EMPTY = 997;
+    const NOTHING_DONE = 998;
+    const SERVER_ERROR = 999;
+
+    const PAGE_NOT_FOUND = 404;
+
 
     const MODEL_DOES_NOT_EXIST = 2001;
     const PRICE_DOES_NOT_EXIST = 2002;
@@ -48,7 +51,7 @@ class AppCodes
 
 
     /** MESSAGES ARRAY **/
-    const MESSAGES = [
+    protected static $MESSAGES = [
         self::NOTHING_DONE => [
             'code' => self::NOTHING_DONE,
             'message'=>'Nothing done.'
@@ -133,6 +136,10 @@ class AppCodes
             'code' => self::DB_CONFIG_ACCESS_FIELD_EMPTY,
             'message'=>'Не найден список доступов для подключения к БД!'
         ],
+        self::PERMISSION_DENIED => [
+            'code' => self::PERMISSION_DENIED,
+            'message'=>'Ошибка. Доступ запрещен!'
+        ],
     ];
 
     public function __construct()
@@ -152,10 +159,10 @@ class AppCodes
      */
     public function getCodeMessage(int $code) : array
     {
-        if ( array_key_exists($code, self::MESSAGES) ) return self::MESSAGES[$code];
+        if ( array_key_exists($code, self::$MESSAGES) ) return self::$MESSAGES[$code];
         throw new \Exception( "class: " . __CLASS__ .
             " method: " . __METHOD__. " " .
-            self::MESSAGES[self::SUCH_APP_CODE_NOT_PRESENT]['message'] . " '" . $code . "'",
+            self::$MESSAGES[self::SUCH_APP_CODE_NOT_PRESENT]['message'] . " '" . $code . "'",
             self::SUCH_APP_CODE_NOT_PRESENT);
     }
 
@@ -166,11 +173,12 @@ class AppCodes
      */
     public static function getMessage(int $code) : array
     {
-        if ( array_key_exists($code, self::MESSAGES) ) return self::MESSAGES[$code];
+        if ( array_key_exists($code, static::$MESSAGES) ) return static::$MESSAGES[$code];
 
         throw new \Exception( "class: " . __CLASS__ .
             " method: " . __METHOD__. " " .
-            self::MESSAGES[self::SUCH_APP_CODE_NOT_PRESENT]['message'] . " '" . $code . "'",
-            self::SUCH_APP_CODE_NOT_PRESENT);
+            static::$MESSAGES[static::SUCH_APP_CODE_NOT_PRESENT]['message'] . " '" . $code . "'",
+            static::SUCH_APP_CODE_NOT_PRESENT);
     }
+    
 }

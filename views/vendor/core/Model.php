@@ -107,11 +107,13 @@ class Model
     }
 
     /**
-     * @param $sqlStr
-     * @return array|bool
+     * @param string $sqlStr
+     * @param string $field
+     * поле, элемент в массиве который надо венуть
+     * @return array|mixed
      * @throws \Exception
      */
-    public function findOne(string $sqlStr) : array
+    public function findOne(string $sqlStr, string $field = '')
     {
         if ( !is_string($sqlStr) || empty($sqlStr) ) throw new \Exception('Query string not valid!', 555);
 
@@ -121,7 +123,15 @@ class Model
         if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), mysqli_errno($this->connection) );
 
         while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;
-        if ( !empty($result) ) return $result[0];
+
+        if ( !empty($result) && empty($field) )
+        {
+            return $result[0];
+        } elseif ( !empty($result) )
+        {
+            if ( array_key_exists($field, $result[0]) )
+                return $result[0][$field];
+        }
 
         return [];
     }
@@ -185,7 +195,7 @@ class Model
      */
     public function removeRows(array $toRemove, string $tableName, string $primaryKey = 'id')
     {
-        if ( empty($toRemove) ) return [];
+        if ( empty($toRemove) ) return false;
         if ( empty($tableName) )
             throw new \Exception("Error removeRows() table name might be a string!", 1);
 

@@ -7,8 +7,8 @@ class Statistic extends Main
 	
 	public $allModels;
 	public $allComplects;
-	
-	public function getUsers() {
+	/*
+	public function getUsers( $full = false ) {
 		$result = array();
 		$query = mysqli_query($this->connection, " SELECT * FROM sessions " );
 
@@ -16,7 +16,9 @@ class Statistic extends Main
 		
 		return $result;
 	}
+	*/
 
+	/*
 	public function getModels() {
 		$result = array();
 		$query_coll = mysqli_query($this->connection, " SELECT id,name FROM collections ORDER BY name");
@@ -41,11 +43,11 @@ class Statistic extends Main
 			$this->row = array();
 		}
 		return $result;
-	}
+	}*/
 
 	public function getLikedModels() {
 		$result = array();
-		$query_stock = mysqli_query($this->connection, " SELECT id,number_3d,vendor_code,model_type,likes,dislikes FROM stock ");
+		$query_stock = mysqli_query($this->connection, " SELECT id,number_3d,vendor_code,model_type FROM stock ");
 
 		while( $row = mysqli_fetch_assoc($query_stock) ){
 			$id = $row['id'].';'.$row['number_3d'].' / '.$row['vendor_code'].' - '.$row['model_type'];

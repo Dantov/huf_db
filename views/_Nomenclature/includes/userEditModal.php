@@ -71,21 +71,7 @@ try {
                             </div>
                             <div class="list-group-item">
                                 <label for="userMTProd">Пресет разрешений: </label>
-                                <select class="form-control text-right" id="userMTProd" name="userMTProd">
-                                    <option value="mt_design">Дизайнер юв. изделий</option>
-                                    <option value="mt_modell">3D модельер</option>
-                                    <option value="mt_modellHM">Модельер-доработчик</option>
-                                    <option value="mt_oper">Оператор 3D принтера</option>
-                                    <option value="mt_prod">Производство юв. изделий</option>
-                                    <option value="mt_tech">Технолог юв. изделий</option>
-                                    <option value="mt_pdo">ПДО</option>
-                                    <?php if ( $userAccess === 1 ): ?>
-                                        <option value="mt_admin">Админ</option>
-                                    <?php endif;?>
-                                    <?php if ( $userAccess === 122 || $userAccess === 1 ): ?>
-                                        <option value="mt_moder">Модератор</option>
-                                    <?php endif;?>
-                                </select>
+                                <select class="form-control text-right" id="userMTProd" name="userMTProd"></select>
                             </div>
                             <?php if ( $userAccess === 1 ): ?>
                                 <div class="list-group-item">
@@ -96,7 +82,7 @@ try {
                                                     <b>Все разрешения:</b>
                                                     <span class="caret"></span>
                                                 </button>
-                                                <ul class="dropdown-menu addWCList">
+                                                <ul class="dropdown-menu addPermList">
                                                     <?php foreach ($allPermissions??[] as $permission): ?>
                                                         <li>
                                                             <a class="addPermission" data-permID="<?=$permission['id']?>"><?=$permission['description'];?></a>
@@ -106,8 +92,20 @@ try {
                                             </div>
                                         </div>
                                     </p>
-                                <div class="clearfix"></div>
-                                <ul class="list-group userPermList"></ul>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="panel panel-success mb-1">
+                                    <div class="panel-heading  cursorPointer relative" role="tab" id="permissionsPanel">
+                                        <span class="panel-title text-bold" role="button" data-toggle="collapse" aria-expanded="false" aria-controls="collapsePermissionsPanel">
+                                            Список текущих разрешений <span class="count"></span>
+                                        </span>
+                                    </div>
+                                    <div id="collapsePermissionsPanel" class="panel-collapse collapse" role="tabpanel" aria-labelledby="permissionsPanel" aria-expanded="false">
+                                        <ul class="list-group userPermList"></ul>
+                                    </div>
+                                </div>
+                                <div class="list-group-item">
+                                    <ul class="list-group addedPermissionsList"></ul>
                                 </div>
                             <?php endif;?>
                         </div>
@@ -126,32 +124,12 @@ try {
     </div>
 </div>
 
-<div class="modal fade" id="userOKModal" tabindex="-1" role="dialog" aria-labelledby="userOKModalLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="userOKModalLabel">Редактировать пользователя</h4>
-            </div>
-            <div class="modal-body">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" onclick="document.location.reload(true)"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>ОК</button>
-            </div>
-        </div>
-    </div>
+<div id="alertResponse" aria-hidden="true" aria-labelledby="alertResponse" role="dialog" class="iziModal">
+    <div id="alertResponseContent" style="padding: 10px" class="hidden"></div>
 </div>
-
 
 <li class="list-group-item hidden wcListProto">
     <span class="wcDescr">wc name</span>
     <input type="hidden" class="hidden"  name="wcList[]" value="">
     <button type="button" title="удалить" class="close deleteWCListItem" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 </li>
-
-<?php if ( $userAccess === 1 ): ?>
-<li class="list-group-item permListItemProto">
-    <span class="permDescr"></span>
-    <input type="hidden" class="hidden" name="" value="">
-    <button type="button" title="удалить" class="close deletePermListItem" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
-</li>
-<?php endif; ?>

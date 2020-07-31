@@ -7,6 +7,9 @@ use Views\_Globals\Controllers\GeneralController;
 class StatisticController extends GeneralController
 {
 
+    /**
+     * @throws \Exception
+     */
     public function action()
     {
         $stat = new Statistic();
@@ -17,10 +20,12 @@ class StatisticController extends GeneralController
         }
 
         $users = $stat->getUsers();
+        /*
         $models = $stat->getModels();
         $likes = $stat->getLikedModels();
         $modelsBy3Dmodellers = $stat->getModelsBy3Dmodellers();
         $modelsByAuthors = $stat->getModelsByAuthors();
+        */
 
         $compact = compact([
             'users','models','likes','modelsBy3Dmodellers',

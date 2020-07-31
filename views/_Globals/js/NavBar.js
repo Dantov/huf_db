@@ -1,6 +1,8 @@
 function NavBar()
 {
-	if ( !_PNSHOW_ ) document.getElementById('noticesBadge').classList.add('hidden');
+	if ( !_PNSHOW_ )
+        if ( document.getElementById('noticesBadge') )
+            document.getElementById('noticesBadge').classList.add('hidden');
 }
 	
 NavBar.prototype.getCoords = function(elem) {

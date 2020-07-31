@@ -1,18 +1,35 @@
 <?php
 if ( _DEV_MODE_ )
 {
-    function debug($arr, $str='', $die=false)
+    function debug($arr, $str='', $die=false, $encode=false)
     {
         $strrr = '';
+        $result = [];
         if ( !empty($str) ) $strrr = $str . " = ";
+
+        if ( $encode )
+            ob_start();
 
         echo '<pre style="display: inline-block !important; vertical-align: top; margin-left: 5px; padding: 5px; border-bottom: 1px solid #0f0f0f; border-left: 1px solid #0f0f0f">';
         echo $strrr;
         print_r($arr);
         echo '</pre>';
-        if ($die) exit;
-    }
 
+        if ( $encode )
+        {
+            $result = ['debug'=>ob_get_contents()];
+            ob_end_clean();
+        }
+        if ($die)
+        {
+            if ($encode)
+                exit(json_encode($result));
+            exit;
+        }
+
+        if ($encode)
+            echo json_encode($result);
+    }
 } else {
     function debug($arr, $str='', $die=false)
     {

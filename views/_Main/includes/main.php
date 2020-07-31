@@ -1,4 +1,7 @@
 <?php
+
+use Views\_Globals\Models\User;
+
 $session = $this->session;
 ?>
 <script src="/Views/_Main/js/trytoload.js?ver=004"></script>
@@ -123,8 +126,11 @@ $session = $this->session;
 						<a title="Снять выделение со всех моделей" class="selectsUncheckAll">Снять выделение</a></li>
 					<li role="presentation">
 						<a title="Отобразить только выделенные модели" href="/main/?selected-models-show" class="selectsShowModels">Показать</a></li>
-					<li role="presentation">
-						<a title="Изменить статус для всех выделенных моделей" class="editStatusesSelectedModels">Проставить статус</a></li>
+                    <?php if ( User::permission('statuses') ): ?>
+                        <li role="presentation">
+                            <a title="Изменить статус для всех выделенных моделей" class="editStatusesSelectedModels">Проставить статус</a>
+                        </li>
+                    <?php endif;?>
 					<li role="presentation" class="divider"></li>
 					<?=$selectedModelsByLi; ?>
 				</ul>

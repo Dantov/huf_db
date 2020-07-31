@@ -170,18 +170,18 @@ class ModelViewController extends GeneralController
             $_SESSION['prevPage'] = $_SERVER["HTTP_REFERER"];
         }
 
+        // смотрим отрисовывать ли нам кнопку едит
         $editBtn = false;
         if ( User::permission('editModel') )
         {
             $editBtn = true;
         } elseif ( User::permission('editOwnModels') ) {
-            $userRowFIO = $_SESSION['user']['fio'];
+            $userRowFIO = explode(' ', $_SESSION['user']['fio'])[0];
             $authorFIO = $row['author'];
             $modellerFIO = $row['modeller3D'];
             $jewelerName = $row['jewelerName'];
-            if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE || stristr($jewelerName, $userRowFIO) !== FALSE ) {
+            if ( mb_stristr($authorFIO, $userRowFIO) !== FALSE || mb_stristr($modellerFIO, $userRowFIO) !== FALSE || mb_stristr($jewelerName, $userRowFIO) !== FALSE )
                 $editBtn = true;
-            }
         }
 
         $this->includeJSFile('show_pos_scrpt.js', ['defer','timestamp'] );

@@ -31,9 +31,6 @@ let main = '';
 
 // экземпляр класса pushNotice
 let pushNotice;
-//здесь хранятся показанные уведомления
-// общие для всех оюъектов PushNotice
-//let showedNotice = [];
 
 // debug(_CONTROLLER_, "_CONTROLLER_");
 // debug(_URL_, "_URL_");

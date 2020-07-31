@@ -107,6 +107,7 @@ JS;
                     </form>
 
                     <form class="navbar-form topuserform navbar-right">
+                        <?php if ( User::getAccess() > 0 ): ?>
 						<div class="btn-group" id="noticesBadge">
 							<button title="Текущие Уведомления" type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 								<span class="badge pushNoticeBadge"></span>
@@ -123,6 +124,7 @@ JS;
 								</li>
 							</ul>
 						</div>
+                        <?php endif; ?>
                         <div class="btn-group">
                             <button type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="glyphicon glyphicon-<?=$navBar['glphsd']?>"></span>&#160;<?= User::getFIO() ?>&#160;<span class="caret"></span>
@@ -267,6 +269,14 @@ JS;
             <script src="/web/js_lib/bootstrap.min.js"></script>
             <script src="/web/js_lib/iziModal.min.js"></script>
             <script src="/web/js_lib/iziToast.min.js"></script>
+
+            <?php if ( _DEV_MODE_ ): // Зависимость от jquery и iziModal?>
+                <div id="alertDebug" aria-hidden="true" aria-labelledby="alertDebug" role="dialog" class="iziModal">
+                    <div id="alertDebugContent" class="hidden p2"></div>
+                </div>
+                <script src="/Views/_Globals/js/debug.js?ver=<?=time()?>"></script>
+            <?php endif; ?>
+
 			<script defer src="/Views/_Globals/js/NavBar.js?ver=<?=time()?>"></script>
 			<?php if ($_SESSION['assist']['PushNotice'] == 1): ?>
 				<script defer src="/Views/_Globals/js/pushNotice.js?ver=<?=time() ?>"></script>

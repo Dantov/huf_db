@@ -29,7 +29,7 @@ body {
 	cursor: pointer;
 	-moz-user-select: none;
 	-khtml-user-select: none;
-	user-select: none;   
+	user-select: none;
 }
 .dl-horizontal dt {
 	font-weight: 500;

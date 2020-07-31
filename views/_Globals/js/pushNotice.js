@@ -301,7 +301,9 @@ PushNotice.prototype.noticesBadgeToggle = function() {
 
 window.onload = function()
 {
+    if ( wsUserData.fio === 'Гость' ) return;
     if ( !_PNSHOW_ ) return;
+
     if ( !pushNotice )
     {
         pushNotice = new PushNotice();

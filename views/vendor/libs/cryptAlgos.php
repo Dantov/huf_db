@@ -7,7 +7,7 @@
 Чтобы расшифровать проходимся циклом по коду, заменяем хэш[3,6,1,2] на символ, которому он соответствует.
 Ну, и потом декодируем из base64.
 */
-
+/*
 function myencode($unencoded, $key)
 {
     //Шифруем
@@ -28,7 +28,6 @@ function myencode($unencoded, $key)
     debug($newStr,'$newStr');
     return $newStr;
 }
-
 function mydecode( $encoded, $key )
 {
     //Символы, с которых состоит base64-ключ
@@ -51,8 +50,8 @@ var_dump((int)$dec);
 
 $key = hash('sha256', 'this is a secret key', true);
 $input = "Let us meet at 9 o'clock at the secret place.";
-
-
+*/
+/*
 define('ENCRYPTION_KEY', 'ab86d144e3f080b61c7c2e43');
 // Encrypt
 function Encrypt11($plaintext)
@@ -82,3 +81,25 @@ function Decrypt11($ciphertext)
     }
     return false;
 }
+*/
+function NUMtoSTRING($NUMBER, $ALPHA = '0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZаАбБвВгГдДеЕёЁжЖзЗиИйЙкКлЛмМнНоОпПрРсСтТуУфФхХцЦчЧшШщЩъЪыЫьЬэЭюЮяЯ'){
+    $ALPHA_LEN = mb_strlen($ALPHA, 'UTF-8');
+    $STRNG = '';
+    while($NUMBER > $ALPHA_LEN){
+        $STRNG = mb_substr($ALPHA, $NUMBER % $ALPHA_LEN, 1, 'UTF-8') . $STRNG;
+        $NUMBER = floor($NUMBER / $ALPHA_LEN);
+    }
+    $STRNG = mb_substr($ALPHA, $NUMBER, 1, 'UTF-8') . $STRNG;
+    return $STRNG;
+}
+//echo NUMtoSTRING(1526892347543); // "rxC11G" - 6 символов
+
+function STRINGtoNUM($STRNG, $ALPHA = '0123456789aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZаАбБвВгГдДеЕёЁжЖзЗиИйЙкКлЛмМнНоОпПрРсСтТуУфФхХцЦчЧшШщЩъЪыЫьЬэЭюЮяЯ'){
+    $ALPHA_LEN = mb_strlen($ALPHA, 'UTF-8');
+    $STRNG_LEN = mb_strlen($STRNG, 'UTF-8');
+    $NUMBER = 0;
+    for($S_i = 0; $S_i < $STRNG_LEN; $S_i++)
+        $NUMBER += mb_strpos($ALPHA, mb_substr($STRNG, $S_i, 1, 'UTF-8'), 0, 'UTF-8') * pow($ALPHA_LEN, $STRNG_LEN - $S_i - 1);
+    return $NUMBER;
+}
+//echo STRINGtoNUM('rxC11G'); // вернет нам наши 1526892347543

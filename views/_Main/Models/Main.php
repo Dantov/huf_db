@@ -885,13 +885,12 @@ class Main extends General {
         {
             $editBtn = true;
         } elseif ( User::permission('editOwnModels') ) {
-            $userRowFIO = $this->user['fio'];
+            $userRowFIO = explode(' ', $this->user['fio'])[0];
             $authorFIO = $row['author'];
             $modellerFIO = $row['modeller3D'];
             $jewelerName = $row['jewelerName'];
-            if ( stristr($authorFIO, $userRowFIO) !== FALSE || stristr($modellerFIO, $userRowFIO) !== FALSE || stristr($jewelerName, $userRowFIO) !== FALSE ) {
+            if ( mb_stristr($authorFIO, $userRowFIO) !== FALSE || mb_stristr($modellerFIO, $userRowFIO) !== FALSE || mb_stristr($jewelerName, $userRowFIO) !== FALSE )
                 $editBtn = true;
-            }
         }
 		
 		$status = $this->getStatus($row);
@@ -1045,7 +1044,7 @@ class Main extends General {
 				$nextI = $i + 1; // определяем след. страницу на которую перейдем после клика
 				$pagination .= "
 				<li>
-					<a href=\"/?page=$nextI&start_FromPage=$nextI&st_prevPage=$nextI\" aria-label=\"Next\" title=\"Вперед на след. 10\">
+					<a href=\"/main/?page=$nextI&start_FromPage=$nextI&st_prevPage=$nextI\" aria-label=\"Next\" title=\"Вперед на след. 10\">
 						<span aria-hidden=\"true\">&raquo;</span>
 					</a>
 				</li>
