@@ -18,12 +18,17 @@ class UserCodes extends AppCodes
     const FIRST_NAME_EMPTY = 302;
     const NO_SUCH_USER = 303;
     const LOGIN_MATCH = 304;
-    const WORKING_CENTER_NOT_FOUND = 305;
 
-    const USER_INSERT_UPDATE_FAIL = 306;
-    const PERMISSION_INSERT_UPDATE_FAIL = 3478;
+    const WORKING_CENTER_NOT_FOUND = 305;
+    const PERM_PRESET_NOT_FOUND = 306;
+
+    const USER_INSERT_UPDATE_FAIL = 307;
+    const PERMISSION_INSERT_UPDATE_FAIL = 308;
 
     const INSERT_UPDATE_FAIL = 347;
+    const UNEXPECTED_RESULT = 349;
+
+    const PERMISSIONS_DELETED = 350;
 
     /**
      * SUCCESS 400-499
@@ -35,6 +40,7 @@ class UserCodes extends AppCodes
     const USER_PERMISSIONS_EDIT_SUCCESS = 404;
     const USER_PERMISSIONS_ADD_SUCCESS = 405;
     const NOTHING_DONE = 406;
+    const USER_DELETED_SUCCESS = 407;
 
 
     /** MESSAGES ARRAY **/
@@ -69,7 +75,7 @@ class UserCodes extends AppCodes
         ],
         self::USER_ADD_SUCCESS => [
             'code' => self::USER_ADD_SUCCESS,
-            'message'=>'Новый пользователь добавлен.'
+            'message'=>'Новый пользователь "Гость" добавлен.'
         ],
         self::USER_EDIT_SUCCESS => [
             'code' => self::USER_EDIT_SUCCESS,
@@ -98,6 +104,22 @@ class UserCodes extends AppCodes
         self::PERMISSIONS_EDIT_SUCCESS => [
             'code' => self::PERMISSIONS_EDIT_SUCCESS,
             'message'=>'Разрешения изменены.'
+        ],
+        self::PERM_PRESET_NOT_FOUND => [
+            'code' => self::PERM_PRESET_NOT_FOUND,
+            'message'=>'Ошибка! Неизвестный пресет разрешений'
+        ],
+        self::UNEXPECTED_RESULT => [
+            'code' => self::UNEXPECTED_RESULT,
+            'message'=>'Ошибка! Неизвестный результат операции.'
+        ],
+        self::USER_DELETED_SUCCESS => [
+            'code' => self::USER_DELETED_SUCCESS,
+            'message'=>'Пользователь удален. Разрешения удалены.'
+        ],
+        self::PERMISSIONS_DELETED => [
+            'code' => self::PERMISSIONS_DELETED,
+            'message'=>'Разрешения удалены. Данные пользователя не тронуты.'
         ],
     ];
 }

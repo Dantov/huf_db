@@ -56,17 +56,17 @@ class NomenclatureController extends GeneralController
                 }
 
                 /** USERS **/
-                if ( trueIsset($request->post('getPresets')) )
+                if ( !empty($request->post('getPresets')) )
                     $this->actionGetPresets( $request->post('getPresets'));
 
-                if (trueIsset($request->post('userShow')) && trueIsset($request->post('showUserID')))
-                    exit(json_encode( $this->actionShowUserPos( $request->post('showUserID') ) ) );
+                if ( $request->post('userShow') && $request->post('showUserID') )
+                    $this->actionShowUserPos( $request->post('showUserID'));
 
-                if ( trueIsset($request->post('userAddEdit')) )
+                if ( $request->post('userAddEdit') )
                     $this->actionEditUserPos( $request->post('userAddEdit') );
 
-                if ( trueIsset($request->post('userDell')) && trueIsset($request->post('userID')) && trueIsset($request->post('userMTProd')) )
-                    echo json_encode( $this->actionDellUserPos( (int)$request->post('userID'), $request->post('userMTProd') ) );
+                if ( !empty($request->post('userDell')) && $request->post('userID') && $request->post('userMTProd') )
+                    $this->actionDellUserPos( $request->post('userID'), $request->post('userMTProd') );
 
             } catch (\Error | \Exception $e) {
                 if ( _DEV_MODE_ )
@@ -175,14 +175,37 @@ class NomenclatureController extends GeneralController
         $users = $usersModel->sortUsersLocations();
         $workingCentersDB = $usersModel->getWorkingCentersDB();
 
-        $workingCentersDBJS = json_encode($workingCentersDB,JSON_UNESCAPED_UNICODE);
+        $workingCentersDBJS = json_encode($workingCentersDB, JSON_UNESCAPED_UNICODE);
         $js = <<<JS
          let workingCentersDB = $workingCentersDBJS;
 JS;
         $this->includeJS($js);
 
         $allPermissions = [];
-        if ( User::getAccess() === 1 ) $allPermissions = $usersModel->getAllPermissions();
+        // нужно отфильтровать разрешения по пресету nomUsers_permissions
+        //if ( User::getAccess() === 1 )
+        if ( User::permission('nomUsers_permissions') )
+        {
+            $allPermissions = $usersModel->getAllPermissions();
+            $userPermPreset = $usersModel->userRulesPreset(User::getAccess());
+            $userPermissions = [];
+            foreach ($userPermPreset as $uPermID)
+            {
+                foreach ($allPermissions as &$permission)
+                {
+                    if ( $uPermID == $permission['id'] )
+                    {
+                        $permission['id'] = Crypt::strEncode($permission['id']);
+                        $userPermissions[] = $permission;
+                    }
+                }
+            }
+            // foreach ($allPermissions as &$permission) 
+            //     $permission['id'] = Crypt::strEncode($permission['id']);
+
+            $allPermissions = $userPermissions;
+        }
+
         $this->includeJSFile('users.js', ['defer','timestamp'] );
         $this->includePHPFile('userEditModal.php', compact(['workingCentersDB','allPermissions']) );
 
@@ -265,6 +288,7 @@ JS;
     }
 
     /**
+     * При создании нового юзера
      * @param int $getP
      * @throws \Exception
      */
@@ -295,11 +319,10 @@ JS;
     /**
      * Редактирование юзера
      * @param string $showUserID
-     * @return array
      * @throws \Exception
      */
-    protected function actionShowUserPos( string $showUserID ) : array
-    {
+    protected function actionShowUserPos( string $showUserID )
+    {        
         $usersModel = new UsersModel();
         $sortedUsers = $usersModel->sortUsersLocations();
 
@@ -318,14 +341,13 @@ JS;
         if ( empty($userRes) )
             exit(json_encode(['error'=>UserCodes::getMessage(UserCodes::NO_SUCH_USER), 'code'=>UserCodes::NO_SUCH_USER]));
 
-
         // Пока только админ может раздавать разрешения, остальные только пресетами
-        if ( User::getAccess() === 1 )
+        if ( User::permission('nomUsers_permissions') )
             $usersModel->addUserPermissions( $userRes );
 
         $userRes['presets'] = $usersModel->userRulesPreset();
         $delKeys1 = ['mt_admin','mt_design'];
-        $delKeys2 = ['mt_admin','mt_design','mt_modell','mt_tech'];
+        $delKeys2 = ['mt_admin','mt_design','mt_tech'];
         if ( User::getAccess() === 11 || User::getAccess() === 122 )
         {
             $i = 0;
@@ -338,10 +360,27 @@ JS;
                     unset($userRes['presets'][$key]);
                 }
             }
+            if ( User::getAccess() === 122 )
+            {
+                $urAcc = $userRes['access'];
+                foreach ( $userRes['presets'] as $key => $val )
+                {
+                    if ( in_array($urAcc, $val ) )
+                    {
+                        if ( !is_string($key) )
+                        {
+                            if (isset($userRes['login']) ) unset($userRes['login']);
+                            if (isset($userRes['pass']) ) unset($userRes['pass']);
+                        }
+                    }
+                }
+            }
         }
+        //debug($userRes,'$userRes',1,1);
 
         $userRes['id'] = Crypt::strEncode($userRes['id']);
-        return $userRes;
+
+        exit(json_encode($userRes));
     }
 
     /**
@@ -362,13 +401,12 @@ JS;
      * Редактирование юзера
      * @param int $userID
      * @param string $userMTProd
-     * @return array
      * @throws \Exception
      */
-    protected function actionDellUserPos( int $userID, string $userMTProd ) : array
+    protected function actionDellUserPos( string $userID, string $userMTProd )
     {
         $usersModel = new UsersModel();
-        return $usersModel->dellUserData( $userID, $userMTProd );
+        exit(json_encode( $usersModel->dellUserData( $userID, $userMTProd ) ));
     }
 
 }

@@ -6,7 +6,7 @@ function validateForm() {
     {
         let collectionInputs = document.getElementById('collections_table').querySelectorAll('input');
         if ( !collectionInputs.length ) {
-            alert( 'Нужно внести хоть одну коллекцию!' );
+            AR.warning('Нужно внести хоть одну коллекцию!',0);
             return false;
         }
         let collValid = true;
@@ -14,7 +14,7 @@ function validateForm() {
             if ( !input.value )
             {
                 input.scrollIntoView();
-                alert( 'Выберите коллекцию!' );
+                AR.warning('Выберите коллекцию!',0);
                 return collValid=false;
             }
         });
@@ -24,17 +24,17 @@ function validateForm() {
 
     if ( document.getElementById('author') && !document.getElementById('author').value )
     {
-        alert( 'Нужно указать Автора!' );
+        AR.warning('Нужно указать Автора!',0);
         return false;
     }
     if ( document.getElementById('modeller3d') && !document.getElementById('modeller3d').value )
     {
-        alert( 'Нужно указать 3D-моделлера!' );
+        AR.warning('Нужно указать 3D-моделлера!',0);
         return false;
     }
     if ( document.getElementById('modelType') && !document.getElementById('modelType').value )
     {
-        alert( 'Нужно указать Тип модели!' );
+        AR.warning('Нужно указать Тип модели!',0);
         return false;
     }
 
@@ -43,12 +43,12 @@ function validateForm() {
     {
         if ( document.getElementById('modelWeight') && !document.getElementById('modelWeight').value )
         {
-            alert( 'Нужно указать Вес модели!' );
+            AR.warning('Нужно указать Вес модели!',0);
             return false;
         }
-        if ( modelWeight.value < 0 || modelWeight.value > 1000 )
+        if ( modelWeight.value <= 0 || modelWeight.value > 2000 )
         {
-            alert( 'Вес модели указан не верно!' );
+            AR.warning('Вес модели указан не верно!',0);
             return false;
         }
     }
@@ -62,7 +62,7 @@ function validateForm() {
         });
 
         if ( !matsArr.length ) {
-            alert( 'Нужно внести хоть один материал!' );
+            AR.warning('Нужно внести, как минимум, один материал изделия!',0);
             return false;
         }
         if ( matsArr[0] )
@@ -74,7 +74,7 @@ function validateForm() {
             });
             if ( !matsValid ) {
                 matsArr[0].scrollIntoView();
-                alert( 'Заполните строку материала!' );
+                AR.warning('Заполните строку материала изделия!',0);
                 return false;
             }
         }
@@ -88,7 +88,7 @@ function validateForm() {
             imgFor.innerHTML = 'Нужно внести хоть одну картинку!';
             imgFor.classList.remove('hidden');
             imgFor.scrollIntoView();
-            alert( 'Нужно внести хоть одну картинку!' );
+            AR.warning('Нужно внести хоть одну картинку!',0);
             return false;
         } else {
             imgFor.classList.add('hidden');
@@ -107,7 +107,7 @@ function validateForm() {
             });
             if ( ((filesSize/1024)/1024 ) >= 27 )
             {
-                alert ( 'Превышен размер rhino 3dm файлов! Максимально допустимый 25мб.' );
+                AR.warning('Превышен размер rhino 3dm файлов! Максимально допустимый 25мб.',0);
                 return false;
             }
         }
@@ -119,12 +119,11 @@ function validateForm() {
             });
             if ( ((filesSize/1024)/1024 ) >= 11 )
             {
-                alert ( 'Превышен размер STL файлов! Максимально допустимый 10мб.' );
+                AR.warning('Превышен размер STL файлов! Максимально допустимый 10мб.',0);
                 return false;
             }
         }
     }
-
 
     return true;
 }
@@ -164,7 +163,7 @@ function submitForm() {
     let edit = modalButtonsBlock.querySelector('.modalResultEdit');
     let show = modalButtonsBlock.querySelector('.modalResultShow');
 
-    $('#modalResult').iziModal('open');
+    modal.iziModal('open');
     let xhr;
 
     xhr = $.ajax({
@@ -179,7 +178,6 @@ function submitForm() {
         beforeSend: function()
         {
             debug(xhr);
-
             modal.iziModal('setIcon', 'fas fa-upload');
             modal.iziModal('setTitle', 'Идёт отправление данных на сервер.');
             modal.iziModal('setHeaderColor', '#858172');
@@ -225,7 +223,19 @@ function submitForm() {
         success:function(resp)
         {
             resp = JSON.parse(resp);
-            debug(resp);
+            //debug(resp);
+            if ( resp.error )
+            {
+                let context = this;
+                AR.onClosed( function(){
+                    //debug(context,'Context');
+                } );
+                AR.setDefaultMessage( 'error', 'subtitle', "Ошибка при сохранении." );
+                AR.error( resp.error.message, resp.error.code );
+
+                edit.classList.remove('hidden');
+                return;
+            }
 
             modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-saved');
             modal.iziModal('setHeaderColor', '#edaa16');
@@ -255,7 +265,7 @@ function submitForm() {
         },
         error: function(error) { // Данные не отправлены
             modal.iziModal('setTitle', 'Ошибка отправки! Попробуйте снова.');
-            modal.iziModal('setHeaderColor', '#ff260d');
+            modal.iziModal('setHeaderColor', '#FF5733');
 
             edit.classList.remove('hidden');
 

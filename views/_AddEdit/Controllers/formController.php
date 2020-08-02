@@ -4,15 +4,15 @@ namespace Views\_AddEdit\Controllers;
 use Views\_AddEdit\Models\Handler;
 use Views\_AddEdit\Models\HandlerPrices;
 use Views\_Globals\Models\{ProgressCounter,PushNotice,SelectionsModel,User};
-use Views\vendor\core\{Request,Sessions};
+use Views\vendor\core\{Request,Sessions,Crypt};
 use Views\vendor\libs\classes\AppCodes;
 
 $request = new Request();
 $progress = new ProgressCounter();
-if ( isset($_POST['userName']) && isset($_POST['tabID']) )
-{
-    $progress->setProgress($_POST['userName'], $_POST['tabID']);
-}
+
+if ( $request->post('userName') && $request->post('tabID') )
+    $progress->setProgress($request->post('userName'), $request->post('tabID'));
+
 $progressCounter = 0;
 $overallProcesses = 12;
 //============= counter point ==============//
@@ -21,16 +21,10 @@ $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses
 $resp_arr = [];
 $resp_arr['processes'] = [];
 
-$id = (int)$request->post('id');
-if ( (int)$request->post('edit') === 2 )
-{
-    $isEdit = true;
-} else {
-    $isEdit = false; // новая модель!
-}
+$id = (int)Crypt::strDecode($request->post('id'));
+$isEdit = (int)$request->post('edit') === 2 ? true : false ;
 
 chdir(_stockDIR_);
-
 
 $handler = new Handler($id);
 try {
@@ -41,7 +35,7 @@ try {
 
 
 
-$date = trim($_POST['date']);
+$date = date("Y-m-d");
 if ( $isEdit === true ) {
     $number_3d = $handler->setNumber_3d( strip_tags(trim($_POST['number_3d'])) );
 } else {
@@ -70,12 +64,9 @@ if ( $isEdit === true ) $handler->checkModel();
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 
 // добавляем во все коиплекты артикул, если он есть
-$handler -> addVCtoComplects($vendor_code, $number_3d);
+$handler->addVCtoComplects($vendor_code, $number_3d);
 
-// формируем строку model_material
-//$model_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
-
-
+el_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
 $str_labels =  $handler->makeLabels($_POST['labels']);
 
 // берем все остальное
@@ -191,6 +182,25 @@ if ( $permissions['material'] )
 }
 //-------------- материалы ----------------//
 
+//---------- добавляем камни ----------//
+if ( $permissions['gems'] )
+{
+    debug();
+    //если камни есть то добавляем их
+    $gems = [];
+    $gems['name']  = $_POST['gemsName'];
+    $gems['cut']   = $_POST['gemsCut'];
+    $gems['val']   = $_POST['gemsVal'];
+    $gems['diam']  = $_POST['gemsDiam'];
+    $gems['color'] = $_POST['gemsColor'];
+
+
+    if ( !$handler->addGems( $gems ) )
+        $resp_arr['errors']['gems'] = 'При добавлении камней возникла ошибка.';
+}
+//============= counter point ==============//
+$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
+// конец добавляем камни
 
 
 //--------- добавляем картинки---------//
@@ -285,28 +295,7 @@ $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses
 
 
 
-//---------- добавляем камни ----------//
-//$gem_rows_count = count($_POST['gemsName']?:[]);
-if ( $permissions['gems'] )
-{
-    //если камни есть то добавляем их
-    $gems = array();
-    $gems['name']  = &$_POST['gemsName'];
-    $gems['cut']   = &$_POST['gemsCut'];
-    $gems['val']   = &$_POST['gemsVal'];
-    $gems['diam']  = &$_POST['gemsDiam'];
-    $gems['color'] = &$_POST['gemsColor'];
 
-    $quer_gem = $handler->addGems( $gems );
-
-    if ( $quer_gem ) {
-    } else {
-        exit();
-    }
-}
-//============= counter point ==============//
-$progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
-// конец добавляем камни
 
 
 

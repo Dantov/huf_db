@@ -6,7 +6,7 @@ try {
         $usersEditPass = User::permission('nomUsers_editPass');
         $userAccess = User::getAccess();
     } catch (\Exception $e) {
-        throw new Exception("Error in User::permission" . __FILE__, 1);
+        throw new Exception($e->getMessage(), $e->getCode());
     }
 ?>
 <div class="modal fade" id="userEditModal" tabindex="-1" role="dialog" aria-labelledby="userEditModalLabel">
@@ -73,7 +73,7 @@ try {
                                 <label for="userMTProd">Пресет разрешений: </label>
                                 <select class="form-control text-right" id="userMTProd" name="userMTProd"></select>
                             </div>
-                            <?php if ( $userAccess === 1 ): ?>
+                            <?php if ( User::permission('nomUsers_permissions') ): ?>
                                 <div class="list-group-item">
                                     <p>
                                         <div class="btn-group" role="group" aria-label="...">
@@ -85,7 +85,7 @@ try {
                                                 <ul class="dropdown-menu addPermList">
                                                     <?php foreach ($allPermissions??[] as $permission): ?>
                                                         <li>
-                                                            <a class="addPermission" data-permID="<?=$permission['id']?>"><?=$permission['description'];?></a>
+                                                            <a class="addPermission" data-permID="<?=$permission['id']?>"><?=$permission['name']?> - <i><?=$permission['description']?></i></a>
                                                         </li>
                                                     <?php endforeach; ?>
                                                 </ul>

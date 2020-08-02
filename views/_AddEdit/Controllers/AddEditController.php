@@ -5,6 +5,8 @@ use Views\_AddEdit\Models\AddEdit;
 use Views\_AddEdit\Models\Handler;
 use Views\_Globals\Controllers\GeneralController;
 use Views\_Globals\Models\User;
+use Views\vendor\core\Crypt;
+use Views\vendor\libs\classes\AppCodes;
 
 class AddEditController extends GeneralController
 {
@@ -19,6 +21,9 @@ class AddEditController extends GeneralController
      */
     public function beforeAction()
     {
+        if ( !User::permission('addModel') && !User::permission('editModel') && !User::permission('editOwnModels') )
+            $this->redirect('/main/');
+
         $request = $this->request;
         if ( $request->isAjax() )
         {
@@ -50,14 +55,13 @@ class AddEditController extends GeneralController
 
             if ( $request->isPost() && $request->post('save') )
             {
-                $this->actionFormController();
+                $this->actionFormController( $request->post('save') );
             }
             exit;
         }
 
-
         $id = (int)$this->getQueryParam('id');
-        if ( $id < 0 || $id >= 99999 ) $this->redirect('/main/');
+        if ( $id < 0 || $id > PHP_INT_MAX ) $this->redirect('/main/');
         $component = (int)$this->getQueryParam('component');
         if ( $component < 1 || $component > 3 ) $this->redirect('/main/');
 
@@ -120,24 +124,23 @@ class AddEditController extends GeneralController
         if ( $component === 2 )  // редактирование
         {
             if ( $id > 0 )
-            if ( !$addEdit->checkID($id) ) $this->redirect('/main/');
-            $row = $addEdit->getGeneralData();
+                if ( !$addEdit->checkID($id) ) 
+                    $this->redirect('/main/');
 
-            $editPerm = false;
+            $row = $addEdit->getGeneralData();
+            $editBtn = false;
             if ( User::permission('editModel') )
             {
-                $editPerm = true;
+                $editBtn = true;
             } elseif ( User::permission('editOwnModels') ) {
-                $userRowFIO = $_SESSION['user']['fio'];
-                $authorFIO = $row['author'];
-                $modellerFIO = $row['modeller3D'];
-                $jewelerName = $row['jewelerName'];
-                if ( stristr($authorFIO, $userRowFIO)   !== FALSE ||
-                     stristr($modellerFIO, $userRowFIO) !== FALSE ||
-                     stristr($jewelerName, $userRowFIO) !== FALSE )
-                    $editPerm = true;
+                $userRowFIO = explode(' ', $_SESSION['user']['fio'])[0];
+                if ( mb_stristr($row['author'], $userRowFIO) !== FALSE || 
+                    mb_stristr($row['modeller3D'], $userRowFIO) !== FALSE || 
+                    mb_stristr($row['jewelerName'], $userRowFIO) !== FALSE )
+                    $editBtn = true;
             }
-            if (!$editPerm) $this->redirect('/main/');
+            if (!$editBtn) $this->redirect('/main/');
+
 
             $this->title = 'Редактировать ' . $row['number_3d'] . '-' . $row['model_type'];
 
@@ -278,18 +281,18 @@ JS;
                 $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $addEdit->isStatusPresent( (int)$changeStatusesAccess[User::getAccess()] );
         }*/
 
-        $toShowStatuses = $addEdit->statusesChangePermission($row['date'], $component);
+        $toShowStatuses = $addEdit->statusesChangePermission($row['date']??date("Y-m-d"), $component);
         /*
         $changeStatusesAccess = [ 2 => 89, 3 => 2, 5 => 5, 11 => 89 ];
         if ( User::getAccess() !== 1 )
             $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $addEdit->isStatusPresent( (int)$changeStatusesAccess[User::getAccess()] );
 */
-
-
+        $save = Crypt::strEncode("_".time()."!");
+        $this->session->setKey('saveModel', $save);
         $compact2 = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi','toShowStatuses','cT','dcT',
             'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes','modelPrices','gradingSystem',
-            'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI',
+            'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI','save',
             'dataArrays','materialsData','coveringsData','handlingsData', 'statusesWorkingCenters','material','covering','labels','complected',
         ]);
         return $this->render('addEdit', $compact2);
@@ -441,9 +444,22 @@ JS;
         }
     }
 
-    protected function actionFormController()
+    protected function actionFormController( string $save )
     {
-        require_once "formController.php";
+        $saveModel = $this->session->getKey('saveModel');
+        if ( $saveModel )
+        {
+            $saveModel = Crypt::strDecode($saveModel);
+            $save = Crypt::strDecode($save);
+            if ( $saveModel !== $save )
+                exit( json_encode(['error'=>AppCodes::getMessage(AppCodes::MODEL_OUTDATED)]) );
+
+            require_once "formController.php";
+
+            $this->session->dellKey('saveModel');
+        } else {
+            exit( json_encode(['error'=>AppCodes::getMessage(AppCodes::MODEL_OUTDATED)]) );
+        }
     }
 
     /**

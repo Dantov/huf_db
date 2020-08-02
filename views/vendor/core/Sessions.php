@@ -82,7 +82,7 @@ class Sessions
     {
        $this->startSession();
         if ( isset( $_SESSION[$name] ) ) return $_SESSION[$name];
-        return false;
+        return null;
     }
 
     public function hasKey($name) : bool

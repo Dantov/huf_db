@@ -1,11 +1,9 @@
 <?php
 namespace Views\_Globals\Models;
 
-use Views\vendor\core\Config;
+use Views\vendor\core\{Config,Model,Sessions,Request};
 use Views\vendor\core\db\Database;
 use Views\vendor\core\Errors\Exceptions\DBConnectException;
-use Views\vendor\core\Model;
-use Views\vendor\core\Sessions;
 use Views\vendor\libs\classes\AppCodes;
 
 class General extends Model
@@ -34,6 +32,7 @@ class General extends Model
 	public $workingCentersSorted;
     public $localSocket = '';
     public $session = null;
+    public $request = null;
 
     public function __construct( $server=false )
     {
@@ -44,6 +43,7 @@ class General extends Model
         $this->localSocket = _WORK_PLACE_ ? 'tcp://192.168.0.245:1234' : 'tcp://127.0.0.1:1234';
 
         $this->session = new Sessions();
+        $this->request = new Request();
 
         $this->alphabet = alphabet();
     }
@@ -54,15 +54,14 @@ class General extends Model
      */
     public function connectDBLite() : \mysqli
     {
-        // По ID юзера из сессии - определим через какого юзера подключаться к БД
-        //$userDBConfig = [];
         if ( is_object($this->connection) && ( $this->connection instanceof \mysqli) )
             return $this->connection;
 
         $this->dbConfig = Config::get('db');
         if ( !trueIsset($this->dbConfig) )
-            throw new DBConnectException(AppCodes::DB_CONFIG_EMPTY );
+            throw new DBConnectException( AppCodes::DB_CONFIG_EMPTY );
 
+        // По ID юзера из сессии - определим через какого юзера подключаться к БД
         $user = $this->session->hasKey('user') ? $this->session->getKey('user') : null;
         $userAccess = 0;
         if ( trueIsset( $user ) )
@@ -77,19 +76,13 @@ class General extends Model
                     $this->dbConfig = $userConnArr;
                     Config::set('db', [ $userDbName => $userConnArr ]);
                     return parent::connectDB( $userConnArr );
-                    //$userDBConfig = $userConnArr;
                 }
             } else {
-                throw new DBConnectException(AppCodes::DB_CONFIG_ACCESS_FIELD_EMPTY);
+                throw new DBConnectException( AppCodes::DB_CONFIG_ACCESS_FIELD_EMPTY );
             }
         }
-        //if ( empty($userDBConfig) )
 
-        throw new DBConnectException(AppCodes::USER_DB_CONFIG_EMPTY);
-
-        //Config::set('db', [$userDBConfig]);
-        //$this->dbConfigs = $userDBConfig;
-        //return parent::connectDB( $userDBConfig );
+        throw new DBConnectException( AppCodes::USER_DB_CONFIG_EMPTY );
     }
 
     /**
@@ -130,12 +123,21 @@ class General extends Model
     public function getUser()
     {
         if ( isset($this->user) ) return $this->user;
-        session_start();
-        $userQuery = mysqli_query($this->connection, " SELECT id,fio,fullFio,location,access FROM users WHERE id='{$_SESSION['user']['id']}' ");
-        if ( !$userQuery->num_rows ) new \Exception('Пользователь не найден!',404);
+        //session_start();
+        //$userQuery = mysqli_query($this->connection, " SELECT id,fio,fullFio,location,access FROM users WHERE id='{$_SESSION['user']['id']}' ");+
 
-        $user = mysqli_fetch_assoc($userQuery);
-        foreach ( $user as $key => $value ) $this->user[$key] = $value;
+        if ( $user = $this->session->getKey('user') )
+            $userID = (int)$user['id']??'';
+        $this->user = $this->findOne(" SELECT id,fio,fullFio,location,access FROM users WHERE id='$userID' ");
+
+        if ( empty($this->user) )
+            //debug($this->user,'$user',1);
+            $this->redirect('/auth/?a=exit');
+            //header("location: /auth/?a=exit");
+            //throws new \Exception(UserCodes::getMessage(UserCodes::NO_SUCH_USER)['message'], UserCodes::NO_SUCH_USER);
+
+        //$user = mysqli_fetch_assoc($userQuery);
+        //foreach ( $user as $key => $value ) $this->user[$key] = $value;
         $this->user['IP'] = $this->IP_visiter;
         return $this->user;
     }

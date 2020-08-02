@@ -1,5 +1,6 @@
 <?php
 use Views\_Globals\Models\User;
+use Views\vendor\core\Crypt;
 $permittedFields = User::permissions();
 ?>
 <div class="row mb-2">
@@ -54,18 +55,18 @@ $permittedFields = User::permissions();
 <form method="POST" id="addform" enctype="multipart/form-data">
 
     <ul class="nav nav-tabs text-center">
-        <li role="presentation" class="" title="Текстовая информация"><a href="#baseData" role="tab" data-toggle="tab">Текстовые Данные</a></li>
+        <li role="presentation" class="active" title="Текстовая информация"><a href="#baseData" role="tab" data-toggle="tab">Текстовые Данные</a></li>
         <?php if ( $permittedFields['files'] ): ?>
             <li role="presentation" class="" title="Файлы"><a href="#filesData" role="tab" data-toggle="tab">Файлы</a></li>
         <?php endif; ?>
         <?php if (  $permittedFields['modelAccount'] ): ?>
-            <li role="presentation" class="active" title="Стоимость работ по этой модели"><a href="#pricesData" role="tab" data-toggle="tab">Стоимости</a></li>
+            <li role="presentation" class="" title="Стоимость работ по этой модели"><a href="#pricesData" role="tab" data-toggle="tab">Стоимости</a></li>
         <?php endif; ?>
-    </ul>
+    </ul> 
     <div class="tab-content">
-
+                        
         <!-- ******************** TEXT ******************** -->
-        <div role="tabpanel" class="tab-pane in fade pt-1" id="baseData">
+        <div role="tabpanel" class="tab-pane in fade pt-1 active" id="baseData">
             <div class="row">
                 <?php if ( $permittedFields['number_3d'] ): ?>
                     <div class="col-sm-6">
@@ -595,7 +596,7 @@ $permittedFields = User::permissions();
 
         <?php if ( $permittedFields['modelAccount'] ): ?>
         <!-- ******************** PRICES ******************** -->
-        <div role="tabpanel" class="tab-pane in fade pt-1 active" id="pricesData" >
+        <div role="tabpanel" class="tab-pane in fade pt-1" id="pricesData" >
             <div class="row">
                 <div class="col-xs-12">
                     <h4 class="text-center">
@@ -1090,7 +1091,7 @@ $permittedFields = User::permissions();
 
     </div>
     <hr />
-    <input type="hidden" name="save" value="1"/>
+    <input type="hidden" name="save" value="<?=$save?>"/>
     <?php if ( !$permittedFields['number_3d'] ): ?>
         <input type="hidden" id="num3d" name="number_3d" value="<?=$row['number_3d'];?>"/>
     <?php endif;?>
@@ -1100,9 +1101,9 @@ $permittedFields = User::permissions();
     <?php if ( !$permittedFields['model_type'] ): ?>
         <input type="hidden" id="modelType" value="<?=$row['model_type'];?>"/>
     <?php endif;?>
-    <input type="hidden" name="id" value="<?=($component===3)?0:$id // закодировать?>"/>
+    <?php $encID = ($component===2) ? $id : 0; ?>
+    <input type="hidden" name="id" value="<?= Crypt::strEncode($encID) ?>"/>
     <input type="hidden" name="edit" id="edit" value="<?=$component;?>"/>
-    <input type="hidden" name="date" value="<?=date('Y-m-d'); ?>" />
 
     <div class="row">
         <div class="col-xs-4">

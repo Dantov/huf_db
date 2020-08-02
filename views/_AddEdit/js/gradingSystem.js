@@ -134,8 +134,8 @@ GradingSystem.prototype.selectGrade3DChange = function(select)
     let totalRow = gs.table_3Dmodeller.querySelector('.t-total');
     let insertedRow = gs.table_3Dmodeller.insertBefore(newRow, totalRow);
     insertedRow.children[1].appendChild(div);
+    insertedRow.children[2].appendChild(inputPoints);
     insertedRow.children[3].appendChild(inputIDmp);
-    insertedRow.children[3].appendChild(inputPoints);
     insertedRow.children[3].appendChild(inputID);
     let dellButton = insertedRow.children[4].querySelector('.ma3DgsDell');
     this.setEventListener(dellButton);

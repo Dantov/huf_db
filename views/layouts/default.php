@@ -276,7 +276,7 @@ JS;
                 </div>
                 <script src="/Views/_Globals/js/debug.js?ver=<?=time()?>"></script>
             <?php endif; ?>
-
+            <script defer src="/Views/_Globals/js/alertResponse.js?ver=<?=time()?>"></script>
 			<script defer src="/Views/_Globals/js/NavBar.js?ver=<?=time()?>"></script>
 			<?php if ($_SESSION['assist']['PushNotice'] == 1): ?>
 				<script defer src="/Views/_Globals/js/pushNotice.js?ver=<?=time() ?>"></script>
@@ -288,6 +288,9 @@ JS;
 
     </div><!--content-->
 	<div id="pushNoticeWrapp" class="row"></div>
+    <div id="alertResponseModal" aria-hidden="true" aria-labelledby="alertResponseModal" role="dialog" class="iziModal">
+        <div id="alertResponseContent" style="padding: 10px" class="hidden"></div>
+    </div>
     <?php if (isset($this->blocks['3DPanels'])) echo $this->blocks['3DPanels']; ?>
     <?php require _globDIR_."includes/CollectionsModal.php" ?>
     <script defer src="/Views/_Globals/js/CollectionsModal.js?ver=<?=time()?>"></script>

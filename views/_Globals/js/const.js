@@ -94,6 +94,10 @@ function redirect(url) {
     }
     return false;
 }
+function reload( full ) 
+{
+    document.location.reload( full );
+}
 
 function cursorSet(cursorStyle, elem) {
     /*

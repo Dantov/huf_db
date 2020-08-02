@@ -1,7 +1,5 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: Admin
  * Date: 20.07.2020
  * Time: 13:36
  */
@@ -23,7 +21,9 @@ class AppCodes
     const SERVER_ERROR = 999;
 
     const PAGE_NOT_FOUND = 404;
+    const PAGE_OUTDATED = 1404;
 
+    const MODEL_OUTDATED = 1999;
 
     const MODEL_DOES_NOT_EXIST = 2001;
     const PRICE_DOES_NOT_EXIST = 2002;
@@ -139,6 +139,10 @@ class AppCodes
         self::PERMISSION_DENIED => [
             'code' => self::PERMISSION_DENIED,
             'message'=>'Ошибка. Доступ запрещен!'
+        ],
+        self::MODEL_OUTDATED => [
+            'code' => self::MODEL_OUTDATED,
+            'message'=>'Ошибка. Модель устарела. Обновите страницу!'
         ],
     ];
 

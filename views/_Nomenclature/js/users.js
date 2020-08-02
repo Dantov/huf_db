@@ -32,6 +32,13 @@ UsersEditing.prototype.init = function()
         let userPermList = document.querySelector('.userPermList');
         let addedPermListUL = document.querySelector('.addedPermissionsList');
 
+        let userLog = that.modal.querySelector('#userLog');
+            userLog.value = '';
+            userLog.removeAttribute('disabled');
+        let userPass = that.modal.querySelector('#userPass');
+            userPass.value = '';
+            userPass.removeAttribute('disabled');
+
         if ( wcListUL )
             wcListUL.innerHTML = "";
         if ( userMTProd )
@@ -58,25 +65,14 @@ UsersEditing.prototype.init = function()
         });
     }
 
-
-    $("#alertResponse").iziModal({
-        timeout: 5000,
-        zindex: 1100,
-        width: '700px',
-        timeoutProgressbar: true,
-        pauseOnHover: true,
-        restoreDefaultContent: true,
-    });
-    $(document).on('closing', '#alertResponse', function (e) {
+    AR.onClosing( function(){
         if ( that.operationStatus === false )
-        {
             that.submitUserButton.classList.remove('disabled');
-        }
-    });
-    $(document).on('closed', '#alertResponse', function (e) {
+    } );
+    AR.onClosed( function(){
         if ( that.operationStatus === true )
-            document.location.reload(true);
-    });
+            reload(true);
+    } );
 
 
     this.addWCList();
@@ -84,11 +80,12 @@ UsersEditing.prototype.init = function()
     this.buttonSubmitUserInit();
     this.buttonDellUserInit();
 
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
+
     debug('UserEdit init ok!');
 };
-
-
-
 
 UsersEditing.prototype.addWCList = function()
 {
@@ -124,9 +121,11 @@ UsersEditing.prototype.addPermission = function()
     if ( addPermList )
     {
         addPermList.addEventListener('click',function (event) {
-            if ( !event.target.classList.contains('addPermission') ) return;
+            let click = event.target;
+            if ( !click.classList.contains('addPermission') && !click.parentElement.classList.contains('addPermission') ) 
+                return;
 
-            let a = event.target;
+            let a =  click.hasAttribute('data-permID') ? click : click.parentElement;
             let pID = a.getAttribute('data-permID');
             let pName = a.innerHTML;
 
@@ -181,15 +180,16 @@ UsersEditing.prototype.showUserEditModal = function(e)
         dataType:"json",
         success:function(data) {
             debug(data);
-
             if ( data.debug )
             {
-                debugModal( data.debug );
-                return;
+                debug(data);
+                if ( typeof debugModal === 'function' )
+                {
+                    return debugModal( data.debug );
+                }
             }
-
             if ( data.error )
-                that.resultModalCall( 'error', data.error.message, data.error.code, data.error );
+                return AR.error(data.error.message, data.error.code, data.error);
 
             that.editUser_ID = data.id;
             let fio = [];
@@ -210,14 +210,26 @@ UsersEditing.prototype.showUserEditModal = function(e)
             that.modal.querySelector('#userThirdName').setAttribute('value', fio[2] ? fio[2] : '');
             that.modal.querySelector('#userThirdName').value = fio[2] ? fio[2] : '';
 
+            /** LOGIN PASS **/
             let userLog = that.modal.querySelector('#userLog');
+            if ( data.login )
+            {
                 userLog.setAttribute('value', data.login);
                 userLog.value = data.login;
+            } else {
+                userLog.setAttribute('disabled', '');
+            }
+
             let userPass = that.modal.querySelector('#userPass');
+            if ( data.pass )
+            {
                 userPass.setAttribute('value', data.pass);
                 userPass.value = data.pass;
+            } else {
+                userPass.setAttribute('disabled', '');
+            }
 
-
+            /** LOCATIONS **/
             if ( data.location )
             {
                 let wcListUL = document.querySelector('.wcList');
@@ -274,7 +286,7 @@ UsersEditing.prototype.showUserEditModal = function(e)
                 $.each(data.permissions, function(iter, perm)
                 {
                     let newPermLi = document.querySelector('.wcListProto').cloneNode(true);
-                        newPermLi.children[0].innerHTML = perm.description;
+                        newPermLi.children[0].innerHTML = perm.name + " - <i>" + perm.description + "</i>";
                         newPermLi.children[1].remove();
                         newPermLi.children[1].setAttribute('data-cpID', perm.id);
                         newPermLi.children[1].setAttribute('class','close remCurrentPerm');
@@ -290,7 +302,7 @@ UsersEditing.prototype.showUserEditModal = function(e)
             }
         },
         error:function (error) {
-            that.resultModalCall( 'serverError', error.responseText, error.status );
+            AR.serverError( error.status, error.responseText );
         }
     }); //AJAX
 };
@@ -332,23 +344,27 @@ UsersEditing.prototype.buttonSubmitUserInit = function()
             },
             success:function(data) {
                 data = JSON.parse(data);
-                debug(data);
+                
                 if ( data.debug )
                 {
-                    debugModal( data.debug );
-                    return;
+                    debug(data);
+                    return AR.debug(data.debug);
                 }
 
                 if ( data.success )
                 {
+                    that.operationStatus = true;
                     $('#userEditModal').modal('hide');
-                    that.resultModalCall( 'success', data.success.message, data.success.code );
-                } else if ( data.error ) {
-                    that.resultModalCall( 'error', data.error.message, data.error.code, data.error );
-                }
+                    AR.success(data.success.message, data.success.code);
+                } 
+
+                if ( data.error )
+                    AR.error(data.error.message, data.error.code, data.error);
+
+                button.classList.remove('disabled');
             },
             error:function (error) {
-                that.resultModalCall( 'serverError', error.responseText, error.status );
+                AR.serverError( error.status, error.responseText);
             }
         });
     });
@@ -389,7 +405,6 @@ UsersEditing.prototype.userAddModal = function()
         },
         dataType:"json",
         success:function(data) {
-            debug(data);
             if ( data.presets )
             {
                 let userMTProd = that.modal.querySelector('#userMTProd'); // select
@@ -403,12 +418,12 @@ UsersEditing.prototype.userAddModal = function()
                     userMTProd.appendChild(option);
                 });
             } else if ( data.error ) {
-                that.resultModalCall( 'error', data.error.message, data.error.code, data.error );
+                AR.error(data.error.message, data.error.code, data.error);
             }
 
         },
         error: function (error) {
-            that.resultModalCall( 'serverError', error.responseText, error.status );
+            AR.serverError( error.status, error.responseText);
         }
     });
 };
@@ -441,18 +456,18 @@ UsersEditing.prototype.buttonDellUserInit = function()
                         that.modal.querySelector('.submitUserData').classList.add('disabled');
                     },
                     success:function(data) {
-                        debug(data);
                         if ( data.success )
                         {
+                            that.operationStatus = true;
                             $('#userEditModal').modal('hide');
-                            that.resultModalCall( 'success', data.success.message, data.success.code );
+                            AR.success( data.success.message, data.success.code);
 
                         } else if ( data.error ) {
-                            that.resultModalCall( 'error', data.error.message, data.error.code, data.error );
+                            AR.error(data.error.message, data.error.code, data.error);
                         }
                     },
                     error: function (error) {
-                        that.resultModalCall( 'serverError', error.responseText, error.status );
+                        AR.serverError( error.status, error.responseText);
                     }
                 });
             }
@@ -461,71 +476,5 @@ UsersEditing.prototype.buttonDellUserInit = function()
     }
 };
 
-UsersEditing.prototype.resultModalCall = function( callType, message, code, respObject )
-{
-
-    let alertResponse = $('#alertResponse');
-    alertResponse.iziModal('setWidth', '600');
-    switch (callType)
-    {
-        case "success":
-        {
-            this.operationStatus = true;
-            alertResponse.iziModal('setHeaderColor', '#d09d16');
-            alertResponse.iziModal('setIcon', 'far fa-check-circle');
-            alertResponse.iziModal('setTitle', message);
-            alertResponse.iziModal('setSubtitle', 'Операция прошла успешно!');
-        } break;
-        case "error":
-        {
-            alertResponse.iziModal('setHeaderColor', 'rgb(189, 91, 91)');
-            alertResponse.iziModal('setIcon', 'fas fa-exclamation-triangle');
-            alertResponse.iziModal('setTitle', 'Операция завершена с ошибкой!' + " Код: " +  code );
-            alertResponse.iziModal('setSubtitle', message );
-            if ( respObject.file )
-            {
-                alertResponse.iziModal('setWidth', "90%");
-                alertResponse.iziModal('resetProgress');
-                let text = '<div class="p1">';
-                if ( respObject.file )
-                    text += '<p class="textSizeMiddle bg-warning p1">File: <b>'+ respObject.file +' __ on line: '+ respObject.line +'</b></p>';
-
-                if ( respObject.previous )
-                    text += '<p>Previous: <b>'+ respObject.previous +'</b></p>';
-                
-                if ( respObject.trace )
-                {
-                    text += '<p class="bg-info p1"> <b>Trace:</b> <br>';
-                    $.each(respObject.trace, function (i, tarceObj) {
-                        text += '<p class="mb-1 brb-2-secondary">File: <b>'+ tarceObj.file +' __ on line: '+ tarceObj.line +'</b><br>';
-                        text += 'Class: <b>'+ tarceObj.class +' '+ tarceObj.type +'<i>'+  tarceObj.function + '()</i></b></p>';
-                    });
-                    text += '</p>';
-                }
-                alertResponse.iziModal('setContent', text);
-            }
-        } break;
-        case "serverError":
-        {
-            alertResponse.iziModal('setHeaderColor', 'rgb(189, 91, 91)');
-            alertResponse.iziModal('setIcon', 'fas fa-bug');
-            alertResponse.iziModal('setTitle', 'Ошибка на сервере! Попробуйте позже.');
-            alertResponse.iziModal('setSubtitle', "Код: " + code);
-            alertResponse.iziModal('setWidth', "100%");
-            alertResponse.iziModal('pauseProgress');
-
-            alertResponse.iziModal('setContent', '<div>'+ message +'</div>');
-        } break;
-        default:
-        {
-        } break;
-    }
-    alertResponse.iziModal("open");
-};
-
 let usersEditing = new UsersEditing();
 usersEditing.init();
-
-$(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-});
