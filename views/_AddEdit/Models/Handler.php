@@ -853,6 +853,20 @@ class Handler extends General
         {
             try {
                 $this->rrmdir($path);
+
+                $files = [];
+                if ( file_exists($row['number_3d']) ) $files = scandir( $row['number_3d'] );
+                $is_empty = true;
+
+                for ( $i = 0; $i < count($files); $i++ ) {
+                    if ( $files[$i] == '.' || $files[$i] == '..' ) continue;
+
+                    if ( isset($files[$i]) && !empty($files[$i]) ) $is_empty = false;
+                }
+
+                if ( $is_empty && file_exists($row['number_3d']) )
+                    rmdir( $row['number_3d'] );
+
             } catch (\Exception | \Error $e) {
                 $result['error'] = $e->getMessage();
                 $result['errorNo'] = $e->getCode();
@@ -860,16 +874,6 @@ class Handler extends General
             }
         }
 
-        $files = [];
-		if ( file_exists( $row['number_3d']) ) $files = scandir( $row['number_3d'] );
-		$is_empty = true;
-
-		for ( $i = 0; $i < count($files); $i++ ) {
-			if ( $files[$i] == '.' || $files[$i] == '..' ) continue;
-			if ( !empty($files[$i]) ) $is_empty = false;
-		}
-		if ( $is_empty ) rmdir( $row['number_3d'] );
-		
 		return $result;
 	}
 

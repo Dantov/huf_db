@@ -68,11 +68,14 @@ class EditStatusesController extends GeneralController
         $status = $request->post('status');
         $date = date('Y-m-d');
 
+        $result = [
+            'done'=>'',
+        ];
+
         if ( empty($selectionMode['models']) || empty($status) )
         {
-            $result['doneOne'] = false;
-            echo json_encode($result);
-            exit;
+            $result['done'] = false;
+            exit (json_encode($result['done']));
         }
 
         $progress = new ProgressCounter();

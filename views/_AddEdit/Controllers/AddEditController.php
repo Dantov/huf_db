@@ -228,7 +228,7 @@ class AddEditController extends GeneralController
             $id = 0; // нужен 0 что бы добавилась новая модель
 
             // на проверке
-            $row['status'] = $addEdit->getStatusCrutch(1, true);
+            //$row['status'] = $addEdit->getStatusCrutch(1, true);
             $statusesWorkingCenters = $addEdit->getStatus();
         }
 

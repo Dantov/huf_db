@@ -73,8 +73,17 @@ class PushNotice extends General
         if (!$date) $date = date('Y-m-d');
         if (!$creator_name) $creator_name = User::getFIO();
 
+        if ( !$status || !$number_3d || !$vendor_code || !$model_type )
+        {
+            $stockQuery = $this->findOne( " SELECT  number_3d,vendor_code,model_type,status FROM stock WHERE id='$id' " );
+            if ( !$status ) $status = $stockQuery['status'];
+            if ( !$number_3d ) $number_3d = $stockQuery['number_3d'];
+            if ( !$vendor_code ) $vendor_code = $stockQuery['vendor_code'];
+            if ( !$model_type ) $model_type = $stockQuery['model_type'];
+        }
+
         // полезем за картинкой
-        $imgQuery = mysqli_query($this->connection, " SELECT img_name FROM images WHERE main='1' AND pos_id=$id " );
+        $imgQuery = mysqli_query($this->connection, " SELECT img_name FROM images WHERE main='1' AND pos_id='$id' " );
         $pathToImg='';
         if ( $imgQuery->num_rows )
         {
@@ -86,18 +95,10 @@ class PushNotice extends General
             if ( !file_exists(_stockDIR_ . $file) ) $pathToImg = _stockDIR_HTTP_."default.jpg";
         }
 
-        if ( !$status || !$number_3d || !$vendor_code || !$model_type )
-        {
-            $stockQuery = $this->findOne( " SELECT  number_3d,vendor_code,model_type,status FROM stock WHERE id=$id " );
-            if ( !$status ) $status = $stockQuery['status'];
-            if ( !$number_3d ) $number_3d = $stockQuery['number_3d'];
-            if ( !$vendor_code ) $vendor_code = $stockQuery['vendor_code'];
-            if ( !$model_type ) $model_type = $stockQuery['model_type'];
-        }
-
         // Добавляем в базу
         $query = "INSERT INTO pushnotice ( pos_id,number_3d,vendor_code,model_type,image, status, name, addedit, date) 
                   VALUES('$id','$number_3d','$vendor_code','$model_type','$pathToImg','$status','$creator_name','$isEdit','$date')";
+
         $addPush = mysqli_query($this->connection, $query);
         $not_id = mysqli_insert_id($this->connection); // last insert ID
 

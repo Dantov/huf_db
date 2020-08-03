@@ -26,7 +26,7 @@ class HandlerPrices extends Handler
      * @return int
      * @throws \Exception
      */
-    public function getUserIDFromSurname($surname )
+    public function getUserIDFromSurname( $surname )
     {
         $userID = null;
         foreach ( $this->getUsers() as $user )
@@ -77,9 +77,13 @@ class HandlerPrices extends Handler
         //Добавим за сопровождение 3D моделей
         if ( $priceType === 'escort3D' )
         {
-            //$userID = 4; // Куратор 3д дизайна (Дзюба), пока не знаю как его определить
-            // взяли ID куратора
-            $userID = $this->findOne("SELECT user_id FROM user_permissions WHERE permission_id='54'")['user_id'];
+            $userID = 4; // Куратор 3д дизайна (Дзюба),
+
+            // взяли ID автора
+//            $authorID = $this->getUserIDFromSurname( explode(" ", $author)[0] );
+//            if ( !$curatorID ) return -1;
+//            Разрешений куратора может быть много. как отличить действующего куратора?
+//            $userID = $this->findOne("SELECT user_id FROM user_permissions WHERE permission_id='54'")['user_id'];
 
             $queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='92'");
             $points = (int)($queryGS['points'] * 100);

@@ -668,8 +668,8 @@ class ToExcel extends Main
                     ->getStartColor()
                     ->setRGB('f1edff');
             }
-            $lastStatusID = (int)$lastStatus['status']['id']?:0;
-            if ( $lastStatusID === 11 || $lastStatusID === 88)
+            $lastStatusID = $lastStatus['status']['id']??0;
+            if ( (int)$lastStatusID === 11 || (int)$lastStatusID === 88)
             {
                 $sheet->getStyleByColumnAndRow(1, $startRow, 8, $startRow)
                     ->getFill()
