@@ -223,16 +223,20 @@ function submitForm() {
         success:function(resp)
         {
             resp = JSON.parse(resp);
-            //debug(resp);
+            
+            if ( resp.debug )
+            {
+                debug(resp);
+                if ( typeof debugModal === 'function' )
+                {
+                    return debugModal( resp.debug );
+                }
+            }
             if ( resp.error )
             {
-                let context = this;
-                AR.onClosed( function(){
-                    //debug(context,'Context');
-                } );
                 AR.setDefaultMessage( 'error', 'subtitle', "Ошибка при сохранении." );
-                AR.error( resp.error.message, resp.error.code );
-
+                AR.error( resp.error.message, resp.error.code, resp.error );
+                
                 edit.classList.remove('hidden');
                 return;
             }
@@ -261,15 +265,14 @@ function submitForm() {
             back.classList.remove('hidden');
             edit.classList.remove('hidden');
             show.classList.remove('hidden');
-
         },
-        error: function(error) { // Данные не отправлены
-            modal.iziModal('setTitle', 'Ошибка отправки! Попробуйте снова.');
-            modal.iziModal('setHeaderColor', '#FF5733');
+        error: function(error) { 
+            AR.serverError( error.status, error.responseText );
+
+            // modal.iziModal('setTitle', 'Ошибка отправки! Попробуйте снова.');
+            // modal.iziModal('setHeaderColor', '#FF5733');
 
             edit.classList.remove('hidden');
-
-            debug(error);
         }
     });
 }

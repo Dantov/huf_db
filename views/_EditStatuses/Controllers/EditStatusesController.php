@@ -70,7 +70,7 @@ class EditStatusesController extends GeneralController
 
         if ( empty($selectionMode['models']) || empty($status) )
         {
-            $result['done'] = false;
+            $result['doneOne'] = false;
             echo json_encode($result);
             exit;
         }
@@ -130,6 +130,7 @@ class EditStatusesController extends GeneralController
             //============= counter point ==============//
             $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
         }
+        //debug('','last',1);
 
         $update = false;
         $in = rtrim($in,',');
@@ -140,7 +141,7 @@ class EditStatusesController extends GeneralController
             $update = $handler->baseSql($sql);
         }
 
-        $handler->closeDB();
+        //$handler->closeDB();
 
         if ( $update )
         {

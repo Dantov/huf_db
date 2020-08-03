@@ -1,5 +1,5 @@
 <div class="input-group gems_cut_input">
-    <input type="text" class="form-control" name="gemsCut[]" value="<?=$gem['gems_cut'];?>">
+    <input type="text" class="form-control" name="gems[cut][]" value="<?=$gem['gems_cut'];?>">
     <div class="input-group-btn">
 		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			<span class="caret"></span>

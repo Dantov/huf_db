@@ -60,7 +60,7 @@ $isView = true;
             <div role="tabpanel" class="tab-pane active in fade pt-1" id="info">
 
                 <div class="panel mb-1 descriptionPanel">
-                    <?php if ( User::permission('paymentManager') && in_array(37,User::getLocations()) && (int)$currentStatus['id'] === 35 ): // эскиз?>
+                    <?php if ( User::permission('paymentManager') && User::permission('artCouncil') && (int)$currentStatus['id'] === 35 ): // эскиз?>
                          <?php if ( !$isStatusPresentDesign ):?>
                             <button type="button" id="approveSketchBtn" data-toggle="modal" data-target="#approveModal" class="btn btn-primary border-secondary-2 textSizeMiddle btn-lg btn-block pt-6 pb-6 mt-1 mb-1">
                                 <i class="fas fa-magic"></i>

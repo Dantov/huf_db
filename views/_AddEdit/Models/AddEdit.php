@@ -557,7 +557,12 @@ class AddEdit extends General
 				if ( $stockStatusID == $permittedStatus['id'] ) $permittedStatus['check'] = "checked";
 			}
 		} else {
-            if ( $selMode !== 'selectionMode' ) $permittedStatuses[0]['check'] = "checked";
+            foreach ( $permittedStatuses as &$permittedStatus )
+            {
+                if ( $permittedStatus['id'] == 35 ) $permittedStatus['check'] = "checked";
+            }
+            // if ( $selMode !== 'selectionMode' ) 
+            //     $permittedStatuses[0]['check'] = "checked";
 		}
 
         $permittedStatuses = $this->sortStatusesByWorkingCenters($permittedStatuses);

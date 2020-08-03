@@ -282,6 +282,7 @@ function addRow( self )
 	let newRow = document.getElementById(protoRow).cloneNode(true);
 		newRow.style.display = "table-row";
 		newRow.removeAttribute('id');
+		newRow.classList.remove('hidden','protoRow');
 		newRow.children[0].innerHTML = ++counter;
 	if ( protoRow === 'protoCollectionRow' )
 	{
@@ -313,12 +314,6 @@ function deleteRowNew( self ) {
             if (elem.className === 'rowID') return;
             elem.setAttribute('value',-1);
         });
-        /*
-        inputs.forEach(function (elem) {
-            if (elem.className === 'rowID') return;
-            elem.setAttribute('value',-1);
-        });
-        */
         row.setAttribute('class','hidden');
 	} else {
         row.remove();

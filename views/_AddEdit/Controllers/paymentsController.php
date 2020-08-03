@@ -15,10 +15,10 @@ try {
                 if ( !$isCurrentStatusPresent )
                     if ( $payments->addDesignPrices('sketch', $author) === -1 ) $resp_arr['MA_design'] = AppCodes::getMessage(AppCodes::NOTHING_DONE)['message'];
     }
-    if (User::permission('paymentManager')) // зачислили дизайнеру, за утвержденный дизайн
+    if ( User::permission('paymentManager') && User::permission('artCouncil') ) // зачислили дизайнеру, за утвержденный дизайн
     {
         if ((int)$status === 89)
-            if ( !$isCurrentStatusPresent && $this->isStatusPresent(35) )
+            if ( !$isCurrentStatusPresent && $payments->isStatusPresent(35) )
                 if ($payments->addDesignPrices('designOK') === -1) $resp_arr['MA_design'] = "not adding price";
     }
 
@@ -32,7 +32,7 @@ try {
         }
         // инициируем вставку оценок моделироания только ели есть MA_modeller3D
         // и имя FIO моделлера == FIO юзера
-        if ( trueIsset($request->post('ma3Dgs')['gs3Dids']) && trueIsset($modeller3d) )
+        if ( $request->post('ma3Dgs') && trueIsset($modeller3d) )
             $payments->addModeller3DPrices($request->post('ma3Dgs'), $modeller3d);
     }
 

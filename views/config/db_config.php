@@ -14,7 +14,7 @@ return [
         'username' => 'User',
         'password' => 'RexJ7uiLpnBE2fDO',
         'charset' => 'utf8',
-        'access' => [ 2,5,11 ],
+        'access' => [ 3,4,6,7 ],
     ],
     "User2" => [
         'host' => 'localhost',
@@ -22,7 +22,7 @@ return [
         'username' => 'User2',
         'password' => 'P8M28BfzNLnHoSxE',
         'charset' => 'utf8',
-        'access' => [ 3,4,6,7,8,122 ],
+        'access' => [ 2,5,8,10,11,122 ],
     ],
     "guest" => [
         'host' => 'localhost',

@@ -69,7 +69,7 @@ class HandlerPrices extends Handler
         //Начислим за утвержденный дизайн 3D модели
         if ( $priceType === 'designOK' )
         {
-            $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='2' AND gs_id='91') ";
+            $sql = " UPDATE model_prices SET status='1',status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='2' AND gs_id='91') ";
             if ( $this->baseSql($sql) ) return 1;
             return -1;
         }
@@ -124,9 +124,11 @@ class HandlerPrices extends Handler
         $gs3Dids = $ma3Dgs['gs3Dids'];
         $in = '';
         foreach ($gs3Dids as $gs3Did) $in .= $gs3Did . ',';
-        $in = '(' . rtrim($in, ',') . ')';
-        $rows = $this->findAsArray(" SELECT id as gs_id, grade_type as is3d_grade, work_name as cost_name FROM grading_system WHERE id IN $in ");
+        $in = trim($in, ',');
+        if ( empty($in) )
+            return -1;
 
+        $rows = $this->findAsArray(" SELECT id as gs_id, grade_type as is3d_grade, work_name as cost_name FROM grading_system WHERE id IN ($in) ");
         foreach ($rows as $k => &$gsRow)
         {
             $gsRow['user_id'] = $userID;
@@ -162,9 +164,8 @@ class HandlerPrices extends Handler
 
         if ( $priceType === 'SignedTechJew' )
         {
-
             // Узнать что это за модель!!!
-            // что бы накинуть нужные оценки технолога!!!!!!!! из табл grading_system 94 96 97 98
+            // что бы накинуть нужные оценки технолога! из табл grading_system 94 96 97 98
             $stock = $this->findOne("SELECT number_3d,vendor_code,model_type,labels FROM stock WHERE id='$this->id'");
             $material = $this->findOne("SELECT type FROM metal_covering WHERE pos_id='$this->id'");
 
@@ -189,7 +190,7 @@ class HandlerPrices extends Handler
             if ( $this->insertUpdateRows($rows, 'model_prices') !== -1 )
             {
                 // После подписи валика зачислим за Сопровождение Славику
-                $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='2' AND gs_id='92') ";
+                $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='2' AND gs_id='92') ";
                 if ( $this->baseSql($sql) ) return 1;
                 return -1;
             }
@@ -197,7 +198,7 @@ class HandlerPrices extends Handler
 
         if ( $priceType === 'signed' ) // зачислим  проверяющему и 3д модельеру
         {
-            $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='1') ";
+            $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='1') ";
             if ( $this->baseSql($sql) ) return 1;
         }
 
@@ -228,7 +229,7 @@ class HandlerPrices extends Handler
 
         if ( $priceType === 'printed' ) // зачислим прайсы стоимости роста и поддержек
         {
-            $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='3' OR is3d_grade='5') ";
+            $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='3' OR is3d_grade='5') ";
             if ( $this->baseSql($sql) ) return 1;
         }
 
@@ -268,7 +269,7 @@ class HandlerPrices extends Handler
 
         if ( $priceType === 'signalDone' )
         {
-            $sql = " UPDATE model_prices SET status='1' WHERE pos_id='$this->id' AND (is3d_grade='6' OR is3d_grade='7')";
+            $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='6' OR is3d_grade='7')";
             if ( $this->baseSql($sql) ) return 1;
         }
 
@@ -337,7 +338,8 @@ class HandlerPrices extends Handler
         foreach ($priceIDs as $pID) $in .= $pID.',';
         $in = rtrim($in,',') . ")";
 
-        $sql = " UPDATE model_prices SET paid='1' WHERE id IN $in ";
+        $userID = User::getID();
+        $sql = " UPDATE model_prices SET paid='1', paid_date='$this->date', who_paid='$userID' WHERE id IN $in ";
         $this->baseSql($sql);
 
         if ( mysqli_affected_rows($this->connection) )

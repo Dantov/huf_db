@@ -66,7 +66,7 @@ $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses
 // добавляем во все коиплекты артикул, если он есть
 $handler->addVCtoComplects($vendor_code, $number_3d);
 
-el_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
+//$model_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
 $str_labels =  $handler->makeLabels($_POST['labels']);
 
 // берем все остальное
@@ -182,21 +182,18 @@ if ( $permissions['material'] )
 }
 //-------------- материалы ----------------//
 
+
 //---------- добавляем камни ----------//
 if ( $permissions['gems'] )
 {
-    debug();
     //если камни есть то добавляем их
-    $gems = [];
-    $gems['name']  = $_POST['gemsName'];
-    $gems['cut']   = $_POST['gemsCut'];
-    $gems['val']   = $_POST['gemsVal'];
-    $gems['diam']  = $_POST['gemsDiam'];
-    $gems['color'] = $_POST['gemsColor'];
-
-
-    if ( !$handler->addGems( $gems ) )
-        $resp_arr['errors']['gems'] = 'При добавлении камней возникла ошибка.';
+    if ( !empty($request->post('gems')) )
+    {
+        $gems = $request->post('gems');
+        $gemsRows = $handler->makeBatchInsertRow( $gems, $id, 'gems');
+        $resp_arr['gems']['insertUpdate'] = $handler->insertUpdateRows($gemsRows['insertUpdate'], 'gems');
+        $resp_arr['gems']['delete'] = $handler->removeRows($gemsRows['remove'], 'gems');
+    }
 }
 //============= counter point ==============//
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );

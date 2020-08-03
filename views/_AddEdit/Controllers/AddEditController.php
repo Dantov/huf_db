@@ -27,35 +27,59 @@ class AddEditController extends GeneralController
         $request = $this->request;
         if ( $request->isAjax() )
         {
-            if ( $request->isPost() && $modelsTypeRequest = $request->post('modelsTypeRequest') ) 
+            try 
             {
-                $this->actionVendorCodeNames($modelsTypeRequest);
-            }
-            if ( $request->isPost() && ( (int)$request->post('paid') === 1) )
-            {
-                $this->actionPaidRepair($request->post);
-            }
-
-            if ( $request->post('deleteFile') )
-            {
-                $fileName = $request->post('fileName');
-                $id = (int)$request->post('id');
-                $fileType = $request->post('fileType');
-                if ( !empty($fileName) && !empty($id) && !empty($fileType) )
+                if ( $request->isPost() && $modelsTypeRequest = $request->post('modelsTypeRequest') ) 
                 {
-                    $this->actionDeleteFile($id, $fileName, $fileType);
+                    $this->actionVendorCodeNames($modelsTypeRequest);
                 }
-            }
+                if ( $request->isPost() && ( (int)$request->post('paid') === 1) )
+                {
+                    $this->actionPaidRepair($request->post);
+                }
 
-            if ( $request->post('dellPosition') )
-            {
-                if ( $id = (int)$request->post('id') )
-                    $this->actionDeletePosition($id);
-            }
+                if ( $request->post('deleteFile') )
+                {
+                    $fileName = $request->post('fileName');
+                    $id = (int)$request->post('id');
+                    $fileType = $request->post('fileType');
+                    if ( !empty($fileName) && !empty($id) && !empty($fileType) )
+                    {
+                        $this->actionDeleteFile($id, $fileName, $fileType);
+                    }
+                }
 
-            if ( $request->isPost() && $request->post('save') )
-            {
-                $this->actionFormController( $request->post('save') );
+                if ( $request->post('dellPosition') )
+                {
+                    if ( $id = (int)$request->post('id') )
+                        $this->actionDeletePosition($id);
+                }
+
+                if ( $request->isPost() && $request->post('save') )
+                {
+                    $this->actionFormController( $request->post('save') );
+                }
+            } catch (\Error | \Exception $e) {
+                if ( _DEV_MODE_ )
+                {
+                    exit( json_encode([
+                        'error'=>[
+                            'message'=>$e->getMessage(),
+                            'code'=>$e->getCode(),
+                            'file'=>$e->getFile(),
+                            'line'=>$e->getLine(),
+                            'trace'=>$e->getTrace(),
+                            'previous'=>$e->getPrevious(),
+                        ]
+                    ]) );
+                } else {
+                    exit( json_encode([
+                        'error'=>[
+                            'message'=>AppCodes::getMessage(AppCodes::SERVER_ERROR)['message'],
+                            'code'=>$e->getCode(),
+                        ],
+                    ]) );
+                }
             }
             exit;
         }

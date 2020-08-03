@@ -299,16 +299,27 @@ JS;
 
         $usersModel = new UsersModel();
         $userRes['presets'] = $usersModel->userRulesPreset();
-        $delKeys1 = ['mt_admin','mt_design'];
-        $delKeys2 = ['mt_admin','mt_design','mt_tech'];
+
+        $delKeys0 = ['mt_admin','mt_design'];
+        $delKeys1 = ['mt_admin','mt_design','mt_concil'];
+        $delKeys2 = ['mt_admin','mt_design','mt_tech','mt_concil'];
 
         $uAcc = User::getAccess();
-        if ($uAcc === 11 || $uAcc === 122 )
+        if ( $uAcc === 11 || $uAcc === 122 )
         {
             foreach ( $userRes['presets'] as $key => &$val )
             {
                 unset($val['permissions']);
                 if ( in_array($key, ($uAcc === 11) ? $delKeys1 : $delKeys2) )
+                    unset($userRes['presets'][$key]);
+            }
+        }
+        if ( $uAcc === 10 )
+        {
+            foreach ( $userRes['presets'] as $key => &$val )
+            {
+                unset($val['permissions']);
+                if ( in_array($key, $delKeys0) )
                     unset($userRes['presets'][$key]);
             }
         }
@@ -346,15 +357,17 @@ JS;
             $usersModel->addUserPermissions( $userRes );
 
         $userRes['presets'] = $usersModel->userRulesPreset();
-        $delKeys1 = ['mt_admin','mt_design'];
-        $delKeys2 = ['mt_admin','mt_design','mt_tech'];
-        if ( User::getAccess() === 11 || User::getAccess() === 122 )
+        $delKeys0 = ['mt_admin','mt_design'];
+        $delKeys1 = ['mt_admin','mt_design','mt_concil'];
+        $delKeys2 = ['mt_admin','mt_design','mt_tech','mt_concil'];
+        $uAcc = User::getAccess();
+        if ( $uAcc === 11 || $uAcc === 122 )
         {
             $i = 0;
             foreach ( $userRes['presets'] as $key => &$val )
             {
                 unset($val['permissions']);
-                if ( in_array($key, (User::getAccess() === 11) ? $delKeys1 : $delKeys2) )
+                if ( in_array($key, ($uAcc === 11) ? $delKeys1 : $delKeys2) )
                 {
                     $userRes['presets'][$i++] = $val;
                     unset($userRes['presets'][$key]);
@@ -373,6 +386,18 @@ JS;
                             if (isset($userRes['pass']) ) unset($userRes['pass']);
                         }
                     }
+                }
+            }
+        }
+        if ( $uAcc === 10 )
+        {
+            foreach ( $userRes['presets'] as $key => &$val )
+            {
+                unset($val['permissions']);
+                if ( in_array($key, $delKeys0) )
+                {
+                    $userRes['presets'][$i++] = $val;
+                    unset($userRes['presets'][$key]);
                 }
             }
         }

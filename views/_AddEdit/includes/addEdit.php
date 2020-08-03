@@ -252,28 +252,21 @@ $permittedFields = User::permissions();
                             <table class="table <?= $gemsRow ? "" : "hidden"?>">
                                 <thead>
                                 <tr class="thead11">
-                                    <th>№</th><th>Ø(Размер мм)</th><th>Кол-во шт.</th><th>Огранка</th><th>Сырьё</th><th>Цвет</th><th></th>
+                                    <th>№</th>
+                                    <th>Сырьё</th>
+                                    <th>Огранка</th>
+                                    <th>Кол-во шт.</th>
+                                    <th>Ø(Размер мм)</th>
+                                    <th>Цвет</th>
+                                    <th></th>
                                 </tr>
                                 </thead>
                                 <tbody id="gems_table">
-                                <?php foreach ( $gemsRow??[] as $gem ): ?>
-                                    <tr>
-                                        <td><?= ++$gI ?></td>
-                                        <td><?php require _viewsDIR_.'_AddEdit/includes/gems_diametr_input.php' ?></td>
-                                        <td><input type="number" class="form-control gems_value_input" name="gemsVal[]" value="<?=$gem['value']?>"></td>
-                                        <td><?php require _viewsDIR_.'_AddEdit/includes/gems_cut_input.php' ?></td>
-                                        <td><?php require _viewsDIR_.'_AddEdit/includes/gems_input.php' ?></td>
-                                        <td><?php require _viewsDIR_.'_AddEdit/includes/gems_color_input.php' ?></td>
-                                        <td style="width:100px;">
-                                            <button class="btn btn-sm btn-default " type="button" onclick="duplicateRow(this);" title="дублировать строку">
-                                                <span class="glyphicon glyphicon-duplicate"></span>
-                                            </button>
-                                            <button class="btn btn-sm btn-default " type="button" onclick="deleteRow(this);" title="удалить строку">
-                                                <span class="glyphicon glyphicon-trash"></span>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                <?php $switchTableRow = "gems" ?>
+                                <?php foreach ( $gemsRow??[] as $c => $gem ): ?>
+                                    <?php require _viewsDIR_."_AddEdit/includes/protoRows.php"?>
                                 <?php endforeach; ?>
+                                <?php if( isset($gem) ) unset($gem, $gemsRow); ?>
                                 </tbody>
                             </table>
                         </div><!-- end panel gems-->

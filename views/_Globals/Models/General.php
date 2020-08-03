@@ -579,7 +579,7 @@ class General extends Model
 
         // user access => status id
         //Пример: 2 => 89 - 3д моделлер может менять статус только после Утверждения дизайна
-        $changeStatusesAccess = [ 2 => 89, 3 => 2, 5 => 5, 11 => 89 ];
+        $changeStatusesAccess = [ 2 => 89, 3 => 2, 5 => 5, 11 => 89, 10 => 35 ];
 
 
         $toShowStatuses = true;

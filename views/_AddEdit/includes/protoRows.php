@@ -51,23 +51,30 @@
         case "gems": //прототип строки камней
 ?>
             <tr <?= !isset($gem) ? 'class="hidden protoRow" id="protoGemRow"':'' ?> >
+                <td><?= ++$c ?></td>
                 <td>
                     <input type="hidden" class="rowID" name="gems[id][]" value="<?=$gem['id']?>">
+                    <?php include('gems_input.php'); ?>
+                </td>
+                <td>
+                    <?php include('gems_cut_input.php'); ?>
+                </td>
+                <td>
+                    <input type="number" min="1" class="form-control gems_value_input" name="gems[val][]" value="<?=$gem['value'];?>">
+                </td>
+                <td>
                     <?php include('gems_diametr_input.php'); ?>
                 </td>
-                <td><input type="number" min="1" class="form-control gems_value_input" name="gems[val][]" value="<?=$gem['value'];?>"></td>
-                <td><?php include('gems_cut_input.php'); ?></td>
-                <td><?php include('gems_input.php'); ?></td>
-                <td><?php include('gems_color_input.php'); ?></td>
+                <td>
+                    <?php include('gems_color_input.php'); ?>
+                </td>
                 <td style="width:100px;">
-                    <?php if ( $hiddens['hide'] ): ?>
-                        <button class="btn btn-sm btn-default" type="button" onclick="duplicateRow(this);" title="дублировать строку">
-                            <span class="glyphicon glyphicon-duplicate"></span>
-                        </button>
-                        <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
-                            <span class="glyphicon glyphicon-trash"></span>
-                        </button>
-                    <?php endif; ?>
+                    <button class="btn btn-sm btn-default" type="button" onclick="duplicateRowNew(this);" title="дублировать строку">
+                        <span class="glyphicon glyphicon-duplicate"></span>
+                    </button>
+                    <button class="btn btn-sm btn-default" type="button" onclick="deleteRowNew(this);" title="удалить строку">
+                        <span class="glyphicon glyphicon-trash"></span>
+                    </button>
                 </td>
             </tr>
 <?php
