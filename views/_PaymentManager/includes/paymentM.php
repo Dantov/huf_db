@@ -7,8 +7,8 @@ $tabID = (int)$this->request->get('tab');
 HtmlHelper::defineURLParams([
 	'tab'    => $tabID,
 	'worker' => $workerID,
-	'year'   => $monthID,
-	'month'  => $yearID,
+	'year'   => $yearID,
+	'month'  => $monthID,
 	'page'   => $page,
 ]);
 //

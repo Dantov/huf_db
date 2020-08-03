@@ -5,8 +5,8 @@
 
     HtmlHelper::defineURLParams([
         'tab'   => $tabID,
-        'year'  => $monthID,
-        'month' => $yearID,
+        'year'  => $yearID,
+        'month' => $monthID,
         'page'  => $page,
     ]);
 
@@ -45,7 +45,9 @@
                     <li><a href="<?=HtmlHelper::URL('/',['year'=>date('Y')])?>">Текущий год</a></li>
                     <li role="separator" class="divider"></li>
                     <?php for( $y = 2020; $y <= date('Y'); $y++ ): ?>
-                        <li><a href="<?=HtmlHelper::URL('/',['year'=>$y])?>"><?=$y?></a></li>
+                        <li>
+                            <a href="<?=HtmlHelper::URL('/',['year'=>$y])?>"><?=$y?></a>
+                        </li>
                     <?php endfor; ?>
                 </ul>
             </div>
