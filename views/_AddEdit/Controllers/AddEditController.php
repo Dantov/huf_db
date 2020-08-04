@@ -458,10 +458,10 @@ JS;
             if ( $resultDell['success'] == 1 )
             {
                 $pn = new \Views\_Globals\Models\PushNotice();
-                $pn->addPushNotice($modelID, 3, $resultDell['number_3d'], $resultDell['vendor_code'], $resultDell['model_type'], $handler->date, false, $handler->user['fio']);
+                $pn->addPushNotice($modelID, 3, $resultDell['number_3d'], $resultDell['vendor_code'], $resultDell['model_type'], $handler->date, $resultDell['status'], $handler->user['fio']);
                 $this->session->setKey('re_search', true);
             }
-            $handler->closeDB();
+            //$handler->closeDB();
 
             //$result['dell'] = $resultDell['dell'];
             exit( json_encode($resultDell) );

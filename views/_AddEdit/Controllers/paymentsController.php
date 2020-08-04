@@ -25,7 +25,7 @@ try {
     if ( User::permission('MA_modeller3D') )
     {
         if ($isEdit) {
-            if ( (int)$status === 47  ) //'Готово 3D'
+            if ( (int)$status === 8 ) // В работе 3D //было - 'Готово 3D'
                 // добавим Дизайнеру за сопровождение
                 if ( !$isCurrentStatusPresent && $payments->isStatusPresent(89) && $payments->isStatusPresent(35) )
                     if ($payments->addDesignPrices('escort3D') === -1) $resp_arr['MA_modeller3D'] = "not adding price";
@@ -40,7 +40,7 @@ try {
     {
         if ($isEdit) {
             if ((int)$status === 1) // На проверке
-                if ( !$isCurrentStatusPresent && $payments->isStatusPresent(47) )   //47 -'Готово 3D'
+                if ( !$isCurrentStatusPresent )   // && $payments->isStatusPresent(47) 47 -'Готово 3D'
                     if ($payments->addTechPrices('onVerify') === -1) $resp_arr['MA_techCoord'] = "not adding price";
 
             if ((int)$status === 2) // Проверено
@@ -67,6 +67,7 @@ try {
     if (User::permission('MA_3dPrinting'))
     {
         if ($isEdit) {
+            // На будущее
 //        if ( $handler->isStatusPresent(2) ) // Есть Подписано - зачисляем стоимость печати
 //            $handler->addPrintingPrices( $_POST['printingPrices']??[] );
 

@@ -22,7 +22,7 @@ return [
         'username' => 'User2',
         'password' => 'P8M28BfzNLnHoSxE',
         'charset' => 'utf8',
-        'access' => [ 2,5,8,10,11,122 ],
+        'access' => [ 2,5,8,9,10,11,122 ],
     ],
     "guest" => [
         'host' => 'localhost',

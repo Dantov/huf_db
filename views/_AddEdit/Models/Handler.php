@@ -808,20 +808,19 @@ class Handler extends General
     {
         chdir(_stockDIR_);
 
-		$selQuery = mysqli_query($this->connection, " SELECT number_3d,vendor_code,model_type FROM stock WHERE id='$this->id' ");
-		$row = mysqli_fetch_assoc($selQuery);
+        $row = $this->findOne(" SELECT number_3d,vendor_code,model_type,status FROM stock WHERE id='$this->id' ");
 
 		$result = [
 		    'success' => 0,
             'error'=>'',
-            'errorNo'=>0,
+            'errorNo'=> 0,
 		    'number_3d'   => $row['number_3d'],
 		    'vendor_code' => $row['vendor_code'],
 		    'model_type'  => $row['model_type'],
+		    'status'  => $row['status'],
             'dell' => $row['number_3d']." / ".$row['vendor_code']." - ".$row['model_type'],
         ];
 
-		//$dellStock = mysqli_query($this->connection, " DELETE FROM stock          WHERE     id='$this->id' ");
         try {
             if ( $this->deleteFromTable('stock','id',$this->id) )
             {
@@ -837,7 +836,7 @@ class Handler extends General
                 mysqli_query($this->connection, " DELETE FROM pushnotice     WHERE pos_id='$this->id' ");
                 mysqli_query($this->connection, " DELETE FROM description    WHERE pos_id='$this->id' ");
                 mysqli_query($this->connection, " DELETE FROM model_prices   WHERE pos_id='$this->id' AND paid='0'"); // удалим только не оплаченные
-                $result = ['success' => 1];
+                $result['success'] = 1;
             } else {
                 $result['error'] = "something wrong";
                 return $result;

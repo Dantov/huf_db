@@ -31,7 +31,7 @@ class HandlerPrices extends Handler
         $userID = null;
         foreach ( $this->getUsers() as $user )
         {
-            if ( mb_stripos( $user['fullFio'], $surname ) !== false )
+            if ( mb_stripos( $user['fio'], $surname ) !== false )
             {
                 $userID = $user['id'];
                 break;
@@ -55,15 +55,28 @@ class HandlerPrices extends Handler
             if ( !$userID ) return -1;
 
             //$userID = User::getID();
-            $queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='91'");
-            $points = (int)($queryGS['points'] * 100);
-            $cost_name = $queryGS['description'];
-            $grade_type = $queryGS['grade_type'];
+            $rowGSDesign = $this->findAsArray("SELECT id as gs_id, grade_type as is3d_grade, description as cost_name, points as value FROM grading_system WHERE id IN ('91','99') ");
 
-            $sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
-				VALUES ('$userID', 91, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+            foreach ( $rowGSDesign as &$designGrade )
+            {
+                $designGrade['id'] = '';
+                $designGrade['user_id'] = $userID;
+                $designGrade['value'] = (int)($designGrade['value'] * 100);
+                $designGrade['pos_id'] = $this->id;
+                $designGrade['date'] = $this->date;
+            }
 
-            return $this->sql($sql);
+            return $this->insertUpdateRows($rowGSDesign, 'model_prices');
+
+
+//            $points = (int)($queryGS['points'] * 100);
+//            $cost_name = $queryGS['description'];
+//            $grade_type = $queryGS['grade_type'];
+//
+//            $sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date )
+//				VALUES ('$userID', 91, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+//
+//            return $this->sql($sql);
         }
 
         //Начислим за утвержденный дизайн 3D модели
@@ -154,6 +167,7 @@ class HandlerPrices extends Handler
     {
         if ( $priceType === 'onVerify' )
         {
+            // Возможно, должно выбрать из базы юзера с доступом MA_techCoord
             $userID = User::getID(); // Будет зачислено тому кто поставил статус, если у него есть MA_techCoord
             $queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='93'");
             $points = (int)($queryGS['points'] * 100);
@@ -183,7 +197,7 @@ class HandlerPrices extends Handler
 
             $rows = $this->findAsArray("SELECT id as gs_id, grade_type as is3d_grade, description as cost_name, points as value FROM grading_system WHERE id in $in");
 
-            foreach ($rows as &$gsRow)
+            foreach ( $rows as &$gsRow )
             {
                 $gsRow['user_id'] = User::getID(); // Будет зачислено тому кто поставил статус, если у него есть MA_techJew
                 $gsRow['value'] = (int)($gsRow['value'] * 100);
@@ -258,7 +272,8 @@ class HandlerPrices extends Handler
             $queryGS = $this->findOne("SELECT id as gs_id, grade_type as is3d_grade, description as cost_name, points as value FROM grading_system WHERE id='95'");
             $jewPriceID = $this->findOne("SELECT id FROM model_prices WHERE pos_id='$this->id' AND (is3d_grade='6' AND status='0')");
 
-            $queryGS['id'] = $jewPriceID['id']??null;
+            $queryGS['id'] = $jewPriceID['id']??'';
+            //$queryGS['id'] = $price['id']??null;
             //if ( trueIsset($price['id']) ) $queryGS['id'] = (int)$price['id'];
 
             $queryGS['value'] = (int)$price['value'];

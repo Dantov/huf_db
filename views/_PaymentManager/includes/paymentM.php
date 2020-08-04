@@ -72,6 +72,7 @@ switch ($tab??'all')
             <li role="presentation" class="<?= $tab == 'paid'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>2])?>" >Оплаченные</a></li>
             <li role="presentation" class="<?= $tab == 'notpaid'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>3])?>">Не оплаченные</a></li>
             <li role="presentation" class=""><a href="#statistic" aria-controls="statistic" role="tab" data-toggle="tab">Статистика</a></li>
+            <li role="presentation" class=""><a href="#help" aria-controls="help" role="tab" data-toggle="tab">Помощь</a></li>
         </ul>
 
         <div class="tab-content">
@@ -90,6 +91,49 @@ switch ($tab??'all')
                         <li class="list-group-item list-group-item-success">Возможно оплатить: <span class="pull-right"><?= $statistic['notpaid'] ?> грн.</span></li>
                         <li class="list-group-item list-group-item-info">Не зачисленные: <span class="pull-right"><?= $statistic['waiting'] ?> грн.</span></li>
                         <li class="list-group-item list-group-item-danger">Оплаченные: <span class="pull-right"><?= $statistic['paid'] ?> грн.</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="help">
+                <p></p>
+                <div class="panel panel-default">
+                    <div class="panel-heading text-center text-bold">Список добавления/зичислений стоимостей</div>
+                    <div class="panel-body"></div>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            1) Эскиз - создаёт <i>Дизайнер Юв.изделий</i> (Дзюба). <b>Добавляет</b> стоимость за эскиз, дизайнеру (Дзюбе).
+                        </li>
+                        <li class="list-group-item">
+                            2) Утв. эскиза - ставит <i>Худ.совет</i> (Богдан). <b>Зачисляет</b> стоимость за эскиз, дизайнеру (Дзюбе).
+                        </li>
+                        <li class="list-group-item">
+                            3) В работе 3Д  - ставит <i>3д моделлер</i>. <b>Добавляет</b> стоимость дизайнеру за курирование 3д (Дзюбе).
+                        </li>
+                        <li class="list-group-item">
+                            4) На проверке – ставит <i>Технолог 3Д</i> (Быков) <b>Добавляет</b> стоимость технологу 3д. за просмотр 3д модели (Быкову)
+                        </li>
+                        <li class="list-group-item">
+                            5) Подпись технолога – ставит <i>Техн.Юв.изделий</i> (Занин).
+                            <b>Добавляет</b> стоимоть технологу за просмотр 3д модели и сопровождение (Занину).
+                            А также <b>Зачисляет</b> дизайнеру за курирование 3д. (Дзюбе)
+                        </li>
+                        <li class="list-group-item">
+                            6) Проверено – ставит <i>Технолог 3Д</i> (Быков). <b>Зачисляет</b> стоимость утверждение 3д модели – (Быкову и Занину).
+                            <b>Зачисляет</b> за курирование 3д (Дзюбе). А также <b>Зачисляет</b> всю стоимость 3д моделлеру.
+                        </li>
+                        <li class="list-group-item">
+                            7) Поддержки – ставит <i>Оператор 3д принтера</i> (Емельянцевы Слава/Влад).
+                            <b>Добавляет</b> стоимость за создание поддержек (Емельянцеву Владу)
+                        </li>
+                        <li class="list-group-item">
+                            8) Выращено - ставит <i>Оператор 3д принтера</i> (Емельянцевы Слава/Влад).
+                            <b>Зачисляет</b> стоимость Емельянцеву Владу за поддержки.
+                        </li>
+                        <li class="list-group-item">
+                            9) На сбыте – ставит <i>Участок ПДО</i>. <b>Зачисляет</b> стоимость Техн.Юв.Изделий (Занину) за сопровождение.
+                            А так же <b>Зачисляет</b> стоимости модельерам за мастер модель.
+                        </li>
                     </ul>
                 </div>
             </div>

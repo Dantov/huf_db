@@ -72,6 +72,11 @@ class PushNotice extends General
         if (!$id) return false;
         if (!$date) $date = date('Y-m-d');
         if (!$creator_name) $creator_name = User::getFIO();
+//
+//        debug($number_3d,'$number_3d');
+//        debug($vendor_code,'$vendor_code');
+//        debug($model_type,'$model_type');
+//        debug($status,'$status');
 
         if ( !$status || !$number_3d || !$vendor_code || !$model_type )
         {

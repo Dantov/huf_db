@@ -357,8 +357,8 @@ JS;
             $usersModel->addUserPermissions( $userRes );
 
         $userRes['presets'] = $usersModel->userRulesPreset();
-        $delKeys0 = ['mt_admin','mt_design'];
-        $delKeys1 = ['mt_admin','mt_design','mt_concil'];
+        $delKeys0 = ['mt_admin'];
+        $delKeys1 = ['mt_admin','mt_concil'];
         $delKeys2 = ['mt_admin','mt_design','mt_tech','mt_concil'];
         $uAcc = User::getAccess();
         if ( $uAcc === 11 || $uAcc === 122 )
