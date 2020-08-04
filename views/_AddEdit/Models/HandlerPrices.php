@@ -68,14 +68,12 @@ class HandlerPrices extends Handler
 
             return $this->insertUpdateRows($rowGSDesign, 'model_prices');
 
-
 //            $points = (int)($queryGS['points'] * 100);
 //            $cost_name = $queryGS['description'];
 //            $grade_type = $queryGS['grade_type'];
 //
 //            $sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date )
 //				VALUES ('$userID', 91, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-//
 //            return $this->sql($sql);
         }
 
@@ -208,13 +206,14 @@ class HandlerPrices extends Handler
             if ( $this->insertUpdateRows($rows, 'model_prices') !== -1 )
             {
                 // После подписи валика зачислим за Сопровождение Славику
-                $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='2' AND gs_id='92') ";
+//                $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='2' AND gs_id='92') ";
+                $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND is3d_grade='2' ";
                 if ( $this->baseSql($sql) ) return 1;
                 return -1;
             }
         }
 
-        if ( $priceType === 'signed' ) // зачислим  проверяющему и 3д модельеру
+        if ( $priceType === 'signed' ) // зачислим  проверяющему и 3д модельеру // Проверено
         {
             $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='1') ";
             if ( $this->baseSql($sql) ) return 1;

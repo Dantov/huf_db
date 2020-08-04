@@ -9,7 +9,11 @@ class GradingSystemModel extends General
     const SQL_ERROR = 44;
     const SUCCESS = 1;
 
-	public function __construct()
+    /**
+     * GradingSystemModel constructor.
+     * @throws \Exception
+     */
+    public function __construct()
 	{
 		parent::__construct();
 		$this->connectDBLite();
@@ -48,23 +52,41 @@ class GradingSystemModel extends General
      * @param float $percent
      * @param string $examples
      * @param int $editGS_ID
-     * @throws \Exception
+     * @param float $basePoints
      * @return array
+     * @throws \Exception
      */
-    public function editGSPos( string $description, float $percent, string $examples, int $editGS_ID ) : array
+    public function editGSPos( string $description, float $percent, string $examples, int $editGS_ID, float $basePoints = 0.0 ) : array
     {
-        if ( !$this->findOne("select 1 from grading_system WHERE id='$editGS_ID' ") ) return ['error'=>self::WRONG_ID];
+        if ( !$this->findOne("select 1 from grading_system WHERE id='$editGS_ID' ") )
+            return ['error'=>self::WRONG_ID];
 
-        $basePoints = (float)$this->findOne("select points from grading_system WHERE id='1' ")['points'];
-        $newPoints =  round(($basePoints * $percent) / 100, 2);
-
-        $sql = "UPDATE grading_system SET description='$description', examples='$examples', percent='$percent', points='$newPoints' WHERE id='$editGS_ID'";
-        if ( $this->baseSql($sql) )
+        if ( $editGS_ID === 1 && $basePoints > 0 )
         {
-            return ['success'=>self::SUCCESS,'error'=>0];
+            $sqlBP = "UPDATE grading_system SET points='$basePoints' WHERE id='1'";
+            $this->baseSql($sqlBP);
+
+            $allRows = $this->findAsArray("SELECT id,percent,points FROM grading_system WHERE id<>1 ");
+            foreach ( $allRows as &$gsRow )
+                $gsRow['points'] = round(($basePoints * $gsRow['percent']) / 100, 2);
+
+            if ( $this->insertUpdateRows($allRows, 'grading_system') !== -1 )
+                return ['success'=>self::SUCCESS,'error'=>0];
         } else {
-            return ['error'=>self::SQL_ERROR, 'sql'=> $sql];
+
+            $basePoints = (float)$this->findOne("select points from grading_system WHERE id='1' ")['points'];
+            $newPoints =  round(($basePoints * $percent) / 100, 2);
+
+            $sql = "UPDATE grading_system SET description='$description', examples='$examples', percent='$percent', points='$newPoints' WHERE id='$editGS_ID'";
+            if ( $this->baseSql($sql) )
+            {
+                return ['success'=>self::SUCCESS,'error'=>0];
+            } else {
+                return ['error'=>self::SQL_ERROR, 'sql'=> $sql];
+            }
         }
+
+        return ['success'=>1, 'error'=>0];
     }
 
 }

@@ -13,18 +13,24 @@
                         <table class="table cursorArrow">
                             <thead>
                             <tr class="thead11">
-                                <th width="70%" class="text-center p1">Описание</th>
-                                <th width="15%" class="text-center p1">Примеры</th>
-                                <th width="12%" class="text-center p1" title="Процент от базовой стоимости">%</th>
-                                <th width="3%" class="text-center p1">Баллы</th>
+                                <th width="" class="text-center p1">Примеры</th>
+                                <th width="" class="text-center p1" title="Процент от базовой стоимости">%</th>
+                                <th width="" class="text-center p1">Баллы</th>
                             </tr>
                             </thead>
                             <tbody>
                                 <tr class="collsRow">
-                                    <td class="p1"><textarea  required rows="6" name="description" class="form-control editGS_description" style="width: 100%; resize: none;"></textarea></td>
                                     <td class="p1" title="Вносить, через запятую, ID моделей из базы"><input type="text" name="examples" class="p-1 form-control input-sm editGS_examples" value=""></td>
                                     <td class="p1 text-center"><input type="number" name="basePercent" class="p-1 input-sm form-control editGS_basePercent" value=""></td>
-                                    <td class="p1 text-center" title="Баллы"><span class="editGS_Points"></span></td>
+                                    <td class="p1 text-center" title="Баллы">
+                                        <input type="number" class="p-1 input-sm form-control editGS_PointsInput hidden" value="">
+                                        <span class="editGS_Points"></span>
+                                    </td>
+                                </tr>
+                                <tr class="collsRow">
+                                    <td class="p1" colspan="3">
+                                        <textarea  required rows="6" name="description" class="form-control editGS_description" style="width: 100%; resize: none;"></textarea>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

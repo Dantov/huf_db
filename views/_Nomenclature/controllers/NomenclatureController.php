@@ -48,11 +48,11 @@ class NomenclatureController extends GeneralController
                 /** GRADING SYSTEM **/
                 if (trueIsset($request->post('gsShow')) && trueIsset($request->post('showGSID')))
                 {
-                    echo json_encode( $this->actionShowGSPos( (int)$request->post('showGSID') ) );
+                    exit(json_encode( $this->actionShowGSPos( (int)$request->post('showGSID') ) ) );
                 }
                 if (trueIsset($request->post('gsEdit')) && trueIsset($request->post('editGS_ID')))
                 {
-                    echo json_encode( $this->actionEditGSPos() );
+                    exit(json_encode( $this->actionEditGSPos()) );
                 }
 
                 /** USERS **/
@@ -283,8 +283,11 @@ JS;
         $basePercent = (float)$request->post('basePercent');
         $examples = $request->post('examples');
         $editGS_ID = (int)$request->post('editGS_ID');
+        $basePoints = 0.0;
+        if ( $editGS_ID === 1 )
+            $basePoints = (float)$request->post('basePoints');
 
-        return $gs->editGSPos( $description, $basePercent, $examples, $editGS_ID );
+        return $gs->editGSPos( $description, $basePercent, $examples, $editGS_ID, $basePoints );
     }
 
     /**

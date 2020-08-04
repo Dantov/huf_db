@@ -44,11 +44,6 @@ GradingSystem.prototype.init = function(button)
         gs.hideGSEditModal();
     });
 
-    $('#gsOKModal').on('show.bs.modal', function (e) {
-        let modal = e.target;
-        modal.querySelector('.modal-body').innerHTML = "Данные внесены успешно";
-    });
-
     this.editGSButtonInit();
 
     debug('GradingSystem init ok!');
@@ -56,7 +51,6 @@ GradingSystem.prototype.init = function(button)
 
 GradingSystem.prototype.showGSEditModal = function(e)
 {
-    debug(this.modal,'gsEditModal');
 
     let button = e.relatedTarget;
     //debug(button);
@@ -73,16 +67,36 @@ GradingSystem.prototype.showGSEditModal = function(e)
         dataType:"json",
         success:function(data) {
             debug(data);
+
             that.editGS_ID = data.id;
 
             that.modal.querySelector('.panel-heading').innerHTML = data.work_name;
+
             that.modal.querySelector('.editGS_description').innerHTML = data.description;
             that.modal.querySelector('.editGS_description').value = data.description;
+
             that.modal.querySelector('.editGS_examples').setAttribute('value', data.examples);
             that.modal.querySelector('.editGS_examples').value = data.examples;
+
             that.modal.querySelector('.editGS_basePercent').setAttribute('value', data.percent);
             that.modal.querySelector('.editGS_basePercent').value = data.percent;
-            that.modal.querySelector('.editGS_Points').innerHTML = data.points;
+
+            if ( +data.id === 1 )
+            {
+                that.modal.querySelector('.editGS_Points').innerHTML = '';
+
+                that.modal.querySelector('.editGS_PointsInput').setAttribute('value', data.points);
+                that.modal.querySelector('.editGS_PointsInput').setAttribute('name', 'basePoints');
+                that.modal.querySelector('.editGS_PointsInput').value = data.points;
+
+                that.modal.querySelector('.editGS_PointsInput').classList.remove('hidden');
+            } else {
+                that.modal.querySelector('.editGS_Points').innerHTML = data.points;
+            }
+
+        },
+        error: function (error) {
+            AR.serverError(error.status, error.responseText);
         }
     });
 };
@@ -108,10 +122,16 @@ GradingSystem.prototype.editGSButtonInit = function()
                 $('#gsEditModal').modal('hide');
                 if ( data.error === 44 )
                 {
-                    alert(data.sql);
+                    AR.serverError(44, data.sql);
                 } else if ( data.success ) {
-                    $('#gsOKModal').modal('show');
+                    AR.success("Оценка изменена.", 1);
+                    AR.onClosed( function () {
+                        reload(true);
+                    });
                 }
+            },
+            error: function (error) {
+                AR.serverError(error.status, error.responseText);
             }
         });
 
@@ -120,23 +140,12 @@ GradingSystem.prototype.editGSButtonInit = function()
 GradingSystem.prototype.hideGSEditModal = function()
 {
     this.editGS_ID = 0;
-    //let that = this;
-    /*
-    debug(opt,'opt');
-    $.ajax({
-        url: "/options/noticeControl",
-        type: 'POST',
-        data: {
-            noticeActivate: opt
-        },
-        dataType:"json",
-        success:function(data) {
-            if ( data.done === 1 ) console.log('Уведомления активированы');
-            if ( data.done === 2 ) console.log('Уведомления отключены');
-        }
-    });*/
 
-    //debug(modalsInfo,'modalsInfo');
-    //debug(pricesName_value,'pricesName_value');
+    this.modal.querySelector('.editGS_PointsInput').setAttribute('value', '');
+    this.modal.querySelector('.editGS_PointsInput').removeAttribute('name');
+    this.modal.querySelector('.editGS_PointsInput').value = '';
+    this.modal.querySelector('.editGS_PointsInput').classList.add('hidden');
+
 };
+
 let gs = new GradingSystem();
