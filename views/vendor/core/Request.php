@@ -92,5 +92,25 @@ class Request {
         if ( isset( $_GET[$name] ) ) return $_GET[$name];
         return false;
     }
+
+    /**
+     * переход на др. страницу
+     * @param string $url
+     */
+    public function redirect($url='')
+    {
+        if ( !empty($url) )
+        {
+            $first = substr($url, 0, 1);
+            if ( $first == '/' || $first == '\\' ) {
+                $url = ltrim($url,'/');
+                $url = _rootDIR_HTTP_ . $url;
+            } else {
+                $url = _rootDIR_HTTP_ . $url;
+            }
+            header("Location:" . $url);
+            exit;
+        }
+    }
     
 }

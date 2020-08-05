@@ -44,7 +44,6 @@ JS;
     protected function accessControl()
     {
         $session = $this->session;
-        //debug($session,'$session');
 
         if ( Cookies::getOne('meme_sessA') )
         {
@@ -69,13 +68,10 @@ JS;
             }
         }
 
-        //debug($_SESSION,'Session');
         $access = $session->getKey('access');
         $assist = $session->getKey('assist');
-        //debug($access,'$access');
-        //debug($assist,'$assist',1);
 
-        if( $access !== true || $assist['update'] !== 7 ) $this->redirect('/auth/?a=exit');
+        if( $access !== true || $assist['update'] !== 8 ) $this->redirect('/auth/?a=exit');
     }
 
     /**

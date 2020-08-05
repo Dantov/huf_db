@@ -141,8 +141,9 @@ $isView = true;
                             <?php foreach ( $descriptions??[] as $description ) : ?>
                                 <li class="list-group-item">
                                     <i class="far fa-comment-alt"></i><strong> Описание №<?=$description['num']?>: </strong>
-                                    <span><?=$description['text'];?></span>
+                                    <textarea readonly="" class="br-0 cursorArrow" style="width: 100%; overflow: hidden; resize: none;"><?=$description['text'];?></textarea>
                                     <span class="badge" style="background-color: #a39e6d!important;">Добавлено: <?=$description['date']?> - <?=$description['userName']?></span>
+                                    <p></p>
                                 </li>
                             <?php endforeach;?>
                         <?php endif; ?>

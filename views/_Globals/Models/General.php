@@ -119,25 +119,22 @@ class General extends Model
 
     /**
      * @return mixed
+     * @throws \Exception
      */
     public function getUser()
     {
-        if ( isset($this->user) ) return $this->user;
-        //session_start();
-        //$userQuery = mysqli_query($this->connection, " SELECT id,fio,fullFio,location,access FROM users WHERE id='{$_SESSION['user']['id']}' ");+
+        if ( isset($this->user) )
+            return $this->user;
 
+        $userID = null;
         if ( $user = $this->session->getKey('user') )
             $userID = (int)$user['id']??'';
+
         $this->user = $this->findOne(" SELECT id,fio,fullFio,location,access FROM users WHERE id='$userID' ");
 
         if ( empty($this->user) )
-            //debug($this->user,'$user',1);
-            $this->redirect('/auth/?a=exit');
-            //header("location: /auth/?a=exit");
-            //throws new \Exception(UserCodes::getMessage(UserCodes::NO_SUCH_USER)['message'], UserCodes::NO_SUCH_USER);
+            $this->request->redirect('/auth/?a=exit');
 
-        //$user = mysqli_fetch_assoc($userQuery);
-        //foreach ( $user as $key => $value ) $this->user[$key] = $value;
         $this->user['IP'] = $this->IP_visiter;
         return $this->user;
     }
@@ -575,7 +572,7 @@ class General extends Model
 
         // Сделал привязку к конкретной дате, старые модели сделаны до неё не будут проверены на наличие нужных статусов
         // это сделано что бы участки могли принять старые модели в ремонт, в случае чего
-        $comp_date =  new \DateTime($modelDate) < new \DateTime("2020-07-01") ? false : true;
+        $comp_date =  new \DateTime($modelDate) < new \DateTime("2020-08-05") ? false : true;
 
         // Путь прохождения модели.
         // user access => status id

@@ -91,6 +91,22 @@ function addPrevImg(domEl)
 	}
 }
 
+// сделали textarea по высоте экрана
+let tab5 = document.querySelector('body');
+let textAreas = tab5.querySelectorAll('textarea');
+
+let pre = document.createElement('pre');
+let appPre;
+for( let i = 0; i < textAreas.length; i++ ) {
+
+    pre.innerHTML = textAreas[i].value;
+    appPre = tab5.appendChild(pre);
+    appPre.classList.add('br-0');
+    let preHeight = appPre.offsetHeight;
+    textAreas[i].style.height = preHeight + "px";
+}
+appPre.remove();
+
 
 
 let butt3D = document.getElementById('butt3D');

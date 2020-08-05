@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $this->title ?></title>
     <link rel="icon" href="/web/favicon.ico?ver=106">
-
     <link rel="stylesheet" href="/web/css/style.css?ver=<?=time()?>">
     <link rel="stylesheet" href="/web/css/style_adm.css?ver=<?=time()?>">
     <link rel="stylesheet" href="/web/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/web/css/bootstrap-theme.min.css">
     <? $this->head() ?>
 </head>
 <body>

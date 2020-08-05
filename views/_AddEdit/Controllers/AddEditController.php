@@ -288,35 +288,19 @@ JS;
         if ( User::permission('modelAccount') ) $this->includeJSFile('gradingSystem.js', ['defer','timestamp'] );
 
 
-        /*
-        // Сделал привязку к конкретной дате, старые модели сделаны до неё не будут проверены на наличие нужных статусов
-        // это сделано что бы участки могли принять старые модели в ремонт, в случае чего
-        $comp_date =  new \DateTime($row['date']) < new \DateTime("2020-07-01") ? false : true;
-        $toShowStatuses = true;
-        if ( $comp_date && ($component !== 1) )
-        {
-            // Что бы предотвратить изменения статусов у модели, если не поставлен статус сдачи пред. участка
-            // при постановке нужных статусов, некоторым людям начислятся деньги в кошельке работника
-
-            // user access => status id
-            //Пример: 2 => 89 - 3д моделлер может менять статус только после Утверждения дизайна
-            $changeStatusesAccess = [ 2 => 89, 3 => 2, 5 => 5, 11 => 89 ];
-            if ( User::getAccess() !== 1 )
-                $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $addEdit->isStatusPresent( (int)$changeStatusesAccess[User::getAccess()] );
-        }*/
-
+        /** Смотрим можно ли изменять статус **/
         $toShowStatuses = $addEdit->statusesChangePermission($row['date']??date("Y-m-d"), $component);
-        /*
-        $changeStatusesAccess = [ 2 => 89, 3 => 2, 5 => 5, 11 => 89 ];
-        if ( User::getAccess() !== 1 )
-            $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $addEdit->isStatusPresent( (int)$changeStatusesAccess[User::getAccess()] );
-*/
+
+        /** Внесение стоимотей зависит от даты создания модели. На старые не вносим **/
+        $changeCost =  new \DateTime($row['date']??date("Y-m-d")) < new \DateTime("2020-08-04") ? false : true;
+
+
         $save = Crypt::strEncode("_".time()."!");
         $this->session->setKey('saveModel', $save);
         $compact2 = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi','toShowStatuses','cT','dcT',
             'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes','modelPrices','gradingSystem',
-            'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI','save',
+            'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI','save','changeCost',
             'dataArrays','materialsData','coveringsData','handlingsData', 'statusesWorkingCenters','material','covering','labels','complected',
         ]);
         return $this->render('addEdit', $compact2);

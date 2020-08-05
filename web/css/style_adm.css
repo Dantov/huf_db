@@ -1206,7 +1206,7 @@ body {
 }
 .statusesPanelBodyVisible {
 	display: block;
-	max-height: 1700px;
+	/*max-height: 1700px;*/
 }
 .iziToast {
 	cursor: pointer !important;

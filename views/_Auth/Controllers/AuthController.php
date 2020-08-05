@@ -12,17 +12,10 @@ class AuthController extends Controller
     public $title = 'ХЮФ 3Д :: Вход';
     public $layout = 'auth';
 
-//    public function __construct($controllerName)
-//    {
-//        parent::__construct($controllerName);
-//    }
 
     public function beforeAction()
     {
         $session = $this->session;
-
-        //debug($this->getQueryParams(),'');
-        //debug($this->controllerName,'controllerName',1);
         
         $action = $this->getQueryParam('a');
         switch ( $action )
@@ -79,14 +72,15 @@ class AuthController extends Controller
             $this->actionEnter($userRow);
         }
 
+        //$this->includePHPFile('enterModal.php');
+        //$this->includeJSFile('EnterModal.js', ['defer','timestamp']);
+
         $compacted = compact(['login']);
         return $this->render('auth', $compacted);
     }
 
     protected function actionEnter($userRow)
     {
-
-        //debug($userRow);
         $session = $this->session;
 
         $user['id'] 	= $userRow['id'];
@@ -110,7 +104,7 @@ class AuthController extends Controller
         $assist['collection_id']   = -1;		// все коллекции
         $assist['containerFullWidth'] = 2;		// на всю ширину
         $assist['PushNotice']      = 1;		// показываем уведомления
-        $assist['update']          = 7;
+        $assist['update']          = 8;
         $assist['bodyImg']         = 'bodyimg0'; // название класса
         $session->setKey('assist', $assist);
         
@@ -119,30 +113,24 @@ class AuthController extends Controller
         $session->setKey('selectionMode', $selectionMode);
         $session->setKey('lastTime', 0);
 
-        //debug($_SESSION);
-
         // если установлен флажок на "запомнить меня" пишем все в печеньки
         if ( isset($_POST['memeMe']) ? 1 : 0 )
         {
             $expired = time()+(3600*24*30);
             Cookies::set("meme_sessA", 1, $expired);
-            //setcookie("meme_sessA", $_SESSION['access'],  time()+(3600*24*30), '/', $_SERVER['HTTP_HOST'] );
 
             foreach( $user as $key => $value )
             {
                 Cookies::set("user[$key]", $value, $expired);
-                //setcookie($strname, $value, time()+(3600*24*30), '/', $_SERVER['HTTP_HOST'] );
             }
             foreach( $assist as $key => $value )
             {
                 if ( $key == 'wcSort' ) continue;
                 Cookies::set("assist[$key]", $value, $expired);
-                //setcookie($strname, $value, time()+(3600*24*30), '/', $_SERVER['HTTP_HOST'] );
             }
         }
 
         $this->redirect('/main/');
-        //header("location:" ._rootDIR_HTTP_ . "Views/Main/index.php?".session_name().'='.session_id() );
     }
 
     protected function actionExit()

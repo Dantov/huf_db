@@ -1,7 +1,5 @@
 <?php
 $session = $this->session;
-//debug($_SESSION,'$session');
-//debug($_COOKIE,'$_COOKIES');
 ?>
 <div class="row">
     <div class="col-xs-12">
@@ -27,6 +25,3 @@ $session = $this->session;
         </form>
     </div>
 </div>
-<?php
-//debug($_SESSION,'$session');
-?>

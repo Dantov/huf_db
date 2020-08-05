@@ -2,9 +2,6 @@
 use Views\vendor\core\Autoloader;
 use Views\vendor\core\Application;
 
-if (!defined( '_DEV_MODE_') ) define('_DEV_MODE_', true);
-if (!defined( '_WORK_PLACE_') ) define('_WORK_PLACE_', false); // true - работа false - дом
-
 require_once __DIR__ . '/config/defines.php';
 require_once __DIR__ . '/vendor/libs/functions.php';
 

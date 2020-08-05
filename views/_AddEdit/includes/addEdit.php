@@ -587,7 +587,8 @@ $permittedFields = User::permissions();
         </div>
         <?php endif; ?>
 
-        <?php if ( $permittedFields['modelAccount'] ): ?>
+
+        <?php if ( $permittedFields['modelAccount'] && $changeCost ): ?>
         <!-- ******************** PRICES ******************** -->
         <div role="tabpanel" class="tab-pane in fade pt-1" id="pricesData" >
             <div class="row">
