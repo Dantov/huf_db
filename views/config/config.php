@@ -7,7 +7,7 @@ return [
     'cachePath' => '/runtime/cache',
     'layout' => 'default',
     'defaultController' => 'main',
-    'version' => '2.002b',
+    'version' => '2.100r',
     'dataCompression' => true,
 
     /**

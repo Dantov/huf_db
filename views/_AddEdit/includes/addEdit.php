@@ -181,14 +181,14 @@ $permittedFields = User::permissions();
                     </div>
                 <?php endif; ?>
 
-                <?php if ( false ): // $permittedFields['print_cost']?>
+                <?php if ( User::getAccess() === 8 ): ?>
                     <div class="col-xs-2 ">
                         <label for="model_weight"><span class="glyphicon glyphicon-usd"></span>	Стоимость печати:</label>
                         <input type="text" class="form-control" name="print_cost" value="<?=$row['print_cost'];?>" />
                     </div>
                 <?php endif; ?>
 
-                <?php if ( false ): // $permittedFields['model_cost']?>
+                <?php if ( User::getAccess() === 8 && User::permission('MA_modellerJew') ): ?>
                     <div class="col-xs-2 ">
                         <label for="work_cost"><span class="glyphicon glyphicon-usd"></span> Стоимость доработки:</label>
                         <input type="text" class="form-control" name="model_cost" value="<?=$row['model_cost'];?>" />
@@ -528,7 +528,7 @@ $permittedFields = User::permissions();
                 <!-- STL Block END -->
 
                 <!-- 3DM Block -->
-            <?php if ( $permittedFields['3dm'] ): ?>
+            <?php if ( $permittedFields['rhino3dm'] ): ?>
                 <div class="col-xs-12">
                     <div style="position:relative; top: -6px; font-size:13px;">* Максимальный размер всех .3dm файлов не должен превышать 25 магабайт!</div>
                     <?php if ( isset($rhino_file['name']) && !empty($rhino_file['name']) ): ?>

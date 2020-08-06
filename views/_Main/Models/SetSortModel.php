@@ -113,7 +113,8 @@ class SetSortModel extends General
         $assist = $session->getKey('assist');
         
         // start_FromPage - это флаг с какого квадратика начинать отрисовывать 
-	// st_prevPage - это флаг что нужно отрисовать кнопку назад на пред. часть страниц
+	    // st_prevPage - это флаг что нужно отрисовать кнопку назад на пред. часть страниц
+
         if ( $param === 'page' )           $assist['page'] = (int)$value; // кликнули по квадратику пагинации
         if ( $param === 'start_FromPage' ) $assist['startFromPage'] = (int)$value;
         if ( $param === 'st_prevPage' )    $assist['st_prevPage']   = (int)$value;

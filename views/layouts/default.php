@@ -248,11 +248,11 @@ JS;
 <?php
     if ( _DEV_MODE_ )
     {
-//        debug($_GET,'$_GET');
-//        debug($this->getQueryParams(),'QueryParams');
-//        debug($_SESSION,'$_SESSION');
-//        debug($_COOKIE,'$_COOKIE');
-//        debug( Views\vendor\core\Config::get(), "Config");
+        debug($_GET,'$_GET');
+        debug($this->getQueryParams(),'QueryParams');
+        debug($_SESSION,'$_SESSION');
+        debug($_COOKIE,'$_COOKIE');
+        debug( Views\vendor\core\Config::get(), "Config");
     }
 ?>
         <footer class="footer" style="box-shadow: 0 -1px 5px rgba(0,0,0,.075)">

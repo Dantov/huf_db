@@ -82,7 +82,7 @@ function wsEventHandlers()
 function wsConnect()
 {
     // регистрируемся на WebSocket сервере 127.0.0.1
-    ws = new WebSocket("ws://"+_HOSTNAME_+":8000/?user=" + userName + "&tab=" + tabName);
+    ws = new WebSocket("ws://"+_HOSTNAME_+":8000/?user=" + userName + "&tab=" + tabName + "&userID=" + wsUserData.id);
     wsEventHandlers();
 }
 

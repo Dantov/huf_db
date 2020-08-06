@@ -153,13 +153,13 @@ $isView = true;
                                 <span><?=$row['description'];?></span>
                             </li>
                         <?php endif; ?>
-                        <?php if ( isset($row['print_cost']) && !empty($row['print_cost']) && $session['user']['access'] > 0 ) : ?>
+                        <?php if ( isset($row['print_cost']) && !empty($row['print_cost']) && User::getAccess() > 0 ) : ?>
                             <li class="list-group-item">
                                 <span class="badge badge-lg"><?=$row['print_cost']?></span>
                                 <i class="fas fa-print"></i><span class="glyphicon glyphicon-usd"></span> Стоимость 3Д Печати:
                             </li>
                         <?php endif; ?>
-                        <?php if ( isset($row['model_cost']) && !empty($row['model_cost']) && $session['user']['access'] > 0 ) : ?>
+                        <?php if ( isset($row['model_cost']) && !empty($row['model_cost']) && User::getAccess() > 0 ) : ?>
                             <li class="list-group-item">
                                 <span class="badge badge-lg"><?=$row['model_cost']?></span>
                                 <i class="fas fa-hammer"></i><span class="glyphicon glyphicon-usd"></span> Стоимость доработки:
@@ -171,13 +171,13 @@ $isView = true;
                                 <span class="glyphicon glyphicon-floppy-save"></span> AI Файл накладки:
                             </li>
                         <?php endif; ?>
-                        <?php if (  trueIsset($stl_file) && $session['user']['access'] > 0 && $session['user']['access'] < 3 ) : ?>
+                        <?php if (  trueIsset($stl_file) && User::permission('stl') ) : ?>
                             <li class="list-group-item" title="загрузить STL файл">
                                 <span class="badge badge-lg"><a class="text-white" href="<?= _stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/stl/'.$stl_file['stl_name'] ?>" download="<?='stl_'.$stl_file['stl_name']?>">Скачать</a></span>
                                 <span class="glyphicon glyphicon-floppy-save"></span> Stl Файл модели:
                             </li>
                         <?php endif; ?>
-                        <?php if (  trueIsset($rhino_file) && $session['user']['access'] > 0 && $session['user']['access'] < 3 ) : ?>
+                        <?php if (  trueIsset($rhino_file) && User::permission('rhino3dm') ) : ?>
                             <li class="list-group-item" title="загрузить 3dm файл">
                                 <span class="badge badge-lg"><a class="text-white" href="<?= _stockDIR_HTTP_.$row['number_3d'].'/'.$id.'/3dm/'.$rhino_file['name'] ?>" download="<?='3dm_'.$rhino_file['name']?>">Скачать</a></span>
                                 <span class="glyphicon glyphicon-floppy-save"></span> 3dm Файл модели:

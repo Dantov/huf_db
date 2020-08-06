@@ -380,8 +380,8 @@ class UsersModel extends Handler
             'mt_pdo' => [
                 'id'=> 8,
                 'name'=> 'ПДО',
-                'description'=> 'Изменение статусов, вставок, оценка артикула',
-                'permissions' => [3,7,10,13,21,22,23,24,27,28,35,36,38,45],
+                'description'=> 'Изменение статусов, вставок, картинок, оценка артикула',
+                'permissions' => [3,7,10,13,21,22,23,24,27,28,35,36,38,45,4,11,15,19,32,51],
             ],
             'mt_guest' => [
                 'id'=> 0,
@@ -390,6 +390,7 @@ class UsersModel extends Handler
                 'permissions' => [],
             ],
         ];
+
 
         if ( is_string($preset) && !empty($preset) )
             if ( array_key_exists($preset, $rulesPreset) )

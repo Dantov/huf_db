@@ -285,15 +285,17 @@ JS;
             $gradingSystem3D = $addEdit->gradingSystem(1);
             $this->includePHPFile('grade3DModal.php', compact(['gradingSystem3D']) );
         }
-        if ( User::permission('modelAccount') ) $this->includeJSFile('gradingSystem.js', ['defer','timestamp'] );
+        if ( User::permission('modelAccount') )
+            $this->includeJSFile('gradingSystem.js', ['defer','timestamp'] );
 
 
         /** Смотрим можно ли изменять статус **/
         $toShowStatuses = $addEdit->statusesChangePermission($row['date']??date("Y-m-d"), $component);
-
         /** Внесение стоимотей зависит от даты создания модели. На старые не вносим **/
         $changeCost =  new \DateTime($row['date']??date("Y-m-d")) < new \DateTime("2020-08-04") ? false : true;
-
+        /** участку ПДО нужно вносить стоимость мастер моделей, для старых моделей **/
+        if ( User::getAccess() === 8 )
+            $changeCost = true;
 
         $save = Crypt::strEncode("_".time()."!");
         $this->session->setKey('saveModel', $save);

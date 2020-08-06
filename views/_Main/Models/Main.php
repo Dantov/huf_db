@@ -304,6 +304,7 @@ class Main extends General {
      */
     public function getModelsByTiles()
 	{
+
 		$result = [
 		    'showByTiles' => '',
             'iter' => 0,
@@ -314,7 +315,7 @@ class Main extends General {
 		
 		$from = $this->assist['page'] * $this->assist['maxPos'];
 		$to = ($this->assist['page'] + 1) * $this->assist['maxPos'];
-		
+
 		$posIds = '(';
 		for ( $i = $from; $i < $to; $i++ ) $posIds .= $this->row[$i]['id'].',';
 		$posIds = trim($posIds,',') . ')';

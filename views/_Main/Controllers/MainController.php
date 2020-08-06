@@ -103,19 +103,23 @@ class MainController extends GeneralController
             exit;
         }   // ---- Exit AJAX ---- //
 
-        // ******* SORT ******* //
-        if ( !empty($params) )
-        {
-            $setSort = new SetSortModel();
-            // вернет адрес для редиректа, или false если редирект не нужен
-            if ( $url = $setSort->setSort($params) ) $this->redirect($url);
-        }
-
         // ******* SEARCH ******* //
         if ( $session->hasKey('searchFor') || $session->getKey('re_search') )
         {
             $search = new Search();
             $this->foundRows = $search->search( $session->getKey('searchFor') );
+        }
+
+        // ******* SORT ******* //
+        if ( !empty($params) )
+        {
+            $setSort = new SetSortModel();
+            // вернет адрес для редиректа, или false если редирект не нужен
+            if ( $url = $setSort->setSort($params) )
+            {
+                $this->redirect($url);
+            }
+
         }
 
         // ******* SELECTED MODELS ******* //
@@ -124,6 +128,7 @@ class MainController extends GeneralController
             $selections = new SelectionsModel($session);
             $this->foundRows = $selections->getSelectedModels();
         }
+
 
     }
 
