@@ -4,38 +4,37 @@ Node.prototype.remove = function() {  // - полифил для elem.remove(); 
 };
 
 const _HOSTNAME_ = _WORK_PLACE_ ? "192.168.0.245" : "127.0.0.1";
-//const _HOSTNAME_ = "192.168.0.245";
 const _URL_ = document.location.origin; // http://huf.db
 const _DIR_ = document.location.href.split('/')[3]; // views
 const _ROOT_ = _URL_ + '/'; //http://localhost/HUF_DB_Dev/
-
-// debug(_URL_,'_URL_');
-// debug(_DIR_,'_DIR_');
-// debug(_ROOT_,'_ROOT_');
 
 /**
  * @type {string}
  * _CONTROLLER_ - страница где находимся
  */
-const _CONTROLLER_ = _DIR_;//document.location.href.split('/')[4]; // AddEdit/Main/ModelView
-
-//debug(_CONTROLLER_,'_CONTROLLER_');
+const _CONTROLLER_ = _DIR_; //document.location.href.split('/')[4]; // AddEdit/Main/ModelView
+/**
+ * @type {array}
+ * approvedControllers - массив со страницами где разрешен показ нотайсов
+ */
 let approvedControllers = [
     'main',
     'model-view',
     'nomenclature',
 ];
+/**
+ * @type {boolean}
+ * _PNSHOW_ - массив со страницами где разрешен показ нотайсов
+ */
 const _PNSHOW_ = approvedControllers.includes(_CONTROLLER_);
+/**
+ *  подготовленные переменные для экземпляров классов
+ */
+let main, pushNotice;
 
-let main = '';
 
-// экземпляр класса pushNotice
-let pushNotice;
 
-// debug(_CONTROLLER_, "_CONTROLLER_");
-// debug(_URL_, "_URL_");
-// debug(_DIR_, "_DIR_");
-// debug(_ROOT_, "_ROOT_");
+
 
 function debug(arr, str)
 {
@@ -133,4 +132,13 @@ function cursorRestore(elem)
             if (document.documentElement.style)
                 document.documentElement.style.cursor = "";
     }
+}
+
+function isJson(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
 }

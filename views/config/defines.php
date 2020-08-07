@@ -2,7 +2,7 @@
 ini_set('date.timezone', 'Europe/Kiev');
 
 if (!defined( '_DEV_MODE_') ) define('_DEV_MODE_', true);
-if (!defined( '_WORK_PLACE_') ) define('_WORK_PLACE_', true); // true - работа false - дом
+if (!defined( '_WORK_PLACE_') ) define('_WORK_PLACE_', false); // true - работа false - дом
 
 define('_rootDIR_', $_SERVER['DOCUMENT_ROOT'].'/');  // подключить скрипты
 
