@@ -2,6 +2,7 @@
 namespace Views\_Main\Models;
 use Views\_Globals\Models\General;
 use Views\_Globals\Models\User;
+use Views\vendor\libs\classes\AppCodes;
 
 class Main extends General {
 
@@ -657,17 +658,17 @@ class Main extends General {
      * таблица просроченных
      * @param bool $xls
      * @return mixed
+     * @throws \Exception
      */
     public function getWorkingCentersExpired($xls = false)
 	{
         $workingCenters = $this->getWorkingCentersSorted();
 
-        //debug($workingCenters);
-
         // идем по выбранным моделям
 		$countAll = 0;
 		$countAllExpired = 0;
         $stockModelIDs = '(';
+        //debug($this->row,'$this->row',1);
         foreach ( $this->row as $stockModel )
         {
             $stockModelIDs .= $stockModel['id'].',';
@@ -701,8 +702,10 @@ class Main extends General {
         $statusQuery = mysqli_query($this->connection, " SELECT * FROM statuses WHERE pos_id in $stockModelIDs ");
 
         //if ( !$statusQuery ) header("location: "._views_HTTP_ ."Main/index.php?row_pos=3");
-        if ( !$statusQuery->num_rows ) header("location: "._views_HTTP_ ."Main/index.php?row_pos=1");
-        //debug($statusQuery);
+        if ( !$statusQuery->num_rows )
+            throw new \Exception(AppCodes::getMessage(AppCodes::SERVER_ERROR), AppCodes::SERVER_ERROR );
+            //header("location: "._views_HTTP_ ."Main/index.php?row_pos=1");
+        //if ( $xls ) debug($statusQuery);
 
         $modelsStatuses = [];
         while ( $modelStatusesR = mysqli_fetch_assoc($statusQuery) )

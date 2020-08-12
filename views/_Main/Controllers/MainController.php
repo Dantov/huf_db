@@ -55,6 +55,7 @@ class MainController extends GeneralController
 
             // ******* Exports PDF/Excel ******** //
             if ( (int)$request->post('collectionPDF') === 1 ) $this->collectionPDF();
+
             if ( (int)$request->get('excel') === 1 )
             {
                 try {
@@ -81,16 +82,17 @@ class MainController extends GeneralController
                         $searchFor = $session->getKey('searchFor');
                         if ( trueIsset($excel->foundRows) )
                         {
-                            $collectionName = $assist['collectionName'];
+                            $collectionName = $searchFor;
                         } else {
-                            $collectionName = (int)$assist['searchIn'] === 1 ? $searchFor : $assist['collectionName'].'_-_'.$searchFor;
+                            //$collectionName = (int)$assist['searchIn'] === 1 ? $searchFor : $assist['collectionName'].'_-_'.$searchFor;
+                            $collectionName = $assist['collectionName'];
                         }
                         $date = date('d.m.Y');
                         $res['fileName'] = $excel->translit($collectionName) . '_'. $date;
                         exit( json_encode($res) );
                     }
-                } catch (\Exception | \Error $e)
-                {
+
+                } catch (\Exception | \Error $e) {
                     if ( _DEV_MODE_ )
                     {
                         $resp = ['error'=>$e->getMessage(), $e->getCode()];

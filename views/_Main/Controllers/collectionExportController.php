@@ -1,5 +1,7 @@
 <?php
 namespace Views\_Main\Controllers;
+use Views\_Globals\Models\SelectionsModel;
+use Views\_Globals\Models\User;
 use Views\_Main\Models\{PDFExports,HufDB_PDF,Search};
 use Views\vendor\core\Sessions;
 
@@ -7,21 +9,28 @@ ini_set('max_execution_time',600); //10min // макс. время выполн�
 ini_set('memory_limit','256M'); // -1 = может использовать всю память, устанавливается в байтах
 
 $session = new Sessions();
+$assist = $session->getKey('assist');
+$user = $session->getKey('user');
 $collectPDF = null;
-if ( $session->hasKey('searchFor') || $session->getKey('re_search') )
-{
-    try {
-        $search = new Search($session);
+try {
+    if ( $session->hasKey('searchFor') || $session->getKey('re_search') )
+    {
+        $search = new Search();
         $foundRows = $search->search( $session->getKey('searchFor') );
 
-        $collectPDF = new PDFExports( $_SESSION['assist'], $_SESSION['user'], $foundRows, $session->getKey('searchFor'), $_SESSION['assist']['collectionName'] );
-    } catch (\Exception | \Error $e)
-    {
-        exit( json_encode(['error'=>$e->getMessage(), 'code'=>$e->getCode()]) );
+        $collectPDF = new PDFExports( $assist, $user, $foundRows, $session->getKey('searchFor'), $assist['collectionName'] );
+
+    } elseif ( $session->getKey('selectionMode')['showModels'] ) {
+
+        $collectPDF = new PDFExports( $assist, $user,  (new SelectionsModel($session))->getSelectedModels() );
+    } else {
+        $collectPDF = new PDFExports( $assist, $user, [], '', $assist['collectionName'] );
     }
+} catch (\Exception | \Error $e) {
+    exit( json_encode(['error'=>$e->getMessage(), 'code'=>$e->getCode()]) );
 }
 
-if ( empty($collectPDF->getRow()) ) $collectPDF->getModelsFormStock();
+if ( $collectPDF && empty($collectPDF->getRow()) ) $collectPDF->getModelsFormStock();
 $complects = $collectPDF->countComplects();
 $collectPDF->closeDB();
 

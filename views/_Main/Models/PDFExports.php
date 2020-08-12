@@ -81,8 +81,6 @@ class PDFExports extends Main {
         set_error_handler(function(){return true;});
         $this->socketClientResource = @stream_socket_client($this->localSocket, $errNo, $errorMessage);
         restore_error_handler();
-
-
     }
 
     public function progressCount($newPercent)

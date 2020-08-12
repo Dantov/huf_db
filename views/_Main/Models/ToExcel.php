@@ -56,19 +56,22 @@ class ToExcel extends Main
         $assist = $session->getKey('assist');
         $searchFor = $session->getKey('searchFor');
 
-        if ( $searchFor || $session->getKey('re_search') )
+        if ( $searchFor ) // || $session->getKey('re_search')
         {
-            $search = new Search($session);
+            $search = new Search();
             $this->foundRows = $search->search( $searchFor );
 
             $this->collectionName = (int)$assist['searchIn'] === 1 ? 'Поиск по: '.$searchFor : $assist['collectionName'].'" Поиск по: '.$searchFor.':';
 
+            parent::__construct($assist, false, $this->foundRows);
         } else {
+
+            parent::__construct($assist, false, $this->foundRows);
+
             $this->getModelsFormStock();
             $this->collectionName = $assist['collectionName'];
         }
 
-        parent::__construct($assist, false, $this->foundRows);
 
         $this->progressResponse = [
             'progressBarPercent' => 0,
