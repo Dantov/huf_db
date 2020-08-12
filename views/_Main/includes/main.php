@@ -184,7 +184,7 @@ $session = $this->session;
 </div><!-- /row -->
 <div class="clearfix"></div>
 <hr/>
-<div class="row loading_cont" id="loadeding_cont">
+<div class="row loading_cont unselectable" id="loadeding_cont">
 	<?php if ( !isset($_SESSION['nothing']) ): ?>
 		<?php if ( $wholePos == 0 ): ?>
 			<img src="<?=_rootDIR_HTTP_ ?>web/picts/web1.png" width="10%"/>
@@ -200,7 +200,7 @@ $session = $this->session;
 	<?=$showModels ?>
 </div>
 <!-- paggination -->
-<center>
+<center class="unselectable">
 	<span class="statsbuttom"><?=$statsbottom?></span>
 	<?=$pagination?>
 </center>
