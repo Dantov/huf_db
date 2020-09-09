@@ -88,9 +88,6 @@ class PaymentManagerController extends UserPouchController
     {
         $session = $this->session;
 
-        //debug($workerID,'$workerID');
-        //debug($usersList,'$usersList',1);
-
         if ( $workerID === 0 ) 
         {
             $session->currentWorker = [
@@ -144,7 +141,6 @@ class PaymentManagerController extends UserPouchController
             exit( json_encode( ['error'=>AppCodes::getMessage(AppCodes::NO_PERMISSION_TO_PAY)] ) );
         //debug($priceIDs,'$priceIDs',1);
 
-        //throw new \Error("hw_DocByAnchor(connection, anchorID)", 551);
         $h = new HandlerPrices();
         $h->connectToDB();
         foreach ($priceIDs as &$pID)

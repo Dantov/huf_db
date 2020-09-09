@@ -5,6 +5,7 @@
 /runtime/
 /Stock/
 /vendor/
+/Views/config/db_config.php
 favicon.ico
 =======
 /nbproject/

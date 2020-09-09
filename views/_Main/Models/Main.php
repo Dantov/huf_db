@@ -121,80 +121,13 @@ class Main extends General {
             if ( empty($workingCenters) ) unset($workingCentersDB[$key]);
         }
 
-        //debug($this->workingCenters,'workingCenters');
         return $workingCentersDB;
     }
 
-    /*
-	public function getCollections()
-	{
-		//$collectionList = '';
-		$collectionListDiamond = '';
-		$collectionListGold = '';
-		$collectionListSilver = '';
-		$other = '';
-		$coll_res = mysqli_query($this->connection, " SELECT * FROM collections ORDER BY name");
-		while( $coll_row = mysqli_fetch_assoc($coll_res) ) {
-			
-			$ok = false;
-			$haystack = mb_strtolower($coll_row['name']);
-			
-			
-			if ( stristr( $haystack, 'сереб' ) || stristr( $haystack, 'silver' ) ) {
-				
-				$collectionListSilver .= '<a href="controllers/setSort.php?coll_show='.$coll_row['id'].'">';
-				$collectionListSilver .= '<div coll_block class=" collItem">'.$coll_row['name'].'</div>';
-				$collectionListSilver .= '</a>';
-				$collectionListSilver_cn++;
-				continue;
-			}
-			if ( stristr( $haystack, 'золото' ) || stristr( $haystack, 'невесомость циркон' ) || stristr( $haystack, 'невесомость с ситалами' ) || stristr( $haystack, 'gold' ) ) {
-				
-				$collectionListGold .= '<a href="controllers/setSort.php?coll_show='.$coll_row['id'].'">';
-				$collectionListGold .= '<div coll_block class=" collItem">'.$coll_row['name'].'</div>';
-				$collectionListGold .= '</a>';
-				$collectionListGold_cn++;
-				continue;
-				
-			}
-			if ( stristr( $haystack, 'брилл' ) || stristr( $haystack, 'diam' ) ) {
-				
-				$collectionListDiamond .= '<a href="controllers/setSort.php?coll_show='.$coll_row['id'].'">';
-				$collectionListDiamond .= '<div coll_block class=" collItem">'.$coll_row['name'].'</div>';
-				$collectionLiDstDiamond .= '</a>';
-				$collectionListDiamond_cn++;
-				continue;
-				
-			}
-				
-				$other .= '<a href="controllers/setSort.php?coll_show='.$coll_row['id'].'">';
-				$other .= '<div coll_block class=" collItem">'.$coll_row['name'].'</div>';
-				$other .= '</a>';
-				$other_cn++;
-			
-			// $collectionList .= '<a href="controllers/setSort.php?coll_show='.$coll_row['id'].'">';
-			// $collectionList .= '<div coll_block class="col-xs-6 col-sm-3 collItem">'.$coll_row['name'].'</div>';
-			// $collectionList .= '</a>';
-		}
-		
-		$res['collectionListSilver'] = $collectionListSilver;
-		$res['collectionListSilver_cn'] = $collectionListSilver_cn;
-		
-		$res['collectionListGold'] = $collectionListGold;
-		$res['collectionListGold_cn'] = $collectionListGold_cn;
-		
-		$res['collectionListDiamond'] = $collectionListDiamond;
-		$res['collectionListDiamond_cn'] = $collectionListDiamond_cn;
-		$res['other'] = $other;
-		$res['other_cn'] = $other_cn;
-		
-		return $res;
-	}*/
-	
+
 	public function getModelsFormStock()
     {
-        //debug($selectRow,'$selectRow',1);
-        //$_SESSION['assist']['collectionName'] = 'Все Коллекции';
+
         $where = "WHERE collections<>'Детали'";
         if ( $this->assist['collectionName'] != 'Все Коллекции' ) $where = "WHERE collections like '%{$this->assist['collectionName']}%'";
 
@@ -244,7 +177,13 @@ class Main extends General {
 		return $this->row;
 	}
 
-	
+
+    /**
+     * Вывод по комплектам
+     *
+     * @return array
+     * @throws \Exception
+     */
 	public function getModelsByRows()
     {
         $result = [
@@ -299,7 +238,13 @@ class Main extends General {
 		return $result;
 	}
 
+
+
+
+
     /**
+     * Стандартный вывод плиткой
+     *
      * @return array
      * @throws \Exception
      */
@@ -345,7 +290,8 @@ class Main extends General {
 		return $result;
 	}
 
-	/*
+	/**
+     * Таблица рабочих центров
 	 * Приложение №1
 	 */
     public function getModelsByWorkingCenters()

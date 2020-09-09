@@ -22,6 +22,7 @@ $resp_arr = [];
 $resp_arr['processes'] = [];
 
 $id = (int)Crypt::strDecode($request->post('id'));
+//debug($id);
 $isEdit = (int)$request->post('edit') === 2 ? true : false ;
 
 chdir(_stockDIR_);
@@ -67,20 +68,23 @@ $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses
 $handler->addVCtoComplects($vendor_code, $number_3d);
 
 //$model_material = $handler->makeModelMaterial($_POST['model_material'],$_POST['samplegold'],$_POST['whitegold'],$_POST['redgold'],$_POST['eurogold']);
-$str_labels =  $handler->makeLabels($_POST['labels']);
+$str_labels = $handler->makeLabels($_POST['labels']);
 
 // берем все остальное
 $collection   = $handler->setCollections($_POST['collection']);
 $author       = strip_tags(trim($_POST['author']));
 $modeller3d   = strip_tags(trim($_POST['modeller3d']));
-$jewelerName   = strip_tags(trim($_POST['jewelerName']));
+$jewelerName  = strip_tags(trim($_POST['jewelerName']));
 $model_weight = strip_tags(trim($_POST['model_weight']));
 $description  = $_POST['description'];
 $size_range   = strip_tags(trim($_POST['size_range']));
 $print_cost   = strip_tags(trim($_POST['print_cost']));
 $model_cost   = strip_tags(trim($_POST['model_cost']));
-$creator_name    = $_SESSION['user']['fio'];
-$status = $_POST['status']; // число
+$creator_name = $_SESSION['user']['fio'];
+// число ID статуса
+$status = (int)$_POST['status'];
+if ( $status === 0 )
+    $status = 35;
 
 $datas = "";
 if ( !empty($number_3d) && $permissions['number_3d'] )
@@ -169,13 +173,25 @@ if ( !$updateModelData )
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 
 
+
+
+/// --------- Добавляем Стоимости ----------///
+$payments = new HandlerPrices($id, $handler->connection);
+require_once "paymentsController.php";
+/// --------- END Стоимости ----------///
+
+
+
+
+
 //-------------- материалы ----------------//
 if ( $permissions['material'] )
 {
     if ( !empty($_POST['mats']) )
     {
         $materialRows = $handler->makeBatchInsertRow($_POST['mats'], $id, 'metal_covering');
-        //debug($materialRows,'makeBatchInsertRow',1);
+        //debug($materialRows,'makeBatchInsertRow',1,1);
+		
         $resp_arr['materials']['insertUpdate'] = $handler->insertUpdateRows($materialRows['insertUpdate'], 'metal_covering');
         $resp_arr['materials']['delete'] = $handler->removeRows($materialRows['remove'], 'metal_covering');
     }
@@ -261,10 +277,6 @@ if ( !empty($_FILES['file3dm']['name'][0]) && $permissions['stl'] )
 
     $query3dm = $handler->add3dm($_FILES['file3dm']);
 
-    if ( $query3dm )
-    {
-
-    }
 }
 //============= counter point ==============//
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
@@ -342,16 +354,7 @@ $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses
 
 
 
-/// --------- Добавляем Стоимости ----------///
-$payments = new HandlerPrices($id, $handler->connection);
-require_once "paymentsController.php";
-/// --------- END Стоимости ----------///
 
-
-
-
-
-$handler->closeDB();
 // флаг для репоиска
 if ( $_SESSION['searchFor'] ) $_SESSION['re_search'] = true;
 

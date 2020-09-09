@@ -141,6 +141,9 @@ class AddEditController extends GeneralController
             $this->title = 'Добавить новую модель';
             $haveStl = 'hidden';
             $haveAi = 'hidden';
+
+            // статус эскиз по умолчанию
+            $row['status'] = $addEdit->getStatusCrutch(35, true);
             $statusesWorkingCenters = $addEdit->getStatus();
             $labels = $addEdit->getLabels();
         }
@@ -216,8 +219,8 @@ class AddEditController extends GeneralController
             $haveAi = 'hidden';
             $ai_hide = 'hidden';
 
-            $materials = $addEdit->getMaterials();
-            $gemsRow  = $addEdit->getGems();
+            $materials = $addEdit->getMaterials(false,true);
+            $gemsRow  = $addEdit->getGems(true);
             $dopVCs  = $addEdit->getDopVC();
 
             $num3DVC_LI = $addEdit->getNum3dVCLi( $dopVCs );
@@ -227,8 +230,8 @@ class AddEditController extends GeneralController
 
             $id = 0; // нужен 0 что бы добавилась новая модель
 
-            // на проверке
-            //$row['status'] = $addEdit->getStatusCrutch(1, true);
+            // статус эскиз по умолчанию
+            $row['status'] = $addEdit->getStatusCrutch(35, true);
             $statusesWorkingCenters = $addEdit->getStatus();
         }
 

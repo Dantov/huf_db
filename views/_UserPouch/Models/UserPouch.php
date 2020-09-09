@@ -46,12 +46,21 @@ class UserPouch extends Main
         $this->addQueryByDate($month, $year);
     }
 
+    /**
+     * @return int
+     * @throws \Exception
+     */
     public function totalModelsHasPrices() : int
     {
         $sql = " SELECT COUNT(1) as c FROM stock as s
                     WHERE s.id IN (SELECT DISTINCT pos_id FROM model_prices WHERE $this->worker $this->paidTab $this->date )";
         return $this->findOne($sql)['c'];
     }
+
+    /**
+     * @return int
+     * @throws \Exception
+     */
     public function totalPrices() : int
     {
         $sql = " SELECT COUNT(1) as c FROM model_prices";

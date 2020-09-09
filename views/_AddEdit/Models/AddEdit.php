@@ -330,13 +330,22 @@ class AddEdit extends General
 	*/
     /**
      * @param bool $row
+     * @param bool $complected
+     * Флаг о том что создаём комплект, все ид строк надо удалить
      * @return array|bool
      * @throws \Exception
      */
-	public function getMaterials($row=false)
+	public function getMaterials($row=false, $complected=false)
 	{
 		$materials = $this->findAsArray(" SELECT * FROM metal_covering WHERE pos_id='$this->id' ");
-		if (!empty($materials)) return $materials;
+
+		if (!empty($materials))
+        {
+            if ( $complected )
+                foreach ( $materials as &$material )
+                    $material['id'] ='';
+            return $materials;
+        }
 
 		if ( $row ) $this->row = $row;
 
@@ -486,12 +495,23 @@ class AddEdit extends General
 	}
 
     /**
+     * @param bool $complected
+     * Флаг о том что создаём комплект, все ид строк надо удалить
      * @return array
      * @throws \Exception
      */
-    public function getGems()
+    public function getGems($complected = false)
 	{
-		return $this->findAsArray( " SELECT * FROM gems WHERE pos_id='$this->id' ");
+		$gems = $this->findAsArray( " SELECT * FROM gems WHERE pos_id='$this->id' ");
+
+        if (!empty($gems))
+        {
+            if ( $complected )
+                foreach ( $gems as &$gem )
+                    $gem['id'] ='';
+        }
+
+        return $gems;
 	}
 
     /**

@@ -127,8 +127,8 @@ class MainController extends GeneralController
         // ******* SELECTED MODELS ******* //
         if ( $this->isQueryParam('selected-models-show') || $session->getKey('selectionMode')['showModels'] )
         {
-            $selections = new SelectionsModel($session);
-            $this->foundRows = $selections->getSelectedModels();
+            //$selections = new SelectionsModel($session);
+            $this->foundRows = (new SelectionsModel($session))->getSelectedModels();
         }
 
 

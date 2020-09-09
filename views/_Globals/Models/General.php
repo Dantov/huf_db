@@ -297,9 +297,17 @@ class General extends Model
 		return $result;
 	}
 
-    //  КОСТЫЛЬ!!!!
-    // при добавлении новых моделей в stock status заходит ID
-    // возьмём этот Id из статусов
+    /**
+     * КОСТЫЛЬ!!!!
+        при добавлении новых моделей в stock status заходит ID
+        возьмём этот Id из статусов
+     *
+     * @param $stockStatus
+     * ID статуса который хотим поставить по умолчанию
+     * @param bool $index
+     * вернем масств со всеми данными статуса если true. иначе только имя на руском
+     * @return bool
+     */
     public function getStatusCrutch($stockStatus, $index=false)
     {
         if ( $stockStatus = (int)$stockStatus )
@@ -578,8 +586,8 @@ class General extends Model
         // user access => status id
         //Пример: 2 => 89 - 3д моделлер может менять статус только после Утверждения дизайна
         $changeStatusesAccess = [
-            10 => 35, // утверждать эскиз, когда стоит статус эскиз
-            2  => 89,  // 3д после утв. эскиза
+            //10 => 35, // утверждать эскиз, когда стоит статус эскиз
+            2  => 89, // 3д после утв. эскиза
             11 => 89, // 3д после утв. эскиза
             7 => 1,   // Валик может подписать только если модель на проверке
             9 => 89,  // подпись 3д техн. эскиза ( после подписи Валика)
@@ -598,7 +606,7 @@ class General extends Model
             if ( User::getAccess() !== 1 )
             {
 
-                $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $this->isStatusPresent( (int)$changeStatusesAccess[User::getAccess()] );
+                $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $this->isStatusPresent( $changeStatusesAccess[User::getAccess()] );
             }
 
         }
