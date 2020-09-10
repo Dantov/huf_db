@@ -83,8 +83,6 @@ $model_cost   = strip_tags(trim($_POST['model_cost']));
 $creator_name = $_SESSION['user']['fio'];
 // число ID статуса
 $status = (int)$_POST['status'];
-if ( $status === 0 )
-    $status = 35;
 
 $datas = "";
 if ( !empty($number_3d) && $permissions['number_3d'] )
@@ -138,6 +136,8 @@ if ( $isEdit === false )
 {
     $id = $handler -> addNewModel($number_3d, $model_type); // возвращает id новой модели при успехе
     if ( !$id ) exit('Error in addNewModel(). No ID is coming!');
+
+    if ( $status === 0 ) $status = 35; // если забли поставить статус при доб. новой модели
 
     $datas .= ",status='$status',
                 status_date='$date',
