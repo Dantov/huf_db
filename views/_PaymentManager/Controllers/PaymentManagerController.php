@@ -52,7 +52,7 @@ class PaymentManagerController extends UserPouchController
         ///*** Паганация *** ///
         $totalM = $pm->totalModelsHasPrices();
         $totalMP = $pm->totalPrices();
-        $perpage = 18;
+        $perpage = 30;
         $pagination = new Pagination( $totalM, $perpage, $this->page );
         $pm->start = $pagination->getStart();
         $pm->perPage = $perpage;

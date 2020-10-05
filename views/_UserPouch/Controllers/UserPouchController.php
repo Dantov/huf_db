@@ -60,7 +60,7 @@ class UserPouchController extends GeneralController
         ///*** Паганация *** ///
         $totalM = $userPouch->totalModelsHasPrices();
         $totalMP = $userPouch->totalPrices();
-        $perpage = 18;
+        $perpage = 30;
         $pagination = new Pagination( $totalM, $perpage, $this->page );
         $userPouch->start = $pagination->getStart();
         $userPouch->perPage = $perpage;
