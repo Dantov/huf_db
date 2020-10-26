@@ -294,11 +294,15 @@ JS;
 
         /** Смотрим можно ли изменять статус **/
         $toShowStatuses = $addEdit->statusesChangePermission($row['date']??date("Y-m-d"), $component);
+		
         /** Внесение стоимотей зависит от даты создания модели. На старые не вносим **/
-        $changeCost =  new \DateTime($row['date']??date("Y-m-d")) < new \DateTime("2020-08-04") ? false : true;
+        // $changeCost =  new \DateTime($row['date']??date("Y-m-d")) < new \DateTime("2020-08-04") ? false : true;
         /** участку ПДО нужно вносить стоимость мастер моделей, для старых моделей **/
-        if ( User::getAccess() === 8 )
-            $changeCost = true;
+		// $oldModelsAccessPrice = [8,9,11];
+        // if ( in_array(User::getAccess(), $oldModelsAccessPrice) )
+            // $changeCost = true;
+		
+		$changeCost = in_array(User::getAccess(), [8,9,11]);
 
         $save = Crypt::strEncode("_".time()."!");
         $this->session->setKey('saveModel', $save);
