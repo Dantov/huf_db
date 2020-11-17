@@ -302,7 +302,7 @@ JS;
         // if ( in_array(User::getAccess(), $oldModelsAccessPrice) )
             // $changeCost = true;
 		
-		$changeCost = in_array(User::getAccess(), [8,9,11]);
+		$changeCost = in_array(User::getAccess(), [2,8,9,11]);
 
         $save = Crypt::strEncode("_".time()."!");
         $this->session->setKey('saveModel', $save);
