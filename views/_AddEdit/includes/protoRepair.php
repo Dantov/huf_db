@@ -1,4 +1,4 @@
-<?
+<?php
     $repairRow = [
         'isHidden' => 'hidden',
         'idProto' => 'protoRepairs',

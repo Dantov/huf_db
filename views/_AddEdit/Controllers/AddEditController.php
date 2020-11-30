@@ -181,11 +181,16 @@ class AddEditController extends GeneralController
             $notes = $addEdit->getDescriptions();
 
             $images  = $addEdit->getImages();
-            //debug($images,'',1);
-            $mainImage = '';
+            //debug($images,'images',1);
+            $mainImage = $mainImage = $images[0]['imgPath'];
             foreach ( $images as $image )
             {
                 if ( trueIsset($image['main']) )
+                {
+                    $mainImage = $image['imgPath'];
+                    break;
+                }
+                if ( trueIsset($image['sketch']) )
                 {
                     $mainImage = $image['imgPath'];
                     break;
@@ -242,19 +247,23 @@ class AddEditController extends GeneralController
         $this->includeJSFile('sideButtons.js', ['defer','timestamp','path'=>_views_HTTP_.'_Globals/js/'] );
         $this->includeJSFile('statusesButtons.js', ['defer','timestamp','path'=>_views_HTTP_.'_Globals/js/'] );
         $this->includeJSFile('submitForm.js', ['defer','timestamp'] );
+        $this->includeJSFile('Repairs.js', ['defer','timestamp'] );
         if ( $permittedFields['files'] )
         {
             $this->includeJSFile('HandlerFiles.js', ['defer','timestamp'] );
-            $fileTypes = ["image/jpeg", "image/png", "image/gif"]; //".3dm", ".stl", ".ai"
+            $fileTypes = ["image/jpeg", "image/png", "image/gif"];
             if ( $permittedFields['rhino3dm'] && empty($rhino_file) ) $fileTypes[] = ".3dm";
-            if ( $permittedFields['stl'] && empty($stl_file) ) $fileTypes[] = ".stl";
-            if ( $permittedFields['ai'] && empty($ai_file) ) 
+            if ( $permittedFields['stl'] && empty($stl_file) )
             {
-                $fileTypes[] = ".ai";   
-                $fileTypes[] = ".aI";   
-                $fileTypes[] = ".Ai";   
-                $fileTypes[] = ".AI";
+                $fileTypes[] = ".stl";
+                $fileTypes[] = ".mgx";
             }
+            if ( $permittedFields['ai'] && empty($ai_file) )
+            {
+                $fileTypes[] = ".ai";
+                $fileTypes[] = ".dxf";
+            }
+
             $fileTypes = json_encode($fileTypes,JSON_UNESCAPED_UNICODE);
 
             $js = <<<JS
@@ -286,7 +295,8 @@ JS;
         if ( User::permission('MA_modeller3D') )
         {
             $gradingSystem3D = $addEdit->gradingSystem(1);
-            $this->includePHPFile('grade3DModal.php', compact(['gradingSystem3D']) );
+            $gradingSystem3DRep = $addEdit->gradingSystem(8);
+            $this->includePHPFile('grade3DModal.php', compact(['gradingSystem3D','gradingSystem3DRep']) );
         }
         if ( User::permission('modelAccount') )
             $this->includeJSFile('gradingSystem.js', ['defer','timestamp'] );
@@ -302,7 +312,7 @@ JS;
         // if ( in_array(User::getAccess(), $oldModelsAccessPrice) )
             // $changeCost = true;
 		
-		$changeCost = in_array(User::getAccess(), [2,8,9,11]);
+		$changeCost = in_array(User::getAccess(), [1,2,8,9,10,11]);
 
         $save = Crypt::strEncode("_".time()."!");
         $this->session->setKey('saveModel', $save);

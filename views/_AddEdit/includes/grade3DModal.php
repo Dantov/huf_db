@@ -27,6 +27,36 @@
   </div>
 </div>
 
+<!-- grade3DRepair_Modal -->
+<div class="modal fade" id="grade3DRepair_Modal" tabindex="-1" role="dialog" aria-labelledby="grade3DRepair_ModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info">
+                <h4 class="modal-title" id="grade3DRepair_ModalLabel"><b><i class="fab fa-linode"></i></b> Выбрать оценку ремонта 3Д модели</h4>
+            </div>
+            <div class="modal-body">
+                <select class="form-control add3DRepairGrade">
+                    <option value="">---</option>
+                    <?php foreach ( $gradingSystem3DRep??[] as $gs3DRepRow ): ?>
+                        <?php if ( $gs3DRepRow['grade_type'] != 8 ) continue; ?>
+                        <option data-workName="<?=$gs3DRepRow['work_name']?>" data-points="<?=$gs3DRepRow['points']?>" value="<?=$gs3DRepRow['id']?>" title="<?=$gs3DRepRow['description']?>" >
+                            <?= $gs3DRepRow['work_name'] . " - ". $gs3DRepRow['points']?>
+                            <?php
+                            $descr = $gs3DRepRow['description'];
+                            if ( mb_strlen( $descr, "UTF-8" ) > 50 ) $descr = mb_substr($gs3DRepRow['description'], 0, 50, "UTF-8") . "...";
+                            ?>
+                            <?= ": " . $descr ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <table class="hidden">
 <tr class="gs_proto3DRow">
   <td style="width: 30px"></td>

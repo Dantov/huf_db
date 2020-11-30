@@ -94,7 +94,7 @@ class Model
      * @return array
      * @throws \Exception
      */
-    public function findAsArray($sqlStr)
+    public function findAsArray( $sqlStr )
     {
         $query = $this->baseSql( $sqlStr );
 

@@ -19,20 +19,27 @@ class UserPouchController extends GeneralController
      */
     public $page;
 
+    public $ppCount;
+
     public $workerID;
     public $tab;
     public $month;
     public $year;
 
-    public function beforeAction()
+    public $searchForPM = '';
+
+    public function beforeAction() : void
     {
         $request = $this->request;
 
+        $this->ppCount = (int)$request->get('ppCount') ?: 30;
         $this->page = (int)$request->get('page');
         $this->workerID = $this->session->getKey('user')['id'];
         $this->tab = $this->getView( (int)$request->get('tab') );
         $this->month = (int)$request->get('month');
         $this->year = (int)$request->get('year');
+
+        $this->searchForPM = $request->get('searchForPM');
     }
 
     /**
@@ -46,6 +53,7 @@ class UserPouchController extends GeneralController
             case 1: return 'all'; break;
             case 2: return 'paid'; break;
             case 3: return 'notpaid'; break;
+            case 4: return 'notCredited'; break;
             default : return 'all'; break;
         }
     }
@@ -55,30 +63,37 @@ class UserPouchController extends GeneralController
      */
     public function action()
     {
-        $userPouch = new UserPouch($this->tab, $this->workerID, $this->month, $this->year);
+        $userPouch = new UserPouch($this->tab, $this->workerID, $this->month, $this->year, $this->searchForPM);
 
         ///*** Паганация *** ///
         $totalM = $userPouch->totalModelsHasPrices();
         $totalMP = $userPouch->totalPrices();
-        $perpage = 30;
-        $pagination = new Pagination( $totalM, $perpage, $this->page );
+
+        //$perpage = 30;
+        $pagination = new Pagination( $totalM, $this->ppCount, $this->page );
         $userPouch->start = $pagination->getStart();
-        $userPouch->perPage = $perpage;
+
+        //$userPouch->perPage = $perpage;
+        $userPouch->perPage = $this->ppCount;
 
         $stockInfo = $userPouch->getStockInfo();
         $modelPrices = $userPouch->getModelPrices();
         $statistic = $userPouch->getStatistic();
 
+        $ppCount = $this->ppCount;
         $tab = $this->tab;
         $workerID = $this->workerID;
         $monthID = $this->month;
         $yearID = $this->year;
         $page = $this->page;
+        $searchForValue = $this->searchForPM;
+        $title = 'Кошелёк работника';
 
         $this->includeJSFile('UserPouch.js',['defer','timestamp']);
 
         $compacts = compact([
-            'modelPrices','stockInfo','tab','statistic','workerID','monthID','yearID','page','pagination','totalM','totalMP',
+            'ppCount','modelPrices','stockInfo','tab','statistic','workerID','monthID','yearID','page','pagination',
+            'totalM','totalMP','searchForValue','title',
         ]);
         return $this->render('userpouch', $compacts);
     }

@@ -107,6 +107,26 @@ JS;
                     </form>
 
                     <form class="navbar-form topuserform navbar-right">
+                        <?php /** Уведомления о моделях для утверждения дизайна */ ?>
+                        <?php if ( User::getAccess() === 10 ): ?>
+                            <div class="btn-group" id="designApproveBadge">
+                                <button title="Уведомления о моделях для утверждения дизайна" type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="badge" style="background-color: #35a0da;!important;">
+                                        <span class="glyphicon glyphicon-leaf"></span>&#160;
+                                        <span class="da_Badge"><?= $this->varBlock['designApproveModels'] ?></span>
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="da_Show" href="/main/?regStat=35"><span class="glyphicon glyphicon-leaf"></span>&#160; Показать все</a>
+                                    </li>
+                                    <li>
+                                        <a class="da_Show" href="/main/?regStat=none"><span class="glyphicon glyphicon-remove"></span>&#160; Сбросить</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+
                         <?php if ( User::getAccess() > 0 ): ?>
 						<div class="btn-group" id="noticesBadge">
 							<button title="Текущие Уведомления" type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

@@ -30,6 +30,8 @@ class AppCodes
     const WRONG_PRICE = 2003;
     const NO_PERMISSION = 2004;
     const PRICE_NOT_CREDITED = 2005;
+    const EMPTY_PRICES = 2007;
+
     const NO_PERMISSION_TO_PAY = 611;
     const PAYING_ERROR = 612;
 
@@ -99,6 +101,10 @@ class AppCodes
         self::PRICE_NOT_CREDITED => [
             'code' => self::PRICE_NOT_CREDITED,
             'message'=>'Ошибка! Стоимость не зачислена. Попробуйте позже.'
+        ],
+        self::EMPTY_PRICES => [
+            'code' => self::EMPTY_PRICES,
+            'message'=>'Нечего оплатить. Список прайсов пуст.'
         ],
         self::URL_PARAMS_EMPTY => [
             'code' => self::URL_PARAMS_EMPTY,

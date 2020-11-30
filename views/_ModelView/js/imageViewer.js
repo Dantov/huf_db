@@ -598,6 +598,8 @@ ImageViewer.prototype.mainImageSetter = function()
             this.classList.remove('border-secondary-1');
             this.classList.add('activeImage','border-primary-1');
             activeImage = this;
+
+            document.getElementById('saveMainIMG').href = src;
         });
     });
 };
@@ -696,3 +698,56 @@ ImageViewer.prototype.mainImageLoupe = function()
         mainImage.style.backgroundPositionY = y + "px";
     }
 };
+
+/*
+You can with HTML5
+
+NB: The file data returned MUST be base64 encoded because you cannot JSON encode binary data
+
+In my AJAX response I have a data structure that looks like this:
+
+{
+    result: 'OK',
+    download: {
+        mimetype: string(mimetype in the form 'major/minor'),
+        filename: string(the name of the file to download),
+        data: base64(the binary data as base64 to download)
+    }
+}
+That means that I can do the following to save a file via AJAX
+
+var a = document.createElement('a');
+if (window.URL && window.Blob && ('download' in a) && window.atob) {
+    // Do it the HTML5 compliant way
+    var blob = base64ToBlob(result.download.data, result.download.mimetype);
+    var url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = result.download.filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+The function base64ToBlob was taken from here and must be used in compliance with this function
+
+function base64ToBlob(base64, mimetype, slicesize) {
+    if (!window.atob || !window.Uint8Array) {
+        // The current browser doesn't have the atob function. Cannot continue
+        return null;
+    }
+    mimetype = mimetype || '';
+    slicesize = slicesize || 512;
+    var bytechars = atob(base64);
+    var bytearrays = [];
+    for (var offset = 0; offset < bytechars.length; offset += slicesize) {
+        var slice = bytechars.slice(offset, offset + slicesize);
+        var bytenums = new Array(slice.length);
+        for (var i = 0; i < slice.length; i++) {
+            bytenums[i] = slice.charCodeAt(i);
+        }
+        var bytearray = new Uint8Array(bytenums);
+        bytearrays[bytearrays.length] = bytearray;
+    }
+    return new Blob(bytearrays, {type: mimetype});
+};
+This is good if your server is dumping filedata to be saved. However, I've not quite worked out how one would implement a HTML4 fallback
+
+*/

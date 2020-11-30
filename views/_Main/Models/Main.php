@@ -125,6 +125,7 @@ class Main extends General {
     }
 
 
+
 	public function getModelsFormStock()
     {
 

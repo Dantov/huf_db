@@ -55,12 +55,15 @@ $permittedFields = User::permissions();
 <form method="POST" id="addform" enctype="multipart/form-data">
 
     <ul class="nav nav-tabs text-center">
-        <li role="presentation" class="active" title="Текстовая информация"><a href="#baseData" role="tab" data-toggle="tab">Текстовые Данные</a></li>
+        <li role="presentation" class="active" title="Текстовая информация"><a href="#baseData" role="tab" data-toggle="tab"><i class="fas fa-file-alt"></i> Текстовые Данные</a></li>
+        <?php if ( $permittedFields['repairs'] ): ?>
+            <li role="presentation" class="" title="Управление ремонтами"><a href="#repairsData" role="tab" data-toggle="tab"><i class="fas fa-tools"></i> Ремонты</a></li>
+        <?php endif; ?>
         <?php if ( $permittedFields['files'] ): ?>
-            <li role="presentation" class="" title="Файлы"><a href="#filesData" role="tab" data-toggle="tab">Файлы</a></li>
+            <li role="presentation" class="" title="Файлы"><a href="#filesData" role="tab" data-toggle="tab"><i class="far fa-images"></i> Файлы</a></li>
         <?php endif; ?>
         <?php if (  $permittedFields['modelAccount'] ): ?>
-            <li role="presentation" class="" title="Стоимость работ по этой модели"><a href="#pricesData" role="tab" data-toggle="tab">Стоимости</a></li>
+            <li role="presentation" class="" title="Стоимость работ по этой модели"><a href="#pricesData" role="tab" data-toggle="tab"><i class="fas fa-hand-holding-usd"></i> Стоимости</a></li>
         <?php endif; ?>
     </ul> 
     <div class="tab-content">
@@ -332,46 +335,9 @@ $permittedFields = User::permissions();
                     </div>
                     <div class="col-xs-12"><hr/></div>
                 <?php endif; ?>
-
-
-                <!--РЕМОНТЫ-->
-                <?php if ( $permittedFields['repairs'] ): ?>
-                    <div class="col-xs-12" id="repairsBlock">
-                        <?php if ( $permittedFields['repairs3D'] ): ?>
-                            <?php
-                            $isRepairProto = false;
-                            for ( $i = 0; $i < count($repairs?:[]); $i++ )
-                            {
-                                $repair = $repairs[$i];
-                                if ( $whichRepair = $repair['which'] ? true : false ) continue; // пропустим ремонты модельеров, у них 1
-                                require _viewsDIR_."_AddEdit/includes/protoRepair.php";
-                            }
-                            ?>
-                            <button data-repair="3d" style="margin-top:10px;" class="btn btn-info addRepairs"><span class="glyphicon glyphicon-cog"></span> Добавить ремонт 3Д</button>
-                        <?php endif; ?>
-
-                        <?php if ( $permittedFields['repairsJew'] ): ?>
-                            <?php
-                            for ( $i = 0; $i < count($repairs?:[]); $i++ )
-                            {
-                                $repair = $repairs[$i];
-                                if ( !$whichRepair = $repair['which'] ? true : false ) continue; // пропустим ремонты 3д, у них 0
-                                require _viewsDIR_."_AddEdit/includes/protoRepair.php";
-                            }
-                            if (isset($whichRepair)) unset($whichRepair);
-                            ?>
-                            <button data-repair="jeweler" style="margin-top:10px;" class="btn btn-success addRepairs"><span class="glyphicon glyphicon-wrench"></span> Добавить ремонт Модельера-доработчика</button>
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
-                <!--END РЕМОНТЫ-->
-
             </div><!--row-->
 
-            <hr />
-
             <div class="row">
-
                 <?php if ( $permittedFields['labels'] ): ?>
                     <!-- Labels-->
                     <div class="col-xs-12 lables">
@@ -387,80 +353,57 @@ $permittedFields = User::permissions();
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                        <hr />
                     </div>
                     <!--end Labels-->
                 <?php endif; ?>
 
-
-                <?php if ( User::permission('statuses') ): ?>
-                    <!-- Statuses -->
-                    <div class="col-xs-12 status" id="workingCenters">
-                        <p title="Текущий статус" style="cursor: default;">
-                    <span>
-                        <span class="glyphicon glyphicon-ok"></span>
-                        &#160;Текущий статус:
-                    </span>
-                            <span class="label label-warning" style="font-weight: bold;font-size: medium;" title="<?= $row['status']['title']??'' ?>" >
-                        <span style="color: #1C1C1C" class="glyphicon glyphicon-<?= $row['status']['glyphi']??''?>"></span>
-                        <span id="currentStatus" ><?=$row['status']['name_ru']??''?></span>
-                    </span>
-                            <button id="openAll" title="Раскрыть Все" onclick="event.preventDefault()" style="margin-bottom: 10px" class="pull-right btn btn-sm btn-info"><span class="glyphicon glyphicon-menu-left"></span> Раскрыть Все</button>
-                            <button id="closeAll" title="Закрыть Все" onclick="event.preventDefault()" style="margin-bottom: 10px" class="pull-right hidden btn btn-sm btn-primary"><span class="glyphicon glyphicon-menu-down"></span> Закрыть Все</button>
-                        <div class="clearfix"></div>
-                        </p>
-                        <?php if ( $toShowStatuses ): ?>
-                            <div class="row">
-                            <?php
-                                $countWC = count($statusesWorkingCenters?:[]);
-                                $columns = [0=>'', 1=>'', 2=>'', 3=>''];
-                                $c = 0;
-                                ob_start();
-                            ?>
-                                <?php foreach ( $statusesWorkingCenters??[] as $wcName => $workingCenter ) :?>
-                                    <div class="panel panel-info" style="position:relative;">
-                                        <div class="panel-heading">
-                                            <?=$wcName?>
-                                            <button title="Раскрыть" onclick="event.preventDefault()" data-status="0" class="btn btn-sm btn-info statusesChevron"><span class="glyphicon glyphicon-menu-left"></span></button>
-                                        </div>
-                                        <div class="panel-body pb-0 statusesPanelBody statusesPanelBodyHidden">
-                                            <?php foreach ( $workingCenter as $subUnit ): ?>
-                                                <div class="list-group">
-                                                    <a class="list-group-item active"><?=$subUnit['descr']?></a>
-                                                    <?php foreach ( $subUnit['statuses'] as $status ) :?>
-                                                        <a class="list-group-item">
-                                                            <input type="radio" <?=$status['check'];?> name="status" id="<?=$status['name_en'];?>" aria-label="..." value="<?=$status['id'];?>">
-                                                            <label for="<?=$status['name_en'];?>" title="<?=$status['title'];?>">
-                                                                <span class="glyphicon glyphicon-<?=$status['glyphi'];?>"></span>
-                                                                <?=$status['name_ru'];?>
-                                                            </label>
-                                                        </a>
-                                                    <?php endforeach; ?>
-                                                    <a title="Ответственный" class="list-group-item list-group-item-success"><?=$subUnit['user']?></a>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-                                    <?php $columns[$c] .= ob_get_contents(); ?>
-                                    <?php ob_clean(); ?>
-                                    <?php $c++; ?>
-                                    <?php if ( !($c % 4) ) $c = 0; ?>
-                                <?php endforeach; ?>
-                                <?php ob_end_clean(); ?>
-                                <div class="col-xs-3" style="padding-right: 2px;"><?php echo $columns[0] ?></div>
-                                <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[1] ?></div>
-                                <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[2] ?></div>
-                                <div class="col-xs-3" style="padding-left: 2px;"><?php echo $columns[3] ?></div>
-                            </div>
-                        <?php else:?>
-                            <p class="bg-danger p1 text-bold text-justify">Изменение статусов недоступно! Предыдущий участок не выпустил модель, или модель не утверждена.</p>
-                        <?php endif; //$toShowStatuses?>
-                    </div>
-                    <!-- END Statuses -->
-                <?php endif; //statuses?>
-
             </div><!--end row-->
         </div>
+
+
+
+        <!-- ******************** REPAIRS ******************** -->
+        <?php if ( $permittedFields['repairs'] ): ?>
+        <div role="tabpanel" class="tab-pane in fade pt-1" id="repairsData">
+            <div class="row" id="repairsBlock">
+                <div class="col-xs-12">
+                    <?php if ( $permittedFields['repairs3D'] ): ?>
+                        <button data-repair="3d" style="margin-top:10px;" class="btn btn-info addRepair"><i class="fas fa-draw-polygon"></i> Добавить ремонт 3Д</button>
+                    <?php endif; ?>
+                    <?php if ( $permittedFields['repairsJew'] ): ?>
+                        <button data-repair="jeweler" style="margin-top:10px;" class="btn btn-success addRepair"><i class="fas fa-screwdriver"></i> Добавить ремонт Модельера-доработчика</button>
+                    <?php endif; ?>
+                    <!--
+                    <i class="fas fa-screwdriver"></i>
+                    <i class="fab fa-unity"></i>
+                    <i class="fas fa-hammer"></i>
+                    <i class="fas fa-vector-square"></i>
+                    <i class="fas fa-draw-polygon"></i>
+                     -->
+                </div>
+                <?php if ( !isset($repairs) ) $repairs = []; ?>
+                <?php if ( $permittedFields['repairs3D'] ): ?>
+                    <div class="col-xs-12 repairs3D">
+                    <?php foreach ( $repairs as $repair ) : ?>
+                        <?php if ( !$whichRepair = $repair['which'] ? true : false ) // пропустим ремонты модельеров, у них 1
+                            require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
+                    <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ( $permittedFields['repairsJew'] ): ?>
+                    <div class="col-xs-12 repairsJew">
+                    <?php foreach ( $repairs as $repair ) : ?>
+                        <?php if ( $whichRepair = $repair['which'] ? true : false ) // пропустим ремонты 3д, у них 0
+                            require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
+                    <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <?php $switchTableRow = 'repair'; require _viewsDIR_.'_AddEdit/includes/protoRows.php' ?>
+        </div>
+        <?php endif; ?>
 
 
 
@@ -470,7 +413,7 @@ $permittedFields = User::permissions();
             <div class="row">
                 <div class="col-xs-12">
                     <div id="drop-area" title="Загрузить Файлы">
-                        <p>Загрузить файлы можно перетащив их в эту область. Форматы: .jpg .jpeg .png .gif .stl .3dm .ai</p>
+                        <p>Загрузить файлы можно перетащив их в эту область. Форматы: .jpg .jpeg .png .gif .stl .mgx .3dm .ai .dxf</p>
                         <button type="button" id="addImageFiles" class="button"><i class="far fa-images"></i> Выбрать файлы</button>
                     </div>
                 </div>
@@ -506,7 +449,7 @@ $permittedFields = User::permissions();
                             if ( file_exists($stlFileName) ) $fileSize = filesize(_stockDIR_.$row['number_3d'].'/'.$id.'/stl/'.$stl_file['stl_name']) / 1024;
                         ?>
                         <div class="haveStl">
-                            <span><b>STL файлы:</b><i><?= '('.round($fileSize / 1024,2).' Мб)'?></i> <b><?=$stl_file['stl_name']?></b></span>
+                            <span><b>STL/MGX файлы:</b><i><?= '('.round($fileSize / 1024,2).' Мб)'?></i> <b><?=$stl_file['stl_name']?></b></span>
                             <button type="button" id="dellStl" class="btn btn-sm btn-default" onclick="dell_fromServ( <?=$id.',\''.$stl_file['stl_name'].'\'';?>, 'stl', false )" title="Удалить">
                                 <span class="glyphicon glyphicon-trash"></span>
                             </button>
@@ -514,7 +457,7 @@ $permittedFields = User::permissions();
                     <?php else: ?>
                         <div class="row">
                             <div class="col-xs-12">
-                                <b class="pull-left">STL файлы: <span></span></b>
+                                <b class="pull-left">STL/MGX файлы: <span></span></b>
                                 <button type="button" id="removeStl" class="btn btn-sm btn-default hidden removeDataFiles pull-right" data-type="stl" title="Убрать Stl файлы"><span class="glyphicon glyphicon-remove"></span></button>
                             </div>
                         </div>
@@ -559,7 +502,7 @@ $permittedFields = User::permissions();
                 <div class="col-xs-12 AIBlock">
                     <?php if ( isset($ai_file['name']) && !empty($ai_file['name']) ): ?>
                         <div class="haveStl">
-                            <span><b>Ai файлы накладки:&nbsp;&nbsp;<?=$ai_file['name'];?></b></span>
+                            <span><b>AI/DXF файлы накладки:&nbsp;&nbsp;<?=$ai_file['name'];?></b></span>
                             <button type="button" id="dellAi" class="btn btn-sm btn-default" onclick="dell_fromServ( <?=$id.',\''.$ai_file['name'].'\'';?>, 'ai', false )" title="Удалить">
                                 <span class="glyphicon glyphicon-trash"></span>
                             </button>
@@ -567,7 +510,7 @@ $permittedFields = User::permissions();
                     <?php else: ?>
                         <div class="row">
                             <div class="col-xs-12">
-                                <b class="pull-left">Ai файлы накладки: <span></span></b>
+                                <b class="pull-left">AI/DXF файлы накладки: <span></span></b>
                                 <button type="button" id="removeAi" class="btn btn-sm btn-default hidden removeDataFiles pull-right" data-type="ai" title="Убрать ai файлы"><span class="glyphicon glyphicon-remove"></span></button>
                             </div>
                         </div>
@@ -1082,7 +1025,74 @@ $permittedFields = User::permissions();
             </div>
         </div>
         <?php endif; ?>
-
+    </div>
+    <hr />
+    <div class="row">
+        <?php if ( User::permission('statuses') ): ?>
+            <!-- Statuses -->
+            <div class="col-xs-12 status" id="workingCenters">
+                <p title="Текущий статус изделия" style="cursor: default;">
+                <span>
+                    <span class="glyphicon glyphicon-ok"></span>
+                    &#160;Текущий статус изделия:
+                </span>
+                    <span class="label label-warning" style="font-weight: bold;font-size: medium;" title="<?= $row['status']['title']??'' ?>" >
+                    <span style="color: #1C1C1C" class="glyphicon glyphicon-<?= $row['status']['glyphi']??''?>"></span>
+                    <span id="currentStatus" ><?=$row['status']['name_ru']??''?></span>
+                </span>
+                    <button id="openAll" title="Раскрыть Все" onclick="event.preventDefault()" style="margin-bottom: 10px" class="pull-right btn btn-sm btn-info"><span class="glyphicon glyphicon-menu-left"></span> Раскрыть Все</button>
+                    <button id="closeAll" title="Закрыть Все" onclick="event.preventDefault()" style="margin-bottom: 10px" class="pull-right hidden btn btn-sm btn-primary"><span class="glyphicon glyphicon-menu-down"></span> Закрыть Все</button>
+                <div class="clearfix"></div>
+                </p>
+                <?php if ( $toShowStatuses ): ?>
+                    <div class="row">
+                        <?php
+                        $countWC = count($statusesWorkingCenters?:[]);
+                        $columns = [0=>'', 1=>'', 2=>'', 3=>''];
+                        $c = 0;
+                        ob_start();
+                        ?>
+                        <?php foreach ( $statusesWorkingCenters??[] as $wcName => $workingCenter ) :?>
+                            <div class="panel panel-info" style="position:relative;">
+                                <div class="panel-heading">
+                                    <?=$wcName?>
+                                    <button title="Раскрыть" onclick="event.preventDefault()" data-status="0" class="btn btn-sm btn-info statusesChevron"><span class="glyphicon glyphicon-menu-left"></span></button>
+                                </div>
+                                <div class="panel-body pb-0 statusesPanelBody statusesPanelBodyHidden">
+                                    <?php foreach ( $workingCenter as $subUnit ): ?>
+                                        <div class="list-group">
+                                            <a class="list-group-item active"><?=$subUnit['descr']?></a>
+                                            <?php foreach ( $subUnit['statuses'] as $status ) :?>
+                                                <a class="list-group-item">
+                                                    <input type="radio" <?=$status['check'];?> name="status" id="<?=$status['name_en'];?>" aria-label="..." value="<?=$status['id'];?>">
+                                                    <label for="<?=$status['name_en'];?>" title="<?=$status['title'];?>">
+                                                        <span class="glyphicon glyphicon-<?=$status['glyphi'];?>"></span>
+                                                        <?=$status['name_ru'];?>
+                                                    </label>
+                                                </a>
+                                            <?php endforeach; ?>
+                                            <a title="Ответственный" class="list-group-item list-group-item-success"><?=$subUnit['user']?></a>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php $columns[$c] .= ob_get_contents(); ?>
+                            <?php ob_clean(); ?>
+                            <?php $c++; ?>
+                            <?php if ( !($c % 4) ) $c = 0; ?>
+                        <?php endforeach; ?>
+                        <?php ob_end_clean(); ?>
+                        <div class="col-xs-3" style="padding-right: 2px;"><?php echo $columns[0] ?></div>
+                        <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[1] ?></div>
+                        <div class="col-xs-3" style="padding: 0 2px 0 2px; "><?php echo $columns[2] ?></div>
+                        <div class="col-xs-3" style="padding-left: 2px;"><?php echo $columns[3] ?></div>
+                    </div>
+                <?php else:?>
+                    <p class="bg-danger p1 text-bold text-justify">Изменение статусов недоступно! Предыдущий участок не выпустил модель, или модель не утверждена.</p>
+                <?php endif; //$toShowStatuses?>
+            </div>
+            <!-- END Statuses -->
+        <?php endif; //statuses?>
     </div>
     <hr />
     <input type="hidden" name="save" value="<?=$save?>"/>
@@ -1124,5 +1134,4 @@ $permittedFields = User::permissions();
 </form>
 
 <img src="" id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
-<?php $isRepairProto = true; require _viewsDIR_.'_AddEdit/includes/protoRepair.php' ?>
 <?php $switchTableRow = 'notes'; require _viewsDIR_."_AddEdit/includes/protoRows.php";?>

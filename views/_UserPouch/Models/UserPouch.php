@@ -19,6 +19,8 @@ class UserPouch extends Main
     public $paidTab;
     public $date;
 
+    public $searchInput = '';
+
     /**
      * для каких моделей выбрать прайсы
     */
@@ -30,7 +32,7 @@ class UserPouch extends Main
      */
     public $stockData;
 
-    public function __construct( string $paidTab='', int $worker = 0, int $month = 0, int $year = 0  )
+    public function __construct( string $paidTab='', int $worker = 0, int $month = 0, int $year = 0, string $searchInput='' )
     {
         parent::__construct();
 
@@ -39,7 +41,24 @@ class UserPouch extends Main
             case "all": $this->paidTab = ""; break;
             case "paid": $this->paidTab = "AND paid='1'"; break;
             case "notpaid": $this->paidTab = "AND paid='0' AND status='1'"; break;
+            case "notCredited": $this->paidTab = "AND paid='0' AND status='0' "; break;
             default : $this->paidTab = ""; break;
+        }
+
+        $searchInput = htmlspecialchars( strip_tags( trim($searchInput) ), ENT_QUOTES );
+        $searchInput = mysqli_real_escape_string($this->connection, $searchInput);
+        if ( !empty($searchInput) )
+        {
+            $searchedFields = [
+                'number_3d', 'vendor_code', 'collections', 'author', 'jewelerName',
+                'modeller3D', 'model_type', 'labels', 'description',
+            ];
+
+            $queryStr = "";
+            foreach ( $searchedFields as $sField )
+                $queryStr .= "s." . $sField . " LIKE '%" . $searchInput . "%' OR ";
+
+            $this->searchInput = "(" . trim($queryStr,' OR ') . ") AND ";
         }
 
         $this->worker = !$worker ? 1 : 'user_id=' . $worker; // WHERE 1 - все работники
@@ -53,7 +72,9 @@ class UserPouch extends Main
     public function totalModelsHasPrices() : int
     {
         $sql = " SELECT COUNT(1) as c FROM stock as s
-                    WHERE s.id IN (SELECT DISTINCT pos_id FROM model_prices WHERE $this->worker $this->paidTab $this->date )";
+                    WHERE $this->searchInput s.id IN 
+                    (SELECT DISTINCT pos_id FROM model_prices WHERE $this->worker $this->paidTab $this->date)";
+
         return $this->findOne($sql)['c'];
     }
 
@@ -147,32 +168,51 @@ class UserPouch extends Main
                                     WHERE $this->worker $this->paidTab $this->date 
                                     LIMIT $this->start, $this->perPage)
         */
+        $limit = "LIMIT $this->start, $this->perPage";
+        $limitMP = $this->searchInput ? "" : $limit ;
         $sqlPosIDDist = "SELECT DISTINCT pos_id FROM model_prices 
-                         WHERE $this->worker $this->paidTab $this->date LIMIT $this->start, $this->perPage";
+                            WHERE $this->worker $this->paidTab $this->date $limitMP";
 
         $result = $this->findAsArray($sqlPosIDDist);
         //debug($sqlPosIDDist,'$sqlPosIDDist');
-        
-        foreach ( $result as &$posIDMP ) $in .= $posIDMP['pos_id'].',';
+
+        $in= '';
+        foreach ( $result as &$posID_MP ) $in .= $posID_MP['pos_id'].',';
         $this->inModels = $in = !trueIsset($in) ? '(0)' : '(' . rtrim($in, ',') . ')';
         //debug($in,'$in');
+        $limitSt = $this->searchInput ? $limit : "" ;
         $sqlStock = " SELECT s.id, s.number_3d, img.pos_id, img.img_name, s.vendor_code, s.model_type, s.status FROM stock as s 
-                      LEFT JOIN images as img ON (s.id = img.pos_id AND img.main=1)
-                      WHERE s.id IN $in ORDER BY s.id DESC";
+                      LEFT JOIN images as img ON ( s.id = img.pos_id AND img.main=1 )
+                      WHERE $this->searchInput s.id IN $in ORDER BY s.id DESC $limitSt";
                                      /*
-                                            ( SELECT * FROM (
-                                                SELECT DISTINCT pos_id FROM model_prices 
-                                                    WHERE $this->worker $this->paidTab $this->date
-                                                    LIMIT $this->start, $this->perPage ) as temp )
+                                        ( SELECT * FROM (
+                                            SELECT DISTINCT pos_id FROM model_prices
+                                                WHERE $this->worker $this->paidTab $this->date
+                                                LIMIT $this->start, $this->perPage ) as temp )
                                     */
+        //debug($sqlStock,'$sqlStock');
         $result = $this->findAsArray($sqlStock);
         //debug($result,'$result',1);
         foreach ( $result as &$stockModel )
         {
+            if ( empty($stockModel['img_name']) )
+            {
+                $allImages = $this->findAsArray("SELECT img_name,pos_id,sketch,onbody,detail FROM images WHERE pos_id={$stockModel['id']}");
+                $stockModel['img_name'] = $allImages[0]['img_name'];
+                foreach ( $allImages as $image )
+                {
+                    if ( trueIsset($image['sketch']) )
+                    {
+                        $stockModel['img_name'] = $image['img_name'];
+                        break;
+                    }
+                }
+            }
             $imgPath = $stockModel['number_3d'] . "/" .$stockModel['id'] . "/images/".$stockModel['img_name'];
             $imgSrc  = file_exists(_stockDIR_ . $imgPath);
             $stockModel['img_name']  =  $imgSrc ? _stockDIR_HTTP_ . $imgPath : _stockDIR_HTTP_."default.jpg";
         }
+        //debug($result,'$result',1);
         return $this->stockData = $result;
     }
 

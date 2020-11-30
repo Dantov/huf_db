@@ -635,5 +635,13 @@ class General extends Model
         if ( $query->num_rows ) return true;
         return false;
     }
-	
+
+
+    /**
+     * @throws \Exception
+     */
+    public function getDesignApproveModels()
+    {
+        return $this->findOne("SELECT COUNT(status) as c FROM stock WHERE status=35 ")['c'];
+    }
 }

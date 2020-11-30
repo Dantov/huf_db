@@ -543,7 +543,19 @@ class AddEdit extends General
      */
     public function getRepairs()
     {
-		return $this->findAsArray( " SELECT * FROM repairs WHERE pos_id='$this->id' ");
+        $repairs = $this->findAsArray( " SELECT * FROM repairs WHERE pos_id='$this->id' ");
+        $prices = $this->findAsArray( " SELECT * FROM model_prices WHERE pos_id='$this->id' AND is3d_grade='8' ");
+
+        foreach ( $repairs as &$repair )
+        {
+            foreach ( $prices as $price )
+            {
+                if ( $repair['pos_id'] === $price['pos_id'] )
+                    $repair['prices'][] = $price;
+            }
+        }
+        //debug($repairs,'$repairs',1);
+		return $repairs;
 	}
 
 

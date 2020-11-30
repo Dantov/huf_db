@@ -6,7 +6,6 @@ use Views\vendor\libs\classes\AppCodes;
 
 class HandlerPrices extends Handler
 {
-
     /**
      * HandlerPrices constructor.
      * @param int $id

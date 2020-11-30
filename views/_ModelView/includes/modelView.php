@@ -30,6 +30,9 @@ $isView = true;
                 <div class="row">
                     <div class="col-xs-12 pl-0">
                         <div class="panel mb-1">
+                            <a id="saveMainIMG" title="Сохранить картинку" href="<?= $mainImg['src'] ?>" target="_blank" download="<?= $row['number_3d'] .'-'. $row['model_type'] ?>" class="btn btn-default absolute btnImgSave">
+                                <span class="glyphicon glyphicon-floppy-disk"></span>
+                            </a>
                             <div class="mainImage cursorLoupe" data-id="<?=$mainImg['id']?>" style="background-image: url(<?=$mainImg['src']?>);"></div>
                         </div>
                     </div>
@@ -247,24 +250,26 @@ $isView = true;
                     <span class="badge badge-lg"><?=$material['probe']."&deg;"?></span>
                     <span class="badge badge-lg"><?=$material['metalColor']?></span>
                     <span class="badge badge-lg"><?=$material['type']?></span>
-                    <b><?=$material['part']?:"&#160;"?></b>
+                    <b><?=$material['part']?:"&#160;"?></b> <i><?=$material['count'] ? " - ".$material['count']." шт." : "" ?></i>
                 </li>
                 <li class="list-group-item p0">
-                    <table class="table table-condensed table-striped mb-0 text-small text-center">
-                        <thead>
-                            <tr class="text-muted">
-                                <td>Покрытие</td><td>Площадь</td><td>Цвет Покрытия</td><td>Обработка</td>
-                            </tr>
-                        </thead>
-                        <tbody class="brb-2-success">
-                            <tr>
-                                <th class="border-right-1 text-center"><?=$material['covering'];?></th>
-                                <th class="border-right-1 text-center"><?=$material['area'];?></th>
-                                <th class="border-right-1 text-center"><?=$material['covColor'];?></th>
-                                <th class="text-center"><?=$material['handling'];?></th>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <?php if ( !empty($material['covering']) || !empty($material['area']) || !empty($material['covColor']) || !empty($material['handling']) ): ?>
+                        <table class="table table-condensed table-striped mb-0 text-small text-center">
+                            <thead>
+                                <tr class="text-muted">
+                                    <td>Покрытие</td><td>Площадь</td><td>Цвет Покрытия</td><td>Обработка</td>
+                                </tr>
+                            </thead>
+                            <tbody class="brb-2-success">
+                                <tr>
+                                    <th class="border-right-1 text-center"><?=$material['covering'];?></th>
+                                    <th class="border-right-1 text-center"><?=$material['area'];?></th>
+                                    <th class="border-right-1 text-center"><?=$material['covColor'];?></th>
+                                    <th class="text-center"><?=$material['handling'];?></th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
                 </li>
                 <?php endforeach; ?>
             </ul>

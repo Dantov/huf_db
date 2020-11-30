@@ -73,22 +73,42 @@ class PushNotice extends General
         if (!$date) $date = date('Y-m-d');
         if (!$creator_name) $creator_name = User::getFIO();
 
-        if ( !$status || !$number_3d || !$vendor_code || !$model_type )
+        $sql = "SELECT s.number_3d as number_3d, s.vendor_code as vendor_code, s.model_type as model_type, 
+                       s.status as status, i.main as img_main, i.sketch as img_sketch, i.detail as img_detail, 
+                       i.onbody as img_onbody, i.pos_id as pos_id, i.img_name as img_name
+                  FROM stock as s
+                  LEFT JOIN images as i ON s.id = i.pos_id
+                   WHERE s.id='$id' ";
+        $stockQuery = $this->findAsArray( $sql );
+
+        // порядок выбора элементов
+        $statusIMGOrder = ['img_main','img_sketch','img_detail','img_onbody'];
+        $modelData = [];
+        foreach ( $statusIMGOrder as $statusName )
         {
-            $stockQuery = $this->findOne( " SELECT  number_3d,vendor_code,model_type,status FROM stock WHERE id='$id' " );
-            if ( !$status ) $status = $stockQuery['status'];
-            if ( !$number_3d ) $number_3d = $stockQuery['number_3d'];
-            if ( !$vendor_code ) $vendor_code = $stockQuery['vendor_code'];
-            if ( !$model_type ) $model_type = $stockQuery['model_type'];
+            foreach ( $stockQuery as $stockData )
+            {
+                if ( (int)$stockData[$statusName] === 1 )
+                {
+                    $modelData = $stockData;
+                    break(2);
+                }
+            }
         }
+        if ( empty($modelData) ) $modelData = $stockQuery[0];
+
+        //debug($modelData,'$stockQuery',1,1);
+
+        if ( !$status ) $status = $modelData['status'];
+        if ( !$number_3d ) $number_3d = $modelData['number_3d'];
+        if ( !$vendor_code ) $vendor_code = $modelData['vendor_code'];
+        if ( !$model_type ) $model_type = $modelData['model_type'];
 
         // полезем за картинкой
-        $imgQuery = mysqli_query($this->connection, " SELECT img_name FROM images WHERE main='1' AND pos_id='$id' " );
         $pathToImg='';
-        if ( $imgQuery->num_rows )
+        if ( trueIsset($modelData['img_name']) )
         {
-            $pushImg = mysqli_fetch_assoc($imgQuery);
-            $file = $number_3d.'/'.$id.'/images/'.$pushImg['img_name'];
+            $file = $number_3d.'/'.$id.'/images/'.$modelData['img_name'];
 
             $pathToImg = _WORK_PLACE_ ? "http://192.168.0.245/Stock/" . $file : _stockDIR_HTTP_ . $file ;
 

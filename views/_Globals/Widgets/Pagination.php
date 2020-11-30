@@ -42,7 +42,7 @@ class Pagination
     public $prevX_Squares = "";
 
 
-    public function __construct(int $totalCount, int $perPage, int $page)
+    public function __construct( int $totalCount, int $perPage, int $page )
     {
         $this->total = (int)$totalCount;
         $this->itemsPerPage = (int)$perPage;

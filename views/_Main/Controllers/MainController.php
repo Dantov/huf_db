@@ -6,7 +6,7 @@ use Views\_Globals\Models\User;
 use Views\_Main\Models\{Main, SetSortModel, Search, ToExcel};
 use Views\_Globals\Controllers\GeneralController;
 use Views\_Globals\Models\SelectionsModel;
-use Views\vendor\core\Registry;
+//use Views\vendor\core\Registry;
 use Views\vendor\libs\classes\AppCodes;
 
 
@@ -15,6 +15,8 @@ class MainController extends GeneralController
 	
     public $title = 'ХЮФ 3Д База';
     public $foundRows = [];
+
+
 
     public function __construct($controllerName)
     {
@@ -166,7 +168,7 @@ class MainController extends GeneralController
 			$selectedModelsByLi = Main::selectedModelsByLi();
 		}
 		
-		// почистим старые уведомления
+		/** почистим старые уведомления */
 		if (User::getAccess() === 1 )
 		{
 			$pn = new PushNotice();
@@ -244,6 +246,7 @@ class MainController extends GeneralController
 			$wholePos = 0;
 		}
 
+
 		// --- Пагинация --- //
 		if ( $drawBy_ !== 5 ) {
 			$pagination = '';
@@ -263,6 +266,7 @@ class MainController extends GeneralController
 		
 		return $this->render('main', $compacted);
 	}
+
 
 	protected function selectByStatHistory()
     {

@@ -7,6 +7,7 @@ function PaymentManager()
     this.payButton = this.modal.querySelector(".payButton");
 
     this.priceIDs = [];
+    this.excludePricesList = []; // исключенные из оплаты прайсы
 
     this.panelsToRemove = [];
 
@@ -36,6 +37,9 @@ PaymentManager.prototype.init = function(button)
         s.classList.remove('col-md-12', 'col-md-6');
         pm.modal.children[0].classList.remove("modal-lg");
         pm.priceIDs = [];
+        pm.excludePricesList = [];
+
+        pm.panelsToRemove = [];
     });
 
     this.payButton.addEventListener('click', function () {
@@ -43,6 +47,8 @@ PaymentManager.prototype.init = function(button)
     },false);
 
     this.addCollapsesEvent();
+    this.addCollapsesAll();
+    this.collapsesAllPM();
 
     $("#alertResponse").iziModal({
         timeout: 5000,
@@ -71,6 +77,7 @@ PaymentManager.prototype.init = function(button)
 
     debug('PaymentManager init ok!');
 };
+
 /**
  * Накинем обработчик на панель, что бы открывалась не только лишь по клику на ссылке collapse
  */
@@ -87,7 +94,7 @@ PaymentManager.prototype.addCollapsesEvent = function()
             $(this.nextElementSibling).collapse('toggle');
             let panel = this.parentElement;
 
-            panel.classList.toggle('panel-default');
+            //panel.classList.toggle('panel-default');
             panel.classList.toggle('panel-info');
             panel.classList.toggle('panel-primary');
         });
@@ -118,6 +125,137 @@ PaymentManager.prototype.addCollapsesEvent = function()
     });
 };
 
+/**
+ * Обработчик на кнопку "Раскрыть все"
+ */
+PaymentManager.prototype.addCollapsesAll = function()
+{
+    let openAllModels = document.getElementById('openAllModels');
+
+    /**
+     * allPanelsState
+     * Переключатель всех панелей
+     * @type {boolean}
+     */
+    let allPanelsState = false; // все закрыто по умолчанию
+
+    openAllModels.addEventListener('click', function () {
+        let allModels = document.getElementById('allModels');
+        let panelHeadings = allModels.querySelectorAll('.panel-heading');
+
+        $.each(panelHeadings, function (i, ph) {
+
+            // при клике на панель, раскрыли панель и подсветили её
+            //this - panel-heading
+            if ( !allPanelsState )
+                if ( this.nextElementSibling.classList.contains('in') ) return;
+
+            $(this.nextElementSibling).collapse('toggle');
+
+            let panel = this.parentElement;
+            panel.classList.toggle('panel-default');
+            panel.classList.toggle('panel-primary');
+        });
+
+        this.classList.toggle('btn-default');
+        this.classList.toggle('btn-danger');
+        this.querySelector('.t').innerHTML = this.classList.contains('btn-danger') ? 'Свернуть все' : 'Раскрыть все';
+
+        allPanelsState = !allPanelsState;
+
+    },false);
+};
+
+/**
+ * Обработчик на кнопку "Раскрыть все" в модале
+ */
+PaymentManager.prototype.collapsesAllPM = function()
+{
+    let that = this;
+    let openAllModels = this.modal.querySelector('.openAllPanelsPM');
+
+    /**
+     * allPanelsState
+     * Переключатель всех панелей
+     * @type {boolean}
+     */
+    let allPanelsState = false; // все закрыто по умолчанию
+
+    openAllModels.addEventListener('click', function () {
+        let panelHeadings = that.modal.querySelector('.modal-body').querySelectorAll('.panel-heading');
+
+        $.each(panelHeadings, function (i, ph) {
+
+            // при клике на панель, раскрыли панель и подсветили её
+            //this - panel-heading
+            if ( !allPanelsState )
+                if ( this.nextElementSibling.classList.contains('in') ) return;
+
+            $(this.nextElementSibling).collapse('toggle');
+
+            let panel = this.parentElement;
+            panel.classList.toggle('panel-default');
+            panel.classList.toggle('panel-primary');
+        });
+
+        this.classList.toggle('btn-default');
+        this.classList.toggle('btn-danger');
+        this.querySelector('.tp').innerHTML = this.classList.contains('btn-danger') ? 'Свернуть все' : 'Раскрыть все';
+
+        allPanelsState = !allPanelsState;
+    }, false);
+};
+
+/**
+ * Исключает из оплаты один прайс в модели
+ */
+PaymentManager.prototype.excludePriceFromModel = function(priceID, row)
+{
+    this.excludePricesList.push(priceID);
+    row.classList.add('hidden');
+
+    let titleNum = this.modal.querySelector('.modal-title').querySelector('b');
+    let titleOverallNum;
+
+    let num = parseInt(row.children[0].querySelector('b').innerHTML);
+
+    let pFooter = row.parentElement.parentElement.querySelector('.panel-footer');
+    let ov = pFooter.innerHTML.split(' ');
+
+    let numOverall = parseInt( ov[1] );
+
+    numOverall -= num;
+    ov[1] = numOverall + 'грн.';
+    pFooter.innerHTML = ov.join(' ');
+
+    if ( titleNum )
+    {
+        titleOverallNum = parseInt(titleNum.innerHTML);
+        titleNum.innerHTML = (titleOverallNum - num) + '';
+    }
+};
+
+/**
+ * Исключает из оплаты все прайсы в модели
+ */
+PaymentManager.prototype.excludePricesFromModel = function( button, currentExcludedPrices, tMValue)
+{
+    let that = this;
+
+    $.each(currentExcludedPrices, function (i, cPr) {
+        that.excludePricesList.push(cPr);
+    });
+    let titleNum = this.modal.querySelector('.modal-title').querySelector('b');
+    let titleOverallNum = parseInt(titleNum.innerHTML);
+
+    titleNum.innerHTML = (titleOverallNum - tMValue) + '';
+
+    button.parentElement.parentElement.classList.add('hidden');
+};
+
+/**
+ * Идет за прайсами и моделями в базу. Вставляет их в ПМ
+ */
 PaymentManager.prototype.getPricesAllData = function(button)
 {
     let that = this;
@@ -198,8 +336,11 @@ PaymentManager.prototype.getPricesAllData = function(button)
                 let tMValue = 0;
                 let ul = newModelRow.querySelector('.list-group');
 
+                let thisModelExlPrices = [];
                 $.each(model.prices, function (c, price) {
                     that.priceIDs.push(price.pID);
+                    thisModelExlPrices.push(price.pID);
+
                     tMValue += +price.value;
 
                     let newLi = document.createElement('li');
@@ -228,19 +369,33 @@ PaymentManager.prototype.getPricesAllData = function(button)
                     let paySuccessLabel = newModelRow.querySelector('.paySuccess').cloneNode(true);
                     paySuccessLabel.classList.add('mr-1');
 
+                    let exlPriceButton = newModelRow.querySelector('.exlPriceButton').cloneNode(true);
+                        exlPriceButton.removeAttribute('hidden');
+
                     let div = document.createElement('div');
-                    div.classList.add('pt-1');
-                    div.appendChild(accruedLabel);
-                    div.appendChild(notPayedLabel);
-                    div.appendChild(paySuccessLabel);
+                        div.classList.add('pt-1');
+                        div.appendChild(accruedLabel);
+                        div.appendChild(notPayedLabel);
+                        div.appendChild(paySuccessLabel);
+                        div.appendChild(exlPriceButton);
 
                     newLi.appendChild(span);
                     newLi.appendChild(spanFIO);
                     newLi.appendChild(div);
 
                     ul.appendChild(newLi);
+
+                    exlPriceButton.addEventListener('click', function (e) {
+                        that.excludePriceFromModel(price.pID, newLi);
+                    });
+
                 });
                 totalValue += tMValue;
+
+                newModelRow.querySelector('.exlModelButton').addEventListener('click', function (e) {
+
+                    that.excludePricesFromModel( this, Object.assign([],thisModelExlPrices), tMValue );
+                });
 
                 let footer = newModelRow.querySelector('.panel-footer');
                 footer.innerHTML = "Всего: " + tMValue + "грн.";
@@ -306,6 +461,7 @@ PaymentManager.prototype.payPrices = function(payButton)
         type: 'POST',
         data: {
             prices: that.priceIDs,
+            excludePricesList: that.excludePricesList,
         },
         dataType:"json",
         success:function(data) {

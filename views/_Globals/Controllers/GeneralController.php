@@ -158,6 +158,8 @@ JS;
         $navBar['collectionList'] = getCollections($collections_arr);
 
         $this->navBar = $navBar;
+
+        $this->varBlock['designApproveModels'] = $general->getDesignApproveModels();
     }
 
 

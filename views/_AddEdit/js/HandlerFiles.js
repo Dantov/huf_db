@@ -93,7 +93,8 @@ HandlerFiles.prototype.handleFiles = function(files)
     //debug( self.fileTypes,'fileTypes');
     files.forEach(function (file)
     {
-        let fileExtension = file.name.split('.')[1];
+        let arr_split = file.name.split('.');
+        let fileExtension = arr_split[arr_split.length-1].toLowerCase();
         if ( self.fileTypes.includes(file.type) )
         {   // картинки здесь
             self.imageFilesBuffer.push(file);
@@ -118,6 +119,8 @@ HandlerFiles.prototype.handleFiles = function(files)
     }
     */
 };
+
+
 /**
  * Data Files
  */
@@ -129,19 +132,13 @@ HandlerFiles.prototype.addDataFile = function(file,type)
     let mb = 'Мб';
     let overallSize = '';
 
-    switch (type)
+    switch ( type.toLowerCase() )
     {
         case "stl":
-            areaID = 'stl-files-area';
-            removeBtnID = 'removeStl';
-            size = ( (file.size / 1024) / 1024 ).toFixed(2);
-            this.stlOveralSize += file.size;
-
-            this.stlFilesBuffer.push(file);
-            debug(this.stlFilesBuffer,'stlFilesBuffer');
-
-            overallSize = document.getElementById(removeBtnID).previousElementSibling.children[0];
-            overallSize.innerHTML = '( ' + ((this.stlOveralSize / 1024) / 1024 ).toFixed(2) + ' Мб)';
+            stl_mgx_case(this,file);
+            break;
+        case "mgx":
+            stl_mgx_case(this,file);
             break;
         case "3dm":
             areaID = '3dm-files-area';
@@ -156,15 +153,37 @@ HandlerFiles.prototype.addDataFile = function(file,type)
             overallSize.innerHTML = ' ( ' + ((this.rhinoOveralSize / 1024) / 1024 ).toFixed(2) + ' Мб)';
             break;
         case "ai":
-            areaID = 'ai-files-area';
-            removeBtnID = 'removeAi';
-            size = ( (file.size / 1024) ).toFixed(2);
-            mb = 'Кб';
-
-            this.aiFilesBuffer.push(file);
-            debug(this.aiFilesBuffer,'aiFilesBuffer');
+            ai_dxf_case(this,file);
+            break;
+        case "dxf":
+            ai_dxf_case(this,file);
             break;
     }
+
+    function stl_mgx_case(hf,file)
+    {
+        areaID = 'stl-files-area';
+        removeBtnID = 'removeStl';
+        size = ( (file.size / 1024) / 1024 ).toFixed(2);
+        hf.stlOveralSize += file.size;
+
+        hf.stlFilesBuffer.push(file);
+        debug(hf.stlFilesBuffer,'stlFilesBuffer');
+
+        overallSize = document.getElementById(removeBtnID).previousElementSibling.children[0];
+        overallSize.innerHTML = '( ' + ((hf.stlOveralSize / 1024) / 1024 ).toFixed(2) + ' Мб)';
+    }
+    function ai_dxf_case(hf,file)
+    {
+        areaID = 'ai-files-area';
+        removeBtnID = 'removeAi';
+        size = ( (file.size / 1024) ).toFixed(2);
+        mb = 'Кб';
+
+        hf.aiFilesBuffer.push(file);
+        debug(hf.aiFilesBuffer,'aiFilesBuffer');
+    }
+
 
     let typeArea = document.getElementById(areaID);
     let removeBtn = document.getElementById(removeBtnID);
@@ -189,7 +208,8 @@ HandlerFiles.prototype.removeDataFiles = function(type)
 {
     let areaID = '';
     let removeBtnID = '';
-    switch (type)
+
+    switch ( type.toLowerCase() )
     {
         case "stl":
             areaID = 'stl-files-area';

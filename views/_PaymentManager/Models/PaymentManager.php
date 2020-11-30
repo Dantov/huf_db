@@ -7,9 +7,9 @@ use Views\vendor\libs\classes\URLCrypt;
 class PaymentManager extends UserPouch
 {
 
-	public function __construct( string $paidTab='', int $worker = 0, int $month = 0, int $year = 0 )
+	public function __construct( string $paidTab='', int $worker = 0, int $month = 0, int $year = 0, string $searchInput='' )
 	{
-		parent::__construct( $paidTab, $worker, $month, $year );
+		parent::__construct( $paidTab, $worker, $month, $year, $searchInput );
 	}
 
     /**

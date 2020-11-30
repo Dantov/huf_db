@@ -1,44 +1,51 @@
 <?php
 use Views\vendor\core\HtmlHelper;
-use Views\vendor\libs\classes\URLCrypt;
+
+// Указатель на вид, Менеджер или Кошелек
+$pmView = $pmView??false;
+
 $currentWorker = $this->session->getKey('currentWorker'); 
 $tabID = (int)$this->request->get('tab');
 
+
 HtmlHelper::defineURLParams([
+    'ppCount' => $ppCount,
 	'tab'    => $tabID,
 	'worker' => $workerID,
 	'year'   => $yearID,
 	'month'  => $monthID,
 	'page'   => $page,
+	'searchForPM' => $searchForValue,
 ]);
-//
+
 $tabName = '';
 switch ($tab??'all')
 {
     case 'all': $tabName = "Всех моделей"; break;
-    case 'paid': $tabName = "Оплаченных"; break;
-    case 'notpaid': $tabName = "Не оплаченных"; break;
+    case 'paid': $tabName = "Оплаченные"; break;
+    case 'notpaid': $tabName = "Не оплаченные"; break;
+    case 'notCredited': $tabName = "Не Зачисленные"; break;
 }
 ?>
 <div class="row">
-    <p class="lead text-info text-center"><span class="glyphicon glyphicon-credit-card" aria-hidden="true"></span> Менеджер Оплат</p>
+    <p class="lead text-info text-center"><span class="glyphicon glyphicon-credit-card" aria-hidden="true"></span> <?= $title ?></p>
     <div class="col-xs-12 stats_table">
-    	
-    	<div class="btn-group pull-right">
-			<div class="btn-group btn-group-sm" role="group">
-				<button type="button" class="btn btn-default disabled cursorArrow"><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> Сортировка:</button>
-				<button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					<span class="currentWorkerName"><?= $currentWorker['fio'] ?></span> <span class="caret"></span>
-				</button>
-				<ul class="dropdown-menu">
-					<li><a href="<?= HtmlHelper::URL('/',['worker'=>0]) ?>">Все работники</a></li>
-					<li role="separator" class="divider"></li>
-					<?php foreach ($usersList as $user): ?>
-						<li><a href="<?=HtmlHelper::URL('/',['worker'=>$user['id']])?>"><?=$user['fio']?></a></li>
-					<?php endforeach; ?>
-					<!--<li role="separator" class="divider"></li>-->
-				</ul>
-			</div>
+
+    	<div class="btn-group btn-group-sm pull-right">
+            <?php if ( $pmView ): ?>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <span class="currentWorkerName"><?= $currentWorker['fio'] ?></span> <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="<?= HtmlHelper::URL('/',['worker'=>0]) ?>">Все работники</a></li>
+                        <li role="separator" class="divider"></li>
+                        <?php foreach ($usersList as $user): ?>
+                            <li><a href="<?=HtmlHelper::URL('/',['worker'=>$user['id']])?>"><?=$user['fio']?></a></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
 			<div class="btn-group btn-group-sm" role="group">
 				<button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<?= $monthID ? getMonthRu($monthID) : "Все месяцы"?> <span class="caret"></span>
@@ -65,12 +72,49 @@ switch ($tab??'all')
                     <li><a href="<?=HtmlHelper::URL('/',['year'=>2019])?>">2019</a></li>
 				</ul>
 			</div>
+            <button type="button" class="btn btn-default" id="openAllModels"><span class="glyphicon glyphicon-calendar" aria-hidden="true"></span> <span class="t">Развернуть все</span></button>
+            <div class="btn-group btn-group-sm" role="group">
+                <button type="button" class="btn btn-default dropdown-toggle" title="Кол-во отображаемых позиций" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <?= $ppCount ?> <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <?php for ( $ppc = 18; $ppc <= 120; $ppc = $ppc+6 ) : ?>
+                        <li><a href="<?=HtmlHelper::URL('/',['ppCount'=>$ppc])?>"><?=$ppc?></a></li>
+                    <?php endfor; ?>
+                </ul>
+            </div>
+            <div class="input-group input-group-sm" role="group" style="display: inline-flex;">
+                <form action="<?=HtmlHelper::URL('/',['searchPM'=>1])?>" method="get" enctype="text/plain">
+                    <div class="input-group ">
+                        <input placeholder="Поиск..." type="text" class="form-control input-sm searchInputPM" aria-label="..." name="searchForPM" title="поиск конкретной модели" value="<?= $searchForValue ?>">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default btn-sm" type="submit" title="Нажать для поиска">
+                                <span class="glyphicon glyphicon-search"></span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
 		</div>
 
         <ul class="nav nav-tabs" role="tablist">
             <li role="presentation" class="<?= $tab == 'all'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>1])?>">Все Модели</a></li>
-            <li role="presentation" class="<?= $tab == 'paid'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>2])?>" >Оплаченные</a></li>
-            <li role="presentation" class="<?= $tab == 'notpaid'? 'active':'' ?>"><a href="<?=HtmlHelper::URL('/',['tab'=>3])?>">Не оплаченные</a></li>
+            <li role="presentation" class="dropdown <?= in_array($tab,['paid','notpaid','notCredited']) ? 'active':'' ?>">
+                <a href="#" id="tabOptions" class="dropdown-toggle cursorPointer" data-toggle="dropdown" aria-controls="tabOptions-contents" aria-expanded="false">
+                    <?= in_array($tab,['paid','notpaid','notCredited']) ? $tabName : 'Ещё' ?> <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="tabOptions" id="tabOptions-contents">
+                    <li role="presentation" class="<?= $tab == 'notCredited'? 'active':'' ?>">
+                        <a href="<?=HtmlHelper::URL('/',['tab'=>4])?>" >Не зачисленные</a>
+                    </li>
+                    <li role="presentation" class="<?= $tab == 'notpaid'? 'active':'' ?>">
+                        <a href="<?=HtmlHelper::URL('/',['tab'=>3])?>">Не оплаченные</a>
+                    </li>
+                    <li role="presentation" class="<?= $tab == 'paid'? 'active':'' ?>">
+                        <a href="<?=HtmlHelper::URL('/',['tab'=>2])?>" >Оплаченные</a>
+                    </li>
+                </ul>
+            </li>
             <li role="presentation" class=""><a href="#statistic" aria-controls="statistic" role="tab" data-toggle="tab">Статистика</a></li>
             <li role="presentation" class=""><a href="#help" aria-controls="help" role="tab" data-toggle="tab">Помощь</a></li>
         </ul>
@@ -143,4 +187,7 @@ switch ($tab??'all')
     </div>
 </div>
 
-<?php require_once _viewsDIR_ . "_PaymentManager/includes/paymentModal.php" ?>
+<?php
+//    if ( $pmView )
+//        require_once _viewsDIR_ . "_PaymentManager/includes/paymentModal.php";
+?>

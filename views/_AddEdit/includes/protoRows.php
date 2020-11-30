@@ -221,7 +221,9 @@
                         </div>
                     </div>
                 </td>
-
+                <td>
+                    <input type="number" min="1" max="999" step="1" class="form-control input-sm" name="mats[count][]" value="<?=$materialRow['count'] ?? 1?>">
+                </td>
                 <td style="width:80px;">
                     <button class="btn btn-sm btn-default" type="button" onclick="duplicateRowNew(this);" title="дублировать строку">
                         <span class="glyphicon glyphicon-duplicate"></span>
@@ -235,21 +237,114 @@
             break;
         case 'repair':
 ?>
-            <div <?=!isset($repair) ? 'id="protoRepairs"':''?> class="panel panel-danger <?= !isset($repair) ? 'hidden':'repairs protoRow'?>">
+            <div id="protoRepair" class="panel panel-default hidden">
                 <div class="panel-heading">
-                    <span class="glyphicon glyphicon-wrench" style="color:green;"></span>
+                    <i class="fas fa-draw-polygon hidden 3DRepIcon"></i>
+                    <i class="fas fa-screwdriver hidden JewRepIcon"></i>
                     <strong>
-                        Ремонт №<span class="repairs_number"> <?=$repair['rep_num']?></span>
-                        от - <span class="repairs_date"><?=date_create( $repair['date'] )->Format('d.m.Y');?></span>
+                        <span class="repairs_name"></span>
+                        <span class="repairs_number"></span>
+                        от - <span class="repairs_date"></span>
                     </strong>
                     <button onclick="removeRepairs(this);" class="btn btn-sm btn-default pull-right" style="top:-5px !important; position:relative;" type="button" title="Удалить Ремонт">
                         <span class="glyphicon glyphicon-remove"></span>
                     </button>
                 </div>
-                <input type="hidden" class="repairs_id" name="repairs[id][]" value="<?=$repair['id']?>">
-                <textarea class="form-control repairs_descr" rows="3" name="repairs[descr][]"><?=$repair['repair_descr']?></textarea>
-                <input type="hidden" class="repairs_num" name="repairs[num][]" value="<?=$repair['rep_num']?>"/>
-                <input type="hidden" class="date_repair" name="repairs[date][]" value="<?=$repair['date']?>"/>
+                <ul class="list-group">
+                    <li class="list-group-item list-group-item-info text-center">
+                        <i class="far fa-paper-plane"></i> <b><i>Отправитель</i></b>
+                    </li>
+                </ul>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <label for="sender_3dRep" title=""><span class="glyphicon glyphicon-user"></span> Технолог (кто отправил в ремонт):</label>
+                            <div class="input-group">
+                                <input required type="text" class="form-control sender_3dRep" name="" value="">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a elemtoadd="">Дзюба В.М.</a></li>
+                                        <li><a elemtoadd="">Занин В.А.</a></li>
+                                        <li><a elemtoadd="">Бондаренко А.</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <label for="toWhom_3dRep" title=""><span class="glyphicon glyphicon-user"></span> Мастер (кто будет делать):</label>
+                            <div class="input-group">
+                                <input required type="text" class="form-control toWhom_3dRep" name="" value="">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-right toWhomList"></ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12">
+                            <label for="repDescrToDO" class=""><span class="glyphicon glyphicon-comment"></span> Причина ремонта (что нужно сделать): </label>
+                            <textarea class="form-control repDescrtoDO" rows="2" name=""></textarea>
+                            <input type="hidden" class="repairs_id"    name="" value=""/>
+                            <input type="hidden" class="repairs_num"   name="" value=""/>
+                            <input type="hidden" class="repairs_which" name="" value=""/>
+                        </div>
+                    </div>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item list-group-item-info text-center">
+                        <i class="fas fa-bezier-curve hidden 3DMasterIcon"></i>
+                        <i class="fas fa-hammer hidden JewMasterIcon"></i>
+                        <b><i>Мастер</i></b>
+                    </li>
+                    <li class="list-group-item">
+                        <label for="repairs_descr_done" class=""><span class="glyphicon glyphicon-comment"></span> Описание (что сделано): </label>
+                        <textarea class="form-control repairs_descr_done" rows="2" name=""></textarea>
+                    </li>
+                    <li class="list-group-item list-group-item-success">
+                        <i class="fas fa-dollar-sign"></i>
+                        <strong><i>Стоимость ремонта</i></strong>
+                        <button class="btn btn-sm btn-default pull-right grade3DRepairPlus" style="top:-5px !important; position:relative;" data-toggle="modal" data-target="#grade3DRepair_Modal" type="button" title="Добавить оценку">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                    </li>
+                </ul>
+                <table class="table">
+                    <thead>
+                    <tr class="thead11">
+                        <th>№</th>
+                        <th width="30%">Название</th>
+                        <th width="30%">Стоимость</th>
+                        <th>Статус</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="active text-bold t-total">
+                        <td style="width: 30px"></td>
+                        <td>Всего: </td>
+                        <td></td>
+                        <td></td>
+                        <td style="width:100px;"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="list-group">
+                    <li class="list-group-item list-group-item-info">
+                        <span class="glyphicon glyphicon-ok"></span> <b><i>Статус ремонта</i></b>
+                    </li>
+                </ul>
+                <div class="panel-footer">
+                    <select class="form-control" name="">
+                        <option  value="1" title="Новый ремонт. Недавно создан.">Новый</option>
+                        <option  value="2" title="Создан. Ожидает принятия в работу.">Ожидает принятия</option>
+                        <option  value="3" title="Принят в работу. Над ним сейчас трудится мастер">В работе</option>
+                        <option  value="4" title="Ремонт завершен">Завершен</option>
+                    </select>
+                </div>
             </div>
 <?php
             break;

@@ -1432,3 +1432,19 @@ body {
 .lightUpGSRow:hover {
 	background-color: #e1f2ff; 
 }
+.btnImgSave {
+	color: #888888!important;
+	border: 0!important;
+	border-radius: 0!important;
+	right: 12px;
+}
+.openAllPanelsPM {
+	position: absolute;
+	margin-left: 50%;
+	left: -61px;
+	top: 35px;
+}
+.searchInputPM {
+	border: 0!important;
+	/*border-bottom: #4b4b4b 1px solid!important;*/
+}
