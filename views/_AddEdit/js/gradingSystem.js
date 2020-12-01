@@ -46,12 +46,6 @@ GradingSystem.prototype.init = function()
 		}
 	}
 
-    $('#grade3DRepair_Modal').on('show.bs.modal', function (e) {
-        debug(e);
-        that.table = e.relatedTarget.parentElement.parentElement.nextElementSibling.children[1];
-        debug(that.table);
-    });
-
     $('#grade3DModal').on('show.bs.modal', function (e) {
         that.table = e.relatedTarget.parentElement.nextElementSibling.children[1];
         //debug(e);
@@ -92,12 +86,15 @@ GradingSystem.prototype.selectGrade3DChange = function(select)
     let gsID = +select.value;
     let whichNames = {
         add3DGrade:'ma3Dgs',
-        add3DRepairGrade:'repairs[jew][prices]'
+        add3DRepairGrade:'repairs[3d][prices]',
     };
+    let gradeTypeOF = "modelPrice3D";
+
     let name = '';
     $.each(whichNames, function(cl, n){
         if ( select.classList.contains(cl) ) {
             name = n;
+            gradeTypeOF = "repair3D";
             return null;
         }
     });
@@ -125,19 +122,19 @@ GradingSystem.prototype.selectGrade3DChange = function(select)
 
     // ID оценки из таблицы Grading_system
     let inputID = document.createElement('input');
-    inputID.setAttribute('hidden', '');
-    inputID.setAttribute('value', gsID);
-    inputID.setAttribute('name', name + '[gs3Dids][]');
-    inputID.classList.add('hidden');
-    inputID.value = gsID;
+        inputID.setAttribute('hidden', '');
+        inputID.setAttribute('value', gsID);
+        inputID.setAttribute('name', name + '[gs3Dids][]');
+        inputID.classList.add('hidden');
+        inputID.value = gsID;
 
     // ID оценки из таблицы model_prices
     let inputIDmp = document.createElement('input');
-    inputIDmp.setAttribute('hidden', '');
-    inputIDmp.setAttribute('value', '');
-    inputIDmp.setAttribute('name', name + '[mp3DIds][]');
-    inputIDmp.classList.add('hidden');
-    inputIDmp.value = '';
+        inputIDmp.setAttribute('hidden', '');
+        inputIDmp.setAttribute('value', '');
+        inputIDmp.setAttribute('name', name + '[mp3DIds][]');
+        inputIDmp.classList.add('hidden');
+        inputIDmp.value = '';
 
     // Сама оценка
     let inputPoints = document.createElement('input');
@@ -153,30 +150,38 @@ GradingSystem.prototype.selectGrade3DChange = function(select)
 
     // Для Тултипа
     let div = document.createElement('div');
-    div.classList.add('cursorPointer', 'lightUpGSRow');
-    div.setAttribute('data-toggle','tooltip');
-    div.setAttribute('data-placement','bottom');
-    div.setAttribute('title',description);
-    div.innerHTML = workName;
+        div.classList.add('cursorPointer', 'lightUpGSRow');
+        div.setAttribute('data-toggle','tooltip');
+        div.setAttribute('data-placement','bottom');
+        div.setAttribute('title',description);
+        div.innerHTML = workName;
 
     let newRow = document.querySelector('.gs_proto3DRow').cloneNode(true);
-    newRow.setAttribute('data-gradeID',gsID);
-    newRow.removeAttribute('class');
+        newRow.setAttribute('data-gradeID',gsID);
+        newRow.removeAttribute('class');
     if ( +price.toFixed() !== 0 )
         newRow.children[2].innerHTML = +price.toFixed();
 
     let totalRow = gs.table.querySelector('.t-total');
     let insertedRow = gs.table.insertBefore(newRow, totalRow);
-    insertedRow.children[1].appendChild(div);
-    insertedRow.children[2].appendChild(inputPoints);
-    insertedRow.children[3].appendChild(inputIDmp);
-    insertedRow.children[3].appendChild(inputID);
+        insertedRow.children[1].appendChild(div);
+        insertedRow.children[2].appendChild(inputPoints);
+        insertedRow.children[3].appendChild(inputIDmp);
+        insertedRow.children[3].appendChild(inputID);
+
+
     let dellButton = insertedRow.children[4].querySelector('.ma3DgsDell');
     this.setEventListener(dellButton,name);
+
+
+    let priceValue = +price.toFixed();
+    let overallValue = +totalRow.children[2].innerHTML;
+
+    totalRow.children[2].innerHTML = (overallValue + priceValue) + '';
+
     $(function () {
         $('[data-toggle="tooltip"]').tooltip();
     });
-
 };
 
 /**
@@ -202,9 +207,15 @@ GradingSystem.prototype.deleteGS3DRow = function()
 GradingSystem.prototype.setEventListener = function( button, name )
 {
     if ( !name ) name = 'ma3Dgs';
-	let that = this;
-	button.addEventListener('click', function(event) {
+
+    this.table = button.parentElement.parentElement.parentElement;
+    let that = this;
+
+	button.addEventListener('click', function() {
 		let id = button.parentElement.previousElementSibling.children[0].value;
+
+		//repairs.removeGrade(button, repairs);
+		
 		if ( !id ) return;
 		let input = document.createElement('input');
 			input.setAttribute('hidden', '');
@@ -213,7 +224,8 @@ GradingSystem.prototype.setEventListener = function( button, name )
 			input.classList.add('hidden');
 
 		let tTotal = that.table.querySelector('.t-total');
-			tTotal.children[0].appendChild(input);
+			tTotal.firstElementChild.appendChild(input);
+
 	}, false);
 };
 

@@ -2,8 +2,46 @@
 
 function Repairs()
 {
-
+    this.repairPricesModal = document.querySelector('#repairPricesModal');
     this.repairsBlock = document.querySelector('#repairsBlock');
+    /**
+     * Здесть ДОМ Ел табл прайсов в текущем ремонте
+     * tbody
+     */
+    this.currentPricesTable = null;
+
+    this.repairTypes = {
+        repairs3d: {
+            which: 0,
+            name: 'repairs[3d]',
+            topText: 'Ремонт 3Д модели №',
+            modalTitleText: 'Выбрать оценку ремонта 3Д модели',
+            panelColor: '#5fd7f5',
+            panelIcon: 'fa-draw-polygon',
+            repairsCount: 0,
+            protoPriceName: 'gs_proto3DRow',
+        },
+        repairsJew: {
+            which: 1,
+            name: 'repairs[jew]',
+            topText: 'Ремонт Мастер модели №',
+            modalTitleText: 'Выбрать оценку ремонта Мастер Модели',
+            panelColor: '#c1b467',
+            panelIcon: 'fa-screwdriver',
+            repairsCount: 0,
+            protoPriceName: 'gs_protoMMRow',
+        },
+        repairsProd: {
+            which: 2,
+            name: 'repairs[prod]',
+            topText: 'Ремонт модели на производстве №',
+            modalTitleText: 'Выбрать оценку ремонта на производстве',
+            panelColor: '#c2b497',
+            panelIcon: 'fa-hammer',
+            repairsCount: 0,
+            protoPriceName: 'gs_protoMMRow',
+        },
+    };
 
     this.init();
 }
@@ -14,292 +52,312 @@ Repairs.prototype.init = function()
 
     // Накинем обработчики на добавление ремонтов
     $.each(this.repairsBlock.querySelectorAll('.addRepair'), function(i, button) {
-        button.addEventListener('click', that.addRepair.bind(event, button) ,false);
+        button.addEventListener('click', that.addRepair.bind(event, button, that) ,false);
     });
 
     // Накинем обработчики на удаление ремонтов
     $.each(this.repairsBlock.querySelectorAll('.removeRepair'), function(i, button) {
-        button.addEventListener('click', that.removeRepair.bind(event, button) ,false);
+        button.addEventListener('click', that.removeRepair.bind(event, button, that) ,false);
+
+        let repType = button.getAttribute('data-repType');
+        if ( that.repairTypes[repType] )
+            that.repairTypes[repType].repairsCount++;
     });
+    
     // Накинем обработчики на удаление Оценок
     $.each(this.repairsBlock.querySelectorAll('.repDellGrade'), function(i, button) {
-        button.addEventListener('click', that.removeGrade.bind(event, button) ,false);
+        button.addEventListener('click', that.removeGrade.bind(event, button, that) ,false);
     });
+
+    // Накинем обработчики на panel-heading ремонтов. Свернуть / развернуть текущие ремонты
+    $.each(this.repairsBlock.querySelectorAll('.panel-heading'), function(i, panelHeading) {
+        that.collapseRepair(panelHeading);
+    });
+
+
+    this.repairPricesModal.querySelector('.selectRepairPrice').addEventListener('change', function () {
+        that.addRepairPrice(this);
+    },false);
+    this.repairPricesModal.querySelector('.selectMMRepairPrice').addEventListener('change', function () {
+        that.addRepairPrice(this);
+    },false);
+
+    $('#repairPricesModal').on('show.bs.modal', function (e) {
+        debug(e);
+        that.currentPricesTable = e.relatedTarget.parentElement.parentElement.nextElementSibling.children[1];
+        debug(that.currentPricesTable);
+
+        let currRep = that.currentPricesTable.getAttribute('class');
+
+        that.repairPricesModal.querySelector('.titleText').innerHTML = that.repairTypes[currRep].modalTitleText;
+
+        that.repairPricesModal.querySelector('.selectRepairPrice').classList.remove('hidden');
+        that.repairPricesModal.querySelector('.selectMMRepairPrice').classList.add('hidden');
+
+        if ( that.repairTypes[currRep].which > 0 )
+        {
+            that.repairPricesModal.querySelector('.selectRepairPrice').classList.add('hidden');
+            that.repairPricesModal.querySelector('.selectMMRepairPrice').classList.remove('hidden');
+        }
+    });
+    $('#repairPricesModal').on('hidden.bs.modal', function (e) {
+        debug(e);
+        that.currentPricesTable = null;
+    });
+
 
     debug('Repairs init ok!');
 };
 
 
-Repairs.prototype.addRepair = function(button, event)
+Repairs.prototype.addRepair = function(button, self, event)
 {
     event.preventDefault();
     event.stopPropagation();
 
-    let lastRepNum = 0, repairsCount = 0;
-    let repairsBlock = document.getElementById('repairsBlock');
-
+    let btnType = button.getAttribute('data-repair');
+    let newRepairWindow = self.repairsBlock.parentElement.querySelector('#protoRepair').cloneNode(true);
     let today = new Date();
+    let timeMilisec = +today;
+    let repairData = self.repairTypes[btnType];
+    let targetRepBlock = self.repairsBlock.querySelector('#' + btnType);
 
-    let dataRepair = this.getAttribute('data-repair');
-    let newRepairs = document.getElementById('protoRepairs').cloneNode(true);
+    /**
+     * SET ATTR
+     */
+    newRepairWindow.id = '';
+    newRepairWindow.classList.remove('hidden');
+    newRepairWindow.classList.add(btnType);
+    newRepairWindow.setAttribute('id','allRepairs_' + timeMilisec);
+    newRepairWindow.querySelector('.panel-heading').style.backgroundColor = repairData.panelColor;
+    newRepairWindow.querySelector('.panel-heading').children[0].classList.add(repairData.panelIcon); // i
+    newRepairWindow.querySelector('.repairs_name').innerHTML = repairData.topText;
+    newRepairWindow.querySelector('.repairs_number').innerHTML = ++repairData.repairsCount;
+    newRepairWindow.querySelector('.repairs_date').innerHTML = formatDate(today);
+    newRepairWindow.querySelector('.removeRepair').setAttribute('data-repType',btnType);
+    newRepairWindow.querySelector('.panel-collapse').setAttribute('id','repairCollapse_' + timeMilisec);
+    newRepairWindow.querySelector('.panel-collapse').setAttribute('aria-labelledby','allRepairs_' + timeMilisec);
+    newRepairWindow.querySelector('tbody').classList.add(btnType);
 
-    switch (dataRepair) {
-        case '3d':
-            repairsCount = repairsBlock.querySelectorAll('.repairs3d');
-            if ( repairsCount.length ) {
-                lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
-            }
+    /**
+     * NAMES
+     */
+    newRepairWindow.querySelector('.sender').setAttribute('name',repairData.name + '[sender][]');
+    newRepairWindow.querySelector('.toWhom').setAttribute('name',repairData.name + '[toWhom][]');
+    newRepairWindow.querySelector('.repairs_descr_need').setAttribute('name',repairData.name + '[descrNeed][]');
+    newRepairWindow.querySelector('.repairs_descr_done').setAttribute('name',repairData.name + '[repair_descr][]');
+    newRepairWindow.querySelector('.repairs_id').setAttribute('name',repairData.name + '[id][]');
+    newRepairWindow.querySelector('.repairs_num').setAttribute('name',repairData.name + '[num][]');
+    newRepairWindow.querySelector('.repairs_num').value = repairData.repairsCount;
+    newRepairWindow.querySelector('.repairs_which').setAttribute('name',repairData.name + '[which][]');
+    newRepairWindow.querySelector('.repairs_which').value = repairData.which;
+    newRepairWindow.querySelector('.repairStatus').setAttribute('name',repairData.name + '[status][]');
 
-            newRepairs.removeAttribute('id');
-            newRepairs.classList.remove('hidden');
-            newRepairs.classList.add('repairs3d');
-            newRepairs.classList.add('panel-info');
-            newRepairs.querySelector('.repairs_name').innerHTML = '3Д Ремонт №';
-            newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
-            newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
-            newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[3d][num][]');
-            newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[3d][id][]');
-            newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[3d][description][]');
-            newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[3d][which][]');
-            newRepairs.querySelector('.repairs_which').setAttribute('value','0');
-            newRepairs.querySelector('.repairCost').setAttribute('name','repairs[3d][cost][]');
-            newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
-            break;
-        case 'jeweler':
-            repairsCount = repairsBlock.querySelectorAll('.repairsJew');
-            if ( repairsCount.length ) {
-                lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
-            }
+    /**
+     * INSERT
+     */
+    let appendedRepair = targetRepBlock.appendChild(newRepairWindow);
 
-            newRepairs.removeAttribute('id');
-            newRepairs.classList.remove('hidden');
-            newRepairs.classList.add('repairsJew');
-            newRepairs.classList.add('panel-success');
-            newRepairs.querySelector('.repairs_name').innerHTML = 'Ремонт Модельера-доработчика №';
-            newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
-            newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
-            newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[jew][num][]');
-            newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[jew][id][]');
-            newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[jew][description][]');
-            newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[jew][which][]');
-            newRepairs.querySelector('.repairs_which').setAttribute('value','1');
-            newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
-
-            newRepairs.querySelector('.repairCost').setAttribute('name','repairs[jew][cost][]');
-            newRepairs.querySelector('.repairsPayment').classList.remove('hidden');
-
-            break;
-    }
-
-    repairsBlock.insertBefore(newRepairs, this);
+    /**
+     * LISTENERS
+     */
+    appendedRepair.querySelector('.removeRepair').addEventListener('click', function (event) {
+        self.removeRepair(this, self, event);
+    }, false);
+    self.collapseRepair(appendedRepair.querySelector('.panel-heading'));
 };
 
-Repairs.prototype.removeRepair = function(button, event)
+/**
+ * Удаление ремонтов целиком
+ * @param button
+ * @param event
+ * @param self
+ */
+Repairs.prototype.removeRepair = function(button, self, event)
 {
+    event.stopPropagation();
+    event.preventDefault();
+
     let toDell = button.parentElement.parentElement;
+    let repType = button.getAttribute('data-repType');
+    if ( self.repairTypes[repType] )
+        self.repairTypes[repType].repairsCount--;
+
+    if ( toDell.classList.contains('new') )
+    {
+        toDell.remove();
+    } else {
         toDell.classList.add('hidden');
         toDell.querySelector('.repairs_descr_done').innerHTML = '-1';
+    }
 };
-Repairs.prototype.removeGrade = function(button, event)
-{
-    let tBody = this.parentElement.parentElement.parentElement;
-    this.parentElement.parentElement.remove();
 
-    // скроем всю табл если нет строк
-    let rows = tBody.getElementsByTagName('tr');
-    if ( rows.length === 0 ) tBody.parentElement.classList.add('hidden');
+/**
+ * Свернуть / развернуть ремонт
+ */
+Repairs.prototype.collapseRepair = function(ph)
+{
+    // при клике на панель, раскрыли панель и подсветили её
+    ph.addEventListener('click',function (e) {
+        let click = e.target;
+        if ( click.classList.contains('removeRepair') ) return;
+        $(this.nextElementSibling).collapse('toggle');
+        let panel = this.parentElement;
+
+        //panel.classList.toggle('panel-default');
+        panel.classList.toggle('panel-primary');
+        panel.classList.toggle('panel-warning');
+    });
+    // Подсветили строку модели по mouse over
+    ph.addEventListener('mouseover',function (e) {
+        let click = e.target;
+        if ( click.classList.contains('removeRepair') ) return;
+
+        let panel = this.parentElement;
+        if ( !panel.classList.contains('panel-primary') )
+        {
+            panel.classList.toggle('panel-default');
+            panel.classList.toggle('panel-warning');
+        }
+    });
+
+    // Убрали подсветку по mouse out
+    ph.addEventListener('mouseout',function (e) {
+        let click = e.target;
+        if ( click.classList.contains('removeRepair') ) return;
+
+        let panel = this.parentElement;
+        if ( !panel.classList.contains('panel-primary') )
+        {
+            panel.classList.toggle('panel-default');
+            panel.classList.toggle('panel-warning');
+        }
+    });
+};
+
+
+/**
+ * REPAIR PRICES
+ */
+Repairs.prototype.addRepairPrice = function(select)
+{
+    let that = this;
+    let repairType = this.currentPricesTable.getAttribute('class');
+    let repairData = this.repairTypes[repairType];
+
+
+    let gsID = +select.value;
+
+    // проверим если есть такая оценка
+    let hasID = false;
+    $.each(this.currentPricesTable.querySelectorAll('tr'), function(i, tr){
+        if ( +tr.getAttribute('data-gradeID') === gsID ) {
+            $('#repairPricesModal').modal('hide');
+            return hasID = true;
+        }
+    });
+    if ( hasID ) return;
+
+    let option = select.options[select.options.selectedIndex];
+    let workName = option.getAttribute('data-workName');
+    let price = option.getAttribute('data-points') * 100;
+    let description = option.getAttribute('title');
+
+    $('#repairPricesModal').modal('hide');
+
+    // ID названия оценки из таблицы Grading_system
+    let inputID = document.createElement('input');
+        inputID.setAttribute('hidden', '');
+        inputID.setAttribute('value', gsID);
+        inputID.setAttribute('name', repairData.name + '[gsIDs][]');
+        inputID.classList.add('hidden');
+        inputID.value = gsID;
+
+    // ID оценки из таблицы model_prices (для новых пустое)
+    let inputIDmp = document.createElement('input');
+        inputIDmp.setAttribute('hidden', '');
+        inputIDmp.setAttribute('value', '');
+        inputIDmp.setAttribute('name', repairData.name + '[mpIDs][]');
+        inputIDmp.classList.add('hidden');
+        inputIDmp.value = '';
+
+    // Сама оценка
+    let inputPoints = document.createElement('input');
+    if ( +price.toFixed() !== 0 )
+    {
+        inputPoints.setAttribute('hidden', '');
+        inputPoints.classList.add('hidden');
+    }
+    inputPoints.setAttribute('value', +price.toFixed());
+    inputPoints.value = +price.toFixed();
+    inputPoints.setAttribute('name', repairData.name + '[points][]');
+    inputPoints.classList.add('form-control');
+
+    // Для Тултипа
+    let div = document.createElement('div');
+        div.classList.add('cursorPointer', 'lightUpGSRow');
+        div.setAttribute('data-toggle','tooltip');
+        div.setAttribute('data-placement','bottom');
+        div.setAttribute('title',description);
+        div.innerHTML = workName;
+
+    let newRow = document.querySelector('.' + repairData.protoPriceName).cloneNode(true);
+        newRow.setAttribute('data-gradeID',gsID);
+        newRow.removeAttribute('class');
+    if ( +price.toFixed() !== 0 )
+        newRow.children[2].innerHTML = +price.toFixed();
+
+    let totalRow = this.currentPricesTable.querySelector('.t-total');
+    let insertedRow = this.currentPricesTable.insertBefore(newRow, totalRow);
+        insertedRow.children[1].appendChild(div);
+        insertedRow.children[3].appendChild(inputIDmp);
+        insertedRow.children[2].appendChild(inputPoints);
+        insertedRow.children[3].appendChild(inputID);
+
+    let dellButton = insertedRow.children[4].querySelector('.ma3DgsDell');
+        dellButton.addEventListener('click',function () {
+            that.removeGrade(this,that);
+        },false);
+
+    let priceValue = +price.toFixed();
+    let overallValue = +totalRow.children[2].innerHTML;
+
+    totalRow.children[2].innerHTML = (overallValue + priceValue) + '';
+
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+};
+
+/**
+ * Удаление прайсов в ремонтпх
+ * @param self
+ * @param button
+ * @param event
+ */
+Repairs.prototype.removeGrade = function(button, self, event)
+{
+    let tBody = button.parentElement.parentElement.parentElement;
+    let tr = button.parentElement.parentElement;
+    let tTotal = tBody.querySelector('.t-total');
+    let priceValue = +tr.children[2].firstElementChild.value;
+    let overallValue = +tTotal.children[2].innerHTML;
+    let id = +button.parentElement.previousElementSibling.children[0].value;
+
+    let num = overallValue - priceValue;
+    tTotal.children[2].innerHTML = num < 0 ? 0 : num + '';
+
+    tr.remove();
+
+    if ( !id ) return;
+    let name = self.repairTypes[tBody.getAttribute('class')].name;
+    let input = document.createElement('input');
+        input.setAttribute('hidden', '');
+        input.setAttribute('value', id + '');
+        input.setAttribute('name', name + '[prices][toDell][]');
+        input.classList.add('hidden');
+
+    tTotal.firstElementChild.appendChild(input);
 };
 
 let repairs = new Repairs();
-
-
-
-
-
-
-
-// ----- РЕМОНТЫ -------//
-/*
-if ( document.getElementById('repairsBlock') )
-{
-    let addRepairs = document.getElementById('repairsBlock').querySelectorAll('.addRepairs');
-    $.each(addRepairs, function(i, button) {
-        button.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-
-            let lastRepNum = 0, repairsCount = 0;
-            let repairsBlock = document.getElementById('repairsBlock');
-
-            let today = new Date();
-
-            let dataRepair = this.getAttribute('data-repair');
-            let newRepairs = document.getElementById('protoRepairs').cloneNode(true);
-
-            switch (dataRepair) {
-                case '3d':
-                    repairsCount = repairsBlock.querySelectorAll('.repairs3d');
-                    if ( repairsCount.length ) {
-                        lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
-                    }
-
-                    newRepairs.removeAttribute('id');
-                    newRepairs.classList.remove('hidden');
-                    newRepairs.classList.add('repairs3d');
-                    newRepairs.classList.add('panel-info');
-                    newRepairs.querySelector('.repairs_name').innerHTML = '3Д Ремонт №';
-                    newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
-                    newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
-                    newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[3d][num][]');
-                    newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[3d][id][]');
-                    newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[3d][description][]');
-                    newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[3d][which][]');
-                    newRepairs.querySelector('.repairs_which').setAttribute('value','0');
-                    newRepairs.querySelector('.repairCost').setAttribute('name','repairs[3d][cost][]');
-                    newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
-                    break;
-                case 'jeweler':
-                    repairsCount = repairsBlock.querySelectorAll('.repairsJew');
-                    if ( repairsCount.length ) {
-                        lastRepNum = +repairsCount[repairsCount.length-1].querySelector('.repairs_number').innerHTML;
-                    }
-
-                    newRepairs.removeAttribute('id');
-                    newRepairs.classList.remove('hidden');
-                    newRepairs.classList.add('repairsJew');
-                    newRepairs.classList.add('panel-success');
-                    newRepairs.querySelector('.repairs_name').innerHTML = 'Ремонт Модельера-доработчика №';
-                    newRepairs.querySelector('.repairs_number').innerHTML = lastRepNum + 1;
-                    newRepairs.querySelector('.repairs_num').setAttribute('value', lastRepNum + 1);
-                    newRepairs.querySelector('.repairs_num').setAttribute('name','repairs[jew][num][]');
-                    newRepairs.querySelector('.repairs_id').setAttribute('name','repairs[jew][id][]');
-                    newRepairs.querySelector('.repairs_descr').setAttribute('name','repairs[jew][description][]');
-                    newRepairs.querySelector('.repairs_which').setAttribute('name','repairs[jew][which][]');
-                    newRepairs.querySelector('.repairs_which').setAttribute('value','1');
-                    newRepairs.querySelector('.repairs_date').innerHTML = formatDate(today);
-
-                    newRepairs.querySelector('.repairCost').setAttribute('name','repairs[jew][cost][]');
-                    newRepairs.querySelector('.repairsPayment').classList.remove('hidden');
-
-                    break;
-            }
-
-            repairsBlock.insertBefore(newRepairs, this);
-        });
-    });
-/*
-    function initPaidModal() {
-
-        $('#modalPaid').iziModal({
-            title: 'Пометить ремонт оплаченным?',
-            headerColor: '#56a66e',
-            icon: 'far fa-credit-card',
-            transitionIn: 'comingIn',
-            transitionOut: 'comingOut',
-            overlayClose: false,
-            closeButton: true,
-            afterRender: function () {
-                document.getElementById('modalPaidContent').classList.remove('hidden');
-            }
-        });
-
-        // начало открытия
-        $(document).on('opening', '#modalDelete', function () {
-
-        } );
-        // Начало закрытия
-        $(document).on('closing', '#modalDelete', function () {
-
-        });
-        // исчезло
-        $(document).on('closed', '#modalDelete', function () {
-
-        } );
-
-        //обработчики на кнопки
-        let buttons = document.getElementById('modalPaidContent').querySelectorAll('a');
-        let cancel = buttons[0];
-        let ok = buttons[1];
-        let paid = buttons[2];
-
-        cancel.classList.remove('hidden');
-        paid.classList.remove('hidden');
-
-        paid.addEventListener('click', function () {
-
-            let data = paidRepair.data;
-            if ( data.paid !== 1 ) return;
-            debug(data);
-
-            $.ajax({
-                type: 'POST',
-                url: '/add-edit/rp',//'controllers/repairsPayment.php',
-                data: data,
-                dataType:"json",
-                success:function(response) {
-                    debug(response,'response');
-
-                    if (response.error)
-                    {
-                        debug(response.error);
-                        return;
-                    }
-                    if (response.done !== true)
-                    {
-                        alert('Ошибка на стороне сервера! Попробуйте позже.');
-                        debug(response.done);
-                        return;
-                    }
-                    let modal = $('#modalPaid');
-
-                    modal.iziModal('setTitle', 'Ремонт отмечен оплаченным.');
-                    modal.iziModal('setSubtitle', '');
-                    modal.iziModal('setHeaderColor', '#66d246');
-                    modal.iziModal('setIcon', 'glyphicon glyphicon-ok');
-
-                    ok.onclick = function() {
-                        document.location.reload(true);
-                    };
-                    cancel.classList.add('hidden');
-                    paid.classList.add('hidden');
-                    ok.classList.remove('hidden');
-                },
-                error:function(e){
-                    debug(e,'Paid repair error');
-                }
-            });
-
-        } );
-
-        debug('Paid modal init');
-    }(initPaidModal());
-    */
-//}
-
-/*
-function paidRepair(self) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    let repair = self.parentElement.parentElement.parentElement;
-    let repairID = repair.querySelector('.repairs_id').value;
-    let cost = repair.querySelector('.repairCost').value;
-    let repairName = repair.querySelector('.repairs_name').innerHTML + repair.querySelector('.repairs_number').innerHTML + ' от ' + repair.querySelector('.repairs_date').innerHTML;
-    let repairText = repair.querySelector('.repairs_descr').value;
-    let repairCost = repair.querySelector('.repairCost').value;
-
-    let data = {
-        paid: 1,
-        cost: cost,
-        repairID: repairID,
-    };
-    let modal = $('#modalPaid');
-
-    modal.iziModal('setSubtitle', 'Это действие будет невозможно отменить!');
-    modal[0].querySelector('#modalPaidStatus').innerHTML = '<b>'+repairName + '</b><br>' + repairText + '<br><b>Стоимость: ' + repairCost + '</b>';
-    $('#modalPaid').iziModal('open');
-
-    paidRepair.data = data;
-}
-*/
-// ----- END РЕМОНТЫ -------//

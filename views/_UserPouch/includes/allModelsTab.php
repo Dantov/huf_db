@@ -84,16 +84,18 @@ $paymentManager = User::permission('paymentManager');
                 </span>    
             </div>
             <div class="col-sm-12 col-md-4 pr-0 pl-0"><?php
+            try {
                 echo Paginator::widget([
-                    'pagination'=> $pagination,
-                    'options'=>[
+                    'pagination' => $pagination,
+                    'options' => [
                         'template' => _globDIR_ . "includes/paginator_tpl.php",
-                        'squaresPerPage'=>5,
-                        'size'=>'small', // large | small
-                        'color'=>'',
-                        'class'=> '',
+                        'squaresPerPage' => 5,
+                        'size' => 'small', // large | small
+                        'color' => '',
+                        'class' => '',
                     ],
                 ]);
+            } catch (\Exception $e) {}
             ?></div>
             <div class="col-sm-12 col-md-4 pr-0 pl-0 pt-2 text-right">
                 <span title="Всего оцененных изделий" class="cursorArrow" data-toggle="tooltip">

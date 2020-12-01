@@ -27,15 +27,15 @@
   </div>
 </div>
 
-<!-- grade3DRepair_Modal -->
-<div class="modal fade" id="grade3DRepair_Modal" tabindex="-1" role="dialog" aria-labelledby="grade3DRepair_ModalLabel">
+<!-- Repairs Prices Modal -->
+<div class="modal fade" id="repairPricesModal" tabindex="-1" role="dialog" aria-labelledby="repairPricesModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header bg-info">
-                <h4 class="modal-title" id="grade3DRepair_ModalLabel"><b><i class="fab fa-linode"></i></b> Выбрать оценку ремонта 3Д модели</h4>
+                <h4 class="modal-title" id="repairPricesModalLabel"><b><i class="fab fa-linode"></i></b> <span class="titleText">Выбрать оценку ремонта 3Д модели</span></h4>
             </div>
             <div class="modal-body">
-                <select class="form-control add3DRepairGrade">
+                <select class="form-control selectRepairPrice">
                     <option value="">---</option>
                     <?php foreach ( $gradingSystem3DRep??[] as $gs3DRepRow ): ?>
                         <?php if ( $gs3DRepRow['grade_type'] != 8 ) continue; ?>
@@ -49,6 +49,16 @@
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <select class="form-control selectMMRepairPrice hidden">
+                    <option value="" selected >---</option>
+                    <option data-workName="Ремонт ММ" data-points="0" value="100" title="Ремонт мастер модели" >
+                        Ремонт ММ - индивидуально
+                    </option>
+                    <option data-workName="Ремонт производства" data-points="0" value="101" title="Производственный ремонт" >
+                        Производственный ремонт - индивидуально
+                    </option>
+                </select>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
@@ -58,15 +68,26 @@
 </div>
 
 <table class="hidden">
-<tr class="gs_proto3DRow">
-  <td style="width: 30px"></td>
-  <td></td>
-  <td></td>
-  <td></td>
-  <td style="width:100px;">
-    <button class="btn btn-sm btn-default ma3DgsDell" type="button" onclick="deleteRow(this);" title="Удалить Оценку">
-      <span class="glyphicon glyphicon-trash"></span>
-    </button>
-  </td>
-</tr>
+    <tr class="gs_proto3DRow">
+        <td style="width: 30px"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td style="width:100px;">
+            <button class="btn btn-sm btn-default ma3DgsDell" type="button" title="Удалить Оценку">
+                <span class="glyphicon glyphicon-trash"></span>
+            </button>
+        </td>
+    </tr>
+    <tr class="gs_protoMMRow">
+        <td style="width: 30px"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td style="width:100px;">
+            <button class="btn btn-sm btn-default ma3DgsDell" type="button" title="Удалить Оценку">
+                <span class="glyphicon glyphicon-trash"></span>
+            </button>
+        </td>
+    </tr>
 </table>

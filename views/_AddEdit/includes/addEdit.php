@@ -367,38 +367,58 @@ $permittedFields = User::permissions();
         <div role="tabpanel" class="tab-pane in fade pt-1" id="repairsData">
             <div class="row" id="repairsBlock">
                 <div class="col-xs-12">
-                    <?php if ( $permittedFields['repairs3D'] ): ?>
-                        <button data-repair="3d" style="margin-top:10px;" class="btn btn-info addRepair"><i class="fas fa-draw-polygon"></i> Добавить ремонт 3Д</button>
-                    <?php endif; ?>
-                    <?php if ( $permittedFields['repairsJew'] ): ?>
-                        <button data-repair="jeweler" style="margin-top:10px;" class="btn btn-success addRepair"><i class="fas fa-screwdriver"></i> Добавить ремонт Модельера-доработчика</button>
-                    <?php endif; ?>
-                    <!--
-                    <i class="fas fa-screwdriver"></i>
-                    <i class="fab fa-unity"></i>
-                    <i class="fas fa-hammer"></i>
-                    <i class="fas fa-vector-square"></i>
-                    <i class="fas fa-draw-polygon"></i>
-                     -->
-                </div>
-                <?php if ( !isset($repairs) ) $repairs = []; ?>
-                <?php if ( $permittedFields['repairs3D'] ): ?>
-                    <div class="col-xs-12 repairs3D">
-                    <?php foreach ( $repairs as $repair ) : ?>
-                        <?php if ( !$whichRepair = $repair['which'] ? true : false ) // пропустим ремонты модельеров, у них 1
-                            require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
-                    <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
+                    <ul class="nav nav-tabs text-center nav-justified">
+                        <?php if ( $permittedFields['repairs3D'] ): ?>
+                            <li role="presentation" class="active" title="Ремонты 3Д моделей"><a href="#repairs3d" role="tab" data-toggle="tab"><i class="fas fa-vector-square"></i> Ремонты 3Д</a></li>
+                        <?php endif; ?>
+                        <?php if ( $permittedFields['repairsJew'] ): ?>
+                            <li role="presentation" class="" title="Ремонты Мастер Моделей"><a href="#repairsJew" role="tab" data-toggle="tab"><i class="fas fa-screwdriver"></i> Ремонты ММ</a></li>
+                        <?php endif; ?>
+                        <?php if ( $permittedFields['repairsProd'] ): ?>
+                            <li role="presentation" class="" title="Ремонты моделей на производстве"><a href="#repairsProd" role="tab" data-toggle="tab"><i class="fas fa-hammer"></i> Ремонты производства</a></li>
+                        <?php endif; ?>
+                    </ul>
+                    <?php if ( !isset($repairs) ) $repairs = []; ?>
+                    <div class="tab-content">
 
-                <?php if ( $permittedFields['repairsJew'] ): ?>
-                    <div class="col-xs-12 repairsJew">
-                    <?php foreach ( $repairs as $repair ) : ?>
-                        <?php if ( $whichRepair = $repair['which'] ? true : false ) // пропустим ремонты 3д, у них 0
-                            require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
-                    <?php endforeach; ?>
+                    <?php if ( $permittedFields['repairs3D'] ): ?>
+                        <div role="tabpanel" class="tab-pane in fade pt-1 active repairs3d" style="background-color: white;" id="repairs3d">
+                            <h4 class="text-center">
+                                Описание ремонтов 3д моделей.
+                                <button data-repair="repairs3d" style="font-size: large" title="Добавить ремонт 3Д" class="btn btn-link addRepair"><i class="far fa-plus-square"></i></button>
+                            </h4>
+                            <?php foreach ( $repairs as $repair ) : ?>
+                                <?php if ( !$whichRepair = $repair['which'] ? true : false ) // пропустим ремонты модельеров, у них 1
+                                    require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ( $permittedFields['repairsJew'] ): ?>
+                        <div role="tabpanel" class="tab-pane in fade pt-1" id="repairsJew" style="background-color: white;">
+                            <h4 class="text-center">
+                                Описание ремонтов мастер моделей.
+                                <button data-repair="repairsJew" style="font-size: large" title="Добавить ремонт Модельера-доработчика" class="btn btn-link addRepair"><i class="far fa-plus-square"></i></button>
+                            </h4>
+                            <div class="col-xs-12 repairsJew">
+                            <?php foreach ( $repairs as $repair ) : ?>
+                                <?php if ( $whichRepair = $repair['which'] ? true : false ) // пропустим ремонты 3д, у них 0
+                                    require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
+                            <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ( $permittedFields['repairsProd'] ): ?>
+                        <div role="tabpanel" class="tab-pane in fade pt-1" id="repairsProd" style="background-color: white;">
+                            <h4 class="text-center">
+                                Описание ремонтов моделей на производстве ( монтирвка, закрепка, матрица и т.д.)
+                                <button data-repair="repairsProd" style="font-size: large" title="Добавить ремонт производства" class="btn btn-link addRepair"><i class="far fa-plus-square"></i></button>
+                            </h4>
+                        </div>
+                    <?php endif; ?>
                     </div>
-                <?php endif; ?>
+                </div>
             </div>
 
             <?php $switchTableRow = 'repair'; require _viewsDIR_.'_AddEdit/includes/protoRows.php' ?>
