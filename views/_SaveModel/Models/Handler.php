@@ -1,8 +1,10 @@
 <?php
-namespace Views\_AddEdit\Models;
+namespace Views\_SaveModel\Models;
+
 use Views\_Globals\Models\{
     General, PushNotice, User
 };
+use Views\vendor\core\Files;
 
 /**
  * общий класс, для манипуляций с базой данных MYSQL, и файлами на сервере
@@ -10,8 +12,8 @@ use Views\_Globals\Models\{
 class Handler extends General
 {
 	
-	protected $id;
-	private $number_3d;
+	public $id;
+    public $number_3d;
 	private $vendor_code;
 	private $model_type;
 	private $model_typeEn;
@@ -24,6 +26,8 @@ class Handler extends General
 	{
 		parent::__construct();
 		if ( $id ) $this->id = $id;
+
+        $this->date = date("Y-m-d");
 
 		$this->forbiddenSymbols = ['/','\\',"'",'"','?',':','*','|','>','<',',','.'];
 	}
@@ -111,8 +115,11 @@ class Handler extends General
 		
 		return $result;
 	}
-	
-	// новый вариант, переносит файлы модели в новую папку, если поменялся номер 3д
+
+
+	/**
+     * новый вариант, переносит файлы модели в новую папку, если поменялся номер 3д
+     */
 	public function checkModel()
     {
 		$query_oldN3d = mysqli_query($this->connection, " SELECT number_3d FROM stock WHERE id='$this->id' " );
@@ -149,7 +156,6 @@ class Handler extends General
 					// копируем файлы из старого места в новую дир.
 					copy( $oldCopyPath, $newCopyPath );
 				}
-				
 			}
 			$this -> rrmdir( $oldPath ); // удаляем все на старом месте
 			$oldDirs = scandir($oldN3d); 
@@ -162,12 +168,52 @@ class Handler extends General
 			if ( $emptyDir ) rmdir($oldN3d);
 		}
 	}
-	
-	public function addVCtoComplects(&$vendor_code, &$number_3d){
+
+    /**
+     * @param string $vendor_code
+     * @throws \Exception
+     */
+    public function addVCtoComplects( string $vendor_code )
+    {
+        if ( !empty($vendor_code) )
+        {
+            $sql = " SELECT id,vendor_code FROM stock WHERE number_3d='$this->number_3d' AND vendor_code=' ' ";
+            if ( $this->id ) $sql .= " AND id<>'$this->id' ";
+
+            $includedModels = $this->findAsArray( $sql );
+
+            if ( $includedModels ) {
+                $ids = '';
+                foreach ( $includedModels as $model )
+                {
+                    if ( empty($model['vendor_code']) )
+                        $ids .= "'" . $model['id'] . "',";
+                }
+                if ( $ids )
+                {
+                    try {
+                        $ids = '(' . trim($ids,',') . ')';
+                        $this->baseSql( " UPDATE stock SET vendor_code='$vendor_code' WHERE id IN $ids " );
+                    } catch (\Exception $e)
+                    {
+                        if ( _DEV_MODE_ ) {
+                            $errArrCodes = [
+                                'code' => $e->getCode(),
+                                'message' => $e->getMessage(),
+                            ];
+                            exit(json_encode(['error' => $errArrCodes]));
+                        } else {
+                            exit(json_encode(['error' => ['message'=>'Error in adding vendor code..', 'code'=>500]]));
+                        }
+                    }
+                }
+            }
+        }
+        /*
 		if ( isset($vendor_code) && !empty($vendor_code) ) {
-			$queri = mysqli_query($this->connection, " SELECT id,vendor_code FROM stock WHERE number_3d='$number_3d' " );
-			if ( $queri -> num_rows > 0 ) {
-				while ( $row = mysqli_fetch_assoc($queri) ) {
+			$query = mysqli_query($this->connection, " SELECT id,vendor_code FROM stock WHERE number_3d='$this->number_3d' " );
+			if ( $query -> num_rows > 0 ) {
+				while ( $row = mysqli_fetch_assoc($query) ) {
 					$id = $row['id'];
 					if ( empty($row['vendor_code']) ) {
 						$quertext = mysqli_query($this->connection, " UPDATE stock SET vendor_code='$vendor_code' WHERE id='$id' ");
@@ -175,6 +221,7 @@ class Handler extends General
 				}
 			}
 		}
+        */
 	}
 
     /**
@@ -203,30 +250,33 @@ class Handler extends General
     }
 
     /**
-     * @param $status
+     * @param $statusNew
      * @param string $creator_name
      * @throws \Exception
      */
-    public function updateStatus(int $status, $creator_name="")
+    public function updateStatus( int $statusNew, $creator_name="" )
 	{
-		if ( empty($status) ) return;
-        $statusOld =  $this->findOne(" SELECT status FROM stock WHERE id='$this->id' " );
+		if ( !$statusNew || $statusNew < 0 || $statusNew > 200 )
+		    throw new \Exception(SaveModelCodes::message(SaveModelCodes::WRONG_STATUS,true),
+                SaveModelCodes::WRONG_STATUS);
 
-		if ( $statusOld['status'] != $status )
-		{
-		    if ( empty($this->date) ) $this->date = date("Y-m-d");
-			    $this->baseSql(" UPDATE stock SET status='$status', status_date='$this->date' WHERE id='$this->id' ");
+        $statusOld = (int)$this->findOne(" SELECT status as s FROM stock WHERE id='$this->id' ", 's' );
 
-			//04,07,19 - вносим новый статус в таблицу statuses
-			if (empty($creator_name)) $creator_name = User::getFIO();
-			$statusT = [
-				'pos_id' => $this->id,
-				'status' => $status,
-				'creator_name'  => $creator_name,
-				'UPdate'   => $this->date
-			];
-			$this->addStatusesTable($statusT);
-		}
+		if ( $statusOld === $statusNew ) return;
+
+		$this->baseSql(" UPDATE stock SET status='$statusNew', status_date='$this->date' WHERE id='$this->id' ");
+
+        //04,07,19 - вносим новый статус в таблицу statuses
+        if (empty($creator_name))
+            $creator_name = User::getFIO();
+
+        $statusTemplate = [
+            'pos_id' => $this->id,
+            'status' => $statusNew,
+            'creator_name'  => $creator_name,
+            'UPdate'   => $this->date
+        ];
+        $this->addStatusesTable($statusTemplate);
 	}
 
     /**
@@ -234,7 +284,7 @@ class Handler extends General
      * @return bool|int
      * @throws \Exception
      */
-    public function addStatusesTable($statusT = [])
+    public function addStatusesTable( $statusT = [] )
     {
         //04,07,19 - вносим новый статус в таблицу statuses
         if ( empty($statusT) ) return false;
@@ -248,9 +298,23 @@ class Handler extends General
         //$quer_status =  mysqli_query($this->connection, $querStr );
         return $this->sql($querStr);
 	}
-	
-	//добавляет только номер 3д и тип, чтобы получить айди для дальнейших манипуляций
-	public function addNewModel(&$number_3d, &$model_type) {
+
+    /**
+     * добавляет только номер 3д и тип, чтобы получить айди для дальнейших манипуляций
+     * @param $number_3d
+     * @param $model_type
+     * @return bool
+     * @throws \Exception
+     */
+	public function addNewModel( string $number_3d = '', string $model_type = '' )
+    {
+        if ( empty($number_3d) )
+            $number_3d = $this->number_3d;
+        if ( empty($model_type) )
+            $model_type = $this->model_type;
+        if ( empty($number_3d) || empty($model_type) )
+            throw new \Exception("Тип и номер 3Д модели должны быть заполнены", 199);
+
 		$addNew = mysqli_query($this->connection, "INSERT INTO stock (number_3d,model_type) VALUES('$number_3d','$model_type') ");
 		if ( !$addNew ) {
 			printf( "Error_AddModel: %s\n", mysqli_error($this->connection) );
@@ -260,31 +324,52 @@ class Handler extends General
 		$this->setId($id);
 		return $this->id;
 	}
-	
-	public function updateDataModel($datas, $id=false) {
+
+    /**
+     * @param $data
+     * @param bool $id
+     * @return bool
+     * @throws \Exception
+     */
+    public function updateDataModel($data, $id = false )
+    {
 		if (!$id) $id = $this->id;
-		if ( !trim($datas) ) return true; // в некоторых случаях в стоке обновлять нечего, только статус
+
+        // в некоторых случаях в стоке обновлять нечего, только статус
+		if ( !trim( $data ) )
+		    return true;
 
 		$where = " WHERE id='$id' ";
-		$queryStr = "UPDATE stock SET ".$datas.$where;
-		//debug($queryStr,'$queryStr');
-		$addEdit = mysqli_query($this->connection, $queryStr);
-		if ( !$addEdit ) {
-			printf( "Error updateDataModel() in class ".get_class($this)." : %s\n", mysqli_error($this->connection) );
-			return false;
-		}
+		$queryStr = " UPDATE stock SET ".$data.$where;
+		$addEdit = $this->baseSql($queryStr);
+		if ( !$addEdit )
+		    throw new \Exception("Error updateDataModel() in class ".get_class($this) . " " . mysqli_error($this->connection),197);
 
 		return true;
 	}
-	
-	public function updateCreater(&$creator_name) {
-		$quer_CN =  mysqli_query($this->connection, " SELECT creator_name FROM stock WHERE id='$this->id' " );
-		$row_CN = mysqli_fetch_assoc($quer_CN);
-		if ( !$row_CN['creator_name'] ) {
-			$quertext = mysqli_query($this->connection, " UPDATE stock SET creator_name='$creator_name' WHERE id='$this->id' ");
-		}
+
+    /**
+     * @param $creator_name
+     * @return bool
+     * @throws \Exception
+     */
+    public function updateCreater( string $creator_name ) : bool
+    {
+        if ( empty($creator_name) ) return false;
+        $creator =  $this->findOne(" SELECT creator_name as n FROM stock WHERE id='$this->id'", 'n' );
+
+		if ( empty($creator) )
+			return $this->baseSql(" UPDATE stock SET creator_name='$creator_name' WHERE id='$this->id' ");
+
+		return false;
 	}
-	
+
+    /**
+     * OLD VERSION
+     * @param $files
+     * @param $imgRows
+     * @return mixed
+     */
 	public function addImageFiles($files, $imgRows)
     {
         $imgCount = count($files['name']?:[]);
@@ -336,6 +421,54 @@ class Handler extends General
 		return $imgRows;
 	}
 
+    /**
+     * для добавления эскиза в комплект
+     * @param $files
+     * @param $newImages
+     */
+    public function addIncludedSketch( array &$newImages )
+    {
+        $sketchNames = explode('#',$newImages[0]['img_name']);
+        $num3D = $sketchNames[0];
+        $modelID = $sketchNames[1];
+        $imgName = $sketchNames[2];
+
+        $pathFrom = _stockDIR_ . $num3D . "/" . $modelID . "/images/" . $imgName;
+        if ( file_exists($pathFrom) )
+        {
+            $pathTo = $this->number_3d.'/'.$this->id.'/images/'.$imgName;
+
+            if ( Files::instance()->copy($pathFrom, $pathTo) )
+                $newImages[0]['img_name'] = $imgName;
+        }
+    }
+
+    /**
+     * @param array $fileData
+     * @return bool|string
+     * @throws \Exception
+     */
+    public function uploadImageFile( array $fileData )
+    {
+        $randomString = randomStringChars(8,'en','symbols');
+
+        if ( $fileData['error'] !== 0 )
+            return false;
+            //throw new \Exception($fileData['error'],SaveModelCodes::ERROR_UPLOAD_FILE);
+
+        $info = new \SplFileInfo($fileData['name']);
+        $extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
+        $uploading_img_name = $this->number_3d."_".$randomString.mt_rand(0,98764321).".".$extension;
+        $destination = $this->number_3d.'/'.$this->id.'/images/'.$uploading_img_name;
+        $tmpName = $fileData['tmp_name'];
+
+        $files = Files::instance();
+        if ( $files->upload( $tmpName, $destination, ['png','gif','jpg','jpeg'] ) )
+            return $uploading_img_name;
+
+        return false;
+    }
+
 
 
 	public function updateImageFlags($imgFlags)
@@ -373,7 +506,7 @@ class Handler extends General
 		return true;
 	}
 
-	protected function openZip($path)
+	public function openZip($path)
     {
         $zip = new \ZipArchive();
         $zip_name = $this->number_3d."-".$this->model_typeEn.".zip";
@@ -381,16 +514,30 @@ class Handler extends General
 
         return ['zip'=>$zip, 'zipName' => $zip_name];
     }
+    public function closeZip( \ZipArchive $zip ) : bool
+    {
+        if ( method_exists($zip,'close') )
+        {
+            $zip->close();
+            return true;
+        }
+        return false;
+    }
 
-	
-	public function addSTL( &$filesSTL ) {
+    /**
+     * OLD VERSION
+     * @param $filesSTL
+     * @return bool
+     */
+	public function addSTL( &$filesSTL )
+    {
 		$folder = $this->number_3d.'/'.$this->id.'/stl/';
 		
 		$zip = new \ZipArchive();
 		$zip_name = $this->number_3d."-".$this->model_typeEn.".zip";
 		$zip->open($folder.$zip_name, \ZIPARCHIVE::CREATE);
-		$countSTls = count($filesSTL['name']);
 
+		$countSTls = count($filesSTL['name']);
 		for ( $i = 0; $i < $countSTls; $i++ ) {
 			
 			$fileSTL_name = basename($filesSTL['name'][$i]);
@@ -421,6 +568,59 @@ class Handler extends General
 		}
 		return true;
 	}
+
+    /**
+     * @param array $zipData
+     * @param string $path
+     * @return bool
+     * @throws \Exception
+     */
+    public function uploadStlFile(array &$zipData, string $path )
+    {
+        $fileSTL_name = basename($zipData['stl']['name']);
+
+        if ( !empty($fileSTL_name) )
+        {
+            $randomString = randomStringChars(8,'en','symbols');
+
+            $info = new \SplFileInfo($fileSTL_name);
+            $extension = pathinfo($info->getFilename(), PATHINFO_EXTENSION);
+
+            $uploading_fileSTL_name = $this->number_3d."-".$this->model_typeEn."-".$randomString.mt_rand(0,98764321).".".$extension;
+
+            $destination = $path.$uploading_fileSTL_name;
+            if ( Files::instance()->upload( $zipData['stl']['tmp_name'], $destination, ['stl','mgx']) )
+            {
+                if ( $zipData['zip']->addFile( $destination, $uploading_fileSTL_name ) )
+                    return $destination;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Завершает загрузку Stl файлов
+     * @param array $stlFileNames
+     * @param array $zipData
+     * @throws \Exception
+     */
+    public function insertStlData( array $stlFileNames, array $zipData )
+    {
+        $this->closeZip( $zipData['zip'] );
+
+        foreach ( $stlFileNames as $stlFN )
+            Files::instance()->delete($stlFN);
+
+        if ( count($stlFileNames) )
+        {
+            $sql = "INSERT INTO stl_files (stl_name, pos_id) 
+                      VALUES ('{$zipData['zipName']}', '$this->id') ";
+            if ( $this->sql($sql) === -1 )
+                throw new \Exception('Error adding STL files',2);
+        }
+    }
+
 
     /**
      * @param $files3DM
@@ -462,7 +662,9 @@ class Handler extends General
         }
         return true;
     }
-	
+
+
+
 	public function addAi( &$filesAi ) {
 		$folder = $this->number_3d.'/'.$this->id.'/ai/';
 		
@@ -664,7 +866,7 @@ class Handler extends General
         return $result;
     }
 
-	protected function parseRecords($records)
+	public function parseRecords($records)
     {
         if ( !is_array($records) ) return [];
         $parsedRecords = [];
@@ -962,6 +1164,7 @@ class Handler extends General
     }
 
     /**
+     * СТАРЫЙ
      * Формируте массив строк для пакетной вставки/обновления строк
      * в дополнительные таблицы
      * @param $data
@@ -970,16 +1173,15 @@ class Handler extends General
      * @return array|bool
      * @throws \Exception
      */
-    public function makeBatchInsertRow($data, $stockID, $tableName)
+    public function makeBatchInsertRowOLD($data, $stockID, $tableName)
     {
         if ( !is_array($data) || empty($data) ) return false;
         $materials = [];
 
         $tableSchema = $this->getTableSchema($tableName);
-        //debug($tableSchema,'$tableSchema');
 
         foreach ( $data as $mats )
-        {  
+        {
             for( $i = 0; $i < count($mats); $i++ )
             {
                 $materials[$i][] = $mats[$i];
@@ -1025,7 +1227,76 @@ class Handler extends General
             $materials[$key] = $materialAssoc;
             
         }
+        debug(['insertUpdate'=>$materials, 'remove'=>$removeRows],'old',1,1);
         return ['insertUpdate'=>$materials, 'remove'=>$removeRows];
+    }
+
+    /**
+     * @param $data
+     * @param $stockID
+     * @param $tableName
+     * @return bool | array
+     * @throws \Exception
+     */
+    public function makeBatchInsertRow($data, $stockID, $tableName)
+    {
+        if ( !is_array($data) || empty($data) ) return false;
+        $dataRows = [];
+        $insertRows = [];
+        $removeRows = [];
+
+        $data = $this->parseRecords($data);
+
+        $tSOrigin = $this->getTableSchema($tableName);
+        $tableSchema = [];
+        foreach ( $tSOrigin as $cn ) $tableSchema[$cn] = '';
+
+        $i = 0;
+        foreach ( $data as $dR )
+        {
+            foreach ( $tableSchema as $columnName => $val )
+            {
+                $dataRows[$i][$columnName] = '';
+                if ( array_key_exists($columnName,$dR) )
+                    $dataRows[$i][$columnName] = $this->tities($dR[$columnName]);
+
+            }
+            $i++;
+        }
+
+        foreach ( $dataRows as $key => $dataRow )
+        {
+            $emptyFields = true;
+            $toRemove = false;
+            foreach ( $dataRow as $value )
+            {
+                // когда хоть одно поле заполнено - оставим для внесения в табл.
+                if ( !empty($value) ) {
+                    $emptyFields = false;
+                }
+                // кандидат на удаление из Таблицы
+                if ( (int)$value === -1 ) {
+                    $toRemove = true;
+                    break;
+                }
+            }
+
+            if ( $toRemove )
+            {
+                $removeRows[] = $dataRow;
+                continue;
+            }
+            if ( $emptyFields )
+            {
+                unset($dataRows[$key]);
+                continue;
+            }
+
+            $dataRow[end($tSOrigin)] = $stockID; // в конец добавим pos_id
+            $insertRows[] = $dataRow;
+        }
+
+        return ['insertUpdate'=>$insertRows, 'remove'=>$removeRows];
     }
 
     /**
@@ -1109,6 +1380,25 @@ class Handler extends General
         }
 
         return ['newImages'=>$newImgRows,'updateImages'=>$imgRows];
+    }
+
+    /**
+     * @param string $surname
+     * @return int
+     * @throws \Exception
+     */
+    public function getUserIDFromSurname( string $surname )
+    {
+        $userID = null;
+        foreach ( $this->getUsers() as $user )
+        {
+            if ( mb_stripos( $user['fio'], $surname ) !== false )
+            {
+                $userID = $user['id'];
+                break;
+            }
+        }
+        return $userID;
     }
 
 }

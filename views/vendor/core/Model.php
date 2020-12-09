@@ -25,7 +25,9 @@ class Model
      */
     public function connectDB( array $dbConfig ) : \mysqli
     {
-        if ( is_object($this->connection) ) return $this->connection;
+        //if ( is_object($this->connection) ) return $this->connection;
+        if ( $this->connection instanceof \mysqli )
+            return $this->connection;
 
         return $this->connection = self::$connectObj = (Database::instance($dbConfig))->getConnection();
     }
@@ -141,7 +143,7 @@ class Model
      * @return array|bool
      * @throws \Exception
      */
-    public function getTableSchema(string $tableName)
+    public function getTableSchema( string $tableName )
     {
         if ( empty($tableName) ) throw new \Exception('Table name not valid! In ' . __METHOD__, 555);
 
@@ -170,16 +172,16 @@ class Model
      * Удаление одной строки по условию
      * @param string $table
      * @param string $primaryKey
-     * @param int $key
+     * @param int $id
      * @return bool
      * @throws \Exception
      */
-    public function deleteFromTable(string $table, string $primaryKey, int $key) : bool //string $primaryKey, int $key
+    public function deleteFromTable(string $table, string $primaryKey, int $id) : bool //string $primaryKey, int $key
     {
-        if ( empty($table) || empty($primaryKey) || empty($key))
+        if ( empty($table) || empty($primaryKey) || empty($id))
             throw new \Exception("Table, primary key name or id is empty! In " . __METHOD__ );
 
-        $sql = " DELETE FROM $table WHERE $primaryKey='$key' ";
+        $sql = " DELETE FROM $table WHERE $primaryKey='$id' ";
         if ( $this->baseSql($sql) ) return true;
 
         return false;
@@ -265,6 +267,8 @@ class Model
         $update = implode(',', $update);
 
         $sqlStr = "INSERT INTO $table $columns VALUES $values ON DUPLICATE KEY UPDATE $update";
+
+        //debugAjax($sqlStr,'$sqlStr',END_AB);
 
         return $this->sql($sqlStr);
     }

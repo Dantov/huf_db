@@ -57,16 +57,13 @@ class Request {
      */
     public function isAjax()
     {
-//        foreach ( $this->headers as $name => $val ) {
-//            if ( $name === 'X-Requested-With' && $val === 'XMLHttpRequest'  ) return true;
-//        }
         if ( isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest' )
         {
             return true;
         }
         return false;
     }
-    
+
     public function isPost()
     {
         if ( $_SERVER['REQUEST_METHOD'] === 'POST'  ) return true;

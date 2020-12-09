@@ -1,7 +1,7 @@
 <?php
 namespace Views\_EditStatuses\Controllers;
 
-use Views\_AddEdit\Models\HandlerPrices;
+use Views\_SaveModel\Models\HandlerPrices;
 use Views\_EditStatuses\Models\EditStatusesModel;
 use Views\_Globals\Controllers\GeneralController;
 use Views\_Globals\Models\{
@@ -118,7 +118,7 @@ class EditStatusesController extends GeneralController
 
             
             //Зачисление стоимостей на каждую модель, если позволяет статус
-            require _viewsDIR_ . "_AddEdit/Controllers/paymentsController.php";
+            require _viewsDIR_ . "_SaveModel/Controllers/paymentsController.php";
 
             $names = explode(' | ', $model['name']);
             $addPush = $pn->addPushNotice($modelID, 2, $names[0], $names[1], $model['type'], $date, $status, User::getFIO());

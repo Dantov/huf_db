@@ -1,5 +1,5 @@
 <div class="input-group hidden" id="num3dVC_proto">
-    <input type="text" class="form-control" name="num3d_vc_[]" value="">
+    <input type="text" class="form-control" name="vc_links[vc_3dnum][]" value="">
     <div class="input-group-btn">
       <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 		<span class="caret"></span>

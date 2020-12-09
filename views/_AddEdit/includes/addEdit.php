@@ -217,17 +217,12 @@ $permittedFields = User::permissions();
                                 </thead>
                                 <tbody id="collections_table">
                                 <!-- // автозаполнение если добавляем комплект или редакт модель -->
+                                <?php $switchTableRow = "collection" ?>
                                 <?php foreach ( $row['collections']??[] as $collection ) : ?>
-                                    <tr>
-                                        <td style="width: 30px"><?=++$i?></td>
-                                        <td><?php require _viewsDIR_. '_AddEdit/includes/collections_input.php'; ?></td>
-                                        <td style="width:100px;">
-                                            <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
-                                                <span class="glyphicon glyphicon-trash"></span>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <?php require _viewsDIR_."_AddEdit/includes/protoRows.php"?>
                                 <?php endforeach; ?>
+                                <?php if ( isset($collection) ) unset($collection); ?>
+                                <?php if ( isset($i) ) unset($i); ?>
                                 </tbody>
                             </table>
                             <?php require _viewsDIR_.'_AddEdit/includes/collectionsBlock.php'?>
@@ -258,8 +253,8 @@ $permittedFields = User::permissions();
                                     <th>№</th>
                                     <th>Сырьё</th>
                                     <th>Огранка</th>
-                                    <th>Кол-во шт.</th>
                                     <th>Ø(Размер мм)</th>
+                                    <th>Кол-во шт.</th>
                                     <th>Цвет</th>
                                     <th></th>
                                 </tr>
@@ -293,22 +288,12 @@ $permittedFields = User::permissions();
                                 </tr>
                                 </thead>
                                 <tbody id="dop_vc_table">
+                                <?php $switchTableRow = "dopVC"; $vcI = 0; ?>
                                 <?php foreach ( $dopVCs??[] as $dopVc ): ?>
-                                    <tr>
-                                        <td><?= ++$vcI ?></td>
-                                        <td><?php require _viewsDIR_.'_AddEdit/includes/DopArticl_names_input.php' ?></td>
-                                        <td><?php require _viewsDIR_.'_AddEdit/includes/num3dVC_input.php' ?></td>
-                                        <td><input type="text" class="form-control" name="descr_dopvc_[]" value="<?=$dopVc['descript'];?>"></td>
-                                        <td>
-                                            <button class="btn btn-sm btn-default " type="button" onclick="duplicateRow(this);" title="дублировать строку">
-                                                <span class="glyphicon glyphicon-duplicate"></span>
-                                            </button>
-                                            <button class="btn btn-sm btn-default " type="button" onclick="deleteRow(this);" title="удалить строку">
-                                                <span class="glyphicon glyphicon-trash"></span>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    <?php require _viewsDIR_."_AddEdit/includes/protoRows.php" ?>
                                 <?php endforeach; ?>
+                                <?php if ( isset($dopVc) ) unset($dopVc); ?>
+                                <?php if ( isset($vcI) ) unset($vcI); ?>
                                 </tbody>
                             </table>
                         </div><!-- end panel dopArticls-->
@@ -369,13 +354,13 @@ $permittedFields = User::permissions();
                 <div class="col-xs-12">
                     <ul class="nav nav-tabs text-center nav-justified">
                         <?php if ( $permittedFields['repairs3D'] ): ?>
-                            <li role="presentation" class="active" title="Ремонты 3Д моделей"><a href="#repairs3d" role="tab" data-toggle="tab"><i class="fas fa-vector-square"></i> Ремонты 3Д</a></li>
+                            <li role="presentation" class="active" title="Ремонты 3Д моделей"><a href="#repairs3d" role="tab" data-toggle="tab"><i class="fas fa-vector-square"></i> Ремонты 3Д (<?=$countRepairs['3d']?>)</a></li>
                         <?php endif; ?>
                         <?php if ( $permittedFields['repairsJew'] ): ?>
-                            <li role="presentation" class="" title="Ремонты Мастер Моделей"><a href="#repairsJew" role="tab" data-toggle="tab"><i class="fas fa-screwdriver"></i> Ремонты ММ</a></li>
+                            <li role="presentation" class="" title="Ремонты Мастер Моделей"><a href="#repairsJew" role="tab" data-toggle="tab"><i class="fas fa-screwdriver"></i> Ремонты ММ (<?=$countRepairs['jew']?>)</a></li>
                         <?php endif; ?>
                         <?php if ( $permittedFields['repairsProd'] ): ?>
-                            <li role="presentation" class="" title="Ремонты моделей на производстве"><a href="#repairsProd" role="tab" data-toggle="tab"><i class="fas fa-hammer"></i> Ремонты производства</a></li>
+                            <li role="presentation" class="" title="Ремонты моделей на производстве"><a href="#repairsProd" role="tab" data-toggle="tab"><i class="fas fa-hammer"></i> Ремонты производства (<?=$countRepairs['prod']?>)</a></li>
                         <?php endif; ?>
                     </ul>
                     <?php if ( !isset($repairs) ) $repairs = []; ?>
@@ -387,9 +372,11 @@ $permittedFields = User::permissions();
                                 Описание ремонтов 3д моделей.
                                 <button data-repair="repairs3d" style="font-size: large" title="Добавить ремонт 3Д" class="btn btn-link addRepair"><i class="far fa-plus-square"></i></button>
                             </h4>
-                            <?php foreach ( $repairs as $repair ) : ?>
-                                <?php if ( !$whichRepair = $repair['which'] ? true : false ) // пропустим ремонты модельеров, у них 1
-                                    require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
+                            <?php foreach ( $repairs as $repair ): ?>
+                                <?php if ( (int)$repair['which'] === 0 ) {
+                                    $whichRepair = 0;
+                                    require _viewsDIR_.'_AddEdit/includes/repairs.php';
+                                } ?>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
@@ -402,7 +389,7 @@ $permittedFields = User::permissions();
                             </h4>
                             <div class="col-xs-12 repairsJew">
                             <?php foreach ( $repairs as $repair ) : ?>
-                                <?php if ( $whichRepair = $repair['which'] ? true : false ) // пропустим ремонты 3д, у них 0
+                                <?php if ( $whichRepair = (int)$repair['which'] === 1 ? 1 : false )
                                     require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
                             <?php endforeach; ?>
                             </div>
@@ -415,6 +402,12 @@ $permittedFields = User::permissions();
                                 Описание ремонтов моделей на производстве ( монтирвка, закрепка, матрица и т.д.)
                                 <button data-repair="repairsProd" style="font-size: large" title="Добавить ремонт производства" class="btn btn-link addRepair"><i class="far fa-plus-square"></i></button>
                             </h4>
+                            <div class="col-xs-12 repairsProd">
+                                <?php foreach ( $repairs as $repair ) : ?>
+                                    <?php if ( $whichRepair = (int)$repair['which'] === 2 ? 2 : false )
+                                        require _viewsDIR_.'_AddEdit/includes/repairs.php'; ?>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
                     <?php endif; ?>
                     </div>
@@ -949,7 +942,7 @@ $permittedFields = User::permissions();
                             <div class="panel-heading" title="Стоимость Доработки">
                                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                                 <strong>Доработка модели</strong>
-                                <?php if ( !$this->isCredited($modelPrices, 6) ): ?>
+                                <?php if ( !count($modelPrices) ): //!$this->isCredited($modelPrices, 6) || ?>
                                     <button class="btn btn-sm btn-default pull-right addModellerJewPrice" style="top:-5px !important; position:relative;" type="button" title="Добавить стоимость">
                                         <span class="glyphicon glyphicon-plus"></span>
                                     </button>
@@ -985,7 +978,7 @@ $permittedFields = User::permissions();
                                                 <?php endif; ?>
                                             </td>
                                             <td></td>
-                                            <td></td>
+                                            <td style="width:100px;"></td>
                                         </tr>
                                     <?php endforeach; ?>
                                     <tr class="active text-bold t-total">

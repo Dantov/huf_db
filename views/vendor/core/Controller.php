@@ -72,14 +72,8 @@ class Controller
     public function __construct($controllerName)
     {
         $this->controllerName = $controllerName;
-        //$this->getHeaders();
         $this->request = new Request();
         $this->session = new Sessions();
-        //debug($this->session);
-        //$this->post();
-        //$this->isFiles();
-
-        //self::$Model = $this->getModel();
     }
 
     public function setQueryParams($params)

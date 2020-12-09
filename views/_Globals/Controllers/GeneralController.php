@@ -35,6 +35,7 @@ JS;
 
     /**
      * @throws \Exception
+     * Гарантированно выйдем из БД
      */
     public function afterAction()
     {
@@ -173,8 +174,12 @@ JS;
             if ( _DEV_MODE_ )
             {
                 $err = [
-                    'code' => $e->getCode(),
-                    'message' => $e->getMessage(),
+                    'message'=>$e->getMessage(),
+                    'code'=>$e->getCode(),
+                    'file'=>$e->getFile(),
+                    'line'=>$e->getLine(),
+                    'trace'=>$e->getTrace(),
+                    'previous'=>$e->getPrevious(),
                 ];
                 exit(json_encode(['error' => $err]));
             } else {

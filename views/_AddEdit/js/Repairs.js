@@ -105,7 +105,6 @@ Repairs.prototype.init = function()
         that.currentPricesTable = null;
     });
 
-
     debug('Repairs init ok!');
 };
 
@@ -122,6 +121,31 @@ Repairs.prototype.addRepair = function(button, self, event)
     let repairData = self.repairTypes[btnType];
     let targetRepBlock = self.repairsBlock.querySelector('#' + btnType);
 
+    /** Достаанем из базы имена мастеров **/
+    $.ajax({
+        type: 'GET',
+        url: '/add-edit/masterLI/',
+        data: {
+            masterLI: repairData.which,
+        },
+        dataType:"json",
+        success:function(response) {
+            debug(response,'response');
+            if ( response.error )
+            {
+                AR.setDefaultMessage( 'error', 'subtitle', "Ошибка. Имена мастеров не найдены." );
+                AR.error( response.error.message, response.error.code, response.error );
+                return;
+            }
+            let masterUL = newRepairWindow.querySelector('.toWhomList');
+            masterUL.innerHTML = response.li;
+        },
+        error:function (error) {
+            AR.serverError( error.status, error.responseText );
+            debug(error);
+        }
+    });
+
     /**
      * SET ATTR
      */
@@ -137,7 +161,6 @@ Repairs.prototype.addRepair = function(button, self, event)
     newRepairWindow.querySelector('.removeRepair').setAttribute('data-repType',btnType);
     newRepairWindow.querySelector('.panel-collapse').setAttribute('id','repairCollapse_' + timeMilisec);
     newRepairWindow.querySelector('.panel-collapse').setAttribute('aria-labelledby','allRepairs_' + timeMilisec);
-    newRepairWindow.querySelector('tbody').classList.add(btnType);
 
     /**
      * NAMES
@@ -145,13 +168,15 @@ Repairs.prototype.addRepair = function(button, self, event)
     newRepairWindow.querySelector('.sender').setAttribute('name',repairData.name + '[sender][]');
     newRepairWindow.querySelector('.toWhom').setAttribute('name',repairData.name + '[toWhom][]');
     newRepairWindow.querySelector('.repairs_descr_need').setAttribute('name',repairData.name + '[descrNeed][]');
-    newRepairWindow.querySelector('.repairs_descr_done').setAttribute('name',repairData.name + '[repair_descr][]');
     newRepairWindow.querySelector('.repairs_id').setAttribute('name',repairData.name + '[id][]');
-    newRepairWindow.querySelector('.repairs_num').setAttribute('name',repairData.name + '[num][]');
+    newRepairWindow.querySelector('.repairs_num').setAttribute('name',repairData.name + '[rep_num][]');
     newRepairWindow.querySelector('.repairs_num').value = repairData.repairsCount;
     newRepairWindow.querySelector('.repairs_which').setAttribute('name',repairData.name + '[which][]');
     newRepairWindow.querySelector('.repairs_which').value = repairData.which;
     newRepairWindow.querySelector('.repairStatus').setAttribute('name',repairData.name + '[status][]');
+    newRepairWindow.querySelector('.statusDate').setAttribute('name',repairData.name + '[status_date][]');
+    newRepairWindow.querySelector('.date').setAttribute('name',repairData.name + '[date][]');
+    newRepairWindow.querySelector('.posID').setAttribute('name',repairData.name + '[pos_id][]');
 
     /**
      * INSERT
@@ -261,6 +286,7 @@ Repairs.prototype.addRepairPrice = function(select)
     let option = select.options[select.options.selectedIndex];
     let workName = option.getAttribute('data-workName');
     let price = option.getAttribute('data-points') * 100;
+    let gradeType = option.getAttribute('data-gradeType');
     let description = option.getAttribute('title');
 
     $('#repairPricesModal').modal('hide');
@@ -269,19 +295,30 @@ Repairs.prototype.addRepairPrice = function(select)
     let inputID = document.createElement('input');
         inputID.setAttribute('hidden', '');
         inputID.setAttribute('value', gsID);
-        inputID.setAttribute('name', repairData.name + '[gsIDs][]');
+        inputID.setAttribute('name', repairData.name + '[prices][gs_id][]');
         inputID.classList.add('hidden');
         inputID.value = gsID;
 
     // ID оценки из таблицы model_prices (для новых пустое)
+    // grade_type оценки из таблицы grading_system (  )
     let inputIDmp = document.createElement('input');
         inputIDmp.setAttribute('hidden', '');
-        inputIDmp.setAttribute('value', '');
-        inputIDmp.setAttribute('name', repairData.name + '[mpIDs][]');
+        inputIDmp.setAttribute('value', gradeType);
+        inputIDmp.setAttribute('name', repairData.name + '[prices][is3d_grade][]');
         inputIDmp.classList.add('hidden');
-        inputIDmp.value = '';
+        inputIDmp.value = gradeType;
 
-    // Сама оценка
+    // ID оценки из таблицы model_prices (для новых пустое)
+
+    let repairID = this.currentPricesTable.parentElement.parentElement.querySelector('.repairs_id').value;
+    let inputRepID = document.createElement('input');
+        inputRepID.setAttribute('hidden', '');
+        inputRepID.setAttribute('value', repairID);
+        inputRepID.setAttribute('name', repairData.name + '[prices][repair_id][]');
+        inputRepID.classList.add('hidden');
+        inputRepID.value = repairID;
+
+    // Сама стоимость
     let inputPoints = document.createElement('input');
     if ( +price.toFixed() !== 0 )
     {
@@ -290,7 +327,7 @@ Repairs.prototype.addRepairPrice = function(select)
     }
     inputPoints.setAttribute('value', +price.toFixed());
     inputPoints.value = +price.toFixed();
-    inputPoints.setAttribute('name', repairData.name + '[points][]');
+    inputPoints.setAttribute('name', repairData.name + '[prices][value][]');
     inputPoints.classList.add('form-control');
 
     // Для Тултипа
@@ -310,9 +347,10 @@ Repairs.prototype.addRepairPrice = function(select)
     let totalRow = this.currentPricesTable.querySelector('.t-total');
     let insertedRow = this.currentPricesTable.insertBefore(newRow, totalRow);
         insertedRow.children[1].appendChild(div);
-        insertedRow.children[3].appendChild(inputIDmp);
         insertedRow.children[2].appendChild(inputPoints);
+        insertedRow.children[3].appendChild(inputIDmp);
         insertedRow.children[3].appendChild(inputID);
+        insertedRow.children[3].appendChild(inputRepID);
 
     let dellButton = insertedRow.children[4].querySelector('.ma3DgsDell');
         dellButton.addEventListener('click',function () {

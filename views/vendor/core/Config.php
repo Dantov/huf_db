@@ -56,7 +56,12 @@ class Config
         return self::$config ?? self::$defaultConfig;
     }
 
-    public static function set( string $key, $value )
+    /**
+     * @param string $key
+     * @param $value
+     * @return bool
+     */
+    public static function set(string $key, $value )
     {
         if ( empty($key) || empty($value) ) return false;
 

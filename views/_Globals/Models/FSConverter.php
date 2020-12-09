@@ -27,4 +27,9 @@ class FSConverter
         return str_replace(self::_Upper(), self::_Lower(), $string);
     }
 
+    public static function firstToUpper($string)
+    {
+        return str_replace(self::_Lower(), self::_Upper(), $string,1);
+    }
+
 }

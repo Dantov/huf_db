@@ -2,7 +2,7 @@
 namespace Views\_AddEdit\Controllers;
 
 use Views\_AddEdit\Models\AddEdit;
-use Views\_AddEdit\Models\Handler;
+use Views\_SaveModel\Models\Handler;
 use Views\_Globals\Controllers\GeneralController;
 use Views\_Globals\Models\User;
 use Views\vendor\core\Crypt;
@@ -29,14 +29,11 @@ class AddEditController extends GeneralController
         {
             try 
             {
-                if ( $request->isPost() && $modelsTypeRequest = $request->post('modelsTypeRequest') ) 
-                {
+                if ( $request->isPost() && $modelsTypeRequest = $request->post('modelsTypeRequest') )
                     $this->actionVendorCodeNames($modelsTypeRequest);
-                }
+
                 if ( $request->isPost() && ( (int)$request->post('paid') === 1) )
-                {
                     $this->actionPaidRepair($request->post);
-                }
 
                 if ( $request->post('deleteFile') )
                 {
@@ -50,15 +47,16 @@ class AddEditController extends GeneralController
                 }
 
                 if ( $request->post('dellPosition') )
-                {
                     if ( $id = (int)$request->post('id') )
                         $this->actionDeletePosition($id);
-                }
 
-                if ( $request->isPost() && $request->post('save') )
-                {
-                    $this->actionFormController( $request->post('save') );
-                }
+//                if ( $request->isPost() && $request->post('save') )
+//                    $this->actionFormController( $request->post('save') );
+
+                if ( $request->isGet() && $this->isQueryParam('masterLI') )
+                    $this->getMasterLI( (int)$request->get('masterLI') );
+
+
             } catch (\Error | \Exception $e) {
                 if ( _DEV_MODE_ )
                 {
@@ -178,6 +176,7 @@ class AddEditController extends GeneralController
 
             $materials = $addEdit->getMaterials();
             $repairs = $addEdit->getRepairs();
+            $countRepairs = $addEdit->countRepairs( $repairs );
             $notes = $addEdit->getDescriptions();
 
             $images  = $addEdit->getImages();
@@ -281,7 +280,8 @@ JS;
         }
 
         $compact1 = compact([
-            'gems_sizesLi','gems_cutLi','gems_namesLi','gems_colorLi','vc_namesLI','num3DVC_LI','materialsData','coveringsData','handlingsData',
+            'gems_sizesLi','gems_cutLi','gems_namesLi','gems_colorLi','vc_namesLI','num3DVC_LI','materialsData',
+            'coveringsData','handlingsData',
         ]);
         /* ===== PHP includes ===== */
         $this->includePHPFile('resultModal.php');
@@ -318,7 +318,7 @@ JS;
         $this->session->setKey('saveModel', $save);
         $compact2 = compact([
             'id','component','dellWD','prevPage','collLi','authLi','mod3DLi','jewelerNameLi','modTypeLi','gems_sizesLi','gems_cutLi','toShowStatuses','cT','dcT',
-            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes','modelPrices','gradingSystem',
+            'gems_namesLi','gems_colorLi','vc_namesLI','permittedFields','collections_len','mainImage','notes','modelPrices','gradingSystem','countRepairs',
             'row','stl_file','rhino_file','ai_file','repairs','images','materials', 'gemsRow','dopVCs','num3DVC_LI','save','changeCost',
             'dataArrays','materialsData','coveringsData','handlingsData', 'statusesWorkingCenters','material','covering','labels','complected',
         ]);
@@ -471,7 +471,8 @@ JS;
         }
     }
 
-    protected function actionFormController( string $save )
+    /*
+    protected function actionFormController(string $save )
     {
         $saveModel = $this->session->getKey('saveModel');
         if ( $saveModel )
@@ -488,6 +489,7 @@ JS;
             exit( json_encode(['error'=>AppCodes::getMessage(AppCodes::MODEL_OUTDATED)]) );
         }
     }
+    */
 
     /**
      * Проверим оценку на зачисление. Что бы не изменять оценки после зачисления
@@ -504,6 +506,32 @@ JS;
             if ( $modelPrice['status'] ) return true;
         }
         return false;
+    }
+
+    /**
+     * @param int $which
+     * @throws \Exception
+     */
+    protected function getMasterLI( $which )
+    {
+        $data = (new AddEdit())->getDataLi();
+        $res = [];
+        switch ( $which )
+        {
+            case 0:
+                $res['li'] = $data['modeller3d'];
+                break;
+            case 1:
+                $res['li'] = $data['jeweler'];
+                break;
+            case 2:
+                $res['li'] = $data['jeweler'];
+                break;
+        }
+        if ( $res )
+            exit( json_encode($res) );
+
+        exit( json_encode(['error'=>AppCodes::getMessage(AppCodes::MODEL_OUTDATED)]) );
     }
 
 }

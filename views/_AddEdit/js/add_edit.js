@@ -57,7 +57,7 @@ function getVCmenu( mType_name, targetEl )
 			let num3dVC_new = document.getElementById('num3dVC_proto').cloneNode(true);
 				num3dVC_new.removeAttribute('id');
 				num3dVC_new.classList.remove('hidden');
-				num3dVC_new.children[0].setAttribute('name','num3d_vc_[]');
+				num3dVC_new.children[0].setAttribute('name','vc_links[vc_3dnum][]');
 			let ul = num3dVC_new.querySelector('.dropdown-menu');
 			for( let i = 0; i < dataLi.length; i++ ){
 				ul.innerHTML += dataLi[i];

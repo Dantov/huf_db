@@ -207,31 +207,46 @@ class AddEdit extends General
 		return $vc_namesLI;
 	}
 
-	public function getNum3dVCLi( $row_dop_vc )
+    /**
+     * ПЕРЕПИСАТЬ с Одним запромом
+     * @param $vcLinkRows
+     * @return array
+     * @throws \Exception
+     */
+	public function getNum3dVCLi( $vcLinkRows ) //$row_dop_vc
     {
 		$num3DVC_LI = [];
-		for ( $i = 0; $i < count($row_dop_vc); $i++ ) {
-			
-			$prnt_vc_names = $row_dop_vc[$i]['vc_names'];
-			$details_quer = mysqli_query($this->connection, " SELECT id,number_3d,vendor_code FROM stock WHERE collections='Детали' AND model_type='$prnt_vc_names' ");
-			
-			while( $vc_det_row = mysqli_fetch_assoc($details_quer) ) {
-				
-				$id_det = $vc_det_row['id'];
-				$img_det_quer = mysqli_query($this->connection, " SELECT img_name,main FROM images WHERE pos_id='$id_det' ");
-				
-				while( $img_det_row = mysqli_fetch_assoc($img_det_quer) ) {
-					if ( (int)$img_det_row['main'] == 1  ) $imgtoshow = $img_det_row['img_name'];
-				}
+		$mtIN = "";
+		foreach ( $vcLinkRows as $vcLink )
+		    $mtIN .= "'" . $vcLink['vc_names'] . "',";
 
-				$file = $vc_det_row['number_3d'].'/'.$id_det.'/images/'.$imgtoshow;
-                $fileImg = _stockDIR_HTTP_.$file;
-				if ( !file_exists(_stockDIR_.$file) ) $fileImg = _stockDIR_HTTP_."default.jpg";
+		if ( empty(trim($mtIN, "', ")) ) return $num3DVC_LI;
 
-                $nameVC = $vc_det_row['vendor_code'] ?: $vc_det_row['number_3d'];
-				$num3DVC_LI[$i] .= '<li><a class="imgPrev" elemToAdd imgtoshow="'.$fileImg.'">'.$nameVC.'</a></li>';
-			}
-		}
+        $mtIN = "(" . trim($mtIN,",") . ")";
+
+        $sql = " SELECT st.id, st.number_3d, st.vendor_code, st.model_type, i.img_name
+                  FROM stock as st
+                  LEFT JOIN images as i ON i.pos_id = st.id AND i.main=1
+                  WHERE collections LIKE '%Детали%' AND model_type IN $mtIN ";
+
+        $result = $this->findAsArray($sql);
+
+        foreach ( $vcLinkRows as $key => $vcLink )
+        {
+            foreach ( $result as $res )
+            {
+                if ( $vcLink['vc_names'] === $res['model_type'] )
+                {
+                    $file = $res['number_3d'].'/'.$res['id'].'/images/'.$res['img_name'];
+                    $fileImg = _stockDIR_HTTP_.$file;
+                    if ( !file_exists(_stockDIR_.$file) )
+                        $fileImg = _stockDIR_HTTP_."default.jpg";
+
+                    $nameVC = $res['vendor_code'] ?: $res['number_3d'];
+                    $num3DVC_LI[$key] .= '<li><a class="imgPrev" elemToAdd imgtoshow="'.$fileImg.'">'.$nameVC.'</a></li>';
+                }
+            }
+        }
 		return $num3DVC_LI;
 	}
 
@@ -544,19 +559,52 @@ class AddEdit extends General
     public function getRepairs()
     {
         $repairs = $this->findAsArray( " SELECT * FROM repairs WHERE pos_id='$this->id' ");
-        $prices = $this->findAsArray( " SELECT * FROM model_prices WHERE pos_id='$this->id' AND is3d_grade='8' ");
+        $sql = " SELECT * FROM model_prices as mp
+                  WHERE mp.repair_id IN 
+                  ( SELECT r.id FROM repairs as r WHERE r.pos_id='$this->id' ) ";
+        $prices = $this->findAsArray( $sql );
 
         foreach ( $repairs as &$repair )
         {
             foreach ( $prices as $price )
             {
-                if ( $repair['pos_id'] === $price['pos_id'] )
+                if ( $repair['id'] == $price['repair_id'] )
+                {
                     $repair['prices'][] = $price;
+                    if ( (int)$price['paid'] === 1 )
+                        $repair['notDell'] = 1;
+                }
             }
         }
+
         //debug($repairs,'$repairs',1);
 		return $repairs;
 	}
+
+	public function countRepairs( $repairs )
+    {
+        $result = [
+            '3d'=>0,
+            'jew'=>0,
+            'prod'=>0,
+        ];
+        foreach ( $repairs as &$repair )
+        {
+            switch ( (int)$repair['which'] )
+            {
+                case 0:
+                    $result['3d']++;
+                    break;
+                case 1:
+                    $result['jew']++;
+                    break;
+                case 2:
+                    $result['prod']++;
+                    break;
+            }
+        }
+        return $result;
+    }
 
 
 	public function getStatus($stockStatusID='', $selMode='')

@@ -7,16 +7,16 @@
 
 namespace Views\_Globals\Models;
 
-use Views\vendor\core\Sessions;
+//use Views\vendor\core\Sessions;
 
 class SelectionsModel extends General
 {
-    public $session;
+    //public $session;
 
-    public function __construct($session)
+    public function __construct( $session = null )
     {
         parent::__construct();
-        $this->session = new Sessions();
+        //$this->session = new Sessions();
     }
 
     public function selectionModeToggle($selToggle)

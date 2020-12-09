@@ -80,6 +80,28 @@ function validateForm() {
         }
     }
 
+    if ( document.getElementById('repairsBlock') )
+    {
+        let repairs = document.getElementById('repairsBlock').querySelectorAll('.repair');
+        let repValid = true;
+        $.each(repairs, function (i, repair) {
+            if ( !repair.classList.contains('hidden') )
+            {
+                let requireds = repair.querySelectorAll('[required]');
+                $.each(requireds, function (i, required) {
+                    if ( !required.value )
+                    {
+                        required.scrollIntoView();
+                        AR.warning('Поле "' + required.getAttribute('title') + '" должно быть заполнено!',0);
+                        return repValid = false;
+                    }
+                });
+            }
+            if ( !repValid ) return false;
+        });
+        if ( !repValid ) return false;
+    }
+
     if ( document.getElementById('picts') )
     {
         let images = document.getElementById('picts').querySelectorAll('.image_row');
@@ -167,7 +189,7 @@ function submitForm() {
     let xhr;
 
     xhr = $.ajax({
-        url: '/add-edit/formdata',
+        url: '/save-model/formdata',
         type: 'POST',
         //dataType: "html", //формат данных
         //dataType: "json", // не работает с new FormData object
@@ -229,7 +251,9 @@ function submitForm() {
                 debug(resp);
                 if ( typeof debugModal === 'function' )
                 {
-                    return debugModal( resp.debug );
+                    debugModal( resp.debug );
+                    edit.classList.remove('hidden');
+                    return;
                 }
             }
             if ( resp.error )

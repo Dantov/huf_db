@@ -1,5 +1,5 @@
 <?php
-namespace Views\_AddEdit\Models;
+namespace Views\_SaveModel\Models;
 
 use Views\_Globals\Models\User;
 use Views\vendor\libs\classes\AppCodes;
@@ -9,34 +9,20 @@ class HandlerPrices extends Handler
     /**
      * HandlerPrices constructor.
      * @param int $id
-     * @param bool $connection
+     * @param \mysqli $connection
      * объект соединения прокинутый снаружи
+     * @throws \Exception
      */
-    public function __construct( int $id = 0, $connection = false )
+    //public function __construct( int $id = 0, \mysqli $connection = null )
+    public function __construct( int $id = 0 )
     {
         parent::__construct($id);
 
-        if ( is_object($connection) ) $this->connection = $connection;
-        $this->date = date('Y-m-d');
-    }
+//        if ( $connection )
+//            $this->connection = $connection;
+        $this->connection = $this->connectDBLite();
 
-    /**
-     * @param $surname
-     * @return int
-     * @throws \Exception
-     */
-    public function getUserIDFromSurname( $surname )
-    {
-        $userID = null;
-        foreach ( $this->getUsers() as $user )
-        {
-            if ( mb_stripos( $user['fio'], $surname ) !== false )
-            {
-                $userID = $user['id'];
-                break;
-            }
-        }
-        return $userID;
+        $this->date = date('Y-m-d');
     }
 
     /**
@@ -116,7 +102,7 @@ class HandlerPrices extends Handler
      * @return int
      * @throws \Exception
      */
-    public function addModeller3DPrices(array $ma3Dgs, string $modeller3d ) : int
+    public function addModeller3DPrices( array $ma3Dgs, string $modeller3d ) : int
     {
         // Взяли моделлера из Инпута (по другому никак), нашли его ID из табл
         $userID = $this->getUserIDFromSurname( explode(" ", $modeller3d)[0] );
@@ -136,6 +122,8 @@ class HandlerPrices extends Handler
         }
 
         $gs3Dids = $ma3Dgs['gs3Dids'];
+        if ( empty($gs3Dids) ) return -1;
+
         $in = '';
         foreach ($gs3Dids as $gs3Did) $in .= $gs3Did . ',';
         $in = trim($in, ',');

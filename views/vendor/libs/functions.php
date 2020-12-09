@@ -1,17 +1,18 @@
 <?php
+if ( !defined('END_AB') ) define('END_AB','end_ajax_buffer');
+
 if ( _DEV_MODE_ )
 {
     function debug($arr, $str='', $die=false, $encode=false)
     {
-        $strrr = '';
         $result = [];
-        if ( !empty($str) ) $strrr = $str . " = ";
+        if ( !empty($str) ) $str = $str . " = ";
 
         if ( $encode )
             ob_start();
 
         echo '<pre style="display: inline-block !important; vertical-align: top; margin-left: 5px; padding: 5px; border-bottom: 1px solid #0f0f0f; border-left: 1px solid #0f0f0f">';
-        echo $strrr;
+        echo $str;
         print_r($arr);
         echo '</pre>';
 
@@ -30,10 +31,41 @@ if ( _DEV_MODE_ )
         if ($encode)
             echo json_encode($result);
     }
+
+
+    function debugAjax( $arr, $str='', $ob = null )
+    {
+        // что бы не открыть несколько буферов при получении START_AB
+        static $ajaxBufferCondition = false;
+
+        if ( !empty($str) )
+            $str = $str . " = ";
+
+        if ( !$ajaxBufferCondition )
+        {
+            $ajaxBufferCondition = true;
+            ob_start();
+        }
+
+
+        echo '<pre style="display: inline-block !important; vertical-align: top; margin-left: 5px; padding: 5px; border-bottom: 1px solid #0f0f0f; border-left: 1px solid #0f0f0f">';
+        echo $str;
+        print_r($arr);
+        echo '</pre>';
+
+        if ( $ob === END_AB )
+        {
+            $result = ['debug'=>ob_get_contents()];
+            ob_end_clean();
+            exit( json_encode( $result ) );
+        }
+    }
+
 } else {
     function debug($arr, $str='', $die=false)
-    {
-    }
+    {}
+    function debugAjax( $arr, $str='', $ob = null )
+    {}
 }
 
 if (!function_exists('array_key_first'))

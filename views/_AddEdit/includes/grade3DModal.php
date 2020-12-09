@@ -39,7 +39,7 @@
                     <option value="">---</option>
                     <?php foreach ( $gradingSystem3DRep??[] as $gs3DRepRow ): ?>
                         <?php if ( $gs3DRepRow['grade_type'] != 8 ) continue; ?>
-                        <option data-workName="<?=$gs3DRepRow['work_name']?>" data-points="<?=$gs3DRepRow['points']?>" value="<?=$gs3DRepRow['id']?>" title="<?=$gs3DRepRow['description']?>" >
+                        <option data-workName="<?=$gs3DRepRow['work_name']?>" data-points="<?=$gs3DRepRow['points']?>" data-gradeType="<?=$gs3DRepRow['grade_type']?>" value="<?=$gs3DRepRow['id']?>" title="<?=$gs3DRepRow['description']?>" >
                             <?= $gs3DRepRow['work_name'] . " - ". $gs3DRepRow['points']?>
                             <?php
                             $descr = $gs3DRepRow['description'];
@@ -51,10 +51,10 @@
                 </select>
                 <select class="form-control selectMMRepairPrice hidden">
                     <option value="" selected >---</option>
-                    <option data-workName="Ремонт ММ" data-points="0" value="100" title="Ремонт мастер модели" >
+                    <option data-workName="Ремонт ММ" data-points="0" data-gradeType="9" value="100" title="Ремонт мастер модели" >
                         Ремонт ММ - индивидуально
                     </option>
-                    <option data-workName="Ремонт производства" data-points="0" value="101" title="Производственный ремонт" >
+                    <option data-workName="Ремонт производства" data-points="0" data-gradeType="10" value="101" title="Производственный ремонт" >
                         Производственный ремонт - индивидуально
                     </option>
                 </select>

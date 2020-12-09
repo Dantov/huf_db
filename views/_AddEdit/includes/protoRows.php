@@ -1,49 +1,60 @@
 <?php
     switch ( $switchTableRow )
     {
+        case "collection": //прототип строки Коллекций
+?>
+        <tr <?php if ( !isset($collection) ) echo 'class="hidden protoRow" id="protoCollectionRow"'; ?> >
+            <td style="width: 30px"><?=++$i?></td>
+            <td><?php require 'collections_input.php' ?></td>
+            <td style="width:100px;">
+                <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </button>
+            </td>
+        </tr>
+<?php
+        break;
         case "dopVC": //прототип строки доп. артикулов
 ?>
-        <tr <?php if ( !isset($vc_link) ) echo 'class="hidden protoRow" id="protoArticlRow"'; ?> >
+        <tr <?php if ( !isset($dopVc) ) echo 'class="hidden protoRow" id="protoArticlRow"'; ?> >
+            <td><?= ++$vcI ?></td>
             <td>
+                <input type="hidden" class="rowID" name="vc_links[id][]" value="<?=$dopVc['id']?>">
                 <div class="input-group">
-                    <input type="hidden" class="rowID" name="dopvc[id][]" value="<?=$vc_link['id']?>">
-                    <input type="text" class="form-control" name="dopvc[name][]" value="<?=$vc_link['vc_names']?>"/>
+                    <input type="text" class="form-control" name="vc_links[vc_names][]" value="<?=$dopVc['vc_names'];?>"/>
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
-                            <?php foreach ($dataTables['vc_names'] as $tName) : ?>
-                                <li style="position:relative;">
-                                    <a elemToAdd VCTelem><?= $tName['name'] ?></a>
-                                </li>
-                            <?php endforeach; ?>
+                            <?=$vc_namesLI;?>
                         </ul>
                     </div>
                 </div>
             </td>
             <td>
-                <div class="input-group">
-                    <input type="text" class="form-control" name="dopvc[num3dvc][]" value="<?=$vc_link['vc_3dnum']?>">
+                <div class="input-group" >
+                    <input type="text" class="form-control" name="vc_links[vc_3dnum][]" value="<?=$dopVc['vc_3dnum'];?>">
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-right">
+                            <?= isset($vcI) ? $num3DVC_LI[$vcI-1] : "" ?>
                         </ul>
                     </div>
                 </div>
             </td>
-            <td><input type="text" class="form-control" name="dopvc[descr][]" value="<?=$vc_link['descript']?>"></td>
             <td>
-                <?php if ( $hiddens['hide'] ): ?>
-                    <button class="btn btn-sm btn-default" type="button" onclick="duplicateRow(this);" title="дублировать строку">
-                        <span class="glyphicon glyphicon-duplicate"></span>
-                    </button>
-                    <button class="btn btn-sm btn-default" type="button" onclick="deleteRow(this);" title="удалить строку">
-                        <span class="glyphicon glyphicon-trash"></span>
-                    </button>
-                <?php endif;?>
+                <input type="text" class="form-control" name="vc_links[descript][]" value="<?=$dopVc['descript'];?>">
+            </td>
+            <td>
+                <button class="btn btn-sm btn-default" type="button" onclick="duplicateRowNew(this);" title="дублировать строку">
+                    <span class="glyphicon glyphicon-duplicate"></span>
+                </button>
+                <button class="btn btn-sm btn-default" type="button" onclick="deleteRowNew(this);" title="удалить строку">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </button>
             </td>
         </tr>
 <?php
@@ -60,10 +71,10 @@
                     <?php include('gems_cut_input.php'); ?>
                 </td>
                 <td>
-                    <input type="number" min="1" class="form-control gems_value_input" name="gems[val][]" value="<?=$gem['value'];?>">
+                    <?php include('gems_diametr_input.php'); ?>
                 </td>
                 <td>
-                    <?php include('gems_diametr_input.php'); ?>
+                    <input type="number" min="1" class="form-control gems_value_input" name="gems[value][]" value="<?=$gem['value'];?>">
                 </td>
                 <td>
                     <?php include('gems_color_input.php'); ?>
@@ -91,11 +102,7 @@
                                 <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right">
-                                <li style="position:relative;">
-                                    <a elemToAdd>Шинка</a>
-                                    <a elemToAdd>Каст</a>
-                                    <a elemToAdd>Накладка</a>
-                                </li>
+                                <?=$modTypeLi?>
                             </ul>
                         </div>
                     </div>
@@ -237,7 +244,7 @@
             break;
         case 'repair':
 ?>
-            <div id="protoRepair" class="panel panel-default new hidden">
+            <div id="protoRepair" class="panel panel-default repair new hidden">
                 <div class="panel-heading cursorPointer">
                     <i class="fas "></i>
                     <strong>
@@ -260,7 +267,7 @@
                             <div class="col-xs-4">
                                 <label for="sender_3dRep" title=""><span class="glyphicon glyphicon-user"></span> Технолог (кто отправил в ремонт):</label>
                                 <div class="input-group">
-                                    <input required="" type="text" class="form-control sender" name="" value="">
+                                    <input required type="text" title="Технолог" class="form-control sender" name="" value="">
                                     <div class="input-group-btn">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <span class="caret"></span>
@@ -276,7 +283,7 @@
                             <div class="col-xs-4">
                                 <label for="toWhom_3dRep" title=""><span class="glyphicon glyphicon-user"></span> Мастер (кто будет делать):</label>
                                 <div class="input-group">
-                                    <input required="" type="text" class="form-control toWhom" name="" value="">
+                                    <input required type="text" title="Мастер" class="form-control toWhom" name="" value="">
                                     <div class="input-group-btn">
                                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <span class="caret"></span>
@@ -289,7 +296,7 @@
                             </div>
                             <div class="col-xs-12">
                                 <label for="repairs_descr_need" class=""><span class="glyphicon glyphicon-comment"></span> Причина ремонта (что нужно сделать): </label>
-                                <textarea class="form-control repairs_descr_need" rows="2" name=""></textarea>
+                                <textarea class="form-control repairs_descr_need" title="Причина ремонта" required rows="2" name=""></textarea>
                                 <input type="hidden" class="repairs_id"  name="" value=""/>
                                 <input type="hidden" class="repairs_num" name="" value=""/>
                                 <input type="hidden" class="repairs_which" name="" value=""/>
@@ -297,51 +304,14 @@
                         </div>
                     </div>
                     <ul class="list-group">
-                        <li class="list-group-item list-group-item-success text-center">
-                            <i class="fas fa-bezier-curve"></i> <b><i>Мастер</i></b>
-                        </li>
-                        <li class="list-group-item">
-                            <label for="repairs_descr_done" class=""><span class="glyphicon glyphicon-comment"></span> Описание (что сделано): </label>
-                            <textarea class="form-control repairs_descr_done" rows="2" name=""></textarea>
-                        </li>
-                        <li class="list-group-item">
-                            <i class="fas fa-dollar-sign"></i>
-                            <strong><i>Стоимость ремонта</i></strong>
-                            <button class="btn btn-sm btn-default pull-right repairPriceAdd" style="top:-5px !important; position:relative;" data-toggle="modal" data-target="#repairPricesModal" type="button" title="Добавить оценку">
-                                <span class="glyphicon glyphicon-plus"></span>
-                            </button>
-                        </li>
-                    </ul>
-                    <table class="table">
-                        <thead>
-                        <tr class="thead11">
-                            <th>№</th>
-                            <th width="30%">Название</th>
-                            <th width="30%">Стоимость</th>
-                            <th>Статус</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody class="">
-                        <tr class="active text-bold t-total">
-                            <td style="width: 30px"></td>
-                            <td>Всего: </td>
-                            <td></td>
-                            <td>
-                            </td>
-                            <td style="width:100px;"></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <ul class="list-group">
-                        <li class="list-group-item pt-0"></li>
+                        <li class="list-group-item pt-0 list-group-item-success"></li>
                     </ul>
                     <div class="panel-footer">
                         <div class="row">
                             <div class="col-xs-12 col-sm-2">
-                    <span class="pull-right pt-1">
-                        <span class="glyphicon glyphicon-ok"></span> <b><i>Статус ремонта: </i></b>
-                    </span>
+                                <span class="pull-right pt-1">
+                                    <span class="glyphicon glyphicon-ok"></span> <b><i>Статус ремонта: </i></b>
+                                </span>
                             </div>
                             <div class="col-xs-12 col-sm-10">
                                 <select class="form-control repairStatus" name="">
@@ -350,6 +320,9 @@
                                     <option data-repairFor="id_repair"  value="3" title="Принят в работу. Над ним сейчас трудится мастер">В работе</option>
                                     <option data-repairFor="id_repair"  value="4" title="Ремонт завершен">Завершен</option>
                                 </select>
+                                <input type="hidden" class="form-control statusDate hidden" name="" value="">
+                                <input type="hidden" class="form-control date hidden" name="" value="">
+                                <input type="hidden" class="form-control posID hidden" name="" value="">
                             </div>
                         </div>
                     </div>

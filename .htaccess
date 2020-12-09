@@ -2,6 +2,10 @@ ErrorDocument 404 /Views/errors/err404.php
 ErrorDocument 403 /Views/errors/err403.php
 ErrorDocument 410 /Views/errors/err410.php
 
+#to stop working some scripts as in example php file in your upload path.
+#AddHandler cgi-script .php .pl .jsp .asp .sh .cgi
+#Options -ExecCGI
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 

@@ -218,6 +218,13 @@ $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses
 // конец добавляем камни
 
 
+
+
+
+
+
+
+
 //--------- добавляем картинки---------//
 if ( $permissions['images'] )
 {
@@ -303,6 +310,10 @@ if ( !empty($_FILES['fileAi']['name'][0]) && $permissions['ai'] ) {
 //============= counter point ==============//
 $progress->progressCount( ceil( ( ++$progressCounter * 100 ) / $overallProcesses ) );
 //END Добавляем Ai FILE
+
+
+
+
 
 
 
