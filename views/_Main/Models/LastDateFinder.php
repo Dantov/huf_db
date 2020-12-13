@@ -20,13 +20,13 @@ class LastDateFinder
 
     public static function setDatesStart($status)
     {
-        if ( !validateDate($status['date']) ) return;
+        if ( !validateDate($status['date'],'Y-m-d H:i:s') ) return;
         self::$dateStart[] = $status;
     }
 
     public static function setDatesEnd($status)
     {
-        if ( !validateDate($status['date'])) return;
+        if ( !validateDate($status['date'],'Y-m-d H:i:s')) return;
         self::$dateEnd[] = $status;
     }
 

@@ -15,7 +15,6 @@ class AddEditController extends GeneralController
     public $component = null;
 
 
-
     /**
      * @throws \Exception
      */
@@ -50,14 +49,11 @@ class AddEditController extends GeneralController
                     if ( $id = (int)$request->post('id') )
                         $this->actionDeletePosition($id);
 
-//                if ( $request->isPost() && $request->post('save') )
-//                    $this->actionFormController( $request->post('save') );
-
                 if ( $request->isGet() && $this->isQueryParam('masterLI') )
                     $this->getMasterLI( (int)$request->get('masterLI') );
 
 
-            } catch (\Error | \Exception $e) {
+            } catch (\TypeError | \Error | \Exception $e) {
                 if ( _DEV_MODE_ )
                 {
                     exit( json_encode([
@@ -304,6 +300,8 @@ JS;
 
         /** Смотрим можно ли изменять статус **/
         $toShowStatuses = $addEdit->statusesChangePermission($row['date']??date("Y-m-d"), $component);
+
+        //debug($statusesWorkingCenters,'$statusesWorkingCenters',1);
 		
         /** Внесение стоимотей зависит от даты создания модели. На старые не вносим **/
         // $changeCost =  new \DateTime($row['date']??date("Y-m-d")) < new \DateTime("2020-08-04") ? false : true;
@@ -470,26 +468,6 @@ JS;
             exit( json_encode($resultDell) );
         }
     }
-
-    /*
-    protected function actionFormController(string $save )
-    {
-        $saveModel = $this->session->getKey('saveModel');
-        if ( $saveModel )
-        {
-            $saveModel = Crypt::strDecode($saveModel);
-            $save = Crypt::strDecode($save);
-            if ( $saveModel !== $save )
-                exit( json_encode(['error'=>AppCodes::getMessage(AppCodes::MODEL_OUTDATED)]) );
-
-            require_once "formController.php";
-
-            $this->session->dellKey('saveModel');
-        } else {
-            exit( json_encode(['error'=>AppCodes::getMessage(AppCodes::MODEL_OUTDATED)]) );
-        }
-    }
-    */
 
     /**
      * Проверим оценку на зачисление. Что бы не изменять оценки после зачисления

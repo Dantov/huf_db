@@ -16,6 +16,7 @@ class User
      * ID юзера из таблицы
      * @var integer
      */
+    protected static $userSurname;
     protected static $userID;
     protected static $userFIO;
     protected static $userFullFIO;
@@ -142,6 +143,18 @@ class User
     {
         if ( trueIsset( self::$userID ) ) return self::$userID;
         return self::$userID = (int)self::userInstance()['id'];
+    }
+
+    /**
+     * @return string
+     * @throws \Exception
+     */
+    public static function getSurname() : string
+    {
+        if ( trueIsset( self::$userSurname ) ) return self::$userSurname;
+
+        self::$userSurname = explode(' ', self::getFIO())[0];
+        return self::$userSurname;
     }
 
     /**

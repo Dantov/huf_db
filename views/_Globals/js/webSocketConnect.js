@@ -59,6 +59,13 @@ function wsEventHandlers()
                 if ( !pushNotice ) pushNotice = new PushNotice();
                 pushNotice.addNotice(dataObj.newPushNotice);
             }
+
+            if ( typeof dataObj.newPushNoticeRepairs === 'object' && _PNSHOW_ )
+            {
+                console.log(dataObj.newPushNoticeRepairs);
+                if ( !repairNotices ) repairNotices = new PushNotice();
+                repairNotices.countComingNotice(dataObj.newPushNoticeRepairs);
+            }
         }
         catch(e)
         {

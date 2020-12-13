@@ -165,6 +165,24 @@ ProgressModal.prototype.onModalOpen = function(that, event)
             //if ( fileName.length < 12 ) doc.fileName = docStr = fileName;
             //modal.iziModal('setTitle', 'Создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
 
+            if ( fileName.debug )
+            {
+                debug(fileName);
+                if ( typeof debugModal === 'function' )
+                {
+                    debugModal( fileName.debug );
+                    //edit.classList.remove('hidden');
+                    return;
+                }
+            }
+            if ( fileName.error )
+            {
+                AR.setDefaultMessage( 'error', 'subtitle', "Ошибка при сохранении." );
+                AR.error( fileName.error.message, fileName.error.code, fileName.error );
+                //edit.classList.remove('hidden');
+                return;
+            }
+
             if ( doc.switch === 'xls' || doc.switch === 'getXlsxFwc' || doc.switch === 'getXlsxExpired' )
             {
                 modal.iziModal('setTitle', 'Создание <b>'+doc.doc+'</b> документа: <b>' + docStr + '</b> завершено!');
@@ -206,6 +224,11 @@ ProgressModal.prototype.onModalOpen = function(that, event)
 
                 download.setAttribute('href', _ROOT_ + 'Pdfs/' + fileName );
             }
+        },
+        error: function (error) {
+            AR.serverError( error.status, error.responseText );
+
+            //edit.classList.remove('hidden');
         }
     })/*.done(function(data)
     {

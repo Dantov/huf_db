@@ -1,12 +1,12 @@
-<?php /** @noinspection ALL */
+<?php
 
 namespace Views\_PaymentManager\Controllers;
 
-use Views\_AddEdit\Models\HandlerPrices;
+use Views\_SaveModel\Models\HandlerPrices;
 use Views\_Globals\Models\User;
 use Views\_UserPouch\Controllers\UserPouchController;
 use Views\_PaymentManager\Models\PaymentManager;
-use Views\vendor\core\{Registry, Router};
+use Views\vendor\core\Registry;
 use Views\vendor\libs\classes\{AppCodes,URLCrypt};
 use Views\_Globals\Widgets\Pagination;
 

@@ -7,6 +7,7 @@
 if ( !isset($whichRepair) ) exit;
 
 $isPaid = $repair['notDell'];
+
 switch ($whichRepair)
 {
     case 0:
@@ -16,24 +17,8 @@ switch ($whichRepair)
         $repairRow['panelColor']  =  '#5fd7f5';
         $repairRow['panelIcon']   =  'fa-draw-polygon';
 
-        if ( !$isPaid )
-        {
-            $repairRow['sender']      = 'repairs[3d][sender][]';
-            $repairRow['toWhom']      = 'repairs[3d][toWhom][]';
-            $repairRow['descrName']   = 'repairs[3d][repair_descr][]';
-            $repairRow['descrNeed']   = 'repairs[3d][descrNeed][]';
-            $repairRow['status']      = 'repairs[3d][status][]';
-            $repairRow['statusDate']  = 'repairs[3d][status_date][]';
-            $repairRow['date']        = 'repairs[3d][date][]';
-            $repairRow['posID']       = 'repairs[3d][pos_id][]';
-
-            $repairRow['id']         = 'repairs[3d][id][]';
-            $repairRow['num']        = 'repairs[3d][rep_num][]';
-            $repairRow['which']      = 'repairs[3d][which][]';
-        }
-
-    }
-    break;
+        $whichName = '3d';
+    } break;
     case 1:
     {
         $repairRow['whichID']     =  'repairsJew';
@@ -41,23 +26,8 @@ switch ($whichRepair)
         $repairRow['panelColor']  =  '#c1b467';
         $repairRow['panelIcon']   =  'fa-screwdriver';
 
-        if ( !$isPaid )
-        {
-            $repairRow['sender']      = 'repairs[jew][sender][]';
-            $repairRow['toWhom']      = 'repairs[jew][toWhom][]';
-            $repairRow['descrName']   = 'repairs[jew][repair_descr][]';
-            $repairRow['descrNeed']   = 'repairs[jew][descrNeed][]';
-            $repairRow['status']      = 'repairs[jew][status][]';
-            $repairRow['statusDate']  = 'repairs[jew][status_date][]';
-            $repairRow['date']        = 'repairs[jew][date][]';
-            $repairRow['posID']       = 'repairs[jew][pos_id][]';
-
-            $repairRow['id']          = 'repairs[jew][id][]';
-            $repairRow['num']         = 'repairs[jew][rep_num][]';
-            $repairRow['which']       = 'repairs[jew][which][]';
-        }
-    }
-    break;
+        $whichName = 'jew';
+    } break;
     case 2:
     {
         $repairRow['whichID']     =  'repairsProd';
@@ -65,24 +35,26 @@ switch ($whichRepair)
         $repairRow['panelColor']  =  '#c2b497';
         $repairRow['panelIcon']   =  'fa-hammer';
 
-        if ( !$isPaid )
-        {
-            $repairRow['sender']      = 'repairs[prod][sender][]';
-            $repairRow['toWhom']      = 'repairs[prod][toWhom][]';
-            $repairRow['descrName']   = 'repairs[prod][repair_descr][]';
-            $repairRow['descrNeed']   = 'repairs[prod][descrNeed][]';
-            $repairRow['status']      = 'repairs[prod][status][]';
-            $repairRow['statusDate']  = 'repairs[prod][status_date][]';
-            $repairRow['date']        = 'repairs[prod][date][]';
-            $repairRow['posID']       = 'repairs[prod][pos_id][]';
-
-            $repairRow['id']          = 'repairs[prod][id][]';
-            $repairRow['num']         = 'repairs[prod][rep_num][]';
-            $repairRow['which']       = 'repairs[prod][which][]';
-        }
-    }
-    break;
+        $whichName = 'prod';
+    } break;
 }
+if ( !$isPaid )
+{
+    $repairRow['sender']      = 'repairs['.$whichName.'][sender][]';
+    $repairRow['toWhom']      = 'repairs['.$whichName.'][toWhom][]';
+    $repairRow['descrName']   = 'repairs['.$whichName.'][repair_descr][]';
+    $repairRow['descrNeed']   = 'repairs['.$whichName.'][descrNeed][]';
+    $repairRow['status']      = 'repairs['.$whichName.'][status][]';
+    $repairRow['statusDate']  = 'repairs['.$whichName.'][status_date][]';
+    $repairRow['lasModUser']  = 'repairs['.$whichName.'][last_mod_user][]';
+    $repairRow['lasModDate']  = 'repairs['.$whichName.'][last_mod_date][]';
+    $repairRow['date']        = 'repairs['.$whichName.'][date][]';
+
+    $repairRow['id']         = 'repairs['.$whichName.'][id][]';
+    $repairRow['num']        = 'repairs['.$whichName.'][rep_num][]';
+    $repairRow['which']      = 'repairs['.$whichName.'][which][]';
+}
+
 
 $masterLI = $whichRepair ? $jewelerNameLi : $mod3DLi;
 $panelID = "allRepairs_" . $repair['id'];
@@ -265,7 +237,6 @@ $collapseID = "repairCollapse_" . $repair['id'];
                     </select>
                     <input type="hidden" class="form-control statusDate hidden" name="<?=$repairRow['statusDate']?>" value="<?=$repair['status_date']?>">
                     <input type="hidden" class="form-control date hidden" name="<?=$repairRow['date']?>" value="<?=$repair['date']?>">
-                    <input type="hidden" class="form-control posID hidden" name="<?=$repairRow['posID']?>" value="<?=$repair['pos_id']?>">
                 </div>
             </div>
         </div>

@@ -230,4 +230,103 @@ class PushNotice extends General
         return false;
     }
 
+
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
+    public function getRepairNoticesData()
+    {
+        $surname = User::getSurname();
+
+        $sql = "SELECT s.id,s.number_3d,s.vendor_code,s.model_type,
+                       i.img_name,
+                       rp.sender,rp.descrNeed,
+                       sr.glyphi,sr.title 
+                FROM stock as s
+                  LEFT JOIN images as i ON i.pos_id = s.id AND i.main='1'
+                  LEFT JOIN repairs as rp ON rp.pos_id = s.id
+                  LEFT JOIN service_arr as sr ON sr.id = s.status
+                      WHERE s.id IN
+                        (SELECT r.pos_id FROM repairs as r WHERE r.toWhom LIKE '%$surname%' AND r.status<>4)";
+
+        $repNotices = $this->findAsArray($sql);
+        foreach ( $repNotices as &$repNotice )
+        {
+            if ( trueIsset($repNotice['img_name']) )
+            {
+                $file = $repNotice['number_3d'].'/'.$repNotice['id'].'/images/'.$repNotice['img_name'];
+
+                $pathToImg = _WORK_PLACE_ ? "http://192.168.0.245/Stock/" . $file : _stockDIR_HTTP_ . $file ;
+
+                if ( !file_exists(_stockDIR_ . $file) )
+                    $pathToImg = _stockDIR_HTTP_."default.jpg";
+
+                $repNotice['img_name'] = $pathToImg;
+            }
+        }
+        return $repNotices;
+    }
+
+
+    /**
+     * @param array $repair
+     * @return bool|int
+     * @throws \Exception
+     */
+    public function pushRepairNotice( array $repair )
+    {
+        if ( empty($repair) || !trueIsset($repair['toWhom']) || !trueIsset($repair['pos_id']) )
+            return false;
+
+        //debugAjax($repair, 'Repair');
+        $sql = "SELECT s.id,s.number_3d,s.vendor_code,s.model_type,
+                       i.img_name,
+                       sr.glyphi,sr.title 
+                FROM stock as s
+                  LEFT JOIN images as i ON i.pos_id = s.id AND i.main='1'
+                  LEFT JOIN service_arr as sr ON sr.id = s.status
+                WHERE s.id='{$repair['pos_id']}'";
+
+        $repNotice = $this->findOne($sql);
+        if ( trueIsset($repNotice['img_name']) )
+        {
+            $file = $repNotice['number_3d'].'/'.$repNotice['id'].'/images/'.$repNotice['img_name'];
+            $pathToImg = _WORK_PLACE_ ? "http://192.168.0.245/Stock/" . $file : _stockDIR_HTTP_ . $file ;
+            if ( !file_exists(_stockDIR_ . $file) )
+                $pathToImg = _stockDIR_HTTP_."default.jpg";
+
+            $repNotice['img_name'] = $pathToImg;
+        }
+
+        //debugAjax($repNotice, '$repNotices', END_AB);
+        $message = [
+            'newPushNoticeRepairs' => [
+                'date' => $repair['date'],
+                'pos_id' => $repair['pos_id'],
+                'number_3d' => $repNotice['number_3d'],
+                'vendor_code' => $repNotice['vendor_code'],
+                'model_type' => $repNotice['model_type'],
+                'sender' => $repair['sender'],
+                'descrNeed' => $repair['descrNeed'],
+                'img_name' => $repNotice['img_name'],
+                'glyphi' => $repNotice['glyphi'],
+                'title' => $repNotice['title'],
+            ],
+        ];
+
+        set_error_handler(function(){return true;});
+        $instance = @stream_socket_client($this->localSocket, $errNo, $errorMessage);
+        restore_error_handler();
+        if ( !$instance )
+        {
+            return false;
+            //throw new Exception("addPushNotice() Can't connect to socket server! \n Error $errNo: " . $errorMessage);
+        }
+
+        //$toUser = _DEV_MODE_ ? 'Быков В.А.' : $repair['toWhom'];
+        $toUser = $repair['toWhom'];
+        return fwrite($instance, json_encode(['user' => $toUser, 'message' => $message]) . "\n");
+    }
+
 }

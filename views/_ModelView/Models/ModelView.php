@@ -360,6 +360,7 @@ class ModelView extends General {
 	public function getRepairs()
     {
         $repairs = [];
+
         if ( $this->rep_Query )
             while($repRow = mysqli_fetch_assoc($this->rep_Query)) $repairs[] = $repRow;
 

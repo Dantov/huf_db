@@ -2,7 +2,6 @@
     $repairRow = [
         'isHidden' => 'hidden',
         'idProto' => 'protoRepairs',
-
     ];
 if ( !$isRepairProto )
 {
@@ -14,13 +13,8 @@ if ( !$isRepairProto )
     $repairRow['whichName'] = $whichRepair ? 'Ремонт Модельера-доработчика №' : '3Д Ремонт №';
     $repairRow['panelColor'] = $whichRepair ? 'panel-jewRepair' : 'panel-3dRepair';
     $repairRow['panelIcon'] = $whichRepair ? 'wrench' : 'cog';
-    $repairRow['descrName'] = $whichRepair ? 'repairs[jew][description][]' : 'repairs[3d][description][]';
 
-    $repairRow['repairsID_name'] = $whichRepair ? 'repairs[jew][id][]' : 'repairs[3d][id][]';
-    $repairRow['repairsNum_name'] = $whichRepair ? 'repairs[jew][num][]' : 'repairs[3d][num][]';
-    $repairRow['repairsWhich_name'] = $whichRepair ? 'repairs[jew][which][]' : 'repairs[3d][which][]';
 
-    $repairRow['repairsCostName'] = $whichRepair ? 'repairs[jew][cost][]' : 'repairs[3d][cost][]';
 
     if ( isset($repair['rep_num']) ) $repairRow['number'] = $repair['rep_num'];
     if ( isset($repair['date']) ) $repairRow['date'] = $repair['date'];
@@ -36,43 +30,9 @@ if ( !$isRepairProto )
             <span class="repairs_name"><?=$repairRow['whichName']?></span><span class="repairs_number"><?=$repairRow['number']?></span>
             от - <span class="repairs_date"><?=date_create( $repairRow['date'] )->Format('d.m.Y')?></span>
         </strong>
-        <? if ( !$isView ): ?>
-        <button onclick="removeRepairs(this);" class="btn btn-sm btn-default pull-right" style="top:-5px !important; position:relative;" type="button" title="Удалить Ремонт">
-            <span class="glyphicon glyphicon-remove"></span>
-        </button>
-        <?endif;?>
     </div>
     <textarea <?= !$isView ? '' : 'readonly'?> class="form-control repairs_descr" rows="3" name="<?=$repairRow['descrName']?>"><?=$repairRow['description']?></textarea>
-    <input type="hidden" class="repairs_id"  name="<?=$repairRow['repairsID_name']?>" value="<?=$repairRow['id']?>"/>
-    <input type="hidden" class="repairs_num" name="<?=$repairRow['repairsNum_name']?>" value="<?=$repairRow['number']?>"/>
-    <input type="hidden" class="repairs_which" name="<?=$repairRow['repairsWhich_name']?>" value="<?= $whichRepair ? 1 : 0?>"/>
 
-    <? if ( !$isView ): ?>
-    <div class="row repairsPayment <?= $whichRepair ? '' : 'hidden'?>" style="margin: 5px 10px 0 10px;">
-        <div class="col-xs-4">
-
-            <? if( !$repair['paid'] || $isRepairProto ) : ?>
-                <label for="model_type" class="">
-                    <span class="glyphicon glyphicon-usd"></span> Стоимость:
-                    <input type="number" class="form-control repairCost" name="<?=$repairRow['repairsCostName']?>" value="<?=$repairRow['cost']?>">
-                </label>
-            <?else:?>
-                <span><span class="glyphicon glyphicon-usd"></span> Стоимость: <?=$repairRow['cost']?></span>
-                <input type="hidden" class="hidden" name="<?=$repairRow['repairsCostName']?>" value="<?=$repairRow['cost']?>">
-            <?endif;?>
-        </div>
-        <div class="col-xs-8">
-            <? if( !$repair['paid'] && !$isRepairProto ) : ?>
-                <br>
-                <button onclick="paidRepair(this);" class="btn btn-default pull-right" style="top:-5px !important; position:relative;" type="button">
-                    <i class="far fa-credit-card"></i> Отметить ремонт оплаченым
-                </button>
-            <?elseif (!$isRepairProto) :?>
-                <span class="text-bold">Этот ремонт отмечен как оплаченый.</span>
-            <?endif;?>
-        </div>
-    </div>
-    <?endif;?>
     <? if( $repair['paid'] ) : ?>
         <div class="w100 pb-1 brb-3-success"></div>
     <?endif;?>

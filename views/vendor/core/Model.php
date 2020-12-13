@@ -121,7 +121,7 @@ class Model
 
         $result = [];
 
-        $query = $this->baseSql($sqlStr . " LIMIT 1");
+        $query = $this->baseSql($sqlStr . " LIMIT 1 " );
         if ( !$query ) throw new \Exception(__METHOD__ . " Error: " . mysqli_error($this->connection), mysqli_errno($this->connection) );
 
         while ( $data = mysqli_fetch_assoc($query) ) $result[] = $data;

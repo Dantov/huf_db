@@ -4,7 +4,11 @@ use Views\_Globals\Models\General;
 
 class NomenclatureModel extends General 
 {
-	public function __construct()
+    /**
+     * NomenclatureModel constructor.
+     * @throws \Exception
+     */
+    public function __construct()
 	{
 		parent::__construct();
 		$this->connectDBLite();

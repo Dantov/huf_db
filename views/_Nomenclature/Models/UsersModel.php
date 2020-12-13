@@ -2,7 +2,7 @@
 
 namespace Views\_Nomenclature\Models;
 
-use Views\_AddEdit\Models\Handler;
+use Views\_SaveModel\Models\Handler;
 use Views\_Globals\Models\User;
 use Views\vendor\core\Crypt;
 use Views\vendor\libs\classes\AppCodes;
@@ -339,7 +339,7 @@ class UsersModel extends Handler
                 'name'=> 'Дизайнер юв. изделий',
                 'description'=> 'Создание/ред. 3д моделей. Всем поля редактирования 3д моделей. Редактирование пользователей. Доступ к кошельку.',
                 'permissions' =>[1,2,3,4,5,6,7,8,9,10,13,15,16,17,18,19,20,21,22,23,
-                    24,25,27,28,29,31,32,33,35,36,37,38,39,40,41,42,45,46,52,54,55,57],
+                    24,25,26,27,28,29,31,32,33,35,36,37,38,39,40,41,42,45,46,52,54,55],
             ],
             'mt_modell' => [
                 'id'=> 2,
@@ -375,7 +375,7 @@ class UsersModel extends Handler
                 'id'=> 7,
                 'name'=> 'Технолог юв. изделий',
                 'description'=> 'Изменение статусов изделий. Доступ к кошельку.',
-                'permissions' =>[28,32,33,36,38,45,48,57],
+                'permissions' =>[26,27,28,32,33,36,38,45,48,57],
             ],
             'mt_pdo' => [
                 'id'=> 8,

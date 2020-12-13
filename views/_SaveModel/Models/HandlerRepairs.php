@@ -7,6 +7,7 @@
 namespace Views\_SaveModel\Models;
 
 
+use Views\_Globals\Models\PushNotice;
 use Views\_Globals\Models\User;
 
 class HandlerRepairs extends Handler
@@ -80,9 +81,13 @@ class HandlerRepairs extends Handler
      */
     protected function touchRepairs( &$repairRows )
     {
+        // Object PushNotice()
+        $pn = null;
+        // ID ремонтов
         $rIDs = [];
         foreach ( $repairRows['insertUpdate'] as $key => &$repair )
         {
+
             $rID = $repair['id'];
             if ( $rID )
             {
@@ -99,22 +104,31 @@ class HandlerRepairs extends Handler
             switch ( (int)$repair['status'] )
             {
                 case 1: // Новый
+                {
+                    // первый раз приходят пустые даты
+                    if ( empty($repair['status_date']) )
+                        $repair['status_date'] = $this->date;
+                    if ( empty($repair['date']) )
+                        $repair['date'] = $this->date;
+                    if ( empty($repair['creator_id']) )
+                        $repair['creator_id'] = User::getID();
+
                     $repair['status'] = 2; // Ставит "Ожидает принятия"
-                    break;
+                    if ( !($pn instanceof PushNotice) )
+                        $pn = new PushNotice();
+
+                    $pn->pushRepairNotice( $repair );
+                } break;
                 case 3: // В работе
                     $this->updateRepairMark($repair['pos_id'], (int)$repair['which'], 3);
+                    $repair['status_date'] = $this->date;
                     break;
                 case 4: // Завершено
                     $this->updateRepairMark($repair['pos_id'], (int)$repair['which'], 4);
+                    $repair['status_date'] = $this->date;
                     $rIDs[] = $rID; // какому ремонту зачислять прайсы
                     break;
             }
-
-            // первый раз приходят пустые даты
-            if ( empty($repair['status_date']) )
-                $repair['status_date'] = $this->date;
-            if ( empty($repair['date']) )
-                $repair['date'] = $this->date;
         }
 
 
@@ -308,6 +322,11 @@ class HandlerRepairs extends Handler
 
         $dellIDs = "(" . trim($dellIDs,", ") . ")";
         $this->baseSql("DELETE FROM model_prices WHERE id IN $dellIDs AND paid=0");
+    }
+    
+    protected function sendRepairPushNotice( $repair )
+    {
+
     }
 
 

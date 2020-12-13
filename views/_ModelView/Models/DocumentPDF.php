@@ -6,11 +6,20 @@ require_once _vendorDIR_. 'TCPDF/tcpdf.php';
 class DocumentPDF
 {
 
+    /**
+     * @var \TCPDF
+     */
 	public $pdf;
+    /**
+     * @var ModelView
+     */
 	public $modelView;
 	public $modelViewData = [];
 	public $document = '';
 
+    /**
+     * @var ProgressCounter
+     */
 	public $progress;
 
 	public $materialMM;
@@ -197,7 +206,10 @@ class DocumentPDF
 		return $labelImgDIV;
 	}
 
-	public function printPassport()
+    /**
+     * @throws \Exception
+     */
+    public function printPassport()
 	{
 		$modelView = $this->modelView;
 		$row = $this->modelViewData['row'];
@@ -273,7 +285,8 @@ class DocumentPDF
 			$afterImgY = $pdf->getImageRBY();
 			$realImgHeight = ($afterImgY - $befImgY)*3.2;
 		}
-		
+
+
 		//============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
 	    $progress->progressCount( $overallProgress );
@@ -601,7 +614,10 @@ class DocumentPDF
 		$pdf->writeHTMLCell(195, '', '', '', $table3, 0, 1, 0, true, 'L', true);
 	}
 
-	public function printRunner()
+    /**
+     * @throws \Exception
+     */
+    public function printRunner()
 	{
 		$modelView = $this->modelView;
 		$row = $this->modelViewData['row'];
@@ -626,12 +642,17 @@ class DocumentPDF
 		// ---- //
 	    $mainimg = '';
 	    $schemeImg = '';
+	    $sketchImg = '';
 	    foreach ( $images as $img_str )
 	    {
 	        $imgPath = _stockDIR_ . explode('Stock/',$img_str['img_name'])[1];
 	        if ( $img_str['scheme'] == 1 ) $schemeImg = $imgPath;
 	        if ( $img_str['main'] == 1 )   $mainimg =   $imgPath;
+	        if ( $img_str['sketch'] == 1 ) $sketchImg =   $imgPath;
 	    }
+	    if ( empty($mainimg) )
+	        if ( $sketchImg ) $mainimg = $sketchImg;
+
 	    $pictsDir = _webDIR_HTTP_ . 'picts';
 	    // ---- //
 		$labelImgDIV = '';
@@ -769,10 +790,14 @@ class DocumentPDF
 		}
 		$pdfImgY = 15;
 		if ( !empty($labelImgDIV) ) $pdfImgY += 3;
+
 		$befImgY = $pdf->GetY();
-		$pdf->Image($mainimg, 146, $pdfImgY, 61, 60, '', '', '', true, 150, '', false, false, 0, 'CM', false, false);
-		$afterImgY = $pdf->getImageRBY();
-		$realImgHeight = ($afterImgY - $befImgY)*3.4;
+		if ( $mainimg )
+        {
+            $pdf->Image($mainimg, 146, $pdfImgY, 61, 60, '', '', '', true, 150, '', false, false, 0, 'CM', false, false);
+            $afterImgY = $pdf->getImageRBY();
+            $realImgHeight = ($afterImgY - $befImgY)*3.4;
+        }
 
 	    //============= counter point ==============//
 	    $overallProgress = ceil(( ++$this->complectCounter * 100 ) / $this->complects_lenght);
@@ -943,7 +968,10 @@ class DocumentPDF
 		$pdf->writeHTMLCell(195, '', '', '', $table1, 0, 1, 0, true, 'L', true);
 	}
 
-	public function printPassportRunner()
+    /**
+     * @throws \Exception
+     */
+    public function printPassportRunner()
 	{
 		$this->printPassport();
 		$this->printRunner();

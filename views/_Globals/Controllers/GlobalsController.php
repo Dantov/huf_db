@@ -1,7 +1,10 @@
 <?php
 namespace Views\_Globals\Controllers;
-use Views\_AddEdit\Models\Handler;
+
+use Views\_Globals\Models\{General,PushNotice,User};
+use Views\_SaveModel\Models\Handler;
 use Views\vendor\core\Controller;
+use Views\vendor\libs\classes\AppCodes;
 
 
 class GlobalsController extends Controller
@@ -18,23 +21,50 @@ class GlobalsController extends Controller
 
         if ( $request->isAjax() )
         {
-            if ( $searchInNum = (int)$request->post('searchInNum') )
+            try
             {
-                $this->searchIn($searchInNum);
-            }
-            if ( (int)$request->post('PushNotice') === 1 )
+                if ( $searchInNum = (int)$request->post('searchInNum') )
+                    $this->searchIn($searchInNum);
+
+                if ( (int)$request->post('PushNotice') === 1 )
+                    $this->actionPushNotice();
+
+                if ( (int)$request->post('isPDF') === 1 )
+                {
+                    $handler = new Handler();
+                    $arr['success'] = 0;
+                    $pdfName = $request->post('pdfName');
+                    if ( $pdfName ) $arr['success'] = $handler->deletePDF($pdfName);
+                    exit( json_encode($arr) );
+                }
+
+                if ( (int)$request->get('getRepairNotices') === 1 )
+                    exit( json_encode( $this->actionRepairNotices() ) );
+
+            } catch (\TypeError | \Exception $e)
             {
-                $this->actionPushNotice();
+                if ( _DEV_MODE_ )
+                {
+                    exit( json_encode([
+                        'error'=>[
+                            'message'=>$e->getMessage(),
+                            'code'=>$e->getCode(),
+                            'file'=>$e->getFile(),
+                            'line'=>$e->getLine(),
+                            'trace'=>$e->getTrace(),
+                            'previous'=>$e->getPrevious(),
+                        ]
+                    ]) );
+                } else {
+                    exit( json_encode([
+                        'error'=>[
+                            'message'=>AppCodes::getMessage(AppCodes::SERVER_ERROR)['message'],
+                            'code'=>$e->getCode(),
+                        ],
+                    ]) );
+                }
             }
-            if ( (int)$request->post('isPDF') === 1 )
-            {
-                $handler = new Handler();
-                $arr['success'] = 0;
-                $pdfName = $request->post('pdfName');
-                if ( $pdfName ) $arr['success'] = $handler->deletePDF($pdfName);
-                echo json_encode($arr);
-                exit;
-            }
+
             exit;
         }
 
@@ -101,6 +131,7 @@ class GlobalsController extends Controller
         echo $resp;
     }
 
+
     /**
      * @throws \Exception
      */
@@ -108,7 +139,7 @@ class GlobalsController extends Controller
     {
         $request = $this->request;
 
-        $pn = new \Views\_Globals\Models\PushNotice();
+        $pn = new PushNotice();
 
         if ( $noticeID = (int)$request->post('closeNotice') )
         {
@@ -135,6 +166,14 @@ class GlobalsController extends Controller
             echo json_encode($arr);
             exit;
         }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function actionRepairNotices()
+    {
+        return (new PushNotice())->getRepairNoticesData();
     }
     
 }

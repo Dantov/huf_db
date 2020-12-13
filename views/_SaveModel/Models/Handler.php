@@ -267,14 +267,14 @@ class Handler extends General
 		$this->baseSql(" UPDATE stock SET status='$statusNew', status_date='$this->date' WHERE id='$this->id' ");
 
         //04,07,19 - вносим новый статус в таблицу statuses
-        if (empty($creator_name))
+        if ( empty($creator_name) )
             $creator_name = User::getFIO();
 
         $statusTemplate = [
             'pos_id' => $this->id,
             'status' => $statusNew,
-            'creator_name'  => $creator_name,
-            'UPdate'   => $this->date
+            'creator_name' => $creator_name,
+            'UPdate'       => date("Y-m-d H:i:s"),//$this->date
         ];
         $this->addStatusesTable($statusTemplate);
 	}
@@ -292,7 +292,7 @@ class Handler extends General
         $pos_id = $statusT['pos_id'];
         $status = $statusT['status'];
         $name = $statusT['creator_name'];
-        $date = $statusT['UPdate'];
+        $date = date("Y-m-d H:i:s");//$statusT['UPdate'];
         $querStr = "INSERT INTO statuses (pos_id,status,name,date) VALUES('$pos_id','$status','$name','$date')";
 
         //$quer_status =  mysqli_query($this->connection, $querStr );

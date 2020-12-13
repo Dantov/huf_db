@@ -48,15 +48,15 @@ function PushNotice()
 
             if ( closedBy === 'button' || closedBy === 'drag' )
             {
-                debug(closedBy,'closedBy');
+                //debug(closedBy,'closedBy');
                 that.closeNotice(toast.id);
             }
 
-            debug( JSON.parse( localStorage.getItem('showedNotice') ) );
+            //debug( JSON.parse( localStorage.getItem('showedNotice') ) );
         }
 	});
 
-    debug('PushNotice Init');
+    debug('PushNotice Init ok!');
 }
 
 PushNotice.prototype.pushNoticeBadgeInc = function() {
@@ -125,7 +125,7 @@ PushNotice.prototype.closeNotice = function(id, url)
             that.pushNoticeBadgeInc();
 
             if ( url ) document.location.href = url;
-            debug(that.showedNotice,'closeNotice-showedNotice');
+            //debug(that.showedNotice,'closeNotice-showedNotice');
         }
     });
 };
@@ -141,7 +141,7 @@ PushNotice.prototype.addNotice = function(notice)
     }
     if ( !found ) {
         this.incomingNotices.push(notice);
-        debug(this.incomingNotices,'incomingNotices');
+        //debug(this.incomingNotices,'incomingNotices');
     }
     
     
@@ -215,7 +215,7 @@ PushNotice.prototype.checkNotice = function() {
             /// синхронизируем актуальные уведомления в data с адишниками в localStorage
             //  нужно что б нормально работало из под разные браузеров на одном IP
             let actual = [];
-            debug(that.showedNotice,'showedNotice');
+            //debug(that.showedNotice,'showedNotice');
             for ( let i = 0; i < that.showedNotice.length; i++ )
             {
                 let id = that.showedNotice[i];
@@ -225,7 +225,7 @@ PushNotice.prototype.checkNotice = function() {
                 }
             }
             
-            debug(actual,'actual');
+            //debug(actual,'actual');
             
             that.showedNotice = actual;
             localStorage.setItem('showedNotice', JSON.stringify(that.showedNotice));
@@ -264,7 +264,7 @@ PushNotice.prototype.noticesBadgeToggle = function() {
         hideNotices(); // сначало прячем все открытые
 
         // потом заного открываем все с новыми таймаутами
-		debug(that.incomingNotices,'показываем');
+		//debug(that.incomingNotices,'показываем');
         for ( let i = 0; i < that.incomingNotices.length; i++ )
         {
             that.addNotice(that.incomingNotices[i]);

@@ -294,6 +294,7 @@ class Main extends General {
 	/**
      * Таблица рабочих центров
 	 * Приложение №1
+     *
 	 */
     public function getModelsByWorkingCenters()
 	{

@@ -1,6 +1,8 @@
 <?php
 namespace Views\_EditStatuses\Controllers;
 
+use Views\_SaveModel\Controllers\SaveModelController;
+use Views\_SaveModel\Models\Condition;
 use Views\_SaveModel\Models\HandlerPrices;
 use Views\_EditStatuses\Models\EditStatusesModel;
 use Views\_Globals\Controllers\GeneralController;
@@ -87,14 +89,16 @@ class EditStatusesController extends GeneralController
         $overallProcesses = count($selectionMode['models']??[]);
 
         $pn = new PushNotice();
-        $handler = new HandlerPrices(false);
-        $handler->connectDBLite();
+        $payments = new HandlerPrices(false);
+        $payments->connectDBLite();
 
-        $payments = $handler;
+        $pricesController = new SaveModelController('1');
+
 
         // флаги редакт. модели
-        $isEdit = 1; // Нужен!!!
+        //$isEdit = 1; // Нужен!!!
         $component = 2;
+        Condition::set($component);
 
         $in = "";
 
@@ -103,8 +107,8 @@ class EditStatusesController extends GeneralController
             $modelID = $model['id'];
             $payments->setId($modelID);
             // пропустим итерацию, если статусы в данной модели менять запрещено!
-            $modelDate =  $handler->findOne("SELECT date FROM stock WHERE id='$modelID'")['date'];
-            if ( !$handler->statusesChangePermission($modelDate, $component) ) //
+            $modelDate =  $payments->findOne("SELECT date FROM stock WHERE id='$modelID'")['date'];
+            if ( !$payments->statusesChangePermission($modelDate, $component) ) //
                 continue;
             $isCurrentStatusPresent = $payments->isStatusPresent($status);
 
@@ -114,11 +118,20 @@ class EditStatusesController extends GeneralController
                 'creator_name' => User::getFIO(),
                 'UPdate'   => $date
             ];
-            $handler->addStatusesTable($statusT);
+            $payments->addStatusesTable($statusT);
 
-            
+            $pricesController->isCurrentStatusPresent = $isCurrentStatusPresent;
+            $pricesController->paymentsRequisite['status'] = $status;
+
+//            $pricesController->paymentsRequisite['author'] = $author;
+//            $pricesController->paymentsRequisite['modeller3d'] = $modeller3d;
+//            $pricesController->paymentsRequisite['jewelerName'] = $jewelerName;
+
+            $pricesController->actionSaveData_Prices($payments);
+
+
             //Зачисление стоимостей на каждую модель, если позволяет статус
-            require _viewsDIR_ . "_SaveModel/Controllers/paymentsController.php";
+            //require _viewsDIR_ . "_SaveModel/Controllers/paymentsController.php";
 
             $names = explode(' | ', $model['name']);
             $addPush = $pn->addPushNotice($modelID, 2, $names[0], $names[1], $model['type'], $date, $status, User::getFIO());
@@ -141,10 +154,10 @@ class EditStatusesController extends GeneralController
         {
             $in = "(" . rtrim($in,',') . ")";
             $sql = "UPDATE stock SET status='$status', status_date='$date' WHERE id IN $in";
-            $update = $handler->baseSql($sql);
+            $update = $payments->baseSql($sql);
         }
 
-        //$handler->closeDB();
+        //$payments->closeDB();
 
         if ( $update )
         {

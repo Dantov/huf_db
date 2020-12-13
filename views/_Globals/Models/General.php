@@ -585,55 +585,162 @@ class General extends Model
         // Путь прохождения модели.
         // user access => status id
         //Пример: 2 => 89 - 3д моделлер может менять статус только после Утверждения дизайна
-        $changeStatusesAccess = [
+        /*$changeStatusesAccess = [
             //10 => 35, // утверждать эскиз, когда стоит статус эскиз
             2  => 89, // 3д после утв. эскиза
             11 => 89, // 3д после утв. эскиза
+            //2 => 106,
             7 => 1,   // Валик может подписать только если модель на проверке
             9 => 89,  // подпись 3д техн. эскиза ( после подписи Валика)
             3 => 2,   // рост/поддержки после проверено
             5 => 5,   // доработка после выращено
             8 => 5,   // УчастокПДО после выращено
             4 => 5,   // Все остальные тоже после выращено
+        ];*/
+
+        // statusPresent => notPresent
+        $currentStatusesAccess = [
+
+            35=>[
+                'notPresent' => 89,
+                'preset' => [10],
+            ],
+            11=>[
+                'notPresent' => 89,
+                'preset' => [10],
+            ],
+            89=>[
+                'notPresent' => 47,
+                'preset' => [2,9,11],
+            ],
+            10=>[
+                'notPresent' => 2,
+                'preset' => [2,9,11],
+            ],
+            47=>[
+                'notPresent' => 106,
+                'preset' => [11],
+            ],
+            106=>[
+                'notPresent' => 1,
+                'preset' => [2,9,11],
+            ],
+            101=>[
+                'notPresent' => 2,
+                'preset' => [9,11],
+            ],
+            1=>[
+                'notPresent' => 2, // статусы
+                'preset' => [9,7], // пресеты user Access
+            ],
+            2=>[
+                'notPresent' => 5,
+                'preset' => [3,9,11],
+            ],
+            5=>[
+                'notPresent' => 2000,
+                'preset' => [2,3,4,5,6,7,8,9,10,11],
+            ],
         ];
+
 
         $toShowStatuses = true;
         if ( $comp_date && ($component !== 1) && ($component !== 3) )
         {
+            $toShowStatuses = false;
             // Что бы предотвратить изменения статусов у модели, если не поставлен статус сдачи пред. участка
             // при постановке нужных статусов, некоторым людям начислятся деньги в кошельке работника
 
             if ( User::getAccess() !== 1 )
             {
+                //$toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $this->isStatusPresent( $changeStatusesAccess[User::getAccess()] );
 
-                $toShowStatuses = array_key_exists(User::getAccess(),$changeStatusesAccess) && $this->isStatusPresent( $changeStatusesAccess[User::getAccess()] );
+//                foreach ($currentStatusesAccess as $status => $access)
+//                {
+//                    // доступ для ред. статусов только пользователям с пресетам как в массивах
+//                    if ( $this->isStatusPresent( $status ) && !$this->isStatusPresent( $access['notPresent'] ) )
+//                    {
+//                        $toShowStatuses = in_array(User::getAccess(), $access['preset']);
+//                        break;
+//                    }
+//                }
+
+                // Для этого способа нужна временная метка
+                foreach ($currentStatusesAccess as $status => $access)
+                {
+                    // доступ для ред. статусов только пользователям с пресетам как в массивах
+                    if ( $status1LastDate = $this->statusPresentLastDate($status) )
+                    {
+                        if ( $status2LastDate = $this->statusPresentLastDate($access['notPresent']) )
+                        {
+                            $status1LastDate = strtotime($status1LastDate);
+                            $status2LastDate = strtotime($status2LastDate);
+//                            debug($status1LastDate,'$status1LastDate');
+//                            debug($status2LastDate,'$status2LastDate');
+                            if ( ($status1LastDate > $status2LastDate) || ($status1LastDate == $status2LastDate) )
+                            {
+                                $toShowStatuses = in_array(User::getAccess(), $access['preset']);
+                                break;
+                            }
+
+                            /** Exit */
+                        } else {
+                            //debug($status1LastDate,'$status1LastDate');
+                            $toShowStatuses = in_array(User::getAccess(), $access['preset']);
+                            break;
+                        }
+
+                        /** Exit */
+                    }
+                }
+
             }
-
         }
-
 
         return $toShowStatuses;
     }
 
     /**
      * @param int $statusID
-     * @param int $pos_id
-     * @return bool
+     * @param int $stock_id
+     * @return bool | mixed
      * @throws \Exception
      */
-    public function isStatusPresent(int $statusID = 0, int $pos_id = 0 ) : bool
+    public function isStatusPresent(int $statusID = 0, int $stock_id = 0 ) : bool
     {
-        if ( $pos_id === 0 )
+        if ( $stock_id === 0 )
             if ( trueIsset($this->id) )
             {
-                $pos_id = $this->id;
+                $stock_id = $this->id;
             } else {
                 throw new \Exception('Model ID is empty! Check stock table for this id: ' . $this->id, 0);
             }
 
-        $query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$pos_id' AND status='$statusID' " );
+        $query = $this->baseSql( "SELECT 1 FROM statuses WHERE pos_id='$stock_id' AND status='$statusID'" );
         if ( $query->num_rows ) return true;
         return false;
+    }
+
+    /**
+     *
+     * @param int $statusID
+     * @param int $stock_id
+     * @return string
+     * @throws \Exception
+     */
+    public function statusPresentLastDate(int $statusID = 0, int $stock_id = 0 ) : string
+    {
+        if ( $stock_id === 0 )
+            if ( trueIsset($this->id) )
+            {
+                $stock_id = $this->id;
+            } else {
+                throw new \Exception('Model ID is empty! Check stock table for this id: ' . $this->id, 0);
+            }
+        $result = [];
+        $query = $this->baseSql( "SELECT date FROM statuses WHERE pos_id='$stock_id' AND status='$statusID' ORDER BY date DESC LIMIT 1" );
+        while ( $data = mysqli_fetch_assoc($query) ) $result = $data;
+        return isset($result['date']) ? $result['date'] : '';
     }
 
 
@@ -642,6 +749,15 @@ class General extends Model
      */
     public function getDesignApproveModels()
     {
-        return $this->findOne("SELECT COUNT(status) as c FROM stock WHERE status=35 ")['c'];
+        return $this->findOne("SELECT COUNT(status) as c FROM stock WHERE status=35 ",'c');
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function countRepairsToWork()
+    {
+        $userFIO = explode(' ', User::getFIO())[0];
+        return $this->findOne("SELECT COUNT(toWhom) as c FROM repairs WHERE toWhom LIKE '%$userFIO%' AND status<>4 ",'c');
     }
 }

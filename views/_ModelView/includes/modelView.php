@@ -247,10 +247,10 @@ $isView = true;
             <ul class="list-group">
                 <?php foreach ( isset($matsCovers)?$matsCovers:[] as $material ) : ?>
                 <li class="list-group-item brb-2-secondary bg-info-light">
-                    <span class="badge badge-lg"><?=$material['probe']."&deg;"?></span>
+                    <span class="badge badge-lg"><?=$material['probe'] ? $material['probe'] ."&deg;" : ""?></span>
                     <span class="badge badge-lg"><?=$material['metalColor']?></span>
                     <span class="badge badge-lg"><?=$material['type']?></span>
-                    <b><?=$material['part']?:"&#160;"?></b> <i><?=$material['count'] ? " - ".$material['count']." шт." : "" ?></i>
+                    <b><?=$material['part'] ? $material['part']." - " :"&#160;"?></b> <i><?=$material['count'] ? $material['count']." шт." : "" ?></i>
                 </li>
                 <li class="list-group-item p0">
                     <?php if ( !empty($material['covering']) || !empty($material['area']) || !empty($material['covColor']) || !empty($material['handling']) ): ?>
@@ -337,6 +337,7 @@ $isView = true;
         </div>
     <?php endif; ?>
     <?php foreach ( isset($repairs)?$repairs:[] as $repair ): ?>
+        <?php if ( empty($repair['repair_descr']) ) continue; ?>
         <? $whichRepair = $repair['which'] ? true : false ?>
         <div class="col-xs-12 col-sm-12 col-lg-6 pl-1 pr-0">
             <?require _viewsDIR_ . "_AddEdit/includes/protoRepair.php"?>

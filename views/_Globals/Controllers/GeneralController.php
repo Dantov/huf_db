@@ -114,53 +114,55 @@ JS;
             $navBar['navbarDevUrl'] = _rootDIR_HTTP_ . 'hufdb-new';
         }
 
-        function getCollections($coll_res)
-        {
-            $collectionListDiamond = [];
-            $collectionListGold = [];
-            $collectionListSilver = [];
-            $collectionOther = [];
-
-            foreach( $coll_res as &$collection )
-            {
-                $haystack = mb_strtolower($collection['name']);
-
-                if ( stristr( $haystack, 'сереб' ) || stristr( $haystack, 'silver' ) )
-                {
-                    $collectionListSilver[ $collection['id'] ] = $collection['name'];
-                    continue;
-                }
-                if ( stristr( $haystack, 'золото' ) || stristr( $haystack, 'невесомость циркон' ) || stristr( $haystack, 'невесомость с ситалами' ) || stristr( $haystack, 'gold' ) )
-                {
-                    $collectionListGold[$collection['id']] = $collection['name'];
-                    continue;
-                }
-                if ( stristr( $haystack, 'брилл' ) || stristr( $haystack, 'diam' ) )
-                {
-                    $collectionListDiamond[$collection['id']] = $collection['name'];
-                    continue;
-                }
-                $collectionOther[$collection['id']] = $collection['name'];
-            }
-
-            $res['silver'] = $collectionListSilver;
-            $res['gold'] = $collectionListGold;
-            $res['diamond'] = $collectionListDiamond;
-            $res['other'] = $collectionOther;
-
-            return $res;
-        }
-
         $general = new General();
         $general->connectDBLite();
 
         $collections_arr = $general->findAsArray(" SELECT id,name FROM service_data WHERE tab='collections' ORDER BY name ");
 
-        $navBar['collectionList'] = getCollections($collections_arr);
+        $navBar['collectionList'] = $this->getCollections($collections_arr);
 
         $this->navBar = $navBar;
 
         $this->varBlock['designApproveModels'] = $general->getDesignApproveModels();
+        if ( User::permission('repairs') )
+            $this->varBlock['repairsToWork'] = $general->countRepairsToWork();
+    }
+
+    protected function getCollections($coll_res)
+    {
+        $collectionListDiamond = [];
+        $collectionListGold = [];
+        $collectionListSilver = [];
+        $collectionOther = [];
+
+        foreach( $coll_res as &$collection )
+        {
+            $haystack = mb_strtolower($collection['name']);
+
+            if ( stristr( $haystack, 'сереб' ) || stristr( $haystack, 'silver' ) )
+            {
+                $collectionListSilver[ $collection['id'] ] = $collection['name'];
+                continue;
+            }
+            if ( stristr( $haystack, 'золото' ) || stristr( $haystack, 'невесомость циркон' ) || stristr( $haystack, 'невесомость с ситалами' ) || stristr( $haystack, 'gold' ) )
+            {
+                $collectionListGold[$collection['id']] = $collection['name'];
+                continue;
+            }
+            if ( stristr( $haystack, 'брилл' ) || stristr( $haystack, 'diam' ) )
+            {
+                $collectionListDiamond[$collection['id']] = $collection['name'];
+                continue;
+            }
+            $collectionOther[$collection['id']] = $collection['name'];
+        }
+
+        $res['silver'] = $collectionListSilver;
+        $res['gold'] = $collectionListGold;
+        $res['diamond'] = $collectionListDiamond;
+        $res['other'] = $collectionOther;
+
+        return $res;
     }
 
 

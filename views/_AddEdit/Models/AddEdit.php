@@ -295,6 +295,10 @@ class AddEdit extends General
         return $this->findOne( " SELECT * FROM ai_files WHERE pos_id='$this->id' ");
 	}
 
+    /**
+     * @return array
+     * @throws \Exception
+     */
     public function getModelPrices()
     {
         return $this->findAsArray( " SELECT * FROM model_prices WHERE pos_id='$this->id' ");

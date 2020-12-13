@@ -107,6 +107,23 @@ JS;
                     </form>
 
                     <form class="navbar-form topuserform navbar-right">
+                        <?php /** Уведомления о ремонтах */ ?>
+                        <?php if ( User::permission('repairs') ): ?>
+                            <div class="btn-group" id="repPNBadge">
+                                <button title="Кол-во ремонтов в работу" type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <span class="badge" style="background-color: #565c70;!important;">
+                                        <i class="fas fa-tools"></i>&#160;
+                                        <span class="da_Badge"><?= $this->varBlock['repairsToWork'] ?></span>
+                                    </span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="pn_rep_show"><span class="glyphicon glyphicon-eye-open"></span>&#160; Показать</a>
+                                        <a class="pn_rep_hide"><span class="glyphicon glyphicon-eye-close"></span>&#160; Спрятать</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
                         <?php /** Уведомления о моделях для утверждения дизайна */ ?>
                         <?php if ( User::getAccess() === 10 ): ?>
                             <div class="btn-group" id="designApproveBadge">
@@ -130,7 +147,10 @@ JS;
                         <?php if ( User::getAccess() > 0 ): ?>
 						<div class="btn-group" id="noticesBadge">
 							<button title="Текущие Уведомления" type="button" class="btn btn-link topdividervertical dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-								<span class="badge pushNoticeBadge"></span>
+								<span class="badge" style="background-color: #4cc1be;!important;">
+                                    <i class="far fa-flag"></i>&#160;
+                                    <span class="pushNoticeBadge"></span>
+                                </span>
 							</button>
 							<ul class="dropdown-menu">
 								<li>
@@ -301,13 +321,17 @@ JS;
 			<?php if ($_SESSION['assist']['PushNotice'] == 1): ?>
 				<script defer src="/Views/_Globals/js/pushNotice.js?ver=<?=time() ?>"></script>
 			<?php endif; ?>
+            <?php if (User::permission('repairs')): ?>
+                <script defer src="/Views/_Globals/js/RepairsPN.js?ver=<?=time() ?>"></script>
+            <?php endif; ?>
             <script defer src="/Views/_Main/js/main.js?ver=<?=time()?>"></script>
             <script defer src="/Views/_Main/js/ProgressModal.js?ver=<?=time()?>"></script>
 
         </footer>
 
     </div><!--content-->
-	<div id="pushNoticeWrapp" class="row"></div>
+	<div id="RepairsPNWrapp" class="row notices_wrapper"></div>
+	<div id="pushNoticeWrapp" class="row notices_wrapper"></div>
     <div id="alertResponseModal" aria-hidden="true" aria-labelledby="alertResponseModal" role="dialog" class="iziModal">
         <div id="alertResponseContent" style="padding: 10px" class="hidden"></div>
     </div>

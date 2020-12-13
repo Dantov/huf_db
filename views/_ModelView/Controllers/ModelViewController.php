@@ -1,7 +1,7 @@
 <?php
 namespace Views\_ModelView\Controllers;
 
-use Views\_AddEdit\Models\HandlerPrices;
+use Views\_SaveModel\Models\HandlerPrices;
 use Views\_Globals\Models\PushNotice;
 use Views\_Globals\Models\User;
 use Views\_ModelView\Models\{ModelView,DocumentPDF};
@@ -73,7 +73,7 @@ class ModelViewController extends GeneralController
                     if (  trueIsset($request->post('approve')) && trueIsset($request->post('id')) )
                         $this->approves($request->post('approve'), $request->post('id'));
 
-            } catch (\Error | \Exception  $e) {
+            } catch ( \TypeError | \Error | \Exception $e) {
                 $this->serverError_ajax($e);
             }
 
@@ -282,6 +282,7 @@ JS;
         $dell_names = $request->post('dell_name');
         if ( is_array($dell_names) && !empty($dell_names) )
         {
+            $arr = [];
             foreach ( $dell_names as $name )
             {
                 $stockPath = explode('/', $name);

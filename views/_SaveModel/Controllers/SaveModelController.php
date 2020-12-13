@@ -131,7 +131,7 @@ class SaveModelController extends GeneralController
 
             $textDataSave = $this->actionSaveData_Text();
 
-            $pricesDataSave = $this->actionSaveData_Prices();
+            $pricesDataSave = $this->actionSaveData_Prices(new HandlerPrices($id));
 
             $repairsDataSave = $this->actionSaveData_Repairs();
 
@@ -156,7 +156,7 @@ class SaveModelController extends GeneralController
     /**
      * @throws \Exception
      */
-    public function actionSaveData_Text()
+    protected function actionSaveData_Text()
     {
         $request = $this->request;
         $handler = $this->h;
@@ -251,7 +251,7 @@ class SaveModelController extends GeneralController
                 'pos_id'      => $id,
                 'status'      => $status,
                 'creator_name'=> $creator_name,
-                'UPdate'      => $this->date
+                'UPdate'      => date("Y-m-d H:i:s"),//$this->date
             ];
             $handler->addStatusesTable($statusT);
 
@@ -295,7 +295,7 @@ class SaveModelController extends GeneralController
      * МАТЕРИАЛЫ
      * @throws \Exception
      */
-    public function dataSave_Materials() : bool
+    protected function dataSave_Materials() : bool
     {
         if ( !User::permission('material') ) return false;
 
@@ -322,7 +322,7 @@ class SaveModelController extends GeneralController
      * КАМНИ
      * @throws \Exception
      */
-    public function dataSave_Gems()
+    protected function dataSave_Gems()
     {
         if ( !User::permission('gems') ) return false;
 
@@ -346,7 +346,7 @@ class SaveModelController extends GeneralController
      * ДОП. АТРИКУЛЫ
      * @throws \Exception
      */
-    public function dataSave_VendorCodeLinks()
+    protected function dataSave_VendorCodeLinks()
     {
         if ( !User::permission('vc_links') ) return false;
 
@@ -369,7 +369,7 @@ class SaveModelController extends GeneralController
      * ФАЙЛЫ
      * @throws \Exception
      */
-    public function actionSaveData_Files()
+    protected function actionSaveData_Files()
     {
         if ( !User::permission('files') )
             return;
@@ -486,16 +486,17 @@ class SaveModelController extends GeneralController
 
 
     /**
+     * @param HandlerPrices $payments
      * @throws \Exception
      */
-    public function actionSaveData_Prices()
+    public function actionSaveData_Prices( HandlerPrices $payments )
     {
 
         //if ( !isset($isEdit) ) $isEdit = 1; // редактирование
 //        if ( !isset($modelID) )
 //            if ( trueIsset($this->stockID) ) $modelID = $this->stockID;
 
-        $payments = new HandlerPrices($this->stockID);
+        //$payments = new HandlerPrices($this->stockID);
 
         $status = $this->paymentsRequisite['status'];
         $author = $this->paymentsRequisite['author'];
@@ -606,7 +607,7 @@ class SaveModelController extends GeneralController
     /**
      * @throws \Exception
      */
-    public function actionSaveData_Repairs()
+    protected function actionSaveData_Repairs()
     {
         $repairsResponse = [];
 
@@ -636,7 +637,7 @@ class SaveModelController extends GeneralController
      * Sending response via Ajax
      * @throws \Exception
      */
-    public function actionResponse()
+    protected function actionResponse()
     {
         // флаг для репоиска
         if ( $this->session->getKey('searchFor') )
