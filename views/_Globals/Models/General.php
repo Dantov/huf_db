@@ -578,10 +578,6 @@ class General extends Model
     {
         if ( empty($modelDate) ) return false;
 
-        // Сделал привязку к конкретной дате, старые модели сделаны до неё не будут проверены на наличие нужных статусов
-        // это сделано что бы участки могли принять старые модели в ремонт, в случае чего
-        $comp_date =  new \DateTime($modelDate) < new \DateTime("2020-08-05") ? false : true;
-
         // Путь прохождения модели.
         // user access => status id
         //Пример: 2 => 89 - 3д моделлер может менять статус только после Утверждения дизайна
@@ -601,48 +597,51 @@ class General extends Model
         // statusPresent => notPresent
         $currentStatusesAccess = [
 
-            35=>[
+            35=>[ // Эскиз
+                'notPresent' => 89,
+                'preset' => [10], // access
+            ],
+            11=>[ // Отложено
                 'notPresent' => 89,
                 'preset' => [10],
             ],
-            11=>[
-                'notPresent' => 89,
-                'preset' => [10],
-            ],
-            89=>[
+            89=>[ // Диз. утв.
                 'notPresent' => 47,
                 'preset' => [2,9,11],
             ],
-            10=>[
+            10=>[ // В ремонте 3D
                 'notPresent' => 2,
                 'preset' => [2,9,11],
             ],
-            47=>[
+            47=>[ // Готово 3д
                 'notPresent' => 106,
                 'preset' => [11],
             ],
-            106=>[
+            106=>[ // 3D дизайн утвержден
                 'notPresent' => 1,
                 'preset' => [2,9,11],
             ],
-            101=>[
+            101=>[ // Подпись технолога
                 'notPresent' => 2,
                 'preset' => [9,11],
             ],
-            1=>[
+            1=>[ // На проверке
                 'notPresent' => 2, // статусы
                 'preset' => [9,7], // пресеты user Access
             ],
-            2=>[
+            2=>[ // Проверено
                 'notPresent' => 5,
                 'preset' => [3,9,11],
             ],
-            5=>[
+            5=>[ // Выращено
                 'notPresent' => 2000,
-                'preset' => [2,3,4,5,6,7,8,9,10,11],
+                'preset' => [1,2,3,4,5,6,7,8,9,10,11,12],
             ],
         ];
 
+        // Сделал привязку к конкретной дате, старые модели сделаны до неё не будут проверены на наличие нужных статусов
+        // это сделано что бы участки могли принять старые модели в ремонт, в случае чего
+        $comp_date =  new \DateTime($modelDate) < new \DateTime("2020-11-05") ? false : true;
 
         $toShowStatuses = true;
         if ( $comp_date && ($component !== 1) && ($component !== 3) )
@@ -675,17 +674,24 @@ class General extends Model
                         {
                             $status1LastDate = strtotime($status1LastDate);
                             $status2LastDate = strtotime($status2LastDate);
-//                            debug($status1LastDate,'$status1LastDate');
-//                            debug($status2LastDate,'$status2LastDate');
+                            debug($status1LastDate,'$status1LastDate');
+                            debug($status2LastDate,'$status2LastDate');
                             if ( ($status1LastDate > $status2LastDate) || ($status1LastDate == $status2LastDate) )
                             {
+                                debug($status,'$status принятия: ');
+                                debug($access['notPresent'], 'статус сдачи просрочен: ');
+                                debug(User::getAccess(),'User getAccess');
+
                                 $toShowStatuses = in_array(User::getAccess(), $access['preset']);
                                 break;
                             }
 
                             /** Exit */
                         } else {
-                            //debug($status1LastDate,'$status1LastDate');
+                            debug($status,'$status принятия');
+                            debug($access['notPresent'],'Нет статуса сдачи: ');
+                            debug(User::getAccess(),'User getAccess');
+
                             $toShowStatuses = in_array(User::getAccess(), $access['preset']);
                             break;
                         }
