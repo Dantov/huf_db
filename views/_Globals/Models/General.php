@@ -674,13 +674,13 @@ class General extends Model
                         {
                             $status1LastDate = strtotime($status1LastDate);
                             $status2LastDate = strtotime($status2LastDate);
-                            debug($status1LastDate,'$status1LastDate');
-                            debug($status2LastDate,'$status2LastDate');
-                            if ( ($status1LastDate > $status2LastDate) || ($status1LastDate == $status2LastDate) )
+//                            debug($status1LastDate,'$status1LastDate');
+//                            debug($status2LastDate,'$status2LastDate');
+                            if ( ($status1LastDate > $status2LastDate) ) //|| ($status1LastDate == $status2LastDate)
                             {
-                                debug($status,'$status принятия: ');
-                                debug($access['notPresent'], 'статус сдачи просрочен: ');
-                                debug(User::getAccess(),'User getAccess');
+//                                debug($status,'$status принятия: ');
+//                                debug($access['notPresent'], 'статус сдачи просрочен: ');
+//                                debug(User::getAccess(),'User getAccess');
 
                                 $toShowStatuses = in_array(User::getAccess(), $access['preset']);
                                 break;
@@ -688,9 +688,9 @@ class General extends Model
 
                             /** Exit */
                         } else {
-                            debug($status,'$status принятия');
-                            debug($access['notPresent'],'Нет статуса сдачи: ');
-                            debug(User::getAccess(),'User getAccess');
+//                            debug($status,'$status принятия');
+//                            debug($access['notPresent'],'Нет статуса сдачи: ');
+//                            debug(User::getAccess(),'User getAccess');
 
                             $toShowStatuses = in_array(User::getAccess(), $access['preset']);
                             break;
