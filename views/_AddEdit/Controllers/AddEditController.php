@@ -275,11 +275,12 @@ JS;
             $this->includeJS($js);
         }
 
+
+        /* ===== PHP includes ===== */
         $compact1 = compact([
             'gems_sizesLi','gems_cutLi','gems_namesLi','gems_colorLi','vc_namesLI','num3DVC_LI','materialsData',
-            'coveringsData','handlingsData',
+            'coveringsData','handlingsData','modTypeLi',
         ]);
-        /* ===== PHP includes ===== */
         $this->includePHPFile('resultModal.php');
         $this->includePHPFile('deleteModal.php');
         $this->includePHPFile('num3dVC_input_Proto.php', $compact1);

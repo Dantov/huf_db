@@ -10,6 +10,7 @@ use Views\_Globals\Models\{ PushNotice,SelectionsModel,User };
 use Views\_SaveModel\Models\{
     Handler, HandlerPrices, Condition, HandlerRepairs, SaveModelProgressCounter
 };
+use Views\vendor\libs\classes\Validator;
 
 
 /**
@@ -40,6 +41,10 @@ class SaveModelController extends GeneralController
     public $modelType;
     public $date;
 
+    /**
+     * @var array
+     * данные необходимы для оплат прайсов
+     */
     public $paymentsRequisite = [];
 
     /**
@@ -100,8 +105,8 @@ class SaveModelController extends GeneralController
         chdir(_stockDIR_);
         $request = $this->request;
 
-        $id = $this->stockID = (int)Crypt::strDecode($request->post('id'));
-        $handler = $this->h = new Handler($id);
+        $this->stockID = (int)Crypt::strDecode($request->post('id'));
+        $handler = $this->h = new Handler($this->stockID);
         try {
             $handler->connectToDB();
         } catch ( \Exception $e) {
@@ -111,15 +116,25 @@ class SaveModelController extends GeneralController
         Condition::set( (int)$request->post('edit') );
         $isEdit = (int)$request->post('edit') === 2 ? true : false;
 
-        $date = $this->date =  date("Y-m-d");
+        $date = $this->date = date("Y-m-d");
         if ( Condition::isNew() )
             $this->number3d = $handler->setNumber_3d();
-        if ( Condition::isInclude() || Condition::isEdit() )
-            $this->number3d = $handler->setNumber_3d( strip_tags(trim( $request->post('number_3d') )) );
 
-        $model_type = $this->modelType = strip_tags( trim($request->post('model_type')) );
-        $handler->setModel_typeEn($model_type);
-        $handler->setModel_type($model_type);
+        $validator = new Validator();
+        $validator->reset();
+        if ( Condition::isInclude() || Condition::isEdit() )
+        {
+            $this->number3d = $validator->validateField('number_3d',$request->post('number_3d'));
+            if ( $validator->getLastError() )
+                $this->validationFailedResponse($validator->getAllErrors());
+
+            $this->number3d = $handler->setNumber_3d( $this->number3d );
+        }
+
+        $this->modelType = $validator->validateField('model_type',$request->post('model_type'));
+
+        $handler->setModel_typeEn($this->modelType);
+        $handler->setModel_type($this->modelType);
 
         $handler->setIsEdit($isEdit);
         $handler->setDate($date);
@@ -131,7 +146,7 @@ class SaveModelController extends GeneralController
 
             $textDataSave = $this->actionSaveData_Text();
 
-            $pricesDataSave = $this->actionSaveData_Prices(new HandlerPrices($id));
+            $pricesDataSave = $this->actionSaveData_Prices(new HandlerPrices($this->stockID));
 
             $repairsDataSave = $this->actionSaveData_Repairs();
 
@@ -161,80 +176,102 @@ class SaveModelController extends GeneralController
         $request = $this->request;
         $handler = $this->h;
 
-        // берем все остальное
-        $vendor_code  = strip_tags( trim($request->post('vendor_code')) );
-        $handler->setVendor_code($vendor_code);
-
-        $author       = strip_tags(trim( $request->post('author') ));
-        $modeller3d   = strip_tags(trim( $request->post('modeller3d') ));
-        $jewelerName  = strip_tags(trim( $request->post('jewelerName') ));
-        $size_range   = strip_tags(trim( $request->post('size_range') ));
-        $model_weight = strip_tags(trim( $request->post('model_weight') ));
-        $print_cost   = strip_tags(trim( $request->post('print_cost')) );
-        $model_cost   = strip_tags(trim( $request->post('model_cost')) );
-        $collection   = $handler->setCollections( $request->post('collection') );
-        $description  = strip_tags(trim( $request->post('description')));
-        $str_labels   = $handler->makeLabels( $request->post('labels') );
-        $creator_name = User::getFIO();
-        $status       = (int)$request->post('status'); // ID статуса
-
-        $this->paymentsRequisite['vendor_code'] = $vendor_code;
-        $this->paymentsRequisite['status'] = $status;
-        $this->paymentsRequisite['author'] = $author;
-        $this->paymentsRequisite['modeller3d'] = $modeller3d;
-        $this->paymentsRequisite['jewelerName'] = $jewelerName;
+        //debugAjax($request->post,'post',END_AB);
+        $validator = new Validator();
 
         $insertData = "";
-        if ( !empty($this->number3d) && User::permission('number_3d') )
+        // уже отвалидированы
+        if ( User::permission('number_3d') )
             $insertData .= "number_3d='$this->number3d',";
-
-        if ( User::permission('vendor_code') )
-            $insertData .= "vendor_code='$vendor_code',";
-
-        if ( !empty($collection) && User::permission('collections') )
-            $insertData .= "collections='$collection',";
-
-        if ( !empty($author) && User::permission('author') )
-            $insertData .= "author='$author',";
-
-        if ( !empty($modeller3d) && User::permission('modeller3d') )
-            $insertData .= "modeller3D='$modeller3d',";
-
-        if ( User::permission('jewelerName') )
-            $insertData .= "jewelerName='$jewelerName',";
-
-        if ( !empty($this->modelType) && User::permission('model_type') )
+        if ( User::permission('model_type') )
             $insertData .= "model_type='$this->modelType',";
 
+        // Валидируем все остальное
+        if ( User::permission('vendor_code') )
+        {
+            $vendor_code = $validator->validateField('vendor_code',  $request->post('vendor_code'));
+            $handler->setVendor_code($vendor_code);
+            $this->paymentsRequisite['vendor_code'] = $vendor_code;
+            $insertData .= "vendor_code='$vendor_code',";
+        }
+        if ( User::permission('author') )
+        {
+            $author = $validator->validateField('author', $request->post('author'));
+            $this->paymentsRequisite['author'] = $author;
+            $insertData .= "author='$author',";
+        }
+        if ( User::permission('modeller3d') )
+        {
+            $modeller3d   = $validator->validateField('modeller3d',   $request->post('modeller3d'));
+            $this->paymentsRequisite['modeller3d'] = $modeller3d;
+            $insertData .= "modeller3D='$modeller3d',";
+        }
+        if ( User::permission('jewelerName') )
+        {
+            $jewelerName  = $validator->validateField('jewelerName',  $request->post('jewelerName'));
+            $this->paymentsRequisite['jewelerName'] = $jewelerName;
+            $insertData .= "jewelerName='$jewelerName',";
+        }
         if ( User::permission('size_range') )
+        {
+            $size_range   = $validator->validateField('size_range',   $request->post('size_range'));
             $insertData .= "size_range='$size_range',";
-
-        if ( !empty($print_cost) && User::permission('print_cost') )
+        }
+        if ( User::permission('print_cost') )
+        {
+            $print_cost   = $validator->validateField('print_cost',   $request->post('print_cost'));
             $insertData .= "print_cost='$print_cost',";
-
-        if ( !empty($model_cost) && User::permission('model_cost') )
+        }
+        if ( User::permission('model_cost') )
+        {
+            $model_cost   = $validator->validateField('model_cost',   $request->post('model_cost'));
             $insertData .= "model_cost='$model_cost',";
-
-        if ( !empty($model_weight) && User::permission('model_weight') )
+        }
+        if ( User::permission('model_weight') )
+        {
+            $model_weight = $validator->validateField('model_weight', $request->post('model_weight'));
             $insertData .= "model_weight='$model_weight',";
-
+        }
         if ( User::permission('description') )
-            $insertData .= "description='".trim($description)."',";
+        {
+            $description  = $validator->validateField('description',  $request->post('description'));
+            $insertData .= "description='$description',";
+        }
 
+        // Валидация массивов данных
         if ( User::permission('labels') )
+        {
+            $str_labels   = $handler->makeLabels( $request->post('labels') );
             $insertData .= "labels='$str_labels',";
+        }
+        if ( User::permission('collections') )
+        {
+            $collection   = $handler->setCollections( $request->post('collection') );
+            $insertData .= "collections='$collection',";
+        }
 
+        // ID статуса
+        $status  = (int)$request->post('status');
+        $this->paymentsRequisite['status'] = $status;
+
+        //debugAjax('end', '', END_AB);
+        // При наличии ошибок валидации - выходим. Отправим тексты ошибок в браузер
+        if ( $validator->getLastError() )
+        {
+            $this->validationFailedResponse($validator->getAllErrors());
+        }
+
+
+
+        $creator_name = User::getFIO();
         $insertData = trim($insertData,',');
-
-        // добавляем во все комплекты артикул, если он есть
-        $handler->addVCtoComplects($vendor_code);
 
         /** сохраняем новую модель **/
         $updateModelData = false;
         if ( Condition::isNew() || Condition::isInclude() )
         {
-            $id = $this->stockID = $handler->addNewModel($this->number3d, $this->modelType); // возвращает id новой модели при успехе
-            if ( !$id )
+            $this->stockID = $handler->addNewModel($this->number3d, $this->modelType); // возвращает id новой модели при успехе
+            if ( !$this->stockID )
                 throw new \Exception('Error in addNewModel(). No ID is coming!',198);
 
             // если забли поставить статус при доб. новой модели
@@ -248,7 +285,7 @@ class SaveModelController extends GeneralController
 
             //04,07,19 - вносим статус в таблицу statuses
             $statusT = [
-                'pos_id'      => $id,
+                'pos_id'      => $this->stockID,
                 'status'      => $status,
                 'creator_name'=> $creator_name,
                 'UPdate'      => date("Y-m-d H:i:s"),//$this->date
@@ -277,7 +314,11 @@ class SaveModelController extends GeneralController
                 $handler->updateStatus($status, $creator_name);
         }
 
-        // Описания
+        // добавляем во все комплекты артикул, если он есть
+        if ( User::permission('vendor_code') && isset($vendor_code) )
+            $handler->addVCtoComplects($vendor_code);
+
+        // Доп. Описания
         if ( User::permission('description') )
             $this->response['notes'] = $handler->addNotes( $request->post('notes') );
 
@@ -669,6 +710,13 @@ class SaveModelController extends GeneralController
         }
 
         $this->progress->count();
+
+        exit( json_encode($this->response) );
+    }
+
+    protected function validationFailedResponse( array $errors )
+    {
+        $this->response['validateErrors'] = $errors;
 
         exit( json_encode($this->response) );
     }

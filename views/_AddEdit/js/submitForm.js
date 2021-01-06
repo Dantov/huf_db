@@ -245,7 +245,8 @@ function submitForm() {
         success:function(resp)
         {
             resp = JSON.parse(resp);
-            
+            let title = '';
+
             if ( resp.debug )
             {
                 debug(resp);
@@ -264,11 +265,29 @@ function submitForm() {
                 edit.classList.remove('hidden');
                 return;
             }
+            if ( resp.validateErrors )
+            {
+                debug(resp.validateErrors);
+                modal.iziModal('setIcon', 'glyphicon glyphicon-warning-sign');
+                modal.iziModal('setHeaderColor', '#d01f0f');
+                modal.iziModal('setTitle', 'Не верно заполнены поля!');
+
+                title = '';
+                $.each(resp.validateErrors, function (i, err) {
+                    title += err + '<br/>';
+                });
+
+                statusScript.style.color = '#d02d00';
+                statusScript.innerHTML = '<i><u>' + title + '</u></i>';
+
+                edit.classList.remove('hidden');
+                return;
+            }
 
             modal.iziModal('setIcon', 'glyphicon glyphicon-floppy-saved');
             modal.iziModal('setHeaderColor', '#edaa16');
             modal.iziModal('setTitle', 'Сохранение прошло успешно!');
-            let title = '';
+
             if ( resp.isEdit == true )
             {
                 title = 'Данные модели <b>'+ resp.number_3d + ' - ' + resp.model_type+'</b> изменены!';

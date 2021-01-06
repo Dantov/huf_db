@@ -171,57 +171,56 @@ class Handler extends General
 
     /**
      * @param string $vendor_code
+     * @return bool
      * @throws \Exception
      */
     public function addVCtoComplects( string $vendor_code )
     {
-        if ( !empty($vendor_code) )
-        {
-            $sql = " SELECT id,vendor_code FROM stock WHERE number_3d='$this->number_3d' AND vendor_code=' ' ";
-            if ( $this->id ) $sql .= " AND id<>'$this->id' ";
+        if ( empty($vendor_code) )
+            return false;
 
-            $includedModels = $this->findAsArray( $sql );
+        /*
+        $sqlIN = " SELECT s.id FROM stock as s WHERE s.number_3d='$this->number_3d' AND s.vendor_code=' ' AND s.id<>'$this->id' ";
+        $sqlOUT = " UPDATE stock SET vendor_code='$vendor_code' WHERE id IN ($sqlIN) ";
 
-            if ( $includedModels ) {
-                $ids = '';
-                foreach ( $includedModels as $model )
+        if ( $this->baseSql( $sqlOUT ) )
+            return true;
+
+        return false;
+        */
+
+        $sql = " SELECT id,vendor_code FROM stock WHERE number_3d='$this->number_3d' AND vendor_code=' ' ";
+        if ( $this->id ) $sql .= " AND id<>'$this->id' ";
+
+        $includedModels = $this->findAsArray( $sql );
+
+        if ( $includedModels ) {
+            $ids = '';
+            foreach ( $includedModels as $model )
+            {
+                if ( empty($model['vendor_code']) )
+                    $ids .= "'" . $model['id'] . "',";
+            }
+            if ( $ids )
+            {
+                try {
+                    $ids = '(' . trim($ids,',') . ')';
+                    $this->baseSql( " UPDATE stock SET vendor_code='$vendor_code' WHERE id IN $ids " );
+                } catch (\Exception $e)
                 {
-                    if ( empty($model['vendor_code']) )
-                        $ids .= "'" . $model['id'] . "',";
-                }
-                if ( $ids )
-                {
-                    try {
-                        $ids = '(' . trim($ids,',') . ')';
-                        $this->baseSql( " UPDATE stock SET vendor_code='$vendor_code' WHERE id IN $ids " );
-                    } catch (\Exception $e)
-                    {
-                        if ( _DEV_MODE_ ) {
-                            $errArrCodes = [
-                                'code' => $e->getCode(),
-                                'message' => $e->getMessage(),
-                            ];
-                            exit(json_encode(['error' => $errArrCodes]));
-                        } else {
-                            exit(json_encode(['error' => ['message'=>'Error in adding vendor code..', 'code'=>500]]));
-                        }
+                    if ( _DEV_MODE_ ) {
+                        $errArrCodes = [
+                            'code' => $e->getCode(),
+                            'message' => $e->getMessage(),
+                        ];
+                        exit(json_encode(['error' => $errArrCodes]));
+                    } else {
+                        exit(json_encode(['error' => ['message'=>'Error in adding vendor code..', 'code'=>500]]));
                     }
                 }
             }
         }
-        /*
-		if ( isset($vendor_code) && !empty($vendor_code) ) {
-			$query = mysqli_query($this->connection, " SELECT id,vendor_code FROM stock WHERE number_3d='$this->number_3d' " );
-			if ( $query -> num_rows > 0 ) {
-				while ( $row = mysqli_fetch_assoc($query) ) {
-					$id = $row['id'];
-					if ( empty($row['vendor_code']) ) {
-						$quertext = mysqli_query($this->connection, " UPDATE stock SET vendor_code='$vendor_code' WHERE id='$id' ");
-					}
-				}
-			}
-		}
-        */
+        return true;
 	}
 
     /**

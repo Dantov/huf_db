@@ -33,14 +33,17 @@ class HandlerPrices extends Handler
      */
     public function addDesignPrices(string $priceType , string $author = '') : int
     {
+
+
         if ( $priceType === 'sketch' )
         {
-            // Взяли автора из Инпута (по другому никак), нашли его ID из табл
+            // Взяли фамилию автора из Инпута (по другому никак), нашли его ID из табл
             $userID = $this->getUserIDFromSurname( explode(" ", $author)[0] );
             if ( !$userID ) return -1;
 
             //$userID = User::getID();
             $rowGSDesign = $this->findAsArray("SELECT id as gs_id, grade_type as is3d_grade, description as cost_name, points as value FROM grading_system WHERE id IN ('91','99') ");
+
 
             foreach ( $rowGSDesign as &$designGrade )
             {
@@ -50,6 +53,8 @@ class HandlerPrices extends Handler
                 $designGrade['pos_id'] = $this->id;
                 $designGrade['date'] = $this->date;
             }
+
+            //debugAjax($rowGSDesign,'$rowGSDesign', END_AB);
 
             return $this->insertUpdateRows($rowGSDesign, 'model_prices');
 

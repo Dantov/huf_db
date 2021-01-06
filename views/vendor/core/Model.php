@@ -268,7 +268,7 @@ class Model
 
         $sqlStr = "INSERT INTO $table $columns VALUES $values ON DUPLICATE KEY UPDATE $update";
 
-        //debugAjax($sqlStr,'$sqlStr',END_AB);
+        //debugAjax($sqlStr,'$sqlStr');
 
         return $this->sql($sqlStr);
     }

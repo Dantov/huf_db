@@ -23,13 +23,10 @@ class Condition
      * @param int $condNumber
      * @throws \Exception
      */
-    public static function set(int $condNumber )
+    public static function set( int $condNumber )
     {
         if ( self::$isSet )
             throw new \Exception( SaveModelCodes::getMessage(SaveModelCodes::WRONG_SET_CONDITION)['message'], SaveModelCodes::WRONG_SET_CONDITION);
-
-        if ( $condNumber < 1 || $condNumber > 3 )
-            throw new \Exception( SaveModelCodes::getMessage(SaveModelCodes::WRONG_CONDITION)['message'], SaveModelCodes::WRONG_CONDITION);
 
         switch ( $condNumber )
         {
@@ -42,6 +39,7 @@ class Condition
             case 3:
                 self::$INCLUDE = true;
                 break;
+            default : throw new \Exception( SaveModelCodes::getMessage(SaveModelCodes::WRONG_CONDITION)['message'], SaveModelCodes::WRONG_CONDITION);
         }
 
         self::$isSet = true;

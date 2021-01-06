@@ -40,6 +40,11 @@ class Files
         return $_FILES;
     }
 
+    /**
+     * проверяет присутстыие файлов из формы, под именем $name
+     * @param string $name
+     * @return bool
+     */
     public function has( string $name='' ) : bool
     {
         if ( $name )

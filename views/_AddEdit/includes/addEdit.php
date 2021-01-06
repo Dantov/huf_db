@@ -1147,4 +1147,5 @@ $permittedFields = User::permissions();
 </form>
 
 <img src="" id="imageBoxPrev" width="200px" class="img-thumbnail hidden"/>
+
 <?php $switchTableRow = 'notes'; require _viewsDIR_."_AddEdit/includes/protoRows.php";?>
