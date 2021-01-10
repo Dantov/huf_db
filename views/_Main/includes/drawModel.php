@@ -39,9 +39,8 @@
 			<? endif; ?>
 		</div>
 		<div class="text-muted margtop">
-			<span class="glyphicon glyphicon-calendar pull-left" title="дата создания">
-				<?=date_create( $row['date'] )->Format('d.m.Y'); ?>
-			</span>
+			<span class="glyphicon glyphicon-calendar pull-left" title="дата создания"></span>
+			<?=date_create( $row['date'] )->Format('d.m.Y'); ?>
 			<div class="selectionCheck <?=$checkedSM['active'] ?>">
 				<label for="checkId_<?=$row['id'] ?>" class="pointer">
 					<span class="glyphicon <?=$checkedSM['class'] ?>"></span>

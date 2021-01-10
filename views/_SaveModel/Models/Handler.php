@@ -82,16 +82,20 @@ class Handler extends General
 	public function setIsEdit($isEdit) {
 		if ( isset($isEdit) ) $this->isEdit = $isEdit;
 	}
-    public function setCollections($collections = [])
+    public function setCollections( array $collections )
     {
-        if ( !is_array($collections) || empty($collections) ) return null;
+        //if ( !is_array($collections) || empty($collections) ) return null;
 
-        foreach ( $collections as &$collection )
+        $temp = [];
+        foreach ( $collections as $key => $array )
         {
-            $collection = htmlentities(trim($collection),ENT_QUOTES);
+            foreach ( $array as $collName )
+            {
+                $temp[] = htmlentities(trim($collName),ENT_QUOTES);
+            }
         }
 
-        return implode(';',$collections);
+        return implode(';',$temp);
     }
 	
 	protected function add000($str)
@@ -179,15 +183,6 @@ class Handler extends General
         if ( empty($vendor_code) )
             return false;
 
-        /*
-        $sqlIN = " SELECT s.id FROM stock as s WHERE s.number_3d='$this->number_3d' AND s.vendor_code=' ' AND s.id<>'$this->id' ";
-        $sqlOUT = " UPDATE stock SET vendor_code='$vendor_code' WHERE id IN ($sqlIN) ";
-
-        if ( $this->baseSql( $sqlOUT ) )
-            return true;
-
-        return false;
-        */
 
         $sql = " SELECT id,vendor_code FROM stock WHERE number_3d='$this->number_3d' AND vendor_code=' ' ";
         if ( $this->id ) $sql .= " AND id<>'$this->id' ";
@@ -235,15 +230,12 @@ class Handler extends General
         $str_labels = '';
         $labelsOrigin = $this->getStatLabArr('labels');
 
-        foreach ( $labels as $label )
+        foreach ( $labels as $key => $names )
         {
-            foreach ( $labelsOrigin?:[] as $labelOrigin )
-            {
-                if ( $label === $labelOrigin['name'] )
-                {
-                    $str_labels .= $labelOrigin['name'] . ';';
-                }
-            }
+            foreach ( $names as $label )
+                foreach ($labelsOrigin ?: [] as $labelOrigin)
+                    if ($label === $labelOrigin['name'])
+                        $str_labels .= $labelOrigin['name'] . ';';
         }
         return trim($str_labels,';');
     }

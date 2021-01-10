@@ -80,10 +80,10 @@ class SaveModelController extends GeneralController
                 $stl_fP = $files->count('fileSTL');
                 $rhino_fP = $files->count('file3dm');
                 $ai_fP = $files->count('fileAi');
+                $overallPr = $img_fP + $stl_fP + $rhino_fP + $ai_fP + 7;
 
                 $this->progress = new SaveModelProgressCounter( $this->request->post('userName'),
-                    $this->request->post('tabID'),
-                    $img_fP + $stl_fP + $rhino_fP + $ai_fP + 5);
+                    $this->request->post('tabID'), $overallPr);
 
             } else {
                 exit(json_encode(['error' => AppCodes::getMessage(AppCodes::MODEL_OUTDATED)]));
@@ -122,6 +122,7 @@ class SaveModelController extends GeneralController
 
         $validator = new Validator();
         $validator->reset();
+
         if ( Condition::isInclude() || Condition::isEdit() )
         {
             $this->number3d = $validator->validateField('number_3d',$request->post('number_3d'));
@@ -238,31 +239,39 @@ class SaveModelController extends GeneralController
             $insertData .= "description='$description',";
         }
 
+
         // Валидация массивов данных
         if ( User::permission('labels') )
         {
-            $str_labels   = $handler->makeLabels( $request->post('labels') );
+            $validator->validateFields('labels', $request->post('labels') );
+            $str_labels  = $handler->makeLabels( $request->post('labels') );
             $insertData .= "labels='$str_labels',";
         }
         if ( User::permission('collections') )
         {
-            $collection   = $handler->setCollections( $request->post('collection') );
+            $validator->validateFields('collections', $request->post('collections') );
+            $collection   = $handler->setCollections( $request->post('collections') );
             $insertData .= "collections='$collection',";
         }
+        if ( User::permission('material') )
+            $validator->validateFields('mats', $request->post('mats') );
+        if ( User::permission('gems') )
+            $validator->validateFields('gems', $request->post('gems') );
+        if ( User::permission('vc_links') )
+            $validator->validateFields('vc_links', $request->post('vc_links') );
+
+
+
+        // При наличии ошибок валидации - выходим. Отправим тексты ошибок в браузер
+        if ( $validator->getLastError() )
+            $this->validationFailedResponse($validator->getAllErrors());
+        // Validation END
+
+        //debugAjax($request->post('vc_links'),'vc_links',END_AB);
 
         // ID статуса
         $status  = (int)$request->post('status');
         $this->paymentsRequisite['status'] = $status;
-
-        //debugAjax('end', '', END_AB);
-        // При наличии ошибок валидации - выходим. Отправим тексты ошибок в браузер
-        if ( $validator->getLastError() )
-        {
-            $this->validationFailedResponse($validator->getAllErrors());
-        }
-
-
-
         $creator_name = User::getFIO();
         $insertData = trim($insertData,',');
 
@@ -343,7 +352,6 @@ class SaveModelController extends GeneralController
         $request = $this->request;
         $mats = $request->post('mats');
         if ( empty($mats) ) return false;
-
 
         $materialRows = $this->h->makeBatchInsertRow($mats, $this->stockID, 'metal_covering');
         if ( !$materialRows ) return false;
@@ -486,6 +494,7 @@ class SaveModelController extends GeneralController
                 {
                     $zipData['stl'] = $stl;
                     if ( $stlFileNames[] = $this->h->uploadStlFile( $zipData, $path ) )
+                        //============= CP ==============//
                         $this->progress->count();
                 }
                 // closing Zip
@@ -503,6 +512,7 @@ class SaveModelController extends GeneralController
 
                 $this->h->add3dm( $files->get('file3dm') );
 
+                //============= CP ==============//
                 $this->progress->count();
             }
         }
@@ -519,6 +529,7 @@ class SaveModelController extends GeneralController
                     mkdir($path, 0777, true);
 
                 $this->h->addAi( $files->get('fileAi') );
+                //============= CP ==============//
                 $this->progress->count();
             }
         }
@@ -668,6 +679,7 @@ class SaveModelController extends GeneralController
         if ( User::permission('repairsProd') )
             $repairsResponse['prod'] = $hR->addRepairs( $repairs['prod'] );
 
+        //============= CP ==============//
         $this->progress->count();
 
         return $repairsResponse;
@@ -709,7 +721,8 @@ class SaveModelController extends GeneralController
             $selection->getSelectedModels();
         }
 
-        $this->progress->count();
+        //============= CP ==============//
+        $this->progress->count(100);
 
         exit( json_encode($this->response) );
     }

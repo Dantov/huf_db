@@ -24,13 +24,18 @@ class SaveModelProgressCounter extends ProgressCounter
 
     public function __construct( string $userName, string $tabID, int $overallProcesses = 0 )
     {
-        $this->overallProcesses = $this->overallProcesses ? $overallProcesses : 0;
+        $this->overallProcesses = $overallProcesses;
         parent::__construct();
 
         $this->setProgress($userName, $tabID);
     }
 
-    public function count()
+    public function __toString()
+    {
+        return "CurrPr: " . $this->currentProgresses . "OverPr: " . $this->overallProcesses;
+    }
+
+    public function count( int $percent=0 )
     {
         if ( $this->currentProgresses >= $this->overallProcesses )
         {
@@ -39,7 +44,7 @@ class SaveModelProgressCounter extends ProgressCounter
         }
 
         $newPercent = ceil( ( ++$this->currentProgresses * 100 ) / $this->overallProcesses );
-
+        if ( $percent ) $newPercent = $percent;
         $this->progressCount($newPercent);
     }
 }

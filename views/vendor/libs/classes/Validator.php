@@ -6,7 +6,6 @@
 
 namespace Views\vendor\libs\classes;
 
-use Matrix\Exception;
 use Views\vendor\core\db\Database;
 
 class Validator
@@ -69,15 +68,10 @@ class Validator
             'required' => "Поле '" . $field . "' обязательно к заполнению. ",
             'readonly' => "Поле '" . $field . "' нельзя изменять. ",
             'int' => "Значение поля '" . $field . "' должно быть целое число. ",
+            'unsigned' => "Значение поля '" . $field . "' не может быть отрицательным. ",
             'double' => "Значение поля '" . $field . "' должно быть дробное число. ",
             'forbiddenChars' => "Значение поля '" . $field . "' содержит не допустимые символы. ",
             'acceptedChars' => "Значение поля '" . $field . "' содержит не . ",
-
-            'type' => ['string','int','double','array'], // тип значения
-            'elemType' => ['string','int','double','array'],
-            'trim' => true,
-            'strip_tags' => true, // применить striptags()
-            'escape_string' => true, // применить realescapestring()
         ];
 
         if ( array_key_exists($ruleName, $rules) )
@@ -90,7 +84,7 @@ class Validator
      *
      * @param string $field
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     protected function fieldRules( string $field = '' )
     {
@@ -101,7 +95,7 @@ class Validator
                 if ( array_key_exists($field,$this->fieldRules) )
                     return $this->fieldRules[$field];
             } else {
-                throw new Exception('Field  "' . $field . '" not found in rules!',213);
+                throw new \Exception('Field  "' . $field . '" not found in rules!',213);
             }
         }
 
@@ -125,7 +119,7 @@ class Validator
                 'name'=> 'Автор',
                 'rules' => [
                     'required' => true,
-                    'maxLength' => 3,//64
+                    'maxLength' => 64,
                 ],
             ],
             'modeller3d' => [
@@ -166,14 +160,14 @@ class Validator
             'print_cost' => [
                 'name'=> 'Стоимость печати',
                 'rules' => [
-                    'min' => 1,
+                    'min' => 0,
                     'max' => 1000,
                 ],
             ],
             'model_cost' => [
                 'name'=> 'Стоимость модели',
                 'rules' => [
-                    'min' => 1,
+                    'min' => 0,
                     'max' => 1000,
                 ],
             ],
@@ -190,29 +184,181 @@ class Validator
                     'max' => 106,
                 ],
             ],
+
             // Массивы
             'labels' => [
                 'name'=> 'Метки',
                 'rules' => [
-                    'maxLength' => 64,
+                    'max' => 9,
+                ],
+                'fieldsRules' => [
+                    'name' => [
+                        'name'=> 'Метки',
+                        'rules' => [
+                            'maxLength' => 128,
+                            'minLength' => 3,
+                        ],
+                    ],
                 ],
             ],
-            'collection' => [
+            'collections' => [
                 'name'=> 'Коллекции',
                 'rules' => [
                     'required' => true,
-                    'type' => 'array',
-                    'maxLength' => 128,
-                    'countMax' => 10,
+                    'min' => 1,
+                    'max' => 10,
+                ],
+                'fieldsRules' => [
+                    'name' => [
+                        'name'=> 'Имя коллекции',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 128,
+                            'minLength' => 3,
+                        ],
+                    ],
                 ],
             ],
             'mats' => [
                 'name'=> 'Материалы',
                 'rules' => [
                     'required' => true,
-                    'type' => 'array',
-                    'maxLength' => 128,
-                    'countMax' => 20,
+                    'max' => 20,
+                ],
+                'fieldsRules' => [
+                    'part' => [
+                        'name'=> 'Материалы: деталь',
+                        'rules' => [
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'type' => [
+                        'name'=> 'Материалы: Металл',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'probe' => [
+                        'name'=> 'Материалы: Проба',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'metalColor' => [
+                        'name'=> 'Материалы: Цвет металла',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'covering' => [
+                        'name'=> 'Материалы: Покрытие',
+                        'rules' => [
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'area' => [
+                        'name'=> 'Материалы: Место',
+                        'rules' => [
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'covColor' => [
+                        'name'=> 'Материалы: Цвет покрытия',
+                        'rules' => [
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'handling' => [
+                        'name'=> 'Материалы: Обработка',
+                        'rules' => [
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'count' => [
+                        'name'=> 'Материалы: К-во',
+                        'rules' => [
+                            'required' => true,
+                            'min' => 1,
+                            'max' => 128,
+                        ],
+                    ],
+                ],
+            ],
+            'gems' => [
+                'name'=> 'Камни',
+                'rules' => [
+                    'max' => 20,
+                ],
+                'fieldsRules' => [
+                    'gems_names' => [
+                        'name'=> 'Камни: Сырьё',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'gems_cut' => [
+                        'name'=> 'Камни: Огранка',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'gems_sizes' => [
+                        'name'=> 'Камни: Размеры',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 12,
+                        ],
+                    ],
+                    'value' => [
+                        'name'=> 'Камни: Кол-во',
+                        'rules' => [
+                            'required' => true,
+                            'int' => true,
+                            'unsigned' => true,
+                            'min' => 1,
+                            'max' => 1000,
+                        ],
+                    ],
+                    'gems_color' => [
+                        'name'=> 'Камни: Цвет',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 128,
+                        ],
+                    ],
+                ],
+            ],
+            'vc_links' => [
+                'name'=> 'Ссылки',
+                'rules' => [
+                    'max' => 20,
+                ],
+                'fieldsRules' => [
+                    'vc_names' => [
+                        'name'=> 'Ссылки: Название',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'vc_3dnum' => [
+                        'name'=> 'Ссылки: Артикул/Номер 3D',
+                        'rules' => [
+                            'required' => true,
+                            'maxLength' => 64,
+                        ],
+                    ],
+                    'descript' => [
+                        'name'=> 'Ссылки: Описание',
+                        'rules' => [
+                            'maxLength' => 128,
+                        ],
+                    ],
                 ],
             ],
         ];
@@ -222,31 +368,72 @@ class Validator
             if ( array_key_exists($field,$this->fieldRules) )
                 return $this->fieldRules[$field];
         } else {
-            throw new Exception('Field  "' . $field . '" not found in rules!',213);
+            throw new \Exception('Field  "' . $field . '" not found in rules!',213);
         }
 
         return $this->fieldRules;
     }
 
-    public function validateFields( array $fields ) : bool
+    /**
+     * Проверка мультистрок
+     * @param string $fieldNameGlobal
+     * @param array $batchRows
+     * @throws \Exception
+     */
+    public function validateFields( string $fieldNameGlobal, &$batchRows ) : void
     {
+        if (!$batchRows) return;
 
-        return true;
+        //Проверка кол-ва
+        $this->validateField( $fieldNameGlobal, count($batchRows) );
+
+        $rulesGlobal = $this->fieldRules($fieldNameGlobal)['fieldsRules'];
+
+        foreach ( $batchRows as $fieldNameLocal => &$value )
+        {
+            if ( $fieldNameLocal === 'id' ) continue;
+            if ( array_key_exists($fieldNameLocal, $rulesGlobal) )
+            {
+                $localFieldRules = $rulesGlobal[$fieldNameLocal];
+            } else {
+               throw new \Exception("No rule for this field", 655);
+            }
+
+//            debugAjax($rulesGlobal, 'validate: $rulesGlobal');
+//            debugAjax($fieldNameLocal, '$fieldNameLocal');
+//            debugAjax($localFieldRules, 'validate: $localFieldRules', END_AB);
+
+            if ( is_array($value) )
+            {
+                foreach ( $value as &$v )
+                {
+                    if ( (int)$v === -1 ) continue;
+                    $v = $this->validateField( $fieldNameLocal, $v, $localFieldRules );
+                }
+
+            } else {
+                $value = $this->validateField( $fieldNameLocal, $value, $localFieldRules );
+            }
+
+        }
+
     }
 
     /**
      * @param string $fieldName
      * @param string $fieldValue
+     * @param array $rules Список правил
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
-    public function validateField( string $fieldName, string $fieldValue )
+    public function validateField( string $fieldName, string $fieldValue, array $rules = [] )
     {
         $fieldValue = trim($fieldValue);
         $fieldValue = strip_tags($fieldValue);
         $fieldValue = mysqli_real_escape_string($this->connection, $fieldValue);
 
-        $rules = $this->fieldRules($fieldName);
+        if ( empty($rules) )
+            $rules = $this->fieldRules($fieldName);
 
         $this->validate($fieldValue, $rules);
 
@@ -255,10 +442,13 @@ class Validator
 
     protected function validate( $fieldValue, array $rules ) : bool
     {
-        //debugAjax($fieldValue, 'validate: $fieldValue');
-        //debugAjax($rules, 'validate: $rules');
+//        debugAjax($fieldValue, 'validate: $fieldValue');
+//        debugAjax($rules, 'validate: $rules');
 
-        foreach ( $rules['rules'] as $rule => $value )
+//        if ( $name == 'gems' )
+//            debugAjax($rules['rules'], 'validate: $rules[rules]', END_AB);
+
+        foreach ( $rules['rules']??[] as $rule => $value )
         {
             switch ($rule)
             {
@@ -275,6 +465,11 @@ class Validator
                 case "int":
                     {
                         $fieldValue = (int)$fieldValue;
+                    } break;
+                case "unsigned":
+                    {
+                        if ( $fieldValue < 0 )
+                            $this->setErrorText($rule, $rules['name'], $value);
                     } break;
                 case "min":
                     {
@@ -320,21 +515,5 @@ class Validator
         self::$lastError = $this->rulesErrorText($rule, $ruleName, $value);
         self::$errors[] = self::$lastError;
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

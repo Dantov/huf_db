@@ -330,7 +330,7 @@ $permittedFields = User::permissions();
                         <div class="row">
                             <?php foreach ( $labels??[] as $label):?>
                                 <div class="col-xs-6 col-sm-4 col-md-3 col-lg-3" title="<?=$label['info']?>">
-                                    <input type="checkbox" <?=$label['check'];?> name="labels[<?=$label['id']?>]" id="<?=$label['id']?>" aria-label="..." value="<?=$label['name'];?>">
+                                    <input type="checkbox" <?=$label['check'];?> name="labels[name][<?=$label['id']?>]" id="<?=$label['id']?>" aria-label="..." value="<?=$label['name'];?>">
                                     <label for="<?=$label['id'];?>">
                             <span class="label <?=$label['class'];?> lables-bottom">
                                 <span class="glyphicon glyphicon-tag"></span> <?=$label['name'];?></span>
@@ -1113,10 +1113,10 @@ $permittedFields = User::permissions();
         <input type="hidden" id="num3d" name="number_3d" value="<?=$row['number_3d'];?>"/>
     <?php endif;?>
     <?php if ( !$permittedFields['vendor_code'] ): ?>
-        <input type="hidden" id="vendor_code" value="<?=$row['vendor_code'];?>"/>
+        <input type="hidden" id="vendor_code" name="vendor_code" value="<?=$row['vendor_code'];?>"/>
     <?php endif;?>
     <?php if ( !$permittedFields['model_type'] ): ?>
-        <input type="hidden" id="modelType" value="<?=$row['model_type'];?>"/>
+        <input type="hidden" id="modelType" name="model_type" value="<?=$row['model_type'];?>"/>
     <?php endif;?>
     <?php $encID = ($component===2) ? $id : 0; ?>
     <input type="hidden" name="id" value="<?= Crypt::strEncode($encID) ?>"/>
