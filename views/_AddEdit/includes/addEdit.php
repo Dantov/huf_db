@@ -942,7 +942,7 @@ $permittedFields = User::permissions();
                             <div class="panel-heading" title="Стоимость Доработки">
                                 <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
                                 <strong>Доработка модели</strong>
-                                <?php if ( !count($modelPrices) ): //!$this->isCredited($modelPrices, 6) || ?>
+                                <?php if ( !$this->isCredited($modelPrices, 6) ): //!count($modelPrices) ?>
                                     <button class="btn btn-sm btn-default pull-right addModellerJewPrice" style="top:-5px !important; position:relative;" type="button" title="Добавить стоимость">
                                         <span class="glyphicon glyphicon-plus"></span>
                                     </button>

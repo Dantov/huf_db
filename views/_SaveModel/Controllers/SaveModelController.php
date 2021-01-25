@@ -639,11 +639,15 @@ class SaveModelController extends GeneralController
             }
         }
 
+        /** инициируем вставку оценок модельера-доработчика  */
         if (User::permission('MA_modellerJew'))
         {
-            if ( Condition::isEdit() ) {
-                // инициируем вставку оценок модельера-доработчика
-                if ( trueIsset($this->request->post('modellerJewPrice')) && trueIsset($jewelerName) )
+            if ( Condition::isEdit() )
+            {
+                if ( !trueIsset($jewelerName) )
+                    $this->validationFailedResponse( ['Не заполнено поле "Модельер-доработчик" '] );
+
+                if ( trueIsset($this->request->post('modellerJewPrice')) )
                     $payments->addModJewPrices('add', $this->request->post('modellerJewPrice'), $jewelerName );
             }
         }

@@ -219,7 +219,7 @@ class HandlerPrices extends Handler
      * @return int
      * @throws \Exception
      */
-    public function addPrint3DPrices(string $priceType ) : int
+    public function addPrint3DPrices( string $priceType ) : int
     {
         if ( $priceType === 'supports' ) // внесем прайс поддержек
         {
@@ -254,6 +254,7 @@ class HandlerPrices extends Handler
      */
     public function addModJewPrices(string $priceType, array $price = [], string $jewelerName = '')
     {
+        //debugAjax( $price,'$price' , END_AB );
         if ( $priceType === 'add' )
         {
             // Взяли моделлера из Инпута (по другому никак), нашли его ID из табл
@@ -273,6 +274,8 @@ class HandlerPrices extends Handler
             $queryGS['date'] = $this->date;
 
             $row = [$queryGS];
+
+            //debugAjax( $row,'$row' , END_AB );
 
             $this->insertUpdateRows($row, 'model_prices');
         }
