@@ -1237,6 +1237,9 @@ class Handler extends General
         $removeRows = [];
 
         $data = $this->parseRecords($data);
+		
+		//debugAjax($stockID,'stockID');
+		//debugAjax($data,'parseRecords',END_AB);
 
         $tSOrigin = $this->getTableSchema($tableName);
         $tableSchema = [];
@@ -1274,7 +1277,8 @@ class Handler extends General
 
             if ( $toRemove )
             {
-                $removeRows[] = $dataRow;
+				$dataRow[end($tSOrigin)] = $stockID; // в конец добавим pos_id
+				$removeRows[] = $dataRow;
                 continue;
             }
             if ( $emptyFields )

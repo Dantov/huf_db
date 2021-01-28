@@ -357,6 +357,7 @@ class SaveModelController extends GeneralController
         if ( !$materialRows ) return false;
 
         //debug($materialRows,'makeBatchInsertRow',1,1);
+        //debugAjax($materialRows,'makeBatchInsertRow',END_AB);
 
         $this->response['materials']['insertUpdate'] = $this->h->insertUpdateRows($materialRows['insertUpdate'], 'metal_covering');
         $this->response['materials']['delete'] = $this->h->removeRows($materialRows['remove'], 'metal_covering');

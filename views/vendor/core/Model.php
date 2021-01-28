@@ -201,12 +201,30 @@ class Model
         if ( empty($tableName) )
             throw new \Exception("Error removeRows() table name might be a string!", 1);
 
+		//debugAjax($toRemove,'toRemove');
+		
         $ids = '';
-        foreach ( $toRemove as $id )
-            if ( !empty($id) ) $ids .= $id . ',';
+        // foreach ( $toRemove as $id )
+            // if ( !empty($id) ) $ids .= $id . ',';
 
+		foreach ( $toRemove as $rows )
+		{
+			if ( is_array($rows) )
+			{
+				foreach ( $rows as $key => $id )
+					if ( ($key == $primaryKey) && !empty($id) ) $ids .= $id . ',';
+					
+				continue;
+			}
+				
+            if ( !empty($rows) ) $ids .= $rows . ',';
+		}
+
+			
         if (empty($ids)) return false;
         $ids = '(' . trim($ids,',') . ')';
+		
+		//debugAjax($ids,'ids',END_AB);
 
         $rem = $this->baseSql( "DELETE FROM $tableName WHERE $primaryKey IN $ids" );
         if ( !$rem ) return true;
