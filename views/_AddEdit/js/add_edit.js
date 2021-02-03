@@ -323,11 +323,11 @@ function removeNote(self)
 
 
 //-----  удаление превьюшек  -------//
-function dellImgPrew(self){
-
+function dellImgPrew(self)
+{
     let todell = self.parentElement.parentElement.parentElement.parentElement;
     todell.remove();
-    uplF_count--;
+    //uplF_count--;
 }
 //----- удаление с сервера картинок, стл, модели целиком -------//
 function dell_fromServ( id, fileName, fileType, dellPos, element )

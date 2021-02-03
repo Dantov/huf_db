@@ -463,53 +463,57 @@ class AddEdit extends General
     public function getImages($sketch = false)
     {
 		$respArr = array();
+
 		if ( $sketch === true ) {
-			$img = mysqli_query($this->connection, " SELECT * FROM images WHERE pos_id='$this->id' AND sketch='1' ");
+            $foundImages = $this->findAsArray(" SELECT * FROM images WHERE pos_id='$this->id' AND sketch='1' ");
 		} else {
-			$img = mysqli_query($this->connection, " SELECT * FROM images WHERE pos_id='$this->id' ");
+            $foundImages = $this->findAsArray(" SELECT * FROM images WHERE pos_id='$this->id' ");
 		}
 		
-		if ( $img->num_rows > 0 ) {
-            $this->getStatLabArr('image');
-			$i = 0;
-			while( $row_img = mysqli_fetch_assoc($img) ) {
-				$respArr[$i]['id'] = $row_img['id'];
-                $respArr[$i]['imgName'] = $row_img['img_name'];
-                if ( $row_img['main'] ) $respArr[$i]['main'] = $row_img['main'];
+		if ( !count($foundImages) ) return $respArr;
 
-                $imgPath = $this->row['number_3d'].'/'.$this->id.'/images/'.$row_img['img_name'];
+        $this->getStatLabArr('image');
 
-                if ( !file_exists(_stockDIR_.$imgPath) )
+        $i = 0;
+        foreach ( $foundImages as  $row_img )
+        {
+            $respArr[$i]['id'] = $row_img['id'];
+            $respArr[$i]['imgName'] = $row_img['img_name'];
+            if ( $row_img['main'] ) $respArr[$i]['main'] = $row_img['main'];
+
+            $imgPath = $this->row['number_3d'].'/'.$this->id.'/images/'.$row_img['img_name'];
+
+            if ( !file_exists(_stockDIR_.$imgPath) )
+            {
+                $respArr[$i]['imgPath'] = _stockDIR_HTTP_."default.jpg";
+            } else {
+                $respArr[$i]['imgPath'] = _stockDIR_HTTP_.$imgPath;
+            }
+
+            //debug($row_img,'$row_img');
+
+            // проставляем флажки
+            $img_arr = $this->imageStatuses;
+            //debug($img_arr,'$img_arr',1);
+            foreach ( $row_img as $key => $value )
+            {
+                // нижний ходит по статусам из табл и сверяет имена с ключом из картинок
+                $flagToResetNo = false;
+                foreach ( $img_arr as &$option )
                 {
-                    $respArr[$i]['imgPath'] = _stockDIR_HTTP_."default.jpg";
-                } else {
-                    $respArr[$i]['imgPath'] = _stockDIR_HTTP_.$imgPath;
-                }
-
-                //debug($row_img,'$row_img');
-
-				// проставляем флажки
-                $img_arr = $this->imageStatuses;
-                //debug($img_arr,'$img_arr',1);
-                foreach ( $row_img as $key => $value )
-                {
-                    // нижний ходит по статусам из табл и сверяет имена с ключом из картинок
-                    $flagToResetNo = false;
-                    foreach ( $img_arr as &$option )
+                    if ( $key === $option['name_en'] && (int)$value === 1 )
                     {
-                        if ( $key === $option['name_en'] && (int)$value === 1 )
-                        {
-                            $option['selected'] = $value;
-                            $flagToResetNo = true;
-                        }
-                        // уберем флажек с "НЕТ" если был выставлен на чем-то другом
-                        if (  (int)$option['id'] === 27 && $flagToResetNo === true ) $option['selected'] = 0;
+                        $option['selected'] = $value;
+                        $flagToResetNo = true;
                     }
+                    // уберем флажек с "НЕТ" если был выставлен на чем-то другом
+                    if (  (int)$option['id'] === 27 && $flagToResetNo === true ) $option['selected'] = 0;
                 }
-                $respArr[$i]['imgStat'] = $img_arr;
-                $i++;
-			}
-		}
+            }
+            $respArr[$i]['imgStat'] = $img_arr;
+            $i++;
+        }
+
 		return $respArr;
 	}
 

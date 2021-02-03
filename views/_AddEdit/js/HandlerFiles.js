@@ -341,6 +341,11 @@ HandlerFiles.prototype.removeImg = function(self)
     }
     debug(this.imageFilesBuffer);
 };
+HandlerFiles.prototype.removeScetchImg = function(self)
+{
+    let toDell = self.parentElement.parentElement.parentElement.parentElement;
+    toDell.remove();
+};
 HandlerFiles.prototype.getImageFiles = function()
 {
     return this.imageFilesBuffer;

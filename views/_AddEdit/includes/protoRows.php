@@ -339,10 +339,9 @@
                             <img src="<?=$protoImgRow ? '': $image['imgPath']?>" class="imgThumbs" />
                         </div>
                         <div class="img_dell">
-                            <button class="btn btn-default" type="button" <? if ( !$protoImgRow ): ?>
-                                    onclick="dell_fromServ(<?=$id?>, '<?=$image['imgName']?>', 'image', false, this)"
-                                    <?endif;?>
-                                    >
+                            <?php if ( !$protoImgRow && $component === 3 ): $onClk = "dellImgPrew(this)";  endif; ?>
+                            <?php if ( !$protoImgRow && $component === 2 ): $onClk = "dell_fromServ($id, '{$image['imgName']}', 'image', false, this)";  endif; ?>
+                            <button class="btn btn-default" type="button" onclick="<?= $onClk ?>" >
                                 <span class="glyphicon glyphicon-remove"></span>
                             </button>
                         </div>

@@ -432,6 +432,8 @@ class SaveModelController extends GeneralController
             $imgRows = [];
             $images = $request->post('image');
 
+            //debugAjax($images,'$images',END_AB);
+
             if ( !empty($images['imgFor']) )
             {
                 // Обновляем статусы существующих картинок
@@ -545,21 +547,15 @@ class SaveModelController extends GeneralController
     public function actionSaveData_Prices( HandlerPrices $payments )
     {
 
-        //if ( !isset($isEdit) ) $isEdit = 1; // редактирование
-//        if ( !isset($modelID) )
-//            if ( trueIsset($this->stockID) ) $modelID = $this->stockID;
-
-        //$payments = new HandlerPrices($this->stockID);
-
         $status = $this->paymentsRequisite['status'];
         $author = $this->paymentsRequisite['author'];
         $modeller3d = $this->paymentsRequisite['modeller3d'];
         $jewelerName = $this->paymentsRequisite['jewelerName'];
 
-        /** Добавим стоимость дизайна только для новой модели **/
+        /** Добавим стоимости дизайна только для новых моделей **/
         if (User::permission('MA_design'))
         {
-            if ( Condition::isNew() )
+            if ( Condition::isNew() || Condition::isInclude() )
                 if ( $status === 35 )
                     if ( !$this->isCurrentStatusPresent )
                         if ( $payments->addDesignPrices('sketch', $author) === -1 )
@@ -575,16 +571,9 @@ class SaveModelController extends GeneralController
                         $this->response['MA_design'] = "not adding price";
         }
 
+        /** Вставка оценок моделироания */
         if ( User::permission('MA_modeller3D') )
         {
-            if ( Condition::isEdit() )
-            {
-                /** добавим Дизайнеру за сопровождение **/
-                if ( $status === 8 ) // В работе 3D
-                    if ( !$this->isCurrentStatusPresent && $payments->isStatusPresent(89) && $payments->isStatusPresent(35) )
-                        if ($payments->addDesignPrices('escort3D') === -1)
-                            $this->response['MA_modeller3D'] = "not adding price";
-            }
             // инициируем вставку оценок моделироания только ели есть MA_modeller3D
             // и имя FIO моделлера == FIO юзера
             if ( $this->request->post('ma3Dgs') && trueIsset($modeller3d) )
@@ -593,7 +582,8 @@ class SaveModelController extends GeneralController
 
         if (User::permission('MA_techCoord'))
         {
-            if ( Condition::isEdit() ) {
+            if ( Condition::isEdit() )
+            {
                 if ( $status === 1 ) // На проверке
                     if ( !$this->isCurrentStatusPresent )   // && $payments->isStatusPresent(47) 47 -'Готово 3D'
                         if ($payments->addTechPrices('onVerify') === -1)

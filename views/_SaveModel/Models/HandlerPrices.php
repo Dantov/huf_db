@@ -34,7 +34,6 @@ class HandlerPrices extends Handler
     public function addDesignPrices(string $priceType , string $author = '') : int
     {
 
-
         if ( $priceType === 'sketch' )
         {
             // Взяли фамилию автора из Инпута (по другому никак), нашли его ID из табл
@@ -42,8 +41,7 @@ class HandlerPrices extends Handler
             if ( !$userID ) return -1;
 
             //$userID = User::getID();
-            $rowGSDesign = $this->findAsArray("SELECT id as gs_id, grade_type as is3d_grade, description as cost_name, points as value FROM grading_system WHERE id IN ('91','99') ");
-
+            $rowGSDesign = $this->findAsArray("SELECT id as gs_id, grade_type as is3d_grade, description as cost_name, points as value FROM grading_system WHERE id IN ('91','92','99') ");
 
             foreach ( $rowGSDesign as &$designGrade )
             {
@@ -57,14 +55,6 @@ class HandlerPrices extends Handler
             //debugAjax($rowGSDesign,'$rowGSDesign', END_AB);
 
             return $this->insertUpdateRows($rowGSDesign, 'model_prices');
-
-//            $points = (int)($queryGS['points'] * 100);
-//            $cost_name = $queryGS['description'];
-//            $grade_type = $queryGS['grade_type'];
-//
-//            $sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date )
-//				VALUES ('$userID', 91, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-//            return $this->sql($sql);
         }
 
         //Начислим за утвержденный дизайн 3D модели
@@ -73,28 +63,6 @@ class HandlerPrices extends Handler
             $sql = " UPDATE model_prices SET status='1',status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='2' AND gs_id='91') ";
             if ( $this->baseSql($sql) ) return 1;
             return -1;
-        }
-
-        //Добавим за сопровождение 3D моделей
-        if ( $priceType === 'escort3D' )
-        {
-            $userID = 4; // Куратор 3д дизайна (Дзюба),
-
-            // взяли ID автора
-//            $authorID = $this->getUserIDFromSurname( explode(" ", $author)[0] );
-//            if ( !$curatorID ) return -1;
-//            Разрешений куратора может быть много. как отличить действующего куратора?
-//            $userID = $this->findOne("SELECT user_id FROM user_permissions WHERE permission_id='54'")['user_id'];
-
-            $queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='92'");
-            $points = (int)($queryGS['points'] * 100);
-            $cost_name = $queryGS['description'];
-            $grade_type = $queryGS['grade_type'];
-
-            $sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
-				                     VALUES ('$userID', 92, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
-
-            return $this->sql($sql);
         }
 
         return -1;
@@ -205,9 +173,26 @@ class HandlerPrices extends Handler
             }
         }
 
-        if ( $priceType === 'signed' ) // зачислим  проверяющему и 3д модельеру // Проверено
+        if ( $priceType === 'signed' ) // Проверено
         {
-            $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='1') ";
+            //Добавим за сопровождение 3D моделей, если его не было
+            $escort3D = $this->findOne("SELECT gs_id FROM model_prices WHERE pos_id='$this->id' AND gs_id='92' ", 'gs_id');
+            if ( !$escort3D )
+            {
+                $userID = 4; // Куратор 3д дизайна (Дзюба),
+
+                $queryGS = $this->findOne("SELECT id, grade_type, description, points FROM grading_system WHERE id='92'");
+                $points = (int)($queryGS['points'] * 100);
+                $cost_name = $queryGS['description'];
+                $grade_type = $queryGS['grade_type'];
+
+                $sql = "INSERT INTO model_prices ( user_id, gs_id, is3d_grade, cost_name, value, status, paid, pos_id, date ) 
+				                     VALUES ('$userID', 92, '$grade_type','$cost_name','$points', 0, 0, '$this->id', '$this->date')";
+                $this->sql($sql);
+            }
+
+            // зачислим  проверяющему и 3д модельеру и на всяк. случай Дизайнеру
+            $sql = " UPDATE model_prices SET status='1', status_date='$this->date' WHERE pos_id='$this->id' AND (is3d_grade='4' OR is3d_grade='1' OR is3d_grade='2') ";
             if ( $this->baseSql($sql) ) return 1;
         }
 
