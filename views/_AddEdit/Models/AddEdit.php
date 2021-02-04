@@ -538,12 +538,22 @@ class AddEdit extends General
 	}
 
     /**
+     * @param bool $complected
      * @return array
      * @throws \Exception
      */
-    public function getDopVC()
+    public function getDopVC($complected = false)
 	{
-		return $this->findAsArray( " SELECT * FROM vc_links WHERE pos_id='$this->id' ");
+        $vc_links = $this->findAsArray( " SELECT * FROM vc_links WHERE pos_id='$this->id' ");
+
+        if (!empty($vc_links))
+        {
+            if ( $complected )
+                foreach ( $vc_links as &$vLink )
+                    $vLink['id'] ='';
+        }
+
+        return $vc_links;
 	}
 
     /**

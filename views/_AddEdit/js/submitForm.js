@@ -296,6 +296,12 @@ function submitForm() {
             }
 
             statusScript.innerHTML = title;
+            if ( resp.movedModelFiles )
+            {
+                debug(resp.movedModelFiles);
+                statusScript.style.color = '#d02d00';
+                statusScript.innerHTML += '<br/><i><u>' + resp.movedModelFiles + '</u></i>';
+            }
 
             back.href = '/main/';
             show.href = '/model-view/?id=' + resp.id;

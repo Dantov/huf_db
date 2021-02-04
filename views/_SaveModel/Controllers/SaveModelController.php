@@ -141,7 +141,7 @@ class SaveModelController extends GeneralController
         $handler->setDate($date);
 
         // проверяем поменялся ли номер 3Д
-        if ( Condition::isEdit() ) $handler->checkModel();
+        //if ( Condition::isEdit() ) $handler->checkModel();
 
         try {
 
@@ -308,7 +308,11 @@ class SaveModelController extends GeneralController
         if ( Condition::isEdit() )
         {
             // Проверяем поменялся ли номер 3Д, чтобы переместить файлы модели в др. папку
-            $handler->checkModel();
+            if ( $oldNum3D = $handler->checkModel3DNum() )
+            {
+                if ( $handler->moveModelFiles($oldNum3D) )
+                    $this->response['movedModelFiles'] = "Изменился номер 3Д. Файлы перемещены.";
+            }
 
             if ( $status && User::permission('statuses') )
                 $this->isCurrentStatusPresent = $handler->isStatusPresent($status);
@@ -402,9 +406,11 @@ class SaveModelController extends GeneralController
 
         $request = $this->request;
         $vcl = $request->post('vc_links');
+
         if ( empty($vcl) ) return false;
 
         $vclRows = $this->h->makeBatchInsertRow( $vcl, $this->stockID, 'vc_links');
+
         if ( !$vclRows ) return false;
 
         $this->response['vc_links']['insertUpdate'] = $this->h->insertUpdateRows($vclRows['insertUpdate'], 'vc_links');

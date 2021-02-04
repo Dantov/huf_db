@@ -121,56 +121,84 @@ class Handler extends General
 	}
 
 
-	/**
-     * новый вариант, переносит файлы модели в новую папку, если поменялся номер 3д
+    /**
+     * новый вариант, проверяет поменялся ли номер 3д
+     * @throws \Exception
      */
-	public function checkModel()
+    public function checkModel3DNum() : string
     {
-		$query_oldN3d = mysqli_query($this->connection, " SELECT number_3d FROM stock WHERE id='$this->id' " );
-		$row = mysqli_fetch_assoc($query_oldN3d);
-                
-		if ( $row['number_3d'] != $this->number_3d ) {
-			$oldN3d = $row['number_3d'];
-			$newN3d = $this->number_3d;
-			
-			if ( !file_exists($newN3d) ) mkdir($newN3d, 0777, true);
-			if ( !file_exists($newN3d.'/'.$this->id) ) mkdir($newN3d.'/'.$this->id, 0777, true);
-			
-			$newPath = $newN3d.'/'.$this->id;
-			$oldPath = $oldN3d.'/'.$this->id;
-			
-			$folders = scandir($oldPath);
-			
-			for ( $i = 0; $i < count($folders); $i++ ) { // взяли папки Images и Stl если они есть
-			
-				if ( $folders[$i] == '.' || $folders[$i] == '..' ) continue;
-				
-				$filesToMove = scandir($oldPath.'/'.$folders[$i]); // сканируем каждую папку на предмет картинок или стл в ней
-				
-				for ( $j=0; $j < count($filesToMove); $j++ ) {
-					
-					if ( $filesToMove[$j] == '.' || $filesToMove[$j] == '..' ) continue;
-					
-					$oldCopyPath = $oldPath.'/'.$folders[$i].'/'.$filesToMove[$j];
-					$newCopyPath = $newPath.'/'.$folders[$i].'/'.$filesToMove[$j];
-					
-					// если в новом пути нет папки Images или Stl, то создадим их
-					if ( !file_exists($newPath.'/'.$folders[$i]) ) mkdir($newPath.'/'.$folders[$i], 0777, true);
-					
-					// копируем файлы из старого места в новую дир.
-					copy( $oldCopyPath, $newCopyPath );
-				}
-			}
-			$this -> rrmdir( $oldPath ); // удаляем все на старом месте
-			$oldDirs = scandir($oldN3d); 
-			$emptyDir = true;
-			// если папка, после удаления, осталась пустая - то удаляем и ее
-			for ( $i = 0; $i < count($oldDirs); $i++ ) {
-				if ( $oldDirs[$i] == '.' || $oldDirs[$i] == '..' ) continue;
-				if ( isset($oldDirs[$i]) && !empty($oldDirs[$i]) ) $emptyDir = false;
-			}
-			if ( $emptyDir ) rmdir($oldN3d);
-		}
+        $oldN3d = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ", 'number_3d');
+
+        if ( $oldN3d == $this->number_3d )
+        {
+            return "";
+        } else {
+            return $oldN3d;
+        }
+    }
+
+    /**
+     * переносит файлы модели в новую папку, если поменялся номер 3д
+     * @param string $oldN3d
+     * @return bool
+     */
+	public function moveModelFiles( string $oldN3d ) : bool
+    {
+		//$query_oldN3d = mysqli_query($this->connection, " SELECT number_3d FROM stock WHERE id='$this->id' " );
+		//$oldN3d = $this->findOne(" SELECT number_3d FROM stock WHERE id='$this->id' ", 'number_3d');
+		//$row = mysqli_fetch_assoc($query_oldN3d);
+
+		//if ( $row['number_3d'] != $this->number_3d ) {
+		//if ( $oldN3d == $this->number_3d ) return;
+
+        $oldPath = $oldN3d.'/'.$this->id;
+		if ( empty($oldN3d) || !file_exists($oldPath) )
+		    return false;
+
+        $newN3d = $this->number_3d;
+
+        if ( !file_exists($newN3d) ) mkdir($newN3d, 0777, true);
+        if ( !file_exists($newN3d.'/'.$this->id) ) mkdir($newN3d.'/'.$this->id, 0777, true);
+
+        $newPath = $newN3d.'/'.$this->id;
+
+        //chdir(_stockDIR_);
+		//debugAjax( getcwd(),' getcwd()');
+
+        $folders = scandir($oldPath);
+
+
+        for ( $i = 0; $i < count($folders); $i++ ) { // взяли папки Images и Stl если они есть
+
+            if ( $folders[$i] == '.' || $folders[$i] == '..' ) continue;
+
+            $filesToMove = scandir($oldPath.'/'.$folders[$i]); // сканируем каждую папку на предмет картинок или стл в ней
+
+            for ( $j=0; $j < count($filesToMove); $j++ ) {
+
+                if ( $filesToMove[$j] == '.' || $filesToMove[$j] == '..' ) continue;
+
+                $oldCopyPath = $oldPath.'/'.$folders[$i].'/'.$filesToMove[$j];
+                $newCopyPath = $newPath.'/'.$folders[$i].'/'.$filesToMove[$j];
+
+                // если в новом пути нет папки Images или Stl, то создадим их
+                if ( !file_exists($newPath.'/'.$folders[$i]) ) mkdir($newPath.'/'.$folders[$i], 0777, true);
+
+                // копируем файлы из старого места в новую дир.
+                copy( $oldCopyPath, $newCopyPath );
+            }
+        }
+        $this -> rrmdir( $oldPath ); // удаляем все на старом месте
+        $oldDirs = scandir($oldN3d);
+        $emptyDir = true;
+        // если папка, после удаления, осталась пустая - то удаляем и ее
+        for ( $i = 0; $i < count($oldDirs); $i++ ) {
+            if ( $oldDirs[$i] == '.' || $oldDirs[$i] == '..' ) continue;
+            if ( isset($oldDirs[$i]) && !empty($oldDirs[$i]) ) $emptyDir = false;
+        }
+        if ( $emptyDir ) rmdir($oldN3d);
+
+		return true;
 	}
 
     /**

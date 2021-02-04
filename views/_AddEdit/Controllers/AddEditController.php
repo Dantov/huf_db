@@ -221,7 +221,7 @@ class AddEditController extends GeneralController
 
             $materials = $addEdit->getMaterials(false,true);
             $gemsRow  = $addEdit->getGems(true);
-            $dopVCs  = $addEdit->getDopVC();
+            $dopVCs  = $addEdit->getDopVC(true);
 
             $num3DVC_LI = $addEdit->getNum3dVCLi( $dopVCs );
 
