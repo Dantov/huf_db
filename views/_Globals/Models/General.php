@@ -607,19 +607,19 @@ class General extends Model
             ],
             89=>[ // Диз. утв.
                 'notPresent' => 47,
-                'preset' => [2,9,11],
+                'preset' => [2,9,11,3,8],
             ],
             10=>[ // В ремонте 3D
                 'notPresent' => 2,
-                'preset' => [2,9,11],
+                'preset' => [2,9,11,8],
             ],
             47=>[ // Готово 3д
                 'notPresent' => 106,
-                'preset' => [11],
+                'preset' => [2,9,11,3,8],
             ],
             106=>[ // 3D дизайн утвержден
                 'notPresent' => 1,
-                'preset' => [2,9,11],
+                'preset' => [2,9,11,8],
             ],
             101=>[ // Подпись технолога
                 'notPresent' => 2,
@@ -631,7 +631,7 @@ class General extends Model
             ],
             2=>[ // Проверено
                 'notPresent' => 5,
-                'preset' => [3,9,11],
+                'preset' => [3,9,11,8],
             ],
             5=>[ // Выращено
                 'notPresent' => 2000,
@@ -641,7 +641,7 @@ class General extends Model
 
         // Сделал привязку к конкретной дате, старые модели сделаны до неё не будут проверены на наличие нужных статусов
         // это сделано что бы участки могли принять старые модели в ремонт, в случае чего
-        $comp_date =  new \DateTime($modelDate) < new \DateTime("2020-11-05") ? false : true;
+        $comp_date =  new \DateTime($modelDate) < new \DateTime("2021-01-01") ? false : true;
 
         $toShowStatuses = true;
         if ( $comp_date && ($component !== 1) && ($component !== 3) )
